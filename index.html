@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NO3D TOOLS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Silka Mono font - using JetBrains Mono as alternative since Silka Mono requires license -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Visitor font - using Space Mono as closest alternative -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Preload Visitor font for better performance -->
+    <link rel="preload" href="./fonts/visitor.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+    <!-- Custom Visitor font definition -->
+    <style>
+      @font-face {
+        font-family: 'Visitor';
+        src: url('./fonts/visitor.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: 'Visitor';
+        src: url('./fonts/visitor.ttf') format('truetype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: 'Visitor TT1 BRK';
+        src: url('./fonts/visitor.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="site-container">
+        <!-- Site Header -->
+        <header class="site-header">
+            <div class="logo">NO3D TOOLS</div>
+            <div class="header-icons">
+                <i class="fas fa-shopping-cart header-icon"></i>
+                <i class="fas fa-ellipsis-v header-icon"></i>
+            </div>
+        </header>
+
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-content">
+                <div class="category-header">
+                    <span class="category-name">WORKFLOW</span>
+                    <span class="carrot expanded">▼</span>
+                </div>
+                <div class="category-section expanded">
+                    <div class="category-subheader">
+                        <span class="category-name">ADV 3D DESIGN</span>
+                        <span class="carrot expanded">▼</span>
+                    </div>
+                    <div class="product-list">
+                        <div class="product-item" data-product="dojo-bolt-gen">
+                            <span class="product-name">DOJO BOLT GEN V05</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-bool">
+                            <span class="product-name">DOJO BOOL V5</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-calipers">
+                            <span class="product-name">DOJO CALIPERS</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-crv-wrapper">
+                            <span class="product-name">DOJO CRV WRAPPER V4</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-gluefinity">
+                            <span class="product-name">DOJO GLUEFINITY GRID_OBJ</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-knob">
+                            <span class="product-name">DOJO KNOB</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-knob-obj">
+                            <span class="product-name">DOJO KNOB_OBJ</span>
+                        </div>
+                        <div class="product-item active" data-product="dojo-mesh-repair">
+                            <span class="product-name">DOJO MESH REPAIR</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-print-viz">
+                            <span class="product-name">DOJO PRINT VIZ_V4.5</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-squircle-obj">
+                            <span class="product-name">DOJO SQUIRCLE V4.5_OBJ</span>
+                        </div>
+                        <div class="product-item" data-product="dojo-squircle">
+                            <span class="product-name">DOJO_SQUIRCLE V4.5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-header">
+                    <span class="category-name">MOGRAPH</span>
+                    <span class="carrot collapsed">▶</span>
+                </div>
+                <div class="category-header">
+                    <span class="category-name">WORKFLOW</span>
+                    <span class="carrot collapsed">▶</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Center Product Card - JSX Component Structure -->
+        <main class="product-card">
+            <div class="product-card-container">
+                <!-- Left Section: Product Image and Details -->
+                <div class="product-left-section">
+                    <!-- Product Image -->
+                    <div class="product-image-container">
+                        <div class="product-image">
+                            <img id="product-3d-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDMyMCAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjU2IiBmaWxsPSIjRThFOEU4Ii8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIDNEIEltYWdlPC90ZXh0Pgo8L3N2Zz4=" alt="DOJO MESH REPAIR 3D Render">
+                        </div>
+                    </div>
+                    
+                    <!-- Product Details -->
+                    <div class="product-details">
+                        <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
+                        <div class="product-price" id="product-price">PRICE: $7.99</div>
+                        <button class="download-button" id="download-button">DOWNLOAD</button>
+                    </div>
+                </div>
+
+                <!-- Right Section: Tabs, Description, Changelog -->
+                <div class="product-right-section">
+                    <!-- Tab Navigation -->
+                    <div class="product-tabs">
+                        <div class="tab-container">
+                            <div class="tab-icon expanded" data-tab="docs">
+                                <div class="tab-arrow">▼</div>
+                            </div>
+                            <div class="tab active" data-tab="docs">DOCS</div>
+                        </div>
+                        <div class="tab-container">
+                            <div class="tab-icon collapsed" data-tab="vids">
+                                <div class="tab-arrow">►</div>
+                            </div>
+                            <div class="tab" data-tab="vids">VIDS</div>
+                        </div>
+                        <div class="tab-container">
+                            <div class="tab-icon collapsed" data-tab="issues">
+                                <div class="tab-arrow">►</div>
+                            </div>
+                            <div class="tab" data-tab="issues">ISSUES</div>
+                        </div>
+                    </div>
+
+                    <!-- Product Description -->
+                    <div class="product-description" id="product-description">
+                        <p>Professional mesh repair and optimization tool designed for 3D artists and engineers. Dojo Mesh Repair automatically detects and fixes common mesh issues including holes, non-manifold edges, overlapping faces, and inverted normals.</p>
+                        <p>&nbsp;</p>
+                        <p>With its intelligent algorithms, the tool preserves the original geometry while ensuring watertight meshes suitable for 3D printing, rendering, and simulation. Save hours of manual cleanup with automated repair processes that maintain the artistic integrity of your models.</p>
+                    </div>
+
+                    <!-- Changelog Section -->
+                    <div class="changelog-section">
+                        <div class="changelog-header">
+                            <div class="changelog-icon expanded">
+                                <div class="changelog-arrow">▼</div>
+                            </div>
+                            <span class="changelog-title">CHANGELOG v2.3.1</span>
+                        </div>
+                        <div class="changelog-content">
+                            <ul>
+                                <li>• Added support for complex non-manifold geometry repair.</li>
+                                <li>• Improved hole detection accuracy by 60%.</li>
+                                <li>• New batch processing mode for multiple files.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Icon Grid -->
+        <aside class="icon-grid">
+            <div class="icon-item" data-product="dojo-bolt-gen">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bolt-gen-icon.png" alt="Dojo Bolt Gen Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-bool">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bool-icon.png" alt="Dojo Bool Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-calipers">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-calipers-icon.png" alt="Dojo Calipers Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-crv-wrapper">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-crv-wrapper-icon.png" alt="Dojo Crv Wrapper Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-gluefinity">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-gluefinity-grid-icon.png" alt="Dojo Gluefinity Grid Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-knob">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-knob-icon.png" alt="Dojo Knob Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-print-bed">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-bed-icon.png" alt="Dojo Print Bed Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-print-viz">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-viz-icon.png" alt="Dojo Print Viz Icon">
+            </div>
+            <div class="icon-item active" data-product="dojo-mesh-repair">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-mesh-repair-icon.png" alt="Dojo Mesh Repair Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-squircle">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-squircle-icon.png" alt="Dojo Squircle Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-slug-tool">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-slug-tool-icon.png" alt="Dojo Slug Tool Icon">
+            </div>
+            <div class="icon-item" data-product="dojo-bool">
+                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bool-icon.png" alt="Dojo Bool Icon">
+            </div>
+        </aside>
+    </div>
+
+    <footer class="footer">
+        <span class="footer-text">RTHEUELLTRROT</span>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
