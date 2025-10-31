@@ -159,8 +159,8 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
   }
 };
 
-// Current selected product
-let currentProduct = 'dojo-slug-tool';
+// Current selected product (will be set to first product after loading)
+let currentProduct = null;
 
 // DOM elements
 const productTitle = document.getElementById('product-title');
@@ -173,6 +173,13 @@ const downloadButton = document.getElementById('download-button');
 document.addEventListener('DOMContentLoaded', async function() {
   try {
     await loadProductsFromGitHub();
+
+    // Set current product to first loaded product
+    const productIds = Object.keys(products);
+    if (productIds.length > 0) {
+      currentProduct = productIds[0];
+    }
+
     initializeEventListeners();
     updateProductDisplay(currentProduct);
     updateProductList();
@@ -180,6 +187,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   } catch (error) {
     console.warn('Failed to load products from GitHub, using fallback data:', error);
     products = defaultProducts;
+
+    // Set current product to first fallback product
+    const productIds = Object.keys(products);
+    if (productIds.length > 0) {
+      currentProduct = productIds[0];
+    }
+
     initializeEventListeners();
     updateProductDisplay(currentProduct);
     updateProductList();
@@ -190,62 +204,99 @@ document.addEventListener('DOMContentLoaded', async function() {
 // GitHub Integration Functions
 async function loadProductsFromGitHub() {
   try {
-    // Since direct GitHub API calls might have CORS issues, we'll use a predefined list
-    // based on the repository structure we discovered earlier
-    const knownProducts = [
-      'Dojo Bolt Gen v05',
-      'Dojo Bool v5', 
-      'Dojo Calipers',
-      'Dojo Crv Wrapper v4',
-      'Dojo Gluefinity Grid_obj',
-      'Dojo Knob',
-      'Dojo Knob_obj',
-      'Dojo Mesh Repair',
-      'Dojo Print Viz_V4.5',
-      'Dojo Squircle v4.5_obj',
-      'Dojo_Squircle v4.5',
-      'Gluefinity Grid_obj',
-      'Print Bed Preview_obj'
-    ];
-    
-    console.log('Using known products from repository structure:', knownProducts);
-    
-    // Build products object from known structure
-    products = {};
-    
-    for (const productName of knownProducts) {
-      const productId = productName.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-      
-      // Create product data with local image URLs
-      const imageName = productName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      // Use SVG fallback for 3D images to ensure something always displays
-      const image3dUrl = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDMyMCAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjU2IiBmaWxsPSIjRThFOEU4Ii8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIDNEIEltYWdlPC90ZXh0Pgo8L3N2Zz4=`;
-      // Use SVG fallback for icons
-      const iconUrl = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjBGMEYwIi8+Cjx0ZXh0IHg9IjI1IiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SWNvbjwvdGV4dD4KPC9zdmc+`;
-      
-      console.log(`Generated fallback images for ${productName}`);
-      
-      products[productId] = {
-        name: productName.toUpperCase(),
-        price: generatePrice(),
-        description: generateDescription(productName),
-        changelog: generateChangelog(productName),
-        image3d: image3dUrl,
-        icon: iconUrl
-      };
+    console.log('Fetching products from GitHub API...');
+
+    // Fetch repository contents from GitHub API
+    const apiUrl = `${GITHUB_API_BASE}/repos/${REPO_CONFIG.owner}/${REPO_CONFIG.repo}/contents?ref=${REPO_CONFIG.branch}`;
+
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
     }
-    
+
+    const contents = await response.json();
+
+    // Filter for directories (product folders)
+    const productFolders = contents.filter(item => item.type === 'dir' && item.name.startsWith('Dojo'));
+
+    console.log(`Found ${productFolders.length} product folders:`, productFolders.map(f => f.name));
+
+    // Build products object from GitHub data
+    products = {};
+
+    // Load each product's JSON metadata
+    const productPromises = productFolders.map(async (folder) => {
+      try {
+        const productName = folder.name;
+        const jsonFileName = `${productName}.json`;
+        const jsonUrl = `${GITHUB_RAW_BASE}/${REPO_CONFIG.owner}/${REPO_CONFIG.repo}/${REPO_CONFIG.branch}/${encodeURIComponent(productName)}/${encodeURIComponent(jsonFileName)}`;
+
+        console.log(`Fetching metadata for ${productName}...`);
+
+        const jsonResponse = await fetch(jsonUrl);
+        if (!jsonResponse.ok) {
+          console.warn(`Could not load JSON for ${productName}, skipping`);
+          return null;
+        }
+
+        const metadata = await jsonResponse.json();
+
+        // Create product ID from handle
+        const productId = metadata.handle || productName.toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+
+        // Get price from variants
+        const price = metadata.variants && metadata.variants[0]
+          ? `$${metadata.variants[0].price}`
+          : '$0.00';
+
+        // Construct image URLs
+        const iconFileName = `icon_${productName}.png`;
+        const iconUrl = `${GITHUB_RAW_BASE}/${REPO_CONFIG.owner}/${REPO_CONFIG.repo}/${REPO_CONFIG.branch}/${encodeURIComponent(productName)}/${encodeURIComponent(iconFileName)}`;
+
+        // Use icon as 3D image for now (can be updated later)
+        const image3dUrl = iconUrl;
+
+        return {
+          id: productId,
+          data: {
+            name: metadata.title || productName,
+            price: price,
+            description: metadata.description || generateDescription(productName),
+            changelog: generateChangelog(productName), // Can be enhanced with real changelog data later
+            image3d: image3dUrl,
+            icon: iconUrl,
+            handle: metadata.handle,
+            tags: metadata.tags || [],
+            status: metadata.status
+          }
+        };
+      } catch (error) {
+        console.error(`Error loading product ${folder.name}:`, error);
+        return null;
+      }
+    });
+
+    const loadedProducts = await Promise.all(productPromises);
+
+    // Add successfully loaded products to products object
+    loadedProducts.forEach(product => {
+      if (product) {
+        products[product.id] = product.data;
+      }
+    });
+
     // If no products found, use fallback
     if (Object.keys(products).length === 0) {
       throw new Error('No products found in repository');
     }
-    
-    console.log('Loaded products from GitHub structure:', Object.keys(products));
-    
+
+    console.log(`Successfully loaded ${Object.keys(products).length} products from GitHub!`);
+    console.log('Product IDs:', Object.keys(products));
+
   } catch (error) {
     console.error('Error loading products from GitHub:', error);
     throw error;
