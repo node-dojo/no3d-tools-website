@@ -253,9 +253,9 @@ async function loadProductsFromGitHub() {
           ? `$${metadata.variants[0].price}`
           : '$0.00';
 
-        // Construct image URLs
+        // Construct image URLs - load from local assets (synced via GitHub Actions)
         const iconFileName = `icon_${productName}.png`;
-        const iconUrl = `${GITHUB_RAW_BASE}/${REPO_CONFIG.owner}/${REPO_CONFIG.repo}/${REPO_CONFIG.branch}/${encodeURIComponent(productName)}/${encodeURIComponent(iconFileName)}`;
+        const iconUrl = `/assets/product-images/${iconFileName}`;
 
         // Use icon as 3D image for now (can be updated later)
         const image3dUrl = iconUrl;
