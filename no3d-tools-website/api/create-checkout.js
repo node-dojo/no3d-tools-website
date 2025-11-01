@@ -16,6 +16,9 @@ const polar = new Polar({
 });
 
 module.exports = async (req, res) => {
+  // Always set JSON content type
+  res.setHeader('Content-Type', 'application/json');
+  
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -23,7 +26,7 @@ module.exports = async (req, res) => {
 
   // Handle preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(200).json({ ok: true });
   }
 
   // Only allow POST
@@ -49,7 +52,7 @@ module.exports = async (req, res) => {
     if (!process.env.POLAR_API_TOKEN) {
       console.error('POLAR_API_TOKEN not configured');
       return res.status(500).json({
-        error: 'Server configuration error',
+        error: 'Server configuration error: POLAR_API_TOKEN not set',
         url: null
       });
     }
@@ -59,26 +62,65 @@ module.exports = async (req, res) => {
     // Create checkout session with multiple products
     let checkout;
     try {
+      // Log the request we're about to make
+      console.log('Polar SDK initialization check:', {
+        hasToken: !!process.env.POLAR_API_TOKEN,
+        tokenLength: process.env.POLAR_API_TOKEN?.length || 0,
+        productIds: productIds
+      });
+
+      // Use Polar SDK to create checkout
+      // Note: Check Polar SDK docs for exact API - might need checkoutLinks.create instead
       checkout = await polar.checkouts.create({
         products: productIds, // Array of Polar product IDs
-        paymentProcessor: 'stripe',
-        successUrl: `${req.headers.origin || 'https://no3d-tools.vercel.app'}/success`,
+        successUrl: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
         metadata: {
           source: 'custom_cart',
           itemCount: productIds.length.toString(),
           timestamp: new Date().toISOString()
         }
       });
+
+      console.log('Polar checkout response:', {
+        id: checkout?.id,
+        url: checkout?.url,
+        hasUrl: !!checkout?.url
+      });
+
     } catch (error) {
-      // Try parsing response body if available
-      if (error.body && typeof error.body === 'string') {
-        checkout = JSON.parse(error.body);
-      } else {
-        throw error;
+      // Log full error details
+      console.error('Polar SDK error:', {
+        message: error.message,
+        status: error.status,
+        statusCode: error.statusCode,
+        code: error.code,
+        body: error.body,
+        response: error.response?.data
+      });
+      
+      // If error has response data, try to extract it
+      if (error.response?.data) {
+        throw new Error(`Polar API error: ${JSON.stringify(error.response.data)}`);
       }
+      
+      // Re-throw with better message
+      throw new Error(`Failed to create Polar checkout: ${error.message || 'Unknown error'}`);
     }
 
-    console.log('Checkout created successfully:', checkout.id);
+    // Validate checkout response
+    if (!checkout) {
+      throw new Error('Polar SDK returned null/undefined checkout');
+    }
+
+    if (!checkout.url) {
+      console.error('Checkout created but no URL:', checkout);
+      throw new Error('Checkout created but no URL returned from Polar');
+    }
+
+    console.log('Checkout created successfully:', {
+      id: checkout.id,
+      url: checkout.url
+    });
 
     // Return checkout URL
     return res.status(200).json({
@@ -89,11 +131,22 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('Checkout creation failed:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      body: error.body,
+      stack: error.stack
+    });
+
+    // Ensure we always return valid JSON
+    const errorMessage = error.message || 'Failed to create checkout session';
+    const errorDetails = error.body || (error.response?.data ? JSON.stringify(error.response.data) : undefined);
 
     return res.status(500).json({
-      error: error.message || 'Failed to create checkout session',
+      error: errorMessage,
       url: null,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      errorDetails: process.env.NODE_ENV === 'development' ? errorDetails : undefined
     });
   }
 };

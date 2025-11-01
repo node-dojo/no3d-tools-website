@@ -1237,7 +1237,18 @@ async function handleCheckout() {
       })
     });
 
-    const data = await response.json();
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      // If not JSON, get text response for debugging
+      const textResponse = await response.text();
+      console.error('Non-JSON response from API:', textResponse);
+      throw new Error(`Server error: ${response.status} ${response.statusText}. Check console for details.`);
+    }
 
     if (!response.ok || data.error) {
       throw new Error(data.error || 'Failed to create checkout session');
