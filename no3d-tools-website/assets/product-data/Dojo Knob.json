@@ -1,0 +1,61 @@
+{
+  "title": "Dojo Knob",
+  "handle": "dojo-knob",
+  "description": "Blender asset: Dojo Knob",
+  "vendor": "The Well Tarot",
+  "product_type": "Blender Add-on",
+  "tags": [
+    "Super Primitive",
+    "blender",
+    "addon",
+    "3d",
+    "asset"
+  ],
+  "status": "active",
+  "variants": [
+    {
+      "price": "0.00",
+      "sku": "NO3D-TOOLS-DOJO-KNOB",
+      "inventory_policy": "continue",
+      "inventory_management": "shopify"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "GEOMETRY",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blender_version",
+      "value": "4.5.2+",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-10-24",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "source_file",
+      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blend_file",
+      "value": "Dojo Knob.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_Dojo Knob.png",
+      "type": "single_line_text_field"
+    }
+  ]
+}

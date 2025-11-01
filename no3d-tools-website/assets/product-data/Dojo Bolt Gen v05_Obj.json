@@ -1,0 +1,96 @@
+{
+  "title": "Dojo Bolt Gen v05_Obj",
+  "handle": "dojo-bolt-gen-v05-obj",
+  "description": "Blender asset: Dojo Bolt Gen v05_Obj",
+  "vendor": "The Well Tarot",
+  "product_type": "Blender Add-on",
+  "tags": [
+    "blender",
+    "addon",
+    "3d",
+    "asset"
+  ],
+  "status": "active",
+  "variants": [
+    {
+      "price": "0.00",
+      "sku": "NO3D-TOOLS-DOJO-BOLT-GEN-V05-OBJ",
+      "inventory_policy": "continue",
+      "inventory_management": "shopify"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "MESH",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blender_version",
+      "value": "4.5.2+",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-10-24",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "source_file",
+      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "vertices",
+      "value": "1",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "faces",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "materials",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_m3",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"M3\", address=0x600014c6ab70>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_mm",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"MM\", address=0x600014c6ac20>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_hops",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"hops\", address=0x600014c6acd0>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blend_file",
+      "value": "Dojo Bolt Gen v05_Obj.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_Dojo Bolt Gen v05_Obj.png",
+      "type": "single_line_text_field"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "buildCommand": null,
+  "devCommand": null,
+  "installCommand": "npm install",
+  "framework": null,
+  "outputDirectory": ".",
+  "public": true,
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "POLAR_API_TOKEN": "@polar_api_token"
+  }
+}
