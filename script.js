@@ -1,25 +1,24 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
-// Product data configuration (synced via GitHub Actions from private repo)
-const PRODUCT_DATA_PATH = '/assets/product-data';
-const PRODUCT_IMAGES_PATH = '/assets/product-images';
+// GitHub Repository Configuration
+const REPO_CONFIG = {
+  owner: 'node-dojo',
+  repo: 'no3d-tools-library',
+  branch: 'main'
+};
 
-// List of available products (synced from no3d-tools-library)
-const AVAILABLE_PRODUCTS = [
-  'Dojo Bolt Gen v05',
-  'Dojo Bolt Gen v05_Obj',
-  'Dojo Bool v5',
-  'Dojo Calipers',
-  'Dojo Crv Wrapper v4',
-  'Dojo Gluefinity Grid_obj',
-  'Dojo Knob',
-  'Dojo Knob_obj',
-  'Dojo Mesh Repair',
-  'Dojo Print Viz_V4.5',
-  'Dojo Squircle v4.5_obj',
-  'Dojo_Squircle v4.5'
-];
+// GitHub API base URL
+const GITHUB_API_BASE = 'https://api.github.com';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com';
+
+// Check if Polar products are loaded
+console.log('=== Script Loading ===');
+console.log('POLAR_PRODUCTS available:', typeof POLAR_PRODUCTS !== 'undefined');
+if (typeof POLAR_PRODUCTS !== 'undefined') {
+  console.log('Polar products loaded:', Object.keys(POLAR_PRODUCTS).length, 'products');
+  console.log('Available product IDs:', Object.keys(POLAR_PRODUCTS));
+}
 
 // Product data structure - will be populated from GitHub
 let products = {};
@@ -168,8 +167,8 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
   }
 };
 
-// Current selected product (will be set to first product after loading)
-let currentProduct = null;
+// Current selected product
+let currentProduct = 'dojo-bool-v5';
 
 // DOM elements
 const productTitle = document.getElementById('product-title');
@@ -182,114 +181,78 @@ const downloadButton = document.getElementById('download-button');
 document.addEventListener('DOMContentLoaded', async function() {
   try {
     await loadProductsFromGitHub();
-
-    // Set current product to first loaded product
-    const productIds = Object.keys(products);
-    if (productIds.length > 0) {
-      currentProduct = productIds[0];
-    }
-
     initializeEventListeners();
+    initializeMobileMenu();
     updateProductDisplay(currentProduct);
     updateProductList();
     updateIconGrid();
   } catch (error) {
     console.warn('Failed to load products from GitHub, using fallback data:', error);
     products = defaultProducts;
-
-    // Set current product to first fallback product
-    const productIds = Object.keys(products);
-    if (productIds.length > 0) {
-      currentProduct = productIds[0];
-    }
-
     initializeEventListeners();
+    initializeMobileMenu();
     updateProductDisplay(currentProduct);
     updateProductList();
     updateIconGrid();
   }
 });
 
-// Product Loading Functions
+// GitHub Integration Functions
 async function loadProductsFromGitHub() {
   try {
-    console.log('Loading products from local data...');
-
-    // Build products object from local JSON files
+    // Since direct GitHub API calls might have CORS issues, we'll use a predefined list
+    // based on the repository structure we discovered earlier
+    const knownProducts = [
+      'Dojo Bolt Gen v05',
+      'Dojo Bool v5', 
+      'Dojo Calipers',
+      'Dojo Crv Wrapper v4',
+      'Dojo Gluefinity Grid_obj',
+      'Dojo Knob',
+      'Dojo Knob_obj',
+      'Dojo Mesh Repair',
+      'Dojo Print Viz_V4.5',
+      'Dojo Squircle v4.5_obj',
+      'Dojo_Squircle v4.5',
+      'Gluefinity Grid_obj',
+      'Print Bed Preview_obj'
+    ];
+    
+    console.log('Using known products from repository structure:', knownProducts);
+    
+    // Build products object from known structure
     products = {};
+    
+    for (const productName of knownProducts) {
+      const productId = productName.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      // Create product data with local image URLs
+      const iconUrl = `assets/product-images/icon_${productName}.png`;
+      const image3dUrl = iconUrl; // Use icon as 3D image for now
 
-    // Load each product's JSON metadata
-    const productPromises = AVAILABLE_PRODUCTS.map(async (productName) => {
-      try {
-        const jsonFileName = `${productName}.json`;
-        const jsonUrl = `${PRODUCT_DATA_PATH}/${jsonFileName}`;
-
-        console.log(`Loading metadata for ${productName}...`);
-
-        const jsonResponse = await fetch(jsonUrl);
-        if (!jsonResponse.ok) {
-          console.warn(`Could not load JSON for ${productName}, skipping`);
-          return null;
-        }
-
-        const metadata = await jsonResponse.json();
-
-        // Create product ID from handle
-        const productId = metadata.handle || productName.toLowerCase()
-          .replace(/\s+/g, '-')
-          .replace(/[^a-z0-9-]/g, '')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '');
-
-        // Get price from variants
-        const price = metadata.variants && metadata.variants[0]
-          ? `$${metadata.variants[0].price}`
-          : '$0.00';
-
-        // Construct image URLs - load from local assets (synced via GitHub Actions)
-        const iconFileName = `icon_${productName}.png`;
-        const iconUrl = `/assets/product-images/${iconFileName}`;
-
-        // Use icon as 3D image for now (can be updated later)
-        const image3dUrl = iconUrl;
-
-        return {
-          id: productId,
-          data: {
-            name: metadata.title || productName,
-            price: price,
-            description: metadata.description || generateDescription(productName),
-            changelog: generateChangelog(productName), // Can be enhanced with real changelog data later
-            image3d: image3dUrl,
-            icon: iconUrl,
-            handle: metadata.handle,
-            tags: metadata.tags || [],
-            status: metadata.status
-          }
-        };
-      } catch (error) {
-        console.error(`Error loading product ${folder.name}:`, error);
-        return null;
-      }
-    });
-
-    const loadedProducts = await Promise.all(productPromises);
-
-    // Add successfully loaded products to products object
-    loadedProducts.forEach(product => {
-      if (product) {
-        products[product.id] = product.data;
-      }
-    });
-
+      console.log(`Using local images for ${productName}:`, iconUrl);
+      
+      products[productId] = {
+        name: productName.toUpperCase(),
+        price: generatePrice(),
+        description: generateDescription(productName),
+        changelog: generateChangelog(productName),
+        image3d: image3dUrl,
+        icon: iconUrl
+      };
+    }
+    
     // If no products found, use fallback
     if (Object.keys(products).length === 0) {
-      throw new Error('No products found in local data');
+      throw new Error('No products found in repository');
     }
-
-    console.log(`Successfully loaded ${Object.keys(products).length} products!`);
-    console.log('Product IDs:', Object.keys(products));
-
+    
+    console.log('Loaded products from GitHub structure:', Object.keys(products));
+    
   } catch (error) {
     console.error('Error loading products from GitHub:', error);
     throw error;
@@ -297,8 +260,7 @@ async function loadProductsFromGitHub() {
 }
 
 function generatePrice() {
-  const prices = ['$4.50', '$5.25', '$5.55', '$6.75', '$7.50', '$7.99', '$8.25', '$9.50', '$9.99', '$11.99', '$12.50'];
-  return prices[Math.floor(Math.random() * prices.length)];
+  return '$4.44'; // Fixed price for all products
 }
 
 function generateDescription(productName) {
@@ -428,9 +390,15 @@ function initializeEventListeners() {
   });
 
   // Download button
-  downloadButton.addEventListener('click', function() {
-    downloadProduct(currentProduct);
-  });
+  if (downloadButton) {
+    console.log('Download button found, attaching event listener');
+    downloadButton.addEventListener('click', function() {
+      console.log('Download button clicked!');
+      downloadProduct(currentProduct);
+    });
+  } else {
+    console.error('Download button not found! Check HTML for id="download-button"');
+  }
 
   // Category expansion/collapse
   const categoryHeaders = document.querySelectorAll('.category-header');
@@ -598,24 +566,50 @@ function switchTab(tabName) {
 
 // Download product (placeholder functionality)
 function downloadProduct(productId) {
-  const product = products[productId];
-  if (!product) return;
+  console.log('=== Download Product Called ===');
+  console.log('Product ID:', productId);
+  console.log('POLAR_PRODUCTS available:', typeof POLAR_PRODUCTS !== 'undefined');
 
-  // In a real implementation, this would trigger a download
-  console.log(`Downloading ${product.name}...`);
-  
-  // Show download feedback
-  const originalText = downloadButton.textContent;
-  downloadButton.textContent = 'DOWNLOADING...';
-  downloadButton.disabled = true;
-  
-  setTimeout(() => {
-    downloadButton.textContent = 'DOWNLOADED!';
+  const product = products[productId];
+  if (!product) {
+    console.warn(`Product not found in products object: ${productId}`);
+    console.log('Available products:', Object.keys(products));
+    return;
+  }
+
+  // Check if we have a Polar product mapping
+  const polarProduct = typeof POLAR_PRODUCTS !== 'undefined' ? POLAR_PRODUCTS[productId] : null;
+  console.log('Polar product found:', polarProduct);
+
+  if (polarProduct) {
+    // Redirect to Polar product page
+    console.log(`Opening Polar product page: ${polarProduct.name}`);
+    console.log(`URL: ${polarProduct.url}`);
+    window.open(polarProduct.url, '_blank');
+
+    // Show feedback
+    const originalText = downloadButton.textContent;
+    downloadButton.textContent = 'OPENING POLAR...';
+    downloadButton.disabled = true;
+
     setTimeout(() => {
       downloadButton.textContent = originalText;
       downloadButton.disabled = false;
     }, 2000);
-  }, 1000);
+  } else {
+    // Fallback - show message that download is not yet available
+    console.warn(`No Polar product found for: ${productId}`);
+    console.log('Available Polar products:', typeof POLAR_PRODUCTS !== 'undefined' ? Object.keys(POLAR_PRODUCTS) : 'POLAR_PRODUCTS not defined');
+
+    const originalText = downloadButton.textContent;
+    downloadButton.textContent = 'COMING SOON!';
+    downloadButton.disabled = true;
+
+    setTimeout(() => {
+      downloadButton.textContent = originalText;
+      downloadButton.disabled = false;
+    }, 2000);
+  }
 }
 
 // Keyboard navigation support
@@ -623,7 +617,7 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     // Close any open modals or reset selections
     console.log('Escape pressed - resetting to default product');
-    selectProduct('dojo-slug-tool');
+    selectProduct('dojo-bool-v5');
   }
 });
 
@@ -651,3 +645,681 @@ document.addEventListener('error', function(e) {
 
 // Initialize with default product
 console.log('NO3D Tools website initialized');
+
+// ==================== CMD+K SEARCH FUNCTIONALITY ====================
+
+const searchModal = document.getElementById('search-modal');
+const searchModalBackdrop = document.getElementById('search-modal-backdrop');
+const searchInput = document.getElementById('search-input');
+const searchResultsContainer = document.getElementById('search-results-container');
+const searchResultsEmpty = document.getElementById('search-results-empty');
+
+let searchResults = [];
+let selectedResultIndex = -1;
+
+// Open search modal with CMD+K or Ctrl+K
+document.addEventListener('keydown', function(e) {
+  // CMD+K (Mac) or Ctrl+K (Windows/Linux)
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    openSearchModal();
+  }
+
+  // ESC to close modal
+  if (e.key === 'Escape' && searchModal.classList.contains('active')) {
+    closeSearchModal();
+  }
+});
+
+function openSearchModal() {
+  searchModal.classList.add('active');
+  searchModalBackdrop.classList.add('active');
+  searchInput.value = '';
+  searchInput.focus();
+  performSearch('');
+}
+
+function closeSearchModal() {
+  searchModal.classList.remove('active');
+  searchModalBackdrop.classList.remove('active');
+  selectedResultIndex = -1;
+}
+
+// Close modal when clicking backdrop
+searchModalBackdrop.addEventListener('click', closeSearchModal);
+
+// Search input handler
+searchInput.addEventListener('input', function(e) {
+  performSearch(e.target.value);
+});
+
+// Keyboard navigation in search results
+searchInput.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    selectedResultIndex = Math.min(selectedResultIndex + 1, searchResults.length - 1);
+    updateSearchSelection();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+    updateSearchSelection();
+  } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
+    e.preventDefault();
+    const productId = searchResults[selectedResultIndex];
+    selectProduct(productId);
+    closeSearchModal();
+  }
+});
+
+function performSearch(query) {
+  const searchTerm = query.toLowerCase().trim();
+
+  // Get all product IDs
+  const allProducts = Object.keys(products);
+
+  if (searchTerm === '') {
+    // Show all products when search is empty
+    searchResults = allProducts;
+  } else {
+    // Filter products by name or description
+    searchResults = allProducts.filter(productId => {
+      const product = products[productId];
+      const name = product.name.toLowerCase();
+      const desc = product.description.toLowerCase();
+
+      return name.includes(searchTerm) || desc.includes(searchTerm);
+    });
+  }
+
+  selectedResultIndex = searchResults.length > 0 ? 0 : -1;
+  renderSearchResults();
+}
+
+function renderSearchResults() {
+  searchResultsContainer.innerHTML = '';
+
+  if (searchResults.length === 0) {
+    searchResultsEmpty.style.display = 'flex';
+    return;
+  }
+
+  searchResultsEmpty.style.display = 'none';
+
+  searchResults.forEach((productId, index) => {
+    const product = products[productId];
+    const resultItem = document.createElement('div');
+    resultItem.className = 'search-result-item';
+    if (index === selectedResultIndex) {
+      resultItem.classList.add('selected');
+    }
+
+    resultItem.innerHTML = `
+      <div class="search-result-content">
+        <div class="search-result-title">${product.name}</div>
+        <div class="search-result-price">${product.price}</div>
+      </div>
+    `;
+
+    resultItem.addEventListener('click', () => {
+      selectProduct(productId);
+      closeSearchModal();
+    });
+
+    searchResultsContainer.appendChild(resultItem);
+  });
+}
+
+function updateSearchSelection() {
+  const resultItems = searchResultsContainer.querySelectorAll('.search-result-item');
+  resultItems.forEach((item, index) => {
+    if (index === selectedResultIndex) {
+      item.classList.add('selected');
+      item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+console.log('CMD+K search functionality initialized');
+
+// ==================== MOBILE MENU FUNCTIONALITY ====================
+
+/**
+ * Mobile Hamburger Menu
+ * Handles sidebar toggle on mobile devices
+ */
+
+const hamburgerButton = document.getElementById('hamburger-menu-button');
+const sidebar = document.getElementById('sidebar');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+// Open sidebar menu
+function openMobileMenu() {
+  if (sidebar) {
+    sidebar.classList.add('open');
+  }
+  if (sidebarBackdrop) {
+    sidebarBackdrop.classList.add('active');
+  }
+  if (hamburgerButton) {
+    hamburgerButton.classList.add('active');
+  }
+  // Prevent body scroll when menu is open
+  document.body.style.overflow = 'hidden';
+}
+
+// Close sidebar menu
+function closeMobileMenu() {
+  if (sidebar) {
+    sidebar.classList.remove('open');
+  }
+  if (sidebarBackdrop) {
+    sidebarBackdrop.classList.remove('active');
+  }
+  if (hamburgerButton) {
+    hamburgerButton.classList.remove('active');
+  }
+  // Restore body scroll
+  document.body.style.overflow = '';
+}
+
+// Toggle sidebar menu
+function toggleMobileMenu() {
+  if (sidebar && sidebar.classList.contains('open')) {
+    closeMobileMenu();
+  } else {
+    openMobileMenu();
+  }
+}
+
+// Initialize mobile menu functionality
+function initializeMobileMenu() {
+  // Hamburger button click
+  if (hamburgerButton) {
+    hamburgerButton.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleMobileMenu();
+    });
+  }
+
+  // Sidebar backdrop click (close menu)
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', closeMobileMenu);
+  }
+
+  // Close menu when clicking on a product item (mobile only)
+  if (sidebar) {
+    sidebar.addEventListener('click', function(e) {
+      // Only close if clicking on a product item (not category headers)
+      if (e.target.closest('.product-item')) {
+        // Use a small delay to allow the product selection to happen first
+        setTimeout(() => {
+          if (window.innerWidth <= 768) {
+            closeMobileMenu();
+          }
+        }, 100);
+      }
+    });
+  }
+
+  // ESC key to close menu
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      // Close mobile menu if open
+      if (sidebar && sidebar.classList.contains('open')) {
+        closeMobileMenu();
+      }
+    }
+  });
+
+  // Close menu on window resize if switching back to desktop
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+      closeMobileMenu();
+    }
+  });
+
+  console.log('Mobile menu functionality initialized');
+}
+
+// ==================== SHOPPING CART FUNCTIONALITY ====================
+
+/**
+ * Shopping Cart Manager
+ * Handles cart state, localStorage persistence, and Polar checkout integration
+ */
+
+// Cart storage key
+const CART_STORAGE_KEY = 'no3d_tools_cart';
+
+// Cart state
+let cart = {
+  items: [],
+  
+  // Load cart from localStorage
+  load() {
+    try {
+      const stored = localStorage.getItem(CART_STORAGE_KEY);
+      if (stored) {
+        this.items = JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading cart from localStorage:', error);
+      this.items = [];
+    }
+    this.updateUI();
+  },
+  
+  // Save cart to localStorage
+  save() {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.items));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+  },
+  
+  // Normalize price string for storage
+  normalizePrice(priceString) {
+    if (!priceString) {
+      return 'FREE';
+    }
+    
+    // If already formatted nicely, use as-is
+    if (priceString.includes('$')) {
+      return priceString;
+    }
+    
+    // If it's just a number, format it
+    const numericPrice = this.parsePrice(priceString);
+    if (numericPrice > 0) {
+      return this.formatCurrency(numericPrice);
+    }
+    
+    return 'FREE';
+  },
+  
+  // Add product to cart
+  add(productId, productName, polarId, checkoutUrl, price = null) {
+    // Check if product already in cart
+    const existingIndex = this.items.findIndex(item => item.productId === productId);
+    
+    if (existingIndex >= 0) {
+      // Product already in cart - show message
+      console.log('Product already in cart:', productName);
+      // Could show a toast notification here
+      return false;
+    }
+    
+    // Normalize price for storage
+    const normalizedPrice = this.normalizePrice(price);
+    
+    // Add new item
+    const item = {
+      productId,
+      productName,
+      polarId,
+      checkoutUrl,
+      price: normalizedPrice,
+      addedAt: new Date().toISOString()
+    };
+    
+    this.items.push(item);
+    this.save();
+    this.updateUI();
+    
+    console.log('Added to cart:', productName, 'at', normalizedPrice);
+    return true;
+  },
+  
+  // Remove product from cart
+  remove(productId) {
+    const index = this.items.findIndex(item => item.productId === productId);
+    if (index >= 0) {
+      const removed = this.items.splice(index, 1)[0];
+      this.save();
+      this.updateUI();
+      console.log('Removed from cart:', removed.productName);
+      return true;
+    }
+    return false;
+  },
+  
+  // Clear cart
+  clear() {
+    this.items = [];
+    this.save();
+    this.updateUI();
+  },
+  
+  // Parse price string to number
+  parsePrice(priceString) {
+    if (!priceString || typeof priceString !== 'string') {
+      return 0;
+    }
+    
+    // Handle "FREE" or empty strings
+    const normalized = priceString.trim().toUpperCase();
+    if (normalized === 'FREE' || normalized === '' || normalized === 'N/A') {
+      return 0;
+    }
+    
+    // Extract numeric value from price string
+    // Handles formats like: "$4.44", "PRICE: $4.44", "4.44", "$4,444.44"
+    const priceMatch = priceString.match(/[\d,]+\.?\d*/);
+    if (priceMatch) {
+      // Remove commas and parse as float
+      const numericValue = parseFloat(priceMatch[0].replace(/,/g, ''));
+      return isNaN(numericValue) ? 0 : numericValue;
+    }
+    
+    return 0;
+  },
+  
+  // Get cart total (calculated from actual product prices)
+  getTotal() {
+    if (this.items.length === 0) {
+      return '$0.00';
+    }
+    
+    // Sum all item prices
+    const total = this.items.reduce((sum, item) => {
+      const itemPrice = this.parsePrice(item.price);
+      return sum + itemPrice;
+    }, 0);
+    
+    // Format as currency
+    return this.formatCurrency(total);
+  },
+  
+  // Format number as currency string
+  formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  },
+  
+  // Get product IDs for Polar checkout
+  getProductIds() {
+    return this.items.map(item => item.polarId).filter(id => id);
+  },
+  
+  // Update cart UI
+  updateUI() {
+    updateCartBadge();
+    updateCartItems();
+    updateCartTotal();
+    updateCheckoutButton();
+  }
+};
+
+// Cart UI Elements
+const cartModal = document.getElementById('cart-modal');
+const cartModalBackdrop = document.getElementById('cart-modal-backdrop');
+const cartCloseButton = document.getElementById('cart-close-button');
+const cartIconWrapper = document.getElementById('cart-icon-wrapper');
+const cartBadge = document.getElementById('cart-badge');
+const cartItemsContainer = document.getElementById('cart-items-container');
+const cartEmpty = document.getElementById('cart-empty');
+const cartTotalAmount = document.getElementById('cart-total-amount');
+const cartCheckoutButton = document.getElementById('cart-checkout-button');
+const cartContinueShoppingButton = document.getElementById('cart-continue-shopping-button');
+const addToCartButton = document.getElementById('add-to-cart-button');
+
+// Open cart modal
+function openCartModal() {
+  cartModal.classList.add('active');
+  cartModalBackdrop.classList.add('active');
+  cart.load(); // Refresh cart data
+}
+
+// Close cart modal
+function closeCartModal() {
+  cartModal.classList.remove('active');
+  cartModalBackdrop.classList.remove('active');
+}
+
+// Update cart badge
+function updateCartBadge() {
+  const count = cart.items.length;
+  cartBadge.textContent = count > 0 ? count.toString() : '';
+}
+
+// Update cart items display
+function updateCartItems() {
+  if (cart.items.length === 0) {
+    cartEmpty.style.display = 'flex';
+    cartItemsContainer.innerHTML = '';
+    return;
+  }
+  
+  cartEmpty.style.display = 'none';
+  
+  cartItemsContainer.innerHTML = cart.items.map(item => {
+    return `
+      <div class="cart-item" data-product-id="${item.productId}">
+        <div class="cart-item-info">
+          <span class="cart-item-name">${item.productName}</span>
+          <span class="cart-item-price">${item.price}</span>
+        </div>
+        <button class="cart-item-remove" data-product-id="${item.productId}" aria-label="Remove ${item.productName}">
+          REMOVE
+        </button>
+      </div>
+    `;
+  }).join('');
+  
+  // Add event listeners to remove buttons
+  cartItemsContainer.querySelectorAll('.cart-item-remove').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.dataset.productId;
+      cart.remove(productId);
+    });
+  });
+}
+
+// Update cart total
+function updateCartTotal() {
+  cartTotalAmount.textContent = cart.getTotal();
+}
+
+// Update checkout button state
+function updateCheckoutButton() {
+  const hasItems = cart.items.length > 0;
+  cartCheckoutButton.disabled = !hasItems;
+}
+
+// Get Polar product data for current product
+function getPolarProductData(productSlug) {
+  if (typeof POLAR_PRODUCTS === 'undefined') {
+    return null;
+  }
+  
+  // Try to find product in POLAR_PRODUCTS
+  const polarProduct = POLAR_PRODUCTS[productSlug] || 
+                       Object.values(POLAR_PRODUCTS).find(p => 
+                         p.name.toLowerCase().includes(productSlug.toLowerCase())
+                       );
+  
+  return polarProduct || null;
+}
+
+// Add current product to cart
+function addCurrentProductToCart() {
+  if (!currentProduct) {
+    console.error('No current product selected');
+    return;
+  }
+  
+  // Get product slug from currentProduct
+  const productSlug = currentProduct.toLowerCase().replace(/\s+/g, '-');
+  
+  // Get Polar product data
+  const polarProduct = getPolarProductData(productSlug);
+  
+  if (!polarProduct) {
+    console.error('Polar product data not found for:', currentProduct);
+    // Still add to cart with available data
+    const productName = products[currentProduct]?.name || currentProduct.toUpperCase();
+    let productPrice = products[currentProduct]?.price || 'FREE';
+    
+    // Extract price from "PRICE: $X.XX" format if needed
+    if (productPrice.includes('PRICE:')) {
+      productPrice = productPrice.replace(/PRICE:\s*/i, '').trim();
+    }
+    
+    cart.add(
+      productSlug,
+      productName,
+      null,
+      null,
+      productPrice
+    );
+    openCartModal();
+    return;
+  }
+  
+  // Get product display name
+  const productName = products[currentProduct]?.name || polarProduct.name;
+  let productPrice = products[currentProduct]?.price || 'FREE';
+  
+  // Extract price from "PRICE: $X.XX" format if needed
+  if (productPrice.includes('PRICE:')) {
+    productPrice = productPrice.replace(/PRICE:\s*/i, '').trim();
+  }
+  
+  // Add to cart
+  const added = cart.add(
+    productSlug,
+    productName,
+    polarProduct.id,
+    polarProduct.url,
+    productPrice
+  );
+  
+  if (added) {
+    // Open cart to show added item
+    openCartModal();
+  }
+}
+
+// Handle Polar checkout
+async function handleCheckout() {
+  const productIds = cart.getProductIds();
+
+  if (productIds.length === 0) {
+    console.error('No products in cart for checkout');
+    alert('Your cart is empty');
+    return;
+  }
+
+  // Disable checkout button and show loading state
+  if (cartCheckoutButton) {
+    cartCheckoutButton.disabled = true;
+    cartCheckoutButton.textContent = 'Creating checkout...';
+  }
+
+  try {
+    console.log('Creating multi-product checkout for:', productIds);
+
+    // Call serverless function to create checkout session
+    const response = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        productIds: productIds
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error || 'Failed to create checkout session');
+    }
+
+    if (!data.url) {
+      throw new Error('No checkout URL returned');
+    }
+
+    console.log('Checkout session created:', data.id);
+
+    // Redirect to Polar checkout
+    window.location.href = data.url;
+
+    // Note: We don't clear the cart here because the user might cancel
+    // The cart will be cleared after successful payment via webhook or on return
+
+  } catch (error) {
+    console.error('Checkout failed:', error);
+    alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+
+    // Re-enable checkout button
+    if (cartCheckoutButton) {
+      cartCheckoutButton.disabled = false;
+      cartCheckoutButton.textContent = 'Checkout';
+    }
+  }
+}
+
+// Initialize cart functionality
+function initializeCart() {
+  // Load cart from localStorage
+  cart.load();
+  
+  // Cart icon click handler
+  if (cartIconWrapper) {
+    cartIconWrapper.addEventListener('click', openCartModal);
+  }
+  
+  // Cart close button
+  if (cartCloseButton) {
+    cartCloseButton.addEventListener('click', closeCartModal);
+  }
+  
+  // Cart backdrop click to close
+  if (cartModalBackdrop) {
+    cartModalBackdrop.addEventListener('click', closeCartModal);
+  }
+  
+  // ESC key to close cart
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && cartModal.classList.contains('active')) {
+      closeCartModal();
+    }
+  });
+  
+  // Add to cart button
+  if (addToCartButton) {
+    addToCartButton.addEventListener('click', addCurrentProductToCart);
+  }
+  
+  // Checkout button
+  if (cartCheckoutButton) {
+    cartCheckoutButton.addEventListener('click', handleCheckout);
+  }
+  
+  // Continue shopping button
+  if (cartContinueShoppingButton) {
+    cartContinueShoppingButton.addEventListener('click', closeCartModal);
+  }
+  
+  console.log('Shopping cart initialized');
+}
+
+// Initialize cart when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeCart);
+} else {
+  initializeCart();
+}
+
+// Make cart accessible globally for debugging
+window.cart = cart;
+
+console.log('Shopping cart functionality loaded');

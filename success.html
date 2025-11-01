@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purchase Successful - NO3D Tools</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .success-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-large);
+      text-align: center;
+    }
+    .success-icon {
+      font-size: 64px;
+      margin-bottom: var(--space-large);
+    }
+    .success-title {
+      font-family: var(--font-visitor);
+      font-size: var(--font-size-h1);
+      color: var(--color-void-black);
+      margin-bottom: var(--space-medium);
+      text-transform: uppercase;
+    }
+    .success-message {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-base);
+      color: var(--color-dark-gray);
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: var(--space-large);
+    }
+    .success-button {
+      background-color: var(--color-lello);
+      color: var(--color-void-black);
+      padding: var(--space-small) var(--space-large);
+      font-family: var(--font-visitor);
+      font-size: var(--font-size-h3);
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--color-void-black);
+      transition: all var(--transition-normal);
+      display: inline-block;
+    }
+    .success-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lello-glow);
+    }
+  </style>
+</head>
+<body>
+  <div class="success-container">
+    <div class="success-icon">✓</div>
+    <h1 class="success-title">Purchase Successful!</h1>
+    <p class="success-message">
+      Thank you for your purchase! You should receive a confirmation email shortly with download links for your products.
+      <br><br>
+      Your support helps us continue creating amazing tools for the 3D community.
+    </p>
+    <a href="/" class="success-button">Back to Tools</a>
+  </div>
+
+  <script>
+    // Clear cart after successful purchase
+    localStorage.removeItem('no3d_tools_cart');
+    console.log('Cart cleared after successful purchase');
+  </script>
+</body>
+</html>

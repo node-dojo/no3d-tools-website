@@ -12,32 +12,35 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Visitor font - using Space Mono as closest alternative -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Preload Visitor font for better performance -->
-    <link rel="preload" href="./fonts/visitor.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-    <!-- Custom Visitor font definition -->
+    <!-- Visitor font - commented out due to font file corruption -->
+    <!-- The visitor.ttf file appears corrupted (invalid sfntVersion error) -->
+    <!-- Using Space Mono as fallback (already loaded above) -->
+    <!-- To fix: Replace ./fonts/visitor.ttf with a valid font file -->
+    <!--
     <style>
       @font-face {
         font-family: 'Visitor';
         src: url('./fonts/visitor.ttf') format('truetype');
         font-weight: 400;
         font-style: normal;
-        font-display: block;
+        font-display: swap;
       }
       @font-face {
         font-family: 'Visitor';
         src: url('./fonts/visitor.ttf') format('truetype');
         font-weight: 700;
         font-style: normal;
-        font-display: block;
+        font-display: swap;
       }
       @font-face {
         font-family: 'Visitor TT1 BRK';
         src: url('./fonts/visitor.ttf') format('truetype');
         font-weight: normal;
         font-style: normal;
-        font-display: block;
+        font-display: swap;
       }
     </style>
+    -->
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -45,15 +48,26 @@
     <div class="site-container">
         <!-- Site Header -->
         <header class="site-header">
-            <div class="logo">NO3D TOOLS</div>
+            <div class="header-left">
+                <button class="hamburger-menu-button" id="hamburger-menu-button" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo">NO3D TOOLS</div>
+            </div>
             <div class="header-icons">
-                <i class="fas fa-shopping-cart header-icon"></i>
+                <div class="cart-icon-wrapper" id="cart-icon-wrapper">
+                    <img src="assets/cart icon.png" alt="Shopping Cart" class="cart-icon-image" id="cart-icon">
+                    <span class="cart-badge" id="cart-badge">0</span>
+                </div>
                 <i class="fas fa-ellipsis-v header-icon"></i>
             </div>
         </header>
 
+        <!-- Sidebar Backdrop (mobile only) -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
         <!-- Left Sidebar Navigation -->
-        <nav class="sidebar">
+        <nav class="sidebar" id="sidebar">
             <div class="sidebar-content">
                 <div class="category-header">
                     <span class="category-name">WORKFLOW</span>
@@ -128,6 +142,7 @@
                         <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
                         <div class="product-price" id="product-price">PRICE: $7.99</div>
                         <button class="download-button" id="download-button">DOWNLOAD</button>
+                        <button class="add-to-cart-button" id="add-to-cart-button">ADD TO CART</button>
                     </div>
                 </div>
 
@@ -227,6 +242,75 @@
         <span class="footer-text">RTHEUELLTRROT</span>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- Command Palette Search Modal -->
+    <div class="search-modal-backdrop" id="search-modal-backdrop"></div>
+    <div class="search-modal" id="search-modal">
+        <div class="search-modal-container">
+            <div class="search-modal-header">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="search-input" 
+                    placeholder="Search products, descriptions, categories..."
+                    autocomplete="off"
+                >
+            </div>
+            <div class="search-results-container" id="search-results-container">
+                <div class="search-results-empty" id="search-results-empty">
+                    <span>No results found</span>
+                </div>
+            </div>
+            <div class="search-modal-footer">
+                <span class="search-hint">
+                    <span class="search-key">↑↓</span> Navigate
+                    <span class="search-key">↵</span> Select
+                    <span class="search-key">Esc</span> Close
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Modal -->
+    <div class="cart-modal-backdrop" id="cart-modal-backdrop"></div>
+    <div class="cart-modal" id="cart-modal">
+        <div class="cart-modal-container">
+            <div class="cart-modal-header">
+                <h2 class="cart-title">SHOPPING CART</h2>
+                <button class="cart-close-button" id="cart-close-button" aria-label="Close cart">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="cart-items-container" id="cart-items-container">
+                <div class="cart-empty" id="cart-empty">
+                    <span class="cart-empty-text">Your cart is empty</span>
+                    <span class="cart-empty-hint">Add products to your cart to get started</span>
+                </div>
+            </div>
+            <div class="cart-modal-footer" id="cart-footer">
+                <div class="cart-total-container">
+                    <span class="cart-total-label">TOTAL:</span>
+                    <span class="cart-total-amount" id="cart-total-amount">$0.00</span>
+                </div>
+                <div class="cart-action-buttons">
+                    <button class="cart-continue-shopping-button" id="cart-continue-shopping-button">
+                        CONTINUE SHOPPING
+                    </button>
+                    <button class="cart-checkout-button" id="cart-checkout-button" disabled>
+                        CHECK OUT
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vercel Analytics for static sites -->
+    <script>
+      // Initialize Vercel Analytics if available
+      if (typeof window !== 'undefined' && window.__VERCEL_ANALYTICS__) {
+        // Analytics will be automatically injected by Vercel
+      }
+    </script>
+    <script src="polar-products.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
