@@ -1,16 +1,25 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
-// GitHub Repository Configuration
-const REPO_CONFIG = {
-  owner: 'node-dojo',
-  repo: 'no3d-tools-library',
-  branch: 'main'
-};
+// Product data configuration (synced via GitHub Actions from private repo)
+const PRODUCT_DATA_PATH = '/assets/product-data';
+const PRODUCT_IMAGES_PATH = '/assets/product-images';
 
-// GitHub API base URL
-const GITHUB_API_BASE = 'https://api.github.com';
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com';
+// List of available products (synced from no3d-tools-library)
+const AVAILABLE_PRODUCTS = [
+  'Dojo Bolt Gen v05',
+  'Dojo Bolt Gen v05_Obj',
+  'Dojo Bool v5',
+  'Dojo Calipers',
+  'Dojo Crv Wrapper v4',
+  'Dojo Gluefinity Grid_obj',
+  'Dojo Knob',
+  'Dojo Knob_obj',
+  'Dojo Mesh Repair',
+  'Dojo Print Viz_V4.5',
+  'Dojo Squircle v4.5_obj',
+  'Dojo_Squircle v4.5'
+];
 
 // Product data structure - will be populated from GitHub
 let products = {};
@@ -201,37 +210,21 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 });
 
-// GitHub Integration Functions
+// Product Loading Functions
 async function loadProductsFromGitHub() {
   try {
-    console.log('Fetching products from GitHub API...');
+    console.log('Loading products from local data...');
 
-    // Fetch repository contents from GitHub API
-    const apiUrl = `${GITHUB_API_BASE}/repos/${REPO_CONFIG.owner}/${REPO_CONFIG.repo}/contents?ref=${REPO_CONFIG.branch}`;
-
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
-    }
-
-    const contents = await response.json();
-
-    // Filter for directories (product folders)
-    const productFolders = contents.filter(item => item.type === 'dir' && item.name.startsWith('Dojo'));
-
-    console.log(`Found ${productFolders.length} product folders:`, productFolders.map(f => f.name));
-
-    // Build products object from GitHub data
+    // Build products object from local JSON files
     products = {};
 
     // Load each product's JSON metadata
-    const productPromises = productFolders.map(async (folder) => {
+    const productPromises = AVAILABLE_PRODUCTS.map(async (productName) => {
       try {
-        const productName = folder.name;
         const jsonFileName = `${productName}.json`;
-        const jsonUrl = `${GITHUB_RAW_BASE}/${REPO_CONFIG.owner}/${REPO_CONFIG.repo}/${REPO_CONFIG.branch}/${encodeURIComponent(productName)}/${encodeURIComponent(jsonFileName)}`;
+        const jsonUrl = `${PRODUCT_DATA_PATH}/${jsonFileName}`;
 
-        console.log(`Fetching metadata for ${productName}...`);
+        console.log(`Loading metadata for ${productName}...`);
 
         const jsonResponse = await fetch(jsonUrl);
         if (!jsonResponse.ok) {
@@ -291,10 +284,10 @@ async function loadProductsFromGitHub() {
 
     // If no products found, use fallback
     if (Object.keys(products).length === 0) {
-      throw new Error('No products found in repository');
+      throw new Error('No products found in local data');
     }
 
-    console.log(`Successfully loaded ${Object.keys(products).length} products from GitHub!`);
+    console.log(`Successfully loaded ${Object.keys(products).length} products!`);
     console.log('Product IDs:', Object.keys(products));
 
   } catch (error) {
