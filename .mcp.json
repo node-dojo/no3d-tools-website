@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "Polar": {
+      "type": "http",
+      "url": "https://mcp.polar.sh/mcp/polar-mcp",
+      "headers": {
+        "Authorization": "Bearer ${POLAR_API_TOKEN}"
+      }
+    }
+  }
+}

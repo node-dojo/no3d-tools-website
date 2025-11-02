@@ -1,0 +1,24 @@
+```
+SOLVET System V1/
+├── schemas/                         # JSON schemas for validation
+│   └── product-metadata.schema.json
+├── scripts/                         # Utility scripts
+│   ├── validate-products.py
+│   └── optimize-media.py
+├── templates/                       # Product templates
+│   └── product-template/
+├── send-no3ds-export utility/       # Blender add-on
+├── no3d-tools-site/                 # Website (Next.js)
+├── no3d-tools-library/              # github repo/database
+    └── Product Name/                    # Individual product folders
+        ├── Product Name.blend          # Main Blender file
+        ├── Product Name.json           # Metadata file
+        ├── icon_Product Name.png       # Product thumbnail
+        ├── Product Name_desc.md        # Description (optional)
+        ├── Product Name.mp4            # Video preview (optional)
+        └── preview_Product Name.png    # Additional previews (optional)
+├── CONTRIBUTING.md                  # Contribution guidelines
+├── REPOSITORY_STRUCTURE.md         # This file
+├── requirements.txt                 # Python dependencies
+└── master.plan.md                  # Project master plan
+```

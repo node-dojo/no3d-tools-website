@@ -38,12 +38,15 @@ export default async (req, res) => {
   }
 
   try {
-    const { productIds } = req.body;
+    const { productIds, priceIds } = req.body;
+
+    // Accept either productIds (legacy) or priceIds (new format)
+    const ids = priceIds || productIds;
 
     // Validate input
-    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({
-        error: 'Invalid request: productIds array required',
+        error: 'Invalid request: productIds or priceIds array required',
         url: null
       });
     }
@@ -57,7 +60,7 @@ export default async (req, res) => {
       });
     }
 
-    console.log(`Creating checkout for ${productIds.length} products:`, productIds);
+    console.log(`Creating checkout for ${ids.length} items:`, ids);
 
     // Create checkout session with multiple products
     let checkout;
@@ -66,20 +69,25 @@ export default async (req, res) => {
       console.log('Polar SDK initialization check:', {
         hasToken: !!process.env.POLAR_API_TOKEN,
         tokenLength: process.env.POLAR_API_TOKEN?.length || 0,
-        productIds: productIds
+        priceIds: ids
       });
 
-      // Use Polar SDK to create checkout
-      // For multi-product checkout, we need to create a checkout link with product prices
-      checkout = await polar.checkouts.custom.create({
-        productPrices: productIds.map(id => ({ productPriceId: id })),
+      // Use Polar SDK to create checkout with product price IDs
+      // Each ID should be a price ID from the product's prices array
+      const checkoutData = {
+        productPrices: ids.map(priceId => ({ productPriceId: priceId })),
         successUrl: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
         metadata: {
           source: 'custom_cart',
-          itemCount: productIds.length.toString(),
+          itemCount: ids.length.toString(),
           timestamp: new Date().toISOString()
         }
-      });
+      };
+
+      console.log('Creating checkout with data:', JSON.stringify(checkoutData, null, 2));
+
+      // Create checkout using the standard checkouts.create method
+      checkout = await polar.checkouts.create(checkoutData);
 
       console.log('Polar checkout response:', {
         id: checkout?.id,
