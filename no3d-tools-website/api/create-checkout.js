@@ -8,14 +8,14 @@
  * Returns: { url: "https://polar.sh/checkout/...", error: null }
  */
 
-const { Polar } = require('@polar-sh/sdk');
+import { Polar } from '@polar-sh/sdk';
 
 // Initialize Polar SDK
 const polar = new Polar({
   accessToken: process.env.POLAR_API_TOKEN
 });
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   // Always set JSON content type
   res.setHeader('Content-Type', 'application/json');
   
@@ -70,9 +70,9 @@ module.exports = async (req, res) => {
       });
 
       // Use Polar SDK to create checkout
-      // Note: Check Polar SDK docs for exact API - might need checkoutLinks.create instead
-      checkout = await polar.checkouts.create({
-        products: productIds, // Array of Polar product IDs
+      // For multi-product checkout, we need to create a checkout link with product prices
+      checkout = await polar.checkouts.custom.create({
+        productPrices: productIds.map(id => ({ productPriceId: id })),
         successUrl: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
         metadata: {
           source: 'custom_cart',
