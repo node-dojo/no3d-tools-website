@@ -140,15 +140,11 @@ body {
 }
 
 .site-header .logo {
-  font-family: var(--font-visitor);
-  font-size: var(--font-size-h1);
-  color: var(--color-deep-charcoal);
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
-  font-weight: 900;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .site-header .header-icons {
@@ -365,6 +361,87 @@ body {
 .product-item.active .product-name {
   color: var(--color-void-black);
 }
+
+/* 3-Tier Sidebar Navigation Styles */
+.product-type {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-tiny);
+}
+
+.type-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-tiny) var(--space-small);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background-color: transparent;
+}
+
+.type-header:hover {
+  background-color: rgba(240, 255, 0, 0.1);
+}
+
+.type-header .category-name {
+  font-family: var(--font-visitor);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
+  color: var(--color-void-black);
+}
+
+.product-groups-container {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-micro);
+  margin-left: var(--space-medium);
+  padding-left: var(--space-small);
+}
+
+.product-type.expanded .product-groups-container {
+  display: flex;
+}
+
+.product-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-micro);
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-tiny) var(--space-small);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background-color: transparent;
+}
+
+.group-header:hover {
+  background-color: rgba(240, 255, 0, 0.1);
+}
+
+.group-header .category-name {
+  font-family: var(--font-visitor);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
+  color: var(--color-dark-gray);
+}
+
+.group-product-list {
+  display: flex; /* Always show products, even when group is collapsed */
+  flex-direction: column;
+  gap: var(--space-tiny);
+  margin-left: var(--space-medium);
+  padding-left: var(--space-small);
+}
+
+/* Groups control icon grid filtering, but products are always visible in sidebar */
 
 /* Center Product Card - JSX Component Structure */
 .product-card {

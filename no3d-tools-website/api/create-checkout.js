@@ -73,10 +73,10 @@ export default async (req, res) => {
       });
 
       // Use Polar SDK to create checkout with product price IDs
-      // Each ID should be a price ID from the product's prices array
+      // According to Polar SDK, the field should be product_prices with snake_case
       const checkoutData = {
-        productPrices: ids.map(priceId => ({ productPriceId: priceId })),
-        successUrl: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
+        product_prices: ids,  // Try snake_case
+        success_url: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
         metadata: {
           source: 'custom_cart',
           itemCount: ids.length.toString(),

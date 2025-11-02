@@ -170,6 +170,11 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
 // Current selected product
 let currentProduct = 'dojo-bool-v5';
 
+// 3-Tier Sidebar State
+let productDataByType = {};
+let activeProductType = 'tools';
+let expandedProductGroups = new Set();
+
 // DOM elements
 const productTitle = document.getElementById('product-title');
 const productPrice = document.getElementById('product-price');
@@ -180,22 +185,416 @@ const downloadButton = document.getElementById('download-button');
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async function() {
   try {
-    await loadProductsFromGitHub();
+    await loadProductsFromJSON();
+    organizeProductsByType();
+    renderSidebar();
     initializeEventListeners();
     initializeMobileMenu();
-    updateProductDisplay(currentProduct);
-    updateProductList();
-    updateIconGrid();
+    initializeSidebarEventListeners();
+    updateHeaderLogo('tools');
+    // Set Tools as default expanded type
+    expandProductType('tools');
+    // Select first product if available
+    const firstProductId = Object.keys(products)[0];
+    if (firstProductId) {
+      currentProduct = firstProductId;
+      updateProductDisplay(currentProduct);
+      updateIconGrid();
+    }
   } catch (error) {
-    console.warn('Failed to load products from GitHub, using fallback data:', error);
+    console.warn('Failed to load products from JSON, using fallback data:', error);
     products = defaultProducts;
+    // Add productType to default products
+    Object.keys(products).forEach(key => {
+      products[key].productType = 'tools';
+    });
+    organizeProductsByType();
+    renderSidebar();
     initializeEventListeners();
     initializeMobileMenu();
-    updateProductDisplay(currentProduct);
-    updateProductList();
-    updateIconGrid();
+    initializeSidebarEventListeners();
+    updateHeaderLogo('tools');
+    expandProductType('tools');
+    const firstProductId = Object.keys(products)[0];
+    if (firstProductId) {
+      currentProduct = firstProductId;
+      updateProductDisplay(currentProduct);
+      updateIconGrid();
+    }
   }
 });
+
+// Load Products from JSON Files
+async function loadProductsFromJSON() {
+  try {
+    const productFiles = [
+      'Dojo Bolt Gen v05.json',
+      'Dojo Bolt Gen v05_Obj.json',
+      'Dojo Bool v5.json',
+      'Dojo Calipers.json',
+      'Dojo Crv Wrapper v4.json',
+      'Dojo Gluefinity Grid_obj.json',
+      'Dojo Knob.json',
+      'Dojo Knob_obj.json',
+      'Dojo Mesh Repair.json',
+      'Dojo Print Viz_V4.5.json',
+      'Dojo Squircle v4.5_obj.json',
+      'Dojo_Squircle v4.5.json'
+    ];
+    
+    products = {};
+    
+    for (const fileName of productFiles) {
+      try {
+        const response = await fetch(`assets/product-data/${fileName}`);
+        if (!response.ok) continue;
+        
+        const jsonData = await response.json();
+        
+        // Create product ID from handle
+        const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        
+        // Get thumbnail from metafields or use default
+        let thumbnail = null;
+        if (jsonData.metafields) {
+          const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
+          if (thumbnailField) {
+            thumbnail = `assets/product-images/${thumbnailField.value}`;
+          }
+        }
+        
+        // Get price from variants
+        const price = jsonData.variants && jsonData.variants[0] ? `$${parseFloat(jsonData.variants[0].price).toFixed(2)}` : '$0.00';
+        
+        // Extract product groups from tags (tags that are capitalized or contain spaces)
+        const productGroups = (jsonData.tags || []).filter(tag => {
+          // Product groups are tags that are capitalized or contain spaces
+          return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
+        });
+        
+        products[productId] = {
+          name: jsonData.title.toUpperCase(),
+          price: price,
+          description: jsonData.description || generateDescription(jsonData.title),
+          changelog: generateChangelog(jsonData.title),
+          image3d: thumbnail || `assets/product-images/icon_${jsonData.title}.png`,
+          icon: thumbnail || `assets/product-images/icon_${jsonData.title}.png`,
+          productType: jsonData.productType || 'tools',
+          groups: productGroups,
+          handle: jsonData.handle || productId
+        };
+      } catch (error) {
+        console.warn(`Failed to load ${fileName}:`, error);
+      }
+    }
+    
+    if (Object.keys(products).length === 0) {
+      throw new Error('No products loaded from JSON files');
+    }
+    
+    console.log('Loaded products from JSON:', Object.keys(products).length, 'products');
+  } catch (error) {
+    console.error('Error loading products from JSON:', error);
+    throw error;
+  }
+}
+
+// Organize Products by Product Type
+function organizeProductsByType() {
+  productDataByType = {
+    tools: {},
+    tutorials: {},
+    prints: {},
+    apps: {}
+  };
+  
+  Object.keys(products).forEach(productId => {
+    const product = products[productId];
+    const type = product.productType || 'tools';
+    
+    if (!productDataByType[type]) {
+      productDataByType[type] = {};
+    }
+    
+    productDataByType[type][productId] = product;
+  });
+  
+  console.log('Organized products by type:', productDataByType);
+}
+
+// Render 3-Tier Sidebar
+function renderSidebar() {
+  const sidebarContent = document.getElementById('sidebar-content');
+  if (!sidebarContent) return;
+  
+  sidebarContent.innerHTML = '';
+  
+  // Product Type mapping
+  const productTypes = [
+    { key: 'tools', label: 'TOOLS' },
+    { key: 'tutorials', label: 'TUTORIALS' },
+    { key: 'prints', label: 'PRINTS' },
+    { key: 'apps', label: 'APPS' }
+  ];
+  
+  productTypes.forEach(type => {
+    const typeProducts = productDataByType[type.key] || {};
+    if (Object.keys(typeProducts).length === 0) return; // Skip empty types
+    
+    // Organize products by groups
+    const productsByGroup = {};
+    const ungroupedProducts = [];
+    
+    // Track which products have been assigned to groups
+    const productsInGroups = new Set();
+    
+    Object.keys(typeProducts).forEach(productId => {
+      const product = typeProducts[productId];
+      if (product.groups && product.groups.length > 0) {
+        product.groups.forEach(group => {
+          if (!productsByGroup[group]) {
+            productsByGroup[group] = [];
+          }
+          productsByGroup[group].push({ id: productId, ...product });
+          productsInGroups.add(productId);
+        });
+      }
+    });
+    
+    // Add ungrouped products (those not in any group)
+    Object.keys(typeProducts).forEach(productId => {
+      if (!productsInGroups.has(productId)) {
+        ungroupedProducts.push({ id: productId, ...typeProducts[productId] });
+      }
+    });
+    
+    // Create Product Type container
+    const productTypeDiv = document.createElement('div');
+    productTypeDiv.className = 'product-type';
+    productTypeDiv.dataset.type = type.key;
+    if (type.key === activeProductType) {
+      productTypeDiv.classList.add('expanded');
+    }
+    
+    // Type header
+    const typeHeader = document.createElement('div');
+    typeHeader.className = 'type-header';
+    typeHeader.innerHTML = `
+      <span class="category-name">${type.label}</span>
+      <span class="carrot ${type.key === activeProductType ? 'expanded' : 'collapsed'}">${type.key === activeProductType ? '▼' : '▶'}</span>
+    `;
+    
+    // Product groups container
+    const groupsContainer = document.createElement('div');
+    groupsContainer.className = 'product-groups-container';
+    
+    // Render product groups
+    Object.keys(productsByGroup).sort().forEach(groupName => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'product-group';
+      groupDiv.dataset.group = groupName.toLowerCase().replace(/\s+/g, '-');
+      if (expandedProductGroups.has(groupName)) {
+        groupDiv.classList.add('expanded');
+      }
+      
+      // Group header
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'group-header';
+      groupDiv.dataset.groupName = groupName; // Store original group name
+      groupHeader.innerHTML = `
+        <span class="category-name">${groupName.toUpperCase()}</span>
+        <span class="carrot ${expandedProductGroups.has(groupName) ? 'expanded' : 'collapsed'}">${expandedProductGroups.has(groupName) ? '▼' : '▶'}</span>
+      `;
+      
+      // Product list
+      const productList = document.createElement('div');
+      productList.className = 'group-product-list';
+      // Always show products in groups, even when group is collapsed
+      productList.style.display = 'flex';
+      
+      productsByGroup[groupName].forEach(product => {
+        const productItem = document.createElement('div');
+        productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
+        productItem.dataset.product = product.id;
+        productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
+        productList.appendChild(productItem);
+      });
+      
+      groupDiv.appendChild(groupHeader);
+      groupDiv.appendChild(productList);
+      groupsContainer.appendChild(groupDiv);
+    });
+    
+    // Render ungrouped products (if any)
+    if (ungroupedProducts.length > 0) {
+      const ungroupedDiv = document.createElement('div');
+      ungroupedDiv.className = 'product-group';
+      ungroupedDiv.dataset.group = 'ungrouped';
+      
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'group-header';
+      groupHeader.innerHTML = `
+        <span class="category-name">OTHER</span>
+        <span class="carrot collapsed">▶</span>
+      `;
+      
+      const productList = document.createElement('div');
+      productList.className = 'group-product-list';
+      // Always show ungrouped products, even when "OTHER" group is collapsed
+      productList.style.display = 'flex';
+      
+      ungroupedProducts.forEach(product => {
+        const productItem = document.createElement('div');
+        productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
+        productItem.dataset.product = product.id;
+        productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
+        productList.appendChild(productItem);
+      });
+      
+      ungroupedDiv.appendChild(groupHeader);
+      ungroupedDiv.appendChild(productList);
+      groupsContainer.appendChild(ungroupedDiv);
+    }
+    
+    productTypeDiv.appendChild(typeHeader);
+    productTypeDiv.appendChild(groupsContainer);
+    sidebarContent.appendChild(productTypeDiv);
+  });
+}
+
+// Handle Product Type Toggle (Accordion - only one expanded)
+function handleProductTypeToggle(typeKey) {
+  // Close all product types
+  document.querySelectorAll('.product-type').forEach(typeDiv => {
+    typeDiv.classList.remove('expanded');
+    const carrot = typeDiv.querySelector('.type-header .carrot');
+    if (carrot) {
+      carrot.classList.remove('expanded');
+      carrot.classList.add('collapsed');
+      carrot.textContent = '▶';
+    }
+  });
+  
+  // Expand clicked type
+  const clickedType = document.querySelector(`.product-type[data-type="${typeKey}"]`);
+  if (clickedType) {
+    if (clickedType.classList.contains('expanded')) {
+      clickedType.classList.remove('expanded');
+      const carrot = clickedType.querySelector('.type-header .carrot');
+      if (carrot) {
+        carrot.classList.remove('expanded');
+        carrot.classList.add('collapsed');
+        carrot.textContent = '▶';
+      }
+      activeProductType = null;
+    } else {
+      clickedType.classList.add('expanded');
+      const carrot = clickedType.querySelector('.type-header .carrot');
+      if (carrot) {
+        carrot.classList.remove('collapsed');
+        carrot.classList.add('expanded');
+        carrot.textContent = '▼';
+      }
+      activeProductType = typeKey;
+    }
+    
+    updateHeaderLogo(activeProductType);
+    updateIconGrid();
+  }
+}
+
+// Expand Product Type (for initial load)
+function expandProductType(typeKey) {
+  activeProductType = typeKey;
+  const typeDiv = document.querySelector(`.product-type[data-type="${typeKey}"]`);
+  if (typeDiv) {
+    typeDiv.classList.add('expanded');
+    const carrot = typeDiv.querySelector('.type-header .carrot');
+    if (carrot) {
+      carrot.classList.remove('collapsed');
+      carrot.classList.add('expanded');
+      carrot.textContent = '▼';
+    }
+  }
+}
+
+// Handle Product Group Toggle (Multiple can expand)
+function handleProductGroupToggle(groupDiv) {
+  if (!groupDiv) return;
+  
+  const groupName = groupDiv.dataset.groupName; // Get original group name
+  if (!groupName) return;
+  
+  if (groupDiv.classList.contains('expanded')) {
+    groupDiv.classList.remove('expanded');
+    expandedProductGroups.delete(groupName);
+    const carrot = groupDiv.querySelector('.group-header .carrot');
+    if (carrot) {
+      carrot.classList.remove('expanded');
+      carrot.classList.add('collapsed');
+      carrot.textContent = '▶';
+    }
+  } else {
+    groupDiv.classList.add('expanded');
+    expandedProductGroups.add(groupName);
+    const carrot = groupDiv.querySelector('.group-header .carrot');
+    if (carrot) {
+      carrot.classList.remove('collapsed');
+      carrot.classList.add('expanded');
+      carrot.textContent = '▼';
+    }
+  }
+  
+  updateIconGrid();
+}
+
+// Update Header Logo based on Product Type
+function updateHeaderLogo(typeKey) {
+  const headerLogo = document.getElementById('header-logo');
+  if (!headerLogo) return;
+  
+  const logoMap = {
+    tools: 'assets/NO3D TOOLS logo.png',
+    tutorials: 'assets/NO3D DOJO.png',
+    prints: 'assets/NO3D PRINTS.png',
+    apps: 'assets/NO3D CODE.png'
+  };
+  
+  const logoPath = logoMap[typeKey] || logoMap.tools;
+  headerLogo.src = logoPath;
+  headerLogo.alt = typeKey.toUpperCase();
+}
+
+// Initialize Sidebar Event Listeners
+function initializeSidebarEventListeners() {
+  // Product Type toggle (accordion - only one expanded)
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.type-header')) {
+      const typeHeader = e.target.closest('.type-header');
+      const productType = typeHeader.closest('.product-type');
+      if (productType) {
+        const typeKey = productType.dataset.type;
+        handleProductTypeToggle(typeKey);
+      }
+    }
+    
+    // Product Group toggle (multiple can expand)
+    if (e.target.closest('.group-header')) {
+      const groupHeader = e.target.closest('.group-header');
+      const productGroup = groupHeader.closest('.product-group');
+      if (productGroup) {
+        handleProductGroupToggle(productGroup);
+      }
+    }
+    
+    // Product item selection
+    if (e.target.closest('.product-item')) {
+      const productItem = e.target.closest('.product-item');
+      const productId = productItem.dataset.product;
+      selectProduct(productId);
+    }
+  });
+}
 
 // GitHub Integration Functions
 async function loadProductsFromGitHub() {
@@ -321,6 +720,7 @@ function updateProductList() {
   });
 }
 
+// Update Icon Grid with Filtering
 function updateIconGrid() {
   const iconGrid = document.querySelector('.icon-grid');
   if (!iconGrid) return;
@@ -328,12 +728,44 @@ function updateIconGrid() {
   // Clear existing items
   iconGrid.innerHTML = '';
   
-  // Add icons from loaded data
-  Object.keys(products).forEach((productId, index) => {
-    const product = products[productId];
+  // Filter products based on active Product Type
+  let filteredProducts = {};
+  if (activeProductType && productDataByType[activeProductType]) {
+    filteredProducts = productDataByType[activeProductType];
+  } else {
+    // If no type active, show all products
+    filteredProducts = products;
+  }
+  
+  // Filter by expanded Product Groups
+  let productsToShow = [];
+  if (expandedProductGroups.size > 0) {
+    // Only show products from expanded groups
+    Object.keys(filteredProducts).forEach(productId => {
+      const product = filteredProducts[productId];
+      if (product.groups && product.groups.length > 0) {
+        // Check if product belongs to any expanded group
+        const hasExpandedGroup = product.groups.some(group => expandedProductGroups.has(group));
+        if (hasExpandedGroup) {
+          productsToShow.push({ id: productId, ...product });
+        }
+      }
+    });
+  } else {
+    // No groups expanded, show all products from active type
+    Object.keys(filteredProducts).forEach(productId => {
+      productsToShow.push({ id: productId, ...filteredProducts[productId] });
+    });
+  }
+  
+  // Sort products by name for consistent display
+  productsToShow.sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Add icons to grid
+  productsToShow.forEach((product, index) => {
     const iconItem = document.createElement('div');
-    iconItem.className = `icon-item ${index === 0 ? 'active' : ''}`;
-    iconItem.dataset.product = productId;
+    iconItem.className = `icon-item ${product.id === currentProduct ? 'active' : ''}`;
+    iconItem.dataset.product = product.id;
     
     const iconImg = document.createElement('img');
     iconImg.src = product.icon;
@@ -346,6 +778,8 @@ function updateIconGrid() {
     iconItem.appendChild(iconImg);
     iconGrid.appendChild(iconItem);
   });
+  
+  console.log(`Icon grid updated: ${productsToShow.length} products displayed (Type: ${activeProductType || 'all'}, Groups: ${expandedProductGroups.size})`);
 }
 
 // Set up event listeners
@@ -903,6 +1337,34 @@ let cart = {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
       if (stored) {
         this.items = JSON.parse(stored);
+
+        // Migrate old cart items to include priceId
+        let needsMigration = false;
+        this.items = this.items.map(item => {
+          if (!item.polarPriceId && item.productId) {
+            // Try to get price ID from POLAR_PRODUCTS
+            const polarProduct = typeof POLAR_PRODUCTS !== 'undefined'
+              ? POLAR_PRODUCTS[item.productId]
+              : null;
+
+            if (polarProduct && polarProduct.priceId) {
+              console.log('Migrating cart item:', item.productName, 'adding priceId:', polarProduct.priceId);
+              needsMigration = true;
+              return {
+                ...item,
+                polarProductId: polarProduct.productId,
+                polarPriceId: polarProduct.priceId
+              };
+            }
+          }
+          return item;
+        });
+
+        // Save migrated cart
+        if (needsMigration) {
+          console.log('Cart migrated with price IDs');
+          this.save();
+        }
       }
     } catch (error) {
       console.error('Error loading cart from localStorage:', error);
