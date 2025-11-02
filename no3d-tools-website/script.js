@@ -380,8 +380,8 @@ function renderSidebar() {
     const typeHeader = document.createElement('div');
     typeHeader.className = 'type-header';
     typeHeader.innerHTML = `
-      <span class="category-name">${type.label}</span>
       <span class="carrot ${type.key === activeProductType ? 'expanded' : 'collapsed'}">${type.key === activeProductType ? '▼' : '▶'}</span>
+      <span class="category-name">${type.label}</span>
     `;
     
     // Product groups container
@@ -402,15 +402,13 @@ function renderSidebar() {
       groupHeader.className = 'group-header';
       groupDiv.dataset.groupName = groupName; // Store original group name
       groupHeader.innerHTML = `
-        <span class="category-name">${groupName.toUpperCase()}</span>
         <span class="carrot ${expandedProductGroups.has(groupName) ? 'expanded' : 'collapsed'}">${expandedProductGroups.has(groupName) ? '▼' : '▶'}</span>
+        <span class="category-name">${groupName.toUpperCase()}</span>
       `;
       
       // Product list
       const productList = document.createElement('div');
       productList.className = 'group-product-list';
-      // Always show products in groups, even when group is collapsed
-      productList.style.display = 'flex';
       
       productsByGroup[groupName].forEach(product => {
         const productItem = document.createElement('div');
@@ -430,18 +428,17 @@ function renderSidebar() {
       const ungroupedDiv = document.createElement('div');
       ungroupedDiv.className = 'product-group';
       ungroupedDiv.dataset.group = 'ungrouped';
+      ungroupedDiv.dataset.groupName = 'OTHER'; // Store group name for toggle functionality
       
       const groupHeader = document.createElement('div');
       groupHeader.className = 'group-header';
       groupHeader.innerHTML = `
-        <span class="category-name">OTHER</span>
         <span class="carrot collapsed">▶</span>
+        <span class="category-name">OTHER</span>
       `;
       
       const productList = document.createElement('div');
       productList.className = 'group-product-list';
-      // Always show ungrouped products, even when "OTHER" group is collapsed
-      productList.style.display = 'flex';
       
       ungroupedProducts.forEach(product => {
         const productItem = document.createElement('div');
@@ -740,7 +737,7 @@ function updateIconGrid() {
   // Filter by expanded Product Groups
   let productsToShow = [];
   if (expandedProductGroups.size > 0) {
-    // Only show products from expanded groups
+    // Only show products from expanded groups (including "OTHER")
     Object.keys(filteredProducts).forEach(productId => {
       const product = filteredProducts[productId];
       if (product.groups && product.groups.length > 0) {
@@ -749,6 +746,9 @@ function updateIconGrid() {
         if (hasExpandedGroup) {
           productsToShow.push({ id: productId, ...product });
         }
+      } else if (expandedProductGroups.has('OTHER')) {
+        // Show ungrouped products when "OTHER" group is expanded
+        productsToShow.push({ id: productId, ...product });
       }
     });
   } else {
@@ -1506,9 +1506,14 @@ let cart = {
     }).format(amount);
   },
   
-  // Get price IDs for Polar checkout
+  // Get price IDs for Polar checkout (deprecated - use getProductIds instead)
   getPriceIds() {
     return this.items.map(item => item.polarPriceId).filter(id => id);
+  },
+
+  // Get product IDs for Polar checkout
+  getProductIds() {
+    return this.items.map(item => item.polarProductId).filter(id => id);
   },
   
   // Update cart UI
@@ -1674,9 +1679,9 @@ function addCurrentProductToCart() {
 
 // Handle Polar checkout
 async function handleCheckout() {
-  const priceIds = cart.getPriceIds();
+  const productIds = cart.getProductIds();
 
-  if (priceIds.length === 0) {
+  if (productIds.length === 0) {
     console.error('No products in cart for checkout');
     alert('Your cart is empty');
     return;
@@ -1689,7 +1694,7 @@ async function handleCheckout() {
   }
 
   try {
-    console.log('Creating multi-product checkout for price IDs:', priceIds);
+    console.log('Creating multi-product checkout for product IDs:', productIds);
 
     // Call serverless function to create checkout session
     const response = await fetch('/api/create-checkout', {
@@ -1698,7 +1703,7 @@ async function handleCheckout() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        priceIds: priceIds
+        productIds: productIds
       })
     });
 

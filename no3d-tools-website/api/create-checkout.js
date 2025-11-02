@@ -3,9 +3,11 @@
  *
  * Endpoint: /api/create-checkout
  * Method: POST
- * Body: { productIds: ["id1", "id2", ...] }
+ * Body: { productIds: ["prod-id-1", "prod-id-2", ...] }
  *
  * Returns: { url: "https://polar.sh/checkout/...", error: null }
+ *
+ * Uses Polar SDK v0.40.3 with multi-product checkout support
  */
 
 import { Polar } from '@polar-sh/sdk';
@@ -18,7 +20,7 @@ const polar = new Polar({
 export default async (req, res) => {
   // Always set JSON content type
   res.setHeader('Content-Type', 'application/json');
-  
+
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -38,15 +40,12 @@ export default async (req, res) => {
   }
 
   try {
-    const { productIds, priceIds } = req.body;
-
-    // Accept either productIds (legacy) or priceIds (new format)
-    const ids = priceIds || productIds;
+    const { productIds } = req.body;
 
     // Validate input
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
       return res.status(400).json({
-        error: 'Invalid request: productIds or priceIds array required',
+        error: 'Invalid request: productIds array required',
         url: null
       });
     }
@@ -60,36 +59,24 @@ export default async (req, res) => {
       });
     }
 
-    console.log(`Creating checkout for ${ids.length} items:`, ids);
+    console.log(`Creating checkout for ${productIds.length} products:`, productIds);
 
-    // Create checkout session with multiple products
+    // Create checkout session with multiple products using new SDK
     let checkout;
     try {
-      // Log the request we're about to make
-      console.log('Polar SDK initialization check:', {
-        hasToken: !!process.env.POLAR_API_TOKEN,
-        tokenLength: process.env.POLAR_API_TOKEN?.length || 0,
-        priceIds: ids
-      });
-
-      // Use Polar SDK to create checkout with product price IDs
-      // Format: Array of objects with product_price_id and quantity
       const checkoutData = {
-        product_prices: ids.map(priceId => ({
-          product_price_id: priceId,
-          quantity: 1
-        })),
-        success_url: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
+        products: productIds,
+        successUrl: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
         metadata: {
           source: 'custom_cart',
-          itemCount: ids.length.toString(),
+          itemCount: productIds.length.toString(),
           timestamp: new Date().toISOString()
         }
       };
 
       console.log('Creating checkout with data:', JSON.stringify(checkoutData, null, 2));
 
-      // Create checkout using the standard checkouts.create method
+      // Use Polar SDK v0.40.3 with multi-product support
       checkout = await polar.checkouts.create(checkoutData);
 
       console.log('Polar checkout response:', {
@@ -99,22 +86,13 @@ export default async (req, res) => {
       });
 
     } catch (error) {
-      // Log full error details
       console.error('Polar SDK error:', {
         message: error.message,
         status: error.status,
         statusCode: error.statusCode,
-        code: error.code,
-        body: error.body,
-        response: error.response?.data
+        body: error.body
       });
-      
-      // If error has response data, try to extract it
-      if (error.response?.data) {
-        throw new Error(`Polar API error: ${JSON.stringify(error.response.data)}`);
-      }
-      
-      // Re-throw with better message
+
       throw new Error(`Failed to create Polar checkout: ${error.message || 'Unknown error'}`);
     }
 
@@ -144,20 +122,16 @@ export default async (req, res) => {
     console.error('Checkout creation failed:', error);
     console.error('Error details:', {
       message: error.message,
-      status: error.status,
-      body: error.body,
       stack: error.stack
     });
 
     // Ensure we always return valid JSON
     const errorMessage = error.message || 'Failed to create checkout session';
-    const errorDetails = error.body || (error.response?.data ? JSON.stringify(error.response.data) : undefined);
 
     return res.status(500).json({
       error: errorMessage,
       url: null,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-      errorDetails: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
