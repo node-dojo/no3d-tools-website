@@ -77,7 +77,7 @@ export default async (req, res) => {
       const checkoutData = {
         products: productIds, // Array of product ID strings
         successUrl: `${req.headers.origin || 'https://no3dtools.com'}`, // Stay on same page for modal
-        embed_origin: req.headers.origin || 'https://no3dtools.com', // Required for embedded checkout modal
+        embedOrigin: req.headers.origin || 'https://no3dtools.com', // Required for embedded checkout modal (camelCase!)
         metadata: {
           source: 'custom_cart',
           itemCount: productIds.length.toString(),
