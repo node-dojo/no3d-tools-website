@@ -1862,25 +1862,28 @@ async function handleBuyNow() {
     return;
   }
 
-  // Disable button during checkout creation
+  // Disable button immediately for instant feedback
   if (buyNowButton) {
     buyNowButton.disabled = true;
     buyNowButton.textContent = 'OPENING CHECKOUT...';
   }
 
-  try {
-    // Pass the price ID for checkout (Polar requires price IDs, not product IDs)
-    await openCheckoutModal([{ product_price_id: polarProduct.priceId, quantity: 1 }]);
-  } catch (error) {
-    console.error('Failed to open checkout:', error);
-    alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
-  } finally {
-    // Re-enable button
-    if (buyNowButton) {
-      buyNowButton.disabled = false;
-      buyNowButton.textContent = 'BUY NOW';
+  // Defer checkout creation to avoid blocking UI
+  // This improves INP (Interaction to Next Paint) performance
+  setTimeout(async () => {
+    try {
+      // Pass the price ID for checkout (Polar requires price IDs, not product IDs)
+      await openCheckoutModal([{ product_price_id: polarProduct.priceId, quantity: 1 }]);
+    } catch (error) {
+      console.error('Failed to open checkout:', error);
+      alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+      // Re-enable button on error
+      if (buyNowButton) {
+        buyNowButton.disabled = false;
+        buyNowButton.textContent = 'BUY NOW';
+      }
     }
-  }
+  }, 0);
 }
 
 // Open Polar embedded checkout modal
@@ -2293,7 +2296,7 @@ async function downloadProductFile(productId, customerEmail, filename) {
 }
 
 // Handle Polar checkout
-async function handleCheckout() {
+function handleCheckout() {
   const products = cart.getCheckoutProducts();
 
   if (products.length === 0) {
@@ -2302,17 +2305,19 @@ async function handleCheckout() {
     return;
   }
 
-  // Disable checkout button and show loading state
+  // Disable checkout button immediately for instant feedback
   if (cartCheckoutButton) {
     cartCheckoutButton.disabled = true;
     cartCheckoutButton.textContent = 'Creating checkout...';
   }
 
-  try {
-    console.log('Creating multi-product checkout for products:', products);
+  // Defer checkout creation to avoid blocking UI (improves INP)
+  setTimeout(async () => {
+    try {
+      console.log('Creating multi-product checkout for products:', products);
 
-    // Call serverless function to create checkout session
-    const response = await fetch('/api/create-checkout', {
+      // Call serverless function to create checkout session
+      const response = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2401,16 +2406,17 @@ async function handleCheckout() {
       console.log('Checkout modal loaded');
     });
 
-  } catch (error) {
-    console.error('Checkout failed:', error);
-    alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
 
-    // Re-enable checkout button
-    if (cartCheckoutButton) {
-      cartCheckoutButton.disabled = false;
-      cartCheckoutButton.textContent = 'Checkout';
+      // Re-enable checkout button
+      if (cartCheckoutButton) {
+        cartCheckoutButton.disabled = false;
+        cartCheckoutButton.textContent = 'Checkout';
+      }
     }
-  }
+  }, 0); // End setTimeout - defers work to improve INP
 }
 
 // Initialize cart functionality
