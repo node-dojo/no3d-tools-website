@@ -1920,40 +1920,46 @@ async function openCheckoutModal(productIds) {
     }
 
     console.log('Checkout session created:', data.id);
-    console.log('Opening embedded checkout with URL:', data.url);
+    console.log('Redirecting to checkout URL:', data.url);
 
-    // Wait for PolarEmbedCheckout to be available
-    let PolarEmbedCheckout = window.PolarEmbedCheckout;
-    
-    // If not available, try waiting a bit for the script to load
-    if (!PolarEmbedCheckout) {
-      console.log('Waiting for PolarEmbedCheckout to load...');
-      await new Promise((resolve) => {
-        let attempts = 0;
-        const checkInterval = setInterval(() => {
-          PolarEmbedCheckout = window.PolarEmbedCheckout;
-          attempts++;
-          if (PolarEmbedCheckout || attempts > 20) {
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-      });
-    }
+    // Redirect directly to Polar checkout page
+    // This is simpler and more reliable than the embedded modal
+    window.location.href = data.url;
+    return;
 
-    // Open Polar embedded checkout modal
-    if (!PolarEmbedCheckout) {
-      console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
-      alert('Checkout modal failed to load. Please refresh the page and try again.');
-      // Re-enable button
-      if (buyNowButton) {
-        buyNowButton.disabled = false;
-        buyNowButton.textContent = 'BUY NOW';
-      }
-      return;
-    }
-
-    const checkout = await PolarEmbedCheckout.create(data.url, "light");
+    // Note: The code below is kept for reference if we want to re-enable embedded checkout
+    // // Wait for PolarEmbedCheckout to be available
+    // let PolarEmbedCheckout = window.PolarEmbedCheckout;
+    //
+    // // If not available, try waiting a bit for the script to load
+    // if (!PolarEmbedCheckout) {
+    //   console.log('Waiting for PolarEmbedCheckout to load...');
+    //   await new Promise((resolve) => {
+    //     let attempts = 0;
+    //     const checkInterval = setInterval(() => {
+    //       PolarEmbedCheckout = window.PolarEmbedCheckout;
+    //       attempts++;
+    //       if (PolarEmbedCheckout || attempts > 20) {
+    //         clearInterval(checkInterval);
+    //         resolve();
+    //       }
+    //     }, 100);
+    //   });
+    // }
+    //
+    // // Open Polar embedded checkout modal
+    // if (!PolarEmbedCheckout) {
+    //   console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
+    //   alert('Checkout modal failed to load. Please refresh the page and try again.');
+    //   // Re-enable button
+    //   if (buyNowButton) {
+    //     buyNowButton.disabled = false;
+    //     buyNowButton.textContent = 'BUY NOW';
+    //   }
+    //   return;
+    // }
+    //
+    // const checkout = await PolarEmbedCheckout.create(data.url, "light");
 
     // Handle successful checkout
     checkout.addEventListener("success", async (eventData) => {
@@ -2369,40 +2375,46 @@ function handleCheckout() {
     }
 
     console.log('Checkout session created:', data.id);
-    console.log('Opening embedded checkout with URL:', data.url);
+    console.log('Redirecting to checkout URL:', data.url);
 
-    // Wait for PolarEmbedCheckout to be available
-    let PolarEmbedCheckout = window.PolarEmbedCheckout;
-    
-    // If not available, try waiting a bit for the script to load
-    if (!PolarEmbedCheckout) {
-      console.log('Waiting for PolarEmbedCheckout to load...');
-      await new Promise((resolve) => {
-        let attempts = 0;
-        const checkInterval = setInterval(() => {
-          PolarEmbedCheckout = window.PolarEmbedCheckout;
-          attempts++;
-          if (PolarEmbedCheckout || attempts > 20) {
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-      });
-    }
+    // Redirect directly to Polar checkout page
+    // This is simpler and more reliable than the embedded modal
+    window.location.href = data.url;
+    return;
 
-    // Open Polar embedded checkout modal
-    if (!PolarEmbedCheckout) {
-      console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
-      alert('Checkout modal failed to load. Please refresh the page and try again.');
-      // Re-enable checkout button
-      if (cartCheckoutButton) {
-        cartCheckoutButton.disabled = false;
-        cartCheckoutButton.textContent = 'Checkout';
-      }
-      return;
-    }
-
-    const checkout = await PolarEmbedCheckout.create(data.url, "light");
+    // Note: The code below is kept for reference if we want to re-enable embedded checkout
+    // // Wait for PolarEmbedCheckout to be available
+    // let PolarEmbedCheckout = window.PolarEmbedCheckout;
+    //
+    // // If not available, try waiting a bit for the script to load
+    // if (!PolarEmbedCheckout) {
+    //   console.log('Waiting for PolarEmbedCheckout to load...');
+    //   await new Promise((resolve) => {
+    //     let attempts = 0;
+    //     const checkInterval = setInterval(() => {
+    //       PolarEmbedCheckout = window.PolarEmbedCheckout;
+    //       attempts++;
+    //       if (PolarEmbedCheckout || attempts > 20) {
+    //         clearInterval(checkInterval);
+    //         resolve();
+    //       }
+    //     }, 100);
+    //   });
+    // }
+    //
+    // // Open Polar embedded checkout modal
+    // if (!PolarEmbedCheckout) {
+    //   console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
+    //   alert('Checkout modal failed to load. Please refresh the page and try again.');
+    //   // Re-enable checkout button
+    //   if (cartCheckoutButton) {
+    //     cartCheckoutButton.disabled = false;
+    //     cartCheckoutButton.textContent = 'Checkout';
+    //   }
+    //   return;
+    // }
+    //
+    // const checkout = await PolarEmbedCheckout.create(data.url, "light");
 
     // Handle successful checkout
     checkout.addEventListener("success", async (eventData) => {
