@@ -1698,14 +1698,11 @@ let cart = {
     return this.items.map(item => item.polarProductId).filter(id => id);
   },
 
-  // Get products in Polar checkout format
+  // Get product IDs for Polar checkout (SDK expects array of product ID strings)
   getCheckoutProducts() {
     return this.items
-      .filter(item => item.polarPriceId)
-      .map(item => ({
-        product_price_id: item.polarPriceId,
-        quantity: 1
-      }));
+      .filter(item => item.polarProductId)
+      .map(item => item.polarProductId);
   },
   
   // Update cart UI
@@ -1872,8 +1869,8 @@ async function handleBuyNow() {
   // This improves INP (Interaction to Next Paint) performance
   setTimeout(async () => {
     try {
-      // Pass the price ID for checkout (Polar requires price IDs, not product IDs)
-      await openCheckoutModal([{ product_price_id: polarProduct.priceId, quantity: 1 }]);
+      // Pass the product ID for checkout (Polar SDK requires product IDs, not price IDs)
+      await openCheckoutModal([polarProduct.productId]);
     } catch (error) {
       console.error('Failed to open checkout:', error);
       alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
@@ -1887,8 +1884,8 @@ async function handleBuyNow() {
 }
 
 // Open Polar embedded checkout modal
-async function openCheckoutModal(products) {
-  console.log('Creating checkout for products:', products);
+async function openCheckoutModal(productIds) {
+  console.log('Creating checkout for product IDs:', productIds);
 
   try {
     // Call serverless function to create checkout session
@@ -1898,7 +1895,7 @@ async function openCheckoutModal(products) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        products: products
+        productIds: productIds
       })
     });
 
@@ -2297,9 +2294,9 @@ async function downloadProductFile(productId, customerEmail, filename) {
 
 // Handle Polar checkout
 function handleCheckout() {
-  const products = cart.getCheckoutProducts();
+  const productIds = cart.getCheckoutProducts();
 
-  if (products.length === 0) {
+  if (productIds.length === 0) {
     console.error('No products in cart for checkout');
     alert('Your cart is empty');
     return;
@@ -2314,7 +2311,7 @@ function handleCheckout() {
   // Defer checkout creation to avoid blocking UI (improves INP)
   setTimeout(async () => {
     try {
-      console.log('Creating multi-product checkout for products:', products);
+      console.log('Creating multi-product checkout for product IDs:', productIds);
 
       // Call serverless function to create checkout session
       const response = await fetch('/api/create-checkout', {
@@ -2323,7 +2320,7 @@ function handleCheckout() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        products: products
+        productIds: productIds
       })
     });
 

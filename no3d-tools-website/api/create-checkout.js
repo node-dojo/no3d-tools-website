@@ -3,11 +3,11 @@
  *
  * Endpoint: /api/create-checkout
  * Method: POST
- * Body: { products: [{ product_price_id: "price-id", quantity: 1 }, ...] }
+ * Body: { productIds: ["product-id-1", "product-id-2", ...] }
  *
  * Returns: { url: "https://polar.sh/checkout/...", error: null }
  *
- * Uses Polar SDK v0.40.3 with multi-product checkout support
+ * Uses Polar SDK - expects array of product ID strings (not price IDs)
  */
 
 import { Polar } from '@polar-sh/sdk';
@@ -40,26 +40,23 @@ export default async (req, res) => {
   }
 
   try {
-    const { products } = req.body;
+    const { productIds } = req.body;
 
     // Validate input
-    if (!products || !Array.isArray(products) || products.length === 0) {
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
       return res.status(400).json({
-        error: 'Invalid request: products array required',
+        error: 'Invalid request: productIds array required',
         url: null
       });
     }
 
-    // Validate each product has required fields
-    for (const product of products) {
-      if (!product.product_price_id) {
+    // Validate each product ID is a string
+    for (const productId of productIds) {
+      if (typeof productId !== 'string' || !productId.trim()) {
         return res.status(400).json({
-          error: 'Invalid request: each product must have product_price_id',
+          error: 'Invalid request: each productId must be a non-empty string',
           url: null
         });
-      }
-      if (!product.quantity || product.quantity < 1) {
-        product.quantity = 1; // Default to 1 if not provided
       }
     }
 
@@ -72,25 +69,25 @@ export default async (req, res) => {
       });
     }
 
-    console.log(`Creating checkout for ${products.length} products:`, products);
+    console.log(`Creating checkout for ${productIds.length} products:`, productIds);
 
-    // Create checkout session with multiple products using new SDK
+    // Create checkout session with multiple products
     let checkout;
     try {
       const checkoutData = {
-        products: products,
+        products: productIds, // Array of product ID strings
         successUrl: `${req.headers.origin || 'https://no3dtools.com'}`, // Stay on same page for modal
         embed_origin: req.headers.origin || 'https://no3dtools.com', // Required for embedded checkout modal
         metadata: {
           source: 'custom_cart',
-          itemCount: products.length.toString(),
+          itemCount: productIds.length.toString(),
           timestamp: new Date().toISOString()
         }
       };
 
       console.log('Creating checkout with data:', JSON.stringify(checkoutData, null, 2));
 
-      // Use Polar SDK v0.40.3 with multi-product support
+      // Use Polar SDK - expects array of product ID strings
       checkout = await polar.checkouts.create(checkoutData);
 
       console.log('Polar checkout response:', {
