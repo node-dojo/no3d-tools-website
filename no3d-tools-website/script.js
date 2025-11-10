@@ -1922,9 +1922,27 @@ async function openCheckoutModal(productIds) {
     console.log('Checkout session created:', data.id);
     console.log('Opening embedded checkout with URL:', data.url);
 
+    // Wait for PolarEmbedCheckout to be available
+    let PolarEmbedCheckout = window.PolarEmbedCheckout;
+    
+    // If not available, try waiting a bit for the script to load
+    if (!PolarEmbedCheckout) {
+      console.log('Waiting for PolarEmbedCheckout to load...');
+      await new Promise((resolve) => {
+        let attempts = 0;
+        const checkInterval = setInterval(() => {
+          PolarEmbedCheckout = window.PolarEmbedCheckout;
+          attempts++;
+          if (PolarEmbedCheckout || attempts > 20) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
     // Open Polar embedded checkout modal
-    // Note: PolarEmbedCheckout is loaded from the CDN script in index.html
-    if (typeof PolarEmbedCheckout === 'undefined') {
+    if (!PolarEmbedCheckout) {
       console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
       alert('Checkout modal failed to load. Please refresh the page and try again.');
       // Re-enable button
@@ -1971,6 +1989,11 @@ async function openCheckoutModal(productIds) {
     // Handle checkout close/cancel
     checkout.addEventListener("close", () => {
       console.log('Checkout modal closed');
+      // Re-enable button
+      if (buyNowButton) {
+        buyNowButton.disabled = false;
+        buyNowButton.textContent = 'BUY NOW';
+      }
     });
 
     // Handle checkout loaded
@@ -2348,10 +2371,34 @@ function handleCheckout() {
     console.log('Checkout session created:', data.id);
     console.log('Opening embedded checkout with URL:', data.url);
 
+    // Wait for PolarEmbedCheckout to be available
+    let PolarEmbedCheckout = window.PolarEmbedCheckout;
+    
+    // If not available, try waiting a bit for the script to load
+    if (!PolarEmbedCheckout) {
+      console.log('Waiting for PolarEmbedCheckout to load...');
+      await new Promise((resolve) => {
+        let attempts = 0;
+        const checkInterval = setInterval(() => {
+          PolarEmbedCheckout = window.PolarEmbedCheckout;
+          attempts++;
+          if (PolarEmbedCheckout || attempts > 20) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
     // Open Polar embedded checkout modal
-    if (typeof PolarEmbedCheckout === 'undefined') {
-      console.error('PolarEmbedCheckout not loaded. Falling back to redirect.');
-      window.location.href = data.url;
+    if (!PolarEmbedCheckout) {
+      console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
+      alert('Checkout modal failed to load. Please refresh the page and try again.');
+      // Re-enable checkout button
+      if (cartCheckoutButton) {
+        cartCheckoutButton.disabled = false;
+        cartCheckoutButton.textContent = 'Checkout';
+      }
       return;
     }
 
