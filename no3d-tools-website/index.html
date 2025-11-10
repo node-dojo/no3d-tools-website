@@ -3,7 +3,7 @@ image.png<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="deployment-version" content="d478bb6">
+    <meta name="deployment-version" content="3c1bbbe">
     <title>NO3D TOOLS</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,40 @@ image.png<!DOCTYPE html>
     <!-- Visitor font - using Space Mono as closest alternative -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Polar Embedded Checkout -->
-    <script src="https://unpkg.com/@polar-sh/checkout@latest/dist/embed.umd.js" defer></script>
+    <!-- Using official Polar CDN as per documentation -->
+    <script src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@0.1/dist/embed.global.js" defer></script>
+    <script>
+      // Debug: Check when Polar SDK loads
+      (function() {
+        function checkPolarSDK() {
+          // According to Polar docs, the global build exposes PolarEmbedCheckout directly
+          if (window.PolarEmbedCheckout) {
+            console.log('✅ Polar SDK loaded!', window.PolarEmbedCheckout);
+            return true;
+          }
+          
+          // Log what's available for debugging
+          console.log('Checking for Polar SDK...');
+          console.log('window.PolarEmbedCheckout:', window.PolarEmbedCheckout);
+          console.log('All window keys with "polar":', Object.keys(window).filter(k => k.toLowerCase().includes('polar')));
+          return false;
+        }
+        
+        // Check after script loads
+        window.addEventListener('load', function() {
+          if (!checkPolarSDK()) {
+            // Retry a few times in case script loads after window.load
+            let attempts = 0;
+            const retryInterval = setInterval(() => {
+              attempts++;
+              if (checkPolarSDK() || attempts > 10) {
+                clearInterval(retryInterval);
+              }
+            }, 200);
+          }
+        });
+      })();
+    </script>
     <!-- Visitor font - commented out due to font file corruption -->
     <!-- The visitor.ttf file appears corrupted (invalid sfntVersion error) -->
     <!-- Using Space Mono as fallback (already loaded above) -->
@@ -258,6 +291,27 @@ image.png<!DOCTYPE html>
                     <button class="cart-checkout-button" id="cart-checkout-button" disabled>
                         CHECK OUT
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="checkout-modal-backdrop" id="checkout-modal-backdrop"></div>
+    <div class="checkout-modal" id="checkout-modal">
+        <div class="checkout-modal-container">
+            <div class="checkout-modal-header">
+                <h2 class="checkout-title">CHECKOUT</h2>
+                <button class="checkout-close-button" id="checkout-close-button" aria-label="Close checkout">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="checkout-content-container" id="checkout-content-container">
+                <div class="checkout-loading" id="checkout-loading">
+                    <span class="checkout-loading-text">Loading checkout...</span>
+                </div>
+                <div class="checkout-error" id="checkout-error" style="display: none;">
+                    <span class="checkout-error-text">Unable to load checkout modal. Redirecting to checkout page...</span>
                 </div>
             </div>
         </div>
