@@ -800,6 +800,15 @@ const searchResultsEmpty = document.getElementById('search-results-empty');
 let searchResults = [];
 let selectedResultIndex = -1;
 
+// Search icon button click handler
+const searchIconButton = document.getElementById('search-icon-button');
+if (searchIconButton) {
+  searchIconButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    openSearchModal();
+  });
+}
+
 // Open search modal with CMD+K or Ctrl+K
 document.addEventListener('keydown', function(e) {
   // CMD+K (Mac) or Ctrl+K (Windows/Linux)
