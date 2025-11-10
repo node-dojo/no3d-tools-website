@@ -1193,11 +1193,12 @@ body {
   width: 100%;
   padding: var(--space-small) var(--space-medium);
   font-family: var(--font-mono);
-  font-size: var(--font-size-base);
+  font-size: 18px;
   font-weight: var(--font-mono-weight);
   color: var(--color-void-black);
   background-color: var(--color-paper-white);
   border: 1px solid var(--color-stone-gray);
+  border-radius: 0;
   outline: none;
   transition: border-color var(--transition-fast);
   /* Ensure input is always focusable */
@@ -1357,12 +1358,13 @@ body {
   }
 
   .search-input {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.4;
+    border-radius: 0;
   }
 
   .search-input::placeholder {
-    font-size: 16px;
+    font-size: 18px;
   }
 }
 
