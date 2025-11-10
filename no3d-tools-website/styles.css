@@ -293,6 +293,10 @@ body {
   font-size: var(--space-small);
   color: var(--color-void-black);
   transition: transform var(--transition-fast);
+  display: inline-block;
+  line-height: 1;
+  min-width: var(--space-small);
+  text-align: center;
 }
 
 .carrot.collapsed {
@@ -300,7 +304,7 @@ body {
 }
 
 .carrot.expanded {
-  transform: rotate(90deg);
+  transform: rotate(0deg); /* Don't rotate - use different symbols (▶ vs ▼) instead */
 }
 
 .category-section {
@@ -372,7 +376,7 @@ body {
 .type-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-tiny);
   padding: var(--space-tiny) var(--space-small);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -413,7 +417,7 @@ body {
 .group-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-tiny);
   padding: var(--space-tiny) var(--space-small);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -434,14 +438,28 @@ body {
 }
 
 .group-product-list {
-  display: flex; /* Always show products, even when group is collapsed */
+  display: none;
   flex-direction: column;
   gap: var(--space-tiny);
   margin-left: var(--space-medium);
   padding-left: var(--space-small);
 }
 
-/* Groups control icon grid filtering, but products are always visible in sidebar */
+.product-group.expanded .group-product-list {
+  display: flex;
+}
+
+.coming-soon-message {
+  font-family: var(--font-visitor);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: lowercase;
+  color: var(--color-dark-gray);
+  padding: var(--space-medium) var(--space-small);
+  margin-left: var(--space-medium);
+  text-align: left;
+}
 
 /* Center Product Card - JSX Component Structure */
 .product-card {
@@ -713,11 +731,21 @@ body {
   line-height: 0.64015; /* 64.015% as per design specs */
   text-align: right;
   text-rendering: optimizeLegibility;
+}
+
+.product-title h2 {
+  font-family: var(--font-visitor);
+  font-size: 37.533px;
+  font-weight: normal;
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
+  color: var(--color-void-black);
+  line-height: 0.64015;
+  text-align: right;
+  margin: 0;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  width: 100%;
-  margin: 0;
-  padding-right: 10px;
 }
 
 .product-price {
@@ -889,7 +917,7 @@ body {
 
 .footer-text {
   font-family: var(--font-mono);
-  font-size: var(--font-size-micro);
+  font-size: 12px; /* 50% larger than 8px */
   color: var(--color-void-black);
   letter-spacing: var(--letter-spacing-normal);
 }
