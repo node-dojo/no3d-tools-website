@@ -328,7 +328,7 @@ body {
 .product-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-tiny);
+  gap: 0;
 }
 
 .product-item {
@@ -1238,7 +1238,7 @@ body {
 
 .search-result-item {
   padding: var(--space-small) var(--space-medium);
-  margin-bottom: var(--space-tiny);
+  margin-bottom: calc(var(--space-tiny) * 0.5);
   cursor: pointer;
   border: 1px solid transparent;
   transition: background-color var(--transition-fast), border-color var(--transition-fast);

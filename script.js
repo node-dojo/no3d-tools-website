@@ -908,7 +908,6 @@ function renderSearchResults() {
     resultItem.innerHTML = `
       <div class="search-result-content">
         <div class="search-result-title">${product.name}</div>
-        <div class="search-result-price">${product.price}</div>
       </div>
     `;
 
