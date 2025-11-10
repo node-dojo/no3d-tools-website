@@ -4,6 +4,7 @@
   "description": "Blender asset: Dojo Squircle v4.5_obj",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
+  "productType": "tools",
   "tags": [
     "Mesh Gen",
     "blender",

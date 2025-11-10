@@ -4,6 +4,7 @@
   "description": "A simple node group, but its in my top 5 most used node tools of all time.",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
+  "productType": "tools",
   "tags": [
     "blender",
     "addon",

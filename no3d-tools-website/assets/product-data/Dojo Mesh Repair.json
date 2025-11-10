@@ -4,6 +4,7 @@
   "description": "Blender asset: Dojo Mesh Repair",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
+  "productType": "tools",
   "tags": [
     "blender",
     "addon",

@@ -4,6 +4,7 @@
   "description": "Blender asset: Dojo Gluefinity Grid_obj",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
+  "productType": "tools",
   "tags": [
     "blender",
     "addon",

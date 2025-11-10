@@ -12,6 +12,8 @@ image.png<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Visitor font - using Space Mono as closest alternative -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Polar Embedded Checkout -->
+    <script type="module" src="https://unpkg.com/@polar-sh/checkout@latest/dist/embed.js"></script>
     <!-- Visitor font - commented out due to font file corruption -->
     <!-- The visitor.ttf file appears corrupted (invalid sfntVersion error) -->
     <!-- Using Space Mono as fallback (already loaded above) -->
@@ -89,8 +91,8 @@ image.png<!DOCTYPE html>
                     <div class="product-details">
                         <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
                         <div class="product-price" id="product-price">PRICE: $7.99</div>
-                        <button class="download-button" id="download-button">DOWNLOAD</button>
-                        <button class="add-to-cart-button" id="add-to-cart-button">ADD TO CART</button>
+                        <button class="download-button" id="download-button" style="display: none;">DOWNLOAD</button>
+                        <button class="buy-now-button" id="buy-now-button">BUY NOW</button>
                     </div>
                 </div>
 
@@ -106,15 +108,15 @@ image.png<!DOCTYPE html>
                         </div>
                         <div class="tab-container">
                             <div class="tab-icon collapsed" data-tab="vids">
-                                <div class="tab-arrow">►</div>
+                                <div class="tab-arrow">▶</div>
                             </div>
                             <div class="tab" data-tab="vids">VIDS</div>
                         </div>
                         <div class="tab-container">
-                            <div class="tab-icon collapsed" data-tab="issues">
-                                <div class="tab-arrow">►</div>
+                            <div class="tab-icon collapsed" data-tab="faqs">
+                                <div class="tab-arrow">▶</div>
                             </div>
-                            <div class="tab" data-tab="issues">ISSUES</div>
+                            <div class="tab" data-tab="faqs">FAQS</div>
                         </div>
                     </div>
 
@@ -186,8 +188,17 @@ image.png<!DOCTYPE html>
         </aside>
     </div>
 
+    <!-- Mobile Search Bar (bottom of screen, mobile only) -->
+    <div class="mobile-search-bar" id="mobile-search-bar">
+        <input type="text" class="mobile-search-input" id="mobile-search-input" placeholder="SEARCH TOOLS..." aria-label="Search tools">
+        <button class="mobile-search-button" id="mobile-search-button" aria-label="Search">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+
     <footer class="footer">
-        <span class="footer-text">Cmd/cntrl + K to Search</span>
+        <span class="footer-text" id="footer-text">Cmd/ctrl + K to Search</span>
+        <img src="assets/stone logo.png" alt="Stone Logo" class="footer-logo">
     </footer>
 
     <!-- Command Palette Search Modal -->

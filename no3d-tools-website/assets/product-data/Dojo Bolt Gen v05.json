@@ -4,6 +4,7 @@
   "description": "Blender asset: Dojo Bolt Gen v05",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
+  "productType": "tools",
   "tags": [
     "blender",
     "addon",

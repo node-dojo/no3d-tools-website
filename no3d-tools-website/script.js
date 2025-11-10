@@ -299,13 +299,43 @@ async function loadProductsFromJSON() {
   }
 }
 
+// Product Type Definitions with Descriptions
+const productTypeDefinitions = {
+  tools: {
+    label: 'TOOLS',
+    logo: 'assets/NO3D TOOLS.png',
+    description: 'Advanced 3D modeling enhancements for Blender users designing real world products, built with 3D printing and laser cutting in mind!'
+  },
+  tutorials: {
+    label: 'TUTORIALS',
+    logo: 'assets/NO3D DOJO.png',
+    description: 'Welcome to Node Dojo! Here you\'ll find tutorials on Blender and Geometry nodes. The Node Dojo Modules are famous for being interactive video game style tutorials built right into Blender.'
+  },
+  prints: {
+    label: 'PRINTS',
+    logo: 'assets/NO3D PRINTS.png',
+    description: 'Here are downloadable 3D print, CNC and laser cut files that you can use to build your own projects.'
+  },
+  apps: {
+    label: 'APPS',
+    logo: 'assets/NO3D CODE.png',
+    description: 'Here are some vibe coded apps and Blender Add-ons to enhance your design workflows and make NO3D Tools even more usable.'
+  },
+  docs: {
+    label: 'DOCS/BLOG',
+    logo: 'assets/NO3D NOT3S.png',
+    description: 'Some documentation, some musings.'
+  }
+};
+
 // Organize Products by Product Type
 function organizeProductsByType() {
   productDataByType = {
     tools: {},
     tutorials: {},
     prints: {},
-    apps: {}
+    apps: {},
+    docs: {}
   };
   
   Object.keys(products).forEach(productId => {
@@ -331,15 +361,16 @@ function renderSidebar() {
   
   // Product Type mapping
   const productTypes = [
-    { key: 'tools', label: 'TOOLS' },
-    { key: 'tutorials', label: 'TUTORIALS' },
-    { key: 'prints', label: 'PRINTS' },
-    { key: 'apps', label: 'APPS' }
+    { key: 'tools', label: productTypeDefinitions.tools.label },
+    { key: 'tutorials', label: productTypeDefinitions.tutorials.label },
+    { key: 'prints', label: productTypeDefinitions.prints.label },
+    { key: 'apps', label: productTypeDefinitions.apps.label },
+    { key: 'docs', label: productTypeDefinitions.docs.label }
   ];
   
   productTypes.forEach(type => {
     const typeProducts = productDataByType[type.key] || {};
-    if (Object.keys(typeProducts).length === 0) return; // Skip empty types
+    const hasProducts = Object.keys(typeProducts).length > 0;
     
     // Organize products by groups
     const productsByGroup = {};
@@ -388,8 +419,15 @@ function renderSidebar() {
     const groupsContainer = document.createElement('div');
     groupsContainer.className = 'product-groups-container';
     
-    // Render product groups
-    Object.keys(productsByGroup).sort().forEach(groupName => {
+    // Show "coming soon!" if no products
+    if (!hasProducts) {
+      const comingSoonDiv = document.createElement('div');
+      comingSoonDiv.className = 'coming-soon-message';
+      comingSoonDiv.textContent = 'coming soon!';
+      groupsContainer.appendChild(comingSoonDiv);
+    } else {
+      // Render product groups
+      Object.keys(productsByGroup).sort().forEach(groupName => {
       const groupDiv = document.createElement('div');
       groupDiv.className = 'product-group';
       groupDiv.dataset.group = groupName.toLowerCase().replace(/\s+/g, '-');
@@ -451,6 +489,7 @@ function renderSidebar() {
       ungroupedDiv.appendChild(groupHeader);
       ungroupedDiv.appendChild(productList);
       groupsContainer.appendChild(ungroupedDiv);
+      }
     }
     
     productTypeDiv.appendChild(typeHeader);
@@ -484,6 +523,7 @@ function handleProductTypeToggle(typeKey) {
         carrot.textContent = '▶';
       }
       activeProductType = null;
+      updateProductCardForType(null);
     } else {
       clickedType.classList.add('expanded');
       const carrot = clickedType.querySelector('.type-header .carrot');
@@ -493,9 +533,10 @@ function handleProductTypeToggle(typeKey) {
         carrot.textContent = '▼';
       }
       activeProductType = typeKey;
+      updateHeaderLogo(activeProductType);
+      updateProductCardForType(activeProductType);
     }
     
-    updateHeaderLogo(activeProductType);
     updateIconGrid();
   }
 }
@@ -511,6 +552,11 @@ function expandProductType(typeKey) {
       carrot.classList.remove('collapsed');
       carrot.classList.add('expanded');
       carrot.textContent = '▼';
+    }
+    updateHeaderLogo(typeKey);
+    // Only show type description if no product is selected yet
+    if (!currentProduct || !products[currentProduct]) {
+      updateProductCardForType(typeKey);
     }
   }
 }
@@ -550,16 +596,15 @@ function updateHeaderLogo(typeKey) {
   const headerLogo = document.getElementById('header-logo');
   if (!headerLogo) return;
   
-  const logoMap = {
-    tools: 'assets/NO3D TOOLS logo.png',
-    tutorials: 'assets/NO3D DOJO.png',
-    prints: 'assets/NO3D PRINTS.png',
-    apps: 'assets/NO3D CODE.png'
-  };
-  
-  const logoPath = logoMap[typeKey] || logoMap.tools;
-  headerLogo.src = logoPath;
-  headerLogo.alt = typeKey.toUpperCase();
+  const typeDef = productTypeDefinitions[typeKey];
+  if (typeDef && typeDef.logo) {
+    headerLogo.src = typeDef.logo;
+    headerLogo.alt = typeDef.label;
+  } else {
+    // Fallback to tools logo if type not found
+    headerLogo.src = productTypeDefinitions.tools.logo;
+    headerLogo.alt = productTypeDefinitions.tools.label;
+  }
 }
 
 // Initialize Sidebar Event Listeners
@@ -862,15 +907,43 @@ function selectProduct(productId) {
   }
 
   currentProduct = productId;
+  // Update button visibility based on subscriber status
+  updateButtonVisibility(productId);
   updateProductDisplay(productId);
   updateActiveStates(productId);
+}
+
+// Update button visibility based on subscriber status
+function updateButtonVisibility(productId) {
+  const buyNowBtn = document.getElementById('buy-now-button');
+
+  // TODO: Replace with actual customer authentication check
+  // For now, check if there's a customerState or subscription data
+  const hasActiveSubscription = false; // Will be replaced with actual check
+  const ownsProduct = false; // Will be replaced with actual ownership check
+
+  if (ownsProduct || hasActiveSubscription) {
+    // Customer owns this product or has active subscription - show DOWNLOAD button
+    if (downloadButton) downloadButton.style.display = '';
+    if (buyNowBtn) buyNowBtn.style.display = 'none';
+  } else {
+    // Customer doesn't own product - show BUY NOW button
+    if (downloadButton) downloadButton.style.display = 'none';
+    if (buyNowBtn) buyNowBtn.style.display = '';
+  }
 }
 
 // Update the product display with new data
 function updateProductDisplay(productId) {
   const product = products[productId];
   
-  if (!product) return;
+  if (!product) {
+    // If no product, show type description if a type is active
+    if (activeProductType) {
+      updateProductCardForType(activeProductType);
+    }
+    return;
+  }
 
   // Update product information
   productTitle.textContent = product.name;
@@ -888,6 +961,30 @@ function updateProductDisplay(productId) {
 
   // Update download button
   downloadButton.textContent = 'DOWNLOAD';
+}
+
+// Update Product Card to show Product Type description
+function updateProductCardForType(typeKey) {
+  if (!typeKey) {
+    // Clear the card if no type selected
+    productTitle.textContent = '';
+    productPrice.textContent = '';
+    productDescription.innerHTML = '';
+    return;
+  }
+  
+  const typeDef = productTypeDefinitions[typeKey];
+  if (!typeDef) return;
+  
+  // Show type description in h2 size
+  productTitle.innerHTML = `<h2>${typeDef.label}</h2>`;
+  productPrice.textContent = '';
+  productDescription.innerHTML = `<p>${typeDef.description}</p>`;
+  
+  // Hide download button and buy now when showing type description
+  if (downloadButton) downloadButton.style.display = 'none';
+  const buyNowBtn = document.getElementById('buy-now-button');
+  if (buyNowBtn) buyNowBtn.style.display = 'none';
 }
 
 // Update changelog content
@@ -925,12 +1022,16 @@ function updateActiveStates(productId) {
 
 // Toggle tab icon expansion/collapse
 function toggleTabIcon(tabIcon, tabName) {
+  const tabArrow = tabIcon.querySelector('.tab-arrow');
+  
   if (tabIcon.classList.contains('expanded')) {
     tabIcon.classList.remove('expanded');
     tabIcon.classList.add('collapsed');
+    if (tabArrow) tabArrow.textContent = '▶';
   } else {
     tabIcon.classList.remove('collapsed');
     tabIcon.classList.add('expanded');
+    if (tabArrow) tabArrow.textContent = '▼';
   }
   
   // Also switch to this tab
@@ -967,12 +1068,15 @@ function switchTab(tabName) {
   // Update tab icon states
   const tabIcons = document.querySelectorAll('.tab-icon');
   tabIcons.forEach(icon => {
+    const tabArrow = icon.querySelector('.tab-arrow');
     if (icon.dataset.tab === tabName) {
       icon.classList.remove('collapsed');
       icon.classList.add('expanded');
+      if (tabArrow) tabArrow.textContent = '▼';
     } else {
       icon.classList.remove('expanded');
       icon.classList.add('collapsed');
+      if (tabArrow) tabArrow.textContent = '▶';
     }
   });
 
@@ -990,8 +1094,8 @@ function switchTab(tabName) {
       productDescription.style.display = 'block';
       changelogSection.style.display = 'none';
       break;
-    case 'issues':
-      productDescription.innerHTML = '<p>Issue tracking and support coming soon! For now, please contact support directly.</p>';
+    case 'faqs':
+      productDescription.innerHTML = '<p>Frequently asked questions coming soon! Check back for answers to common questions.</p>';
       productDescription.style.display = 'block';
       changelogSection.style.display = 'none';
       break;
@@ -1155,13 +1259,38 @@ function performSearch(query) {
     // Show all products when search is empty
     searchResults = allProducts;
   } else {
-    // Filter products by name or description
+    // Filter products by name, description, changelog, and all text content
     searchResults = allProducts.filter(productId => {
       const product = products[productId];
       const name = product.name.toLowerCase();
       const desc = product.description.toLowerCase();
 
-      return name.includes(searchTerm) || desc.includes(searchTerm);
+      // Search in name and description
+      if (name.includes(searchTerm) || desc.includes(searchTerm)) {
+        return true;
+      }
+
+      // Search in changelog items
+      if (product.changelog && Array.isArray(product.changelog)) {
+        const changelogMatch = product.changelog.some(item =>
+          item.toLowerCase().includes(searchTerm)
+        );
+        if (changelogMatch) return true;
+      }
+
+      // Search in product type and groups
+      if (product.productType && product.productType.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+
+      if (product.groups && Array.isArray(product.groups)) {
+        const groupMatch = product.groups.some(group =>
+          group.toLowerCase().includes(searchTerm)
+        );
+        if (groupMatch) return true;
+      }
+
+      return false;
     });
   }
 
@@ -1536,7 +1665,7 @@ const cartEmpty = document.getElementById('cart-empty');
 const cartTotalAmount = document.getElementById('cart-total-amount');
 const cartCheckoutButton = document.getElementById('cart-checkout-button');
 const cartContinueShoppingButton = document.getElementById('cart-continue-shopping-button');
-const addToCartButton = document.getElementById('add-to-cart-button');
+const buyNowButton = document.getElementById('buy-now-button');
 
 // Open cart modal
 function openCartModal() {
@@ -1616,64 +1745,116 @@ function getPolarProductData(productSlug) {
   return polarProduct || null;
 }
 
-// Add current product to cart
-function addCurrentProductToCart() {
+// Open embedded checkout modal for current product
+async function handleBuyNow() {
   if (!currentProduct) {
     console.error('No current product selected');
     return;
   }
-  
+
   // Get product slug from currentProduct
   const productSlug = currentProduct.toLowerCase().replace(/\s+/g, '-');
-  
+
   // Get Polar product data
   const polarProduct = getPolarProductData(productSlug);
-  
-  if (!polarProduct) {
+
+  if (!polarProduct || !polarProduct.productId) {
     console.error('Polar product data not found for:', currentProduct);
-    // Still add to cart with available data
-    const productName = products[currentProduct]?.name || currentProduct.toUpperCase();
-    let productPrice = products[currentProduct]?.price || 'FREE';
-
-    // Extract price from "PRICE: $X.XX" format if needed
-    if (productPrice.includes('PRICE:')) {
-      productPrice = productPrice.replace(/PRICE:\s*/i, '').trim();
-    }
-
-    cart.add(
-      productSlug,
-      productName,
-      null,
-      null,
-      null,
-      productPrice
-    );
-    openCartModal();
+    alert('Product checkout not available. Please try again later.');
     return;
   }
-  
-  // Get product display name
-  const productName = products[currentProduct]?.name || polarProduct.name;
-  let productPrice = products[currentProduct]?.price || 'FREE';
-  
-  // Extract price from "PRICE: $X.XX" format if needed
-  if (productPrice.includes('PRICE:')) {
-    productPrice = productPrice.replace(/PRICE:\s*/i, '').trim();
+
+  // Disable button during checkout creation
+  if (buyNowButton) {
+    buyNowButton.disabled = true;
+    buyNowButton.textContent = 'OPENING CHECKOUT...';
   }
-  
-  // Add to cart
-  const added = cart.add(
-    productSlug,
-    productName,
-    polarProduct.productId,
-    polarProduct.priceId,
-    polarProduct.url,
-    productPrice
-  );
-  
-  if (added) {
-    // Open cart to show added item
-    openCartModal();
+
+  try {
+    await openCheckoutModal([polarProduct.productId]);
+  } catch (error) {
+    console.error('Failed to open checkout:', error);
+    alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+  } finally {
+    // Re-enable button
+    if (buyNowButton) {
+      buyNowButton.disabled = false;
+      buyNowButton.textContent = 'BUY NOW';
+    }
+  }
+}
+
+// Open Polar embedded checkout modal
+async function openCheckoutModal(productIds) {
+  console.log('Creating checkout for product IDs:', productIds);
+
+  try {
+    // Call serverless function to create checkout session
+    const response = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        productIds: productIds
+      })
+    });
+
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    let data;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const textResponse = await response.text();
+      console.error('Non-JSON response from API:', textResponse);
+      throw new Error(`Server error: ${response.status} ${response.statusText}`);
+    }
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error || 'Failed to create checkout session');
+    }
+
+    if (!data.url) {
+      throw new Error('No checkout URL returned');
+    }
+
+    console.log('Checkout session created:', data.id);
+    console.log('Opening embedded checkout with URL:', data.url);
+
+    // Open Polar embedded checkout modal
+    // Note: PolarEmbedCheckout is loaded from the CDN script in index.html
+    if (typeof PolarEmbedCheckout === 'undefined') {
+      console.error('PolarEmbedCheckout not loaded. Falling back to redirect.');
+      window.location.href = data.url;
+      return;
+    }
+
+    const checkout = await PolarEmbedCheckout.create(data.url, "light");
+
+    // Handle successful checkout
+    checkout.addEventListener("success", () => {
+      console.log('Checkout completed successfully!');
+      // Show success message or redirect
+      alert('Purchase successful! Thank you for your order.');
+      // Optionally reload page or show download modal
+      window.location.reload();
+    });
+
+    // Handle checkout close/cancel
+    checkout.addEventListener("close", () => {
+      console.log('Checkout modal closed');
+    });
+
+    // Handle checkout loaded
+    checkout.addEventListener("loaded", () => {
+      console.log('Checkout modal loaded');
+    });
+
+  } catch (error) {
+    console.error('Checkout failed:', error);
+    throw error;
   }
 }
 
@@ -1775,9 +1956,9 @@ function initializeCart() {
     }
   });
   
-  // Add to cart button
-  if (addToCartButton) {
-    addToCartButton.addEventListener('click', addCurrentProductToCart);
+  // Buy Now button
+  if (buyNowButton) {
+    buyNowButton.addEventListener('click', handleBuyNow);
   }
   
   // Checkout button
@@ -1804,3 +1985,114 @@ if (document.readyState === 'loading') {
 window.cart = cart;
 
 console.log('Shopping cart functionality loaded');
+
+// OS Detection for Footer Keyboard Shortcut
+function updateFooterShortcut() {
+  const footerText = document.getElementById('footer-text');
+  if (!footerText) return;
+  
+  // Detect operating system
+  const platform = navigator.platform.toLowerCase();
+  const userAgent = navigator.userAgent.toLowerCase();
+  
+  // Check if macOS (Mac, iPhone, iPad)
+  const isMac = platform.includes('mac') || 
+                platform.includes('iphone') || 
+                platform.includes('ipad') ||
+                userAgent.includes('mac os x');
+  
+  // Update footer text based on OS
+  if (isMac) {
+    footerText.textContent = '⌘ + K to Search';
+  } else {
+    footerText.textContent = 'Ctrl + K to Search';
+  }
+}
+
+// Initialize footer shortcut on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', updateFooterShortcut);
+} else {
+  updateFooterShortcut();
+}
+
+// Initialize mobile search bar
+function initializeMobileSearch() {
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  const mobileSearchButton = document.getElementById('mobile-search-button');
+
+  if (mobileSearchInput && mobileSearchButton) {
+    // Handle typing in mobile search - live predictive search
+    mobileSearchInput.addEventListener('input', () => {
+      // Open modal if not already open
+      if (!searchModal.classList.contains('active')) {
+        openSearchModal();
+      }
+
+      // Sync with main search input and trigger search
+      searchInput.value = mobileSearchInput.value;
+      performSearch();
+    });
+
+    // Handle button click
+    mobileSearchButton.addEventListener('click', () => {
+      openSearchModal();
+      // Pre-fill with mobile input value if exists
+      if (mobileSearchInput.value) {
+        searchInput.value = mobileSearchInput.value;
+        performSearch();
+      } else {
+        // Focus the mobile input if empty
+        mobileSearchInput.focus();
+      }
+    });
+
+    // Handle Enter key in mobile search
+    mobileSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // If there are results, select the first one
+        const firstResult = document.querySelector('.search-result-item');
+        if (firstResult) {
+          firstResult.click();
+        }
+      }
+
+      // Allow arrow key navigation in search results
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        // Focus on search results if they exist
+        const firstResult = document.querySelector('.search-result-item');
+        if (firstResult) {
+          firstResult.focus();
+        }
+      }
+    });
+
+    // Sync mobile search when modal search input changes
+    searchInput.addEventListener('input', () => {
+      if (searchModal.classList.contains('active')) {
+        mobileSearchInput.value = searchInput.value;
+      }
+    });
+
+    // Clear mobile search when modal closes
+    searchModalBackdrop.addEventListener('click', () => {
+      mobileSearchInput.value = '';
+    });
+
+    // Also clear when ESC is pressed
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && searchModal.classList.contains('active')) {
+        mobileSearchInput.value = '';
+      }
+    });
+  }
+}
+
+// Initialize mobile search on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeMobileSearch);
+} else {
+  initializeMobileSearch();
+}
