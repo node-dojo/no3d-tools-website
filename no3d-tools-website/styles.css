@@ -719,6 +719,14 @@ body {
   text-align: right;
 }
 
+.product-header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  width: 100%;
+  gap: var(--space-small);
+}
+
 .product-header {
   grid-column: 1;
   grid-row: 3;
@@ -1060,13 +1068,99 @@ body {
 
   .product-details {
     width: 100%;
-    padding-right: var(--space-medium);
+    padding-top: var(--space-medium);
+    align-items: stretch;
     box-sizing: border-box;
+  }
+
+  .product-title {
+    font-size: 28px; /* Slightly smaller on mobile */
+    text-align: left;
+    padding-right: 0;
+    margin: 0;
+    width: auto;
+    flex: 1;
+  }
+
+  .product-price {
+    text-align: right; /* Right-justify price on mobile */
+    padding-right: 0;
+    margin: 0;
+    margin-left: auto; /* Push to right edge */
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  /* Container for title and price on same line */
+  .product-header-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--space-small);
+    margin-bottom: var(--space-medium);
+  }
+
+  /* Tabs - fill width on mobile */
+  .product-tabs {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 0;
+    padding: 0;
+  }
+
+  .tab-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-tiny);
+  }
+
+  .tab-icon {
+    flex-shrink: 0;
+  }
+
+  .tab {
+    font-size: 13px; /* Slightly smaller on mobile */
+    padding: var(--space-tiny) var(--space-small);
+    flex: 1;
+    text-align: center;
+    min-width: 0; /* Allow text to shrink if needed */
+  }
+
+  /* Buy button - centered and taller for mobile touch */
+  .download-button,
+  .buy-now-button {
+    width: 100%;
+    max-width: 300px;
+    margin-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    height: 48px; /* Increased height for mobile touch */
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .product-right-section {
     width: 100%;
     height: auto;
+    padding: 0; /* Remove padding so tabs can fill full width */
+  }
+
+  /* Product description and changelog - full width with padding */
+  .product-description {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 var(--space-medium);
+  }
+
+  .changelog-section {
+    width: 100%;
+    max-width: 100%;
     padding: 0 var(--space-medium);
   }
 
@@ -1163,28 +1257,6 @@ body {
     pointer-events: auto; /* Allow clicks when active */
   }
 
-  /* Site container - no padding on mobile */
-  .site-container {
-    padding-bottom: var(--space-medium);
-    padding-top: 0 !important;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-top: 0;
-    position: relative;
-  }
-  
-  /* Ensure header doesn't add extra spacing */
-  .site-header {
-    padding: 0 !important;
-    height: 40px !important;
-    margin: 0;
-  }
-  
-  .site-header .header-left {
-    padding: var(--space-small);
-  }
-  
   /* Product card - positioned exactly at header bottom using absolute positioning */
   .product-card {
     position: absolute !important;
@@ -1197,60 +1269,6 @@ body {
     padding-left: var(--space-small);
     padding-right: var(--space-small);
     width: 100%;
-  }
-
-  .product-title {
-    font-size: 28px; /* Slightly smaller on mobile */
-    text-align: left;
-    padding-right: 0;
-  }
-
-  .product-price {
-    text-align: right; /* Right-justify price on mobile */
-    padding-right: 0;
-    margin-bottom: var(--space-small); /* Space between price and buttons */
-  }
-
-  .product-details {
-    padding-right: 0;
-    padding-top: var(--space-medium);
-    align-items: flex-end; /* Align all items to the right */
-  }
-
-  .download-button,
-  .buy-now-button {
-    width: 100%;
-    max-width: 200px;
-    margin-right: 0;
-  }
-
-  /* Tabs - wrap on mobile */
-  .tabs-container {
-    width: 100%;
-    flex-wrap: wrap;
-    gap: var(--space-small);
-  }
-
-  .tab {
-    font-size: 13px; /* Slightly smaller on mobile */
-    padding: var(--space-tiny) var(--space-small);
-  }
-
-  /* Product description and changelog - full width */
-  .product-description {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .changelog-section {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* Sidebar content - larger touch targets */
-  .category-header {
-    padding: var(--space-small) var(--space-medium);
-    min-height: 44px; /* iOS touch target minimum */
   }
 
   .product-item {
