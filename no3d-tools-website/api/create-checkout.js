@@ -74,10 +74,15 @@ export default async (req, res) => {
     // Create checkout session with multiple products
     let checkout;
     try {
+      // Get origin from request headers (for embedOrigin validation)
+      const origin = req.headers.origin || req.headers.host 
+        ? `https://${req.headers.host}` 
+        : 'https://no3d-tools-website.vercel.app';
+      
       const checkoutData = {
         products: productIds, // Array of product ID strings
-        successUrl: `${req.headers.origin || 'https://no3dtools.com'}`, // Stay on same page for modal
-        embedOrigin: req.headers.origin || 'https://no3dtools.com', // Required for embedded checkout modal (camelCase!)
+        successUrl: `${origin}/success`, // Redirect after successful checkout
+        embedOrigin: origin, // Required for embedded checkout modal - must match your domain
         metadata: {
           source: 'custom_cart',
           itemCount: productIds.length.toString(),
