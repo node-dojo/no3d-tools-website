@@ -817,6 +817,11 @@ body {
   letter-spacing: var(--letter-spacing-normal);
 }
 
+/* Hide mobile carousel on desktop */
+.icon-carousel-mobile {
+  display: none;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .sidebar {
@@ -899,6 +904,56 @@ body {
   /* Hide icon grid on mobile */
   .icon-grid {
     display: none !important;
+  }
+
+  /* Mobile Icon Carousel */
+  .icon-carousel-mobile {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: var(--space-medium);
+    padding: var(--space-medium) var(--space-small);
+    margin-top: var(--space-large);
+    margin-bottom: var(--space-medium);
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .icon-carousel-mobile::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  .icon-carousel-mobile .icon-item {
+    flex: 0 0 auto;
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    scroll-snap-align: center;
+    transition: transform var(--transition-normal), opacity var(--transition-normal);
+    opacity: 0.6;
+    transform: scale(0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-carousel-mobile .icon-item.centered {
+    opacity: 1;
+    transform: scale(1.2);
+    z-index: 10;
+  }
+
+  .icon-carousel-mobile .icon-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
   }
 
   /* Header adjustments */
