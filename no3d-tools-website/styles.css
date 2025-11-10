@@ -1545,6 +1545,15 @@ body {
     font-size: var(--font-size-micro);
     gap: var(--space-small);
   }
+
+  .search-input {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .search-input::placeholder {
+    font-size: 16px;
+  }
 }
 
 /* Shopping Cart Modal */
