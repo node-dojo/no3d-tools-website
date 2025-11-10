@@ -10,37 +10,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Silka Mono font - using JetBrains Mono as alternative since Silka Mono requires license -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Visitor font - using Space Mono as closest alternative -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Visitor font - commented out due to font file corruption -->
-    <!-- The visitor.ttf file appears corrupted (invalid sfntVersion error) -->
-    <!-- Using Space Mono as fallback (already loaded above) -->
-    <!-- To fix: Replace ./fonts/visitor.ttf with a valid font file -->
-    <!--
+    <!-- Visitor font - self-hosted WOFF2 webfont -->
+    <!-- Preload Visitor font for better performance -->
+    <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <!-- Visitor font @font-face declarations -->
     <style>
       @font-face {
         font-family: 'Visitor';
-        src: url('./fonts/visitor.ttf') format('truetype');
+        src: url('./fonts/visitor.woff2') format('woff2');
         font-weight: 400;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Visitor';
-        src: url('./fonts/visitor.ttf') format('truetype');
+        src: url('./fonts/visitor.woff2') format('woff2');
         font-weight: 700;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Visitor TT1 BRK';
-        src: url('./fonts/visitor.ttf') format('truetype');
+        src: url('./fonts/visitor.woff2') format('woff2');
         font-weight: normal;
         font-style: normal;
         font-display: swap;
       }
     </style>
-    -->
+    <!-- Fallback: Space Mono as closest alternative if Visitor font fails to load -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>

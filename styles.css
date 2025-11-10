@@ -350,7 +350,7 @@ body {
 }
 
 .product-name {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: var(--letter-spacing-normal);
@@ -627,7 +627,7 @@ body {
 }
 
 .product-title {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: 37.533px;
   font-weight: normal;
   letter-spacing: var(--letter-spacing-normal);
@@ -1203,7 +1203,7 @@ body {
 }
 
 .search-result-title {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: var(--font-size-h3);
   font-weight: 700;
   color: var(--color-void-black);
@@ -1458,7 +1458,7 @@ body {
 }
 
 .cart-item-name {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: var(--font-size-h3);
   font-weight: 700;
   text-transform: uppercase;
