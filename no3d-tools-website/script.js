@@ -168,7 +168,9 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
 };
 
 // Current selected product
-let currentProduct = 'dojo-bool-v5';
+// Default to a product that exists in POLAR_PRODUCTS
+// Available mapped products: 'dojo-mesh-repair', 'dojo-print-vizv45', 'dojo-squircle-v45obj', 'dojosquircle-v45', 'print-bed-previewobj'
+let currentProduct = 'dojo-mesh-repair';
 
 // 3-Tier Sidebar State
 let productDataByType = {};
@@ -917,10 +919,35 @@ function selectProduct(productId) {
 function updateButtonVisibility(productId) {
   const buyNowBtn = document.getElementById('buy-now-button');
 
-  // TODO: Replace with actual customer authentication check
-  // For now, check if there's a customerState or subscription data
-  const hasActiveSubscription = false; // Will be replaced with actual check
-  const ownsProduct = false; // Will be replaced with actual ownership check
+  // Check sessionStorage for purchase info
+  const purchaseInfoStr = sessionStorage.getItem('purchase_info');
+  let ownsProduct = false;
+  let hasActiveSubscription = false;
+
+  if (purchaseInfoStr) {
+    try {
+      const purchaseInfo = JSON.parse(purchaseInfoStr);
+      
+      // Get Polar product ID for this product
+      const productSlug = productId.toLowerCase().replace(/\s+/g, '-');
+      const polarProduct = getPolarProductData(productSlug);
+      
+      if (polarProduct && polarProduct.productId) {
+        // Check if product is in owned products list
+        ownsProduct = purchaseInfo.ownedProducts && purchaseInfo.ownedProducts.includes(polarProduct.productId);
+        
+        // Also check sessionStorage for quick lookup
+        if (!ownsProduct) {
+          ownsProduct = sessionStorage.getItem(`owned_${polarProduct.productId}`) === 'true';
+        }
+      }
+    } catch (error) {
+      console.error('Error checking purchase info:', error);
+    }
+  }
+
+  // Check localStorage for persistent purchase records (optional future enhancement)
+  // For now, we only use sessionStorage
 
   if (ownsProduct || hasActiveSubscription) {
     // Customer owns this product or has active subscription - show DOWNLOAD button
@@ -1102,11 +1129,10 @@ function switchTab(tabName) {
   }
 }
 
-// Download product (placeholder functionality)
-function downloadProduct(productId) {
+// Download product - uses proxy endpoint with ownership verification
+async function downloadProduct(productId) {
   console.log('=== Download Product Called ===');
   console.log('Product ID:', productId);
-  console.log('POLAR_PRODUCTS available:', typeof POLAR_PRODUCTS !== 'undefined');
 
   const product = products[productId];
   if (!product) {
@@ -1115,38 +1141,65 @@ function downloadProduct(productId) {
     return;
   }
 
-  // Check if we have a Polar product mapping
-  const polarProduct = typeof POLAR_PRODUCTS !== 'undefined' ? POLAR_PRODUCTS[productId] : null;
-  console.log('Polar product found:', polarProduct);
+  // Get Polar product mapping
+  const productSlug = productId.toLowerCase().replace(/\s+/g, '-');
+  const polarProduct = getPolarProductData(productSlug);
+  
+  if (!polarProduct || !polarProduct.productId) {
+    console.warn(`No Polar product mapping found for: ${productId}`);
+    alert('Download not available for this product. Please contact support.');
+    return;
+  }
 
-  if (polarProduct) {
-    // Redirect to Polar product page
-    console.log(`Opening Polar product page: ${polarProduct.name}`);
-    console.log(`URL: ${polarProduct.url}`);
-    window.open(polarProduct.url, '_blank');
+  // Check sessionStorage for purchase info
+  const purchaseInfoStr = sessionStorage.getItem('purchase_info');
+  if (!purchaseInfoStr) {
+    alert('Purchase information not found. Please complete a purchase first or contact support.');
+    return;
+  }
 
-    // Show feedback
-    const originalText = downloadButton.textContent;
-    downloadButton.textContent = 'OPENING POLAR...';
-    downloadButton.disabled = true;
+  let purchaseInfo;
+  try {
+    purchaseInfo = JSON.parse(purchaseInfoStr);
+  } catch (error) {
+    console.error('Error parsing purchase info:', error);
+    alert('Error accessing purchase information. Please contact support.');
+    return;
+  }
 
+  // Verify this product is owned
+  if (!purchaseInfo.ownedProducts || !purchaseInfo.ownedProducts.includes(polarProduct.productId)) {
+    alert('You do not own this product. Please purchase it first.');
+    return;
+  }
+
+  // Find download info
+  const downloadInfo = purchaseInfo.downloads?.find(d => d.productId === polarProduct.productId);
+  
+  if (!downloadInfo) {
+    alert('Download file not available yet. Please check your email for download links or contact support.');
+    return;
+  }
+
+  // Show loading state
+  const originalText = downloadButton.textContent;
+  downloadButton.textContent = 'DOWNLOADING...';
+  downloadButton.disabled = true;
+
+  try {
+    // Download via proxy endpoint
+    await downloadProductFile(polarProduct.productId, purchaseInfo.email, downloadInfo.filename);
+    
+    // Reset button after short delay
     setTimeout(() => {
       downloadButton.textContent = originalText;
       downloadButton.disabled = false;
-    }, 2000);
-  } else {
-    // Fallback - show message that download is not yet available
-    console.warn(`No Polar product found for: ${productId}`);
-    console.log('Available Polar products:', typeof POLAR_PRODUCTS !== 'undefined' ? Object.keys(POLAR_PRODUCTS) : 'POLAR_PRODUCTS not defined');
-
-    const originalText = downloadButton.textContent;
-    downloadButton.textContent = 'COMING SOON!';
-    downloadButton.disabled = true;
-
-    setTimeout(() => {
-      downloadButton.textContent = originalText;
-      downloadButton.disabled = false;
-    }, 2000);
+    }, 1000);
+  } catch (error) {
+    console.error('Download failed:', error);
+    alert(`Download failed: ${error.message}\n\nPlease try again or contact support.`);
+    downloadButton.textContent = originalText;
+    downloadButton.disabled = false;
   }
 }
 
@@ -1635,14 +1688,24 @@ let cart = {
     }).format(amount);
   },
   
-  // Get price IDs for Polar checkout (deprecated - use getProductIds instead)
+  // Get price IDs for Polar checkout (deprecated - use getCheckoutProducts instead)
   getPriceIds() {
     return this.items.map(item => item.polarPriceId).filter(id => id);
   },
 
-  // Get product IDs for Polar checkout
+  // Get product IDs for Polar checkout (deprecated - use getCheckoutProducts instead)
   getProductIds() {
     return this.items.map(item => item.polarProductId).filter(id => id);
+  },
+
+  // Get products in Polar checkout format
+  getCheckoutProducts() {
+    return this.items
+      .filter(item => item.polarPriceId)
+      .map(item => ({
+        product_price_id: item.polarPriceId,
+        quantity: 1
+      }));
   },
   
   // Update cart UI
@@ -1733,14 +1796,41 @@ function updateCheckoutButton() {
 // Get Polar product data for current product
 function getPolarProductData(productSlug) {
   if (typeof POLAR_PRODUCTS === 'undefined') {
+    console.error('POLAR_PRODUCTS is not defined. Make sure polar-products.js is loaded.');
     return null;
   }
   
+  console.log('Looking for product with slug:', productSlug);
+  console.log('Available POLAR_PRODUCTS keys:', Object.keys(POLAR_PRODUCTS));
+  
   // Try to find product in POLAR_PRODUCTS
-  const polarProduct = POLAR_PRODUCTS[productSlug] || 
-                       Object.values(POLAR_PRODUCTS).find(p => 
-                         p.name.toLowerCase().includes(productSlug.toLowerCase())
-                       );
+  let polarProduct = POLAR_PRODUCTS[productSlug];
+  
+  // If not found by exact slug, try fuzzy matching
+  if (!polarProduct) {
+    console.log('Exact match not found, trying fuzzy match...');
+    polarProduct = Object.values(POLAR_PRODUCTS).find(p => {
+      const nameMatch = p.name.toLowerCase().includes(productSlug.toLowerCase());
+      const slugMatch = Object.keys(POLAR_PRODUCTS).some(key => 
+        key.toLowerCase().includes(productSlug.toLowerCase()) || 
+        productSlug.toLowerCase().includes(key.toLowerCase())
+      );
+      return nameMatch || slugMatch;
+    });
+  }
+  
+  if (polarProduct) {
+    console.log('Found Polar product:', polarProduct);
+    if (!polarProduct.productId) {
+      console.error('Polar product found but missing productId:', polarProduct);
+    }
+  } else {
+    console.error('No Polar product found for slug:', productSlug);
+    console.log('Available products:', Object.keys(POLAR_PRODUCTS).map(key => ({
+      key,
+      name: POLAR_PRODUCTS[key].name
+    })));
+  }
   
   return polarProduct || null;
 }
@@ -1760,7 +1850,15 @@ async function handleBuyNow() {
 
   if (!polarProduct || !polarProduct.productId) {
     console.error('Polar product data not found for:', currentProduct);
-    alert('Product checkout not available. Please try again later.');
+    console.error('Product slug used:', productSlug);
+    console.error('POLAR_PRODUCTS available:', typeof POLAR_PRODUCTS !== 'undefined');
+    
+    // Provide more helpful error message
+    const errorMsg = polarProduct 
+      ? 'Product checkout configuration error. Please contact support.'
+      : `Product "${currentProduct}" is not available for checkout. Please try again later.`;
+    
+    alert(errorMsg);
     return;
   }
 
@@ -1771,7 +1869,8 @@ async function handleBuyNow() {
   }
 
   try {
-    await openCheckoutModal([polarProduct.productId]);
+    // Pass the price ID for checkout (Polar requires price IDs, not product IDs)
+    await openCheckoutModal([{ product_price_id: polarProduct.priceId, quantity: 1 }]);
   } catch (error) {
     console.error('Failed to open checkout:', error);
     alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
@@ -1785,8 +1884,8 @@ async function handleBuyNow() {
 }
 
 // Open Polar embedded checkout modal
-async function openCheckoutModal(productIds) {
-  console.log('Creating checkout for product IDs:', productIds);
+async function openCheckoutModal(products) {
+  console.log('Creating checkout for products:', products);
 
   try {
     // Call serverless function to create checkout session
@@ -1796,7 +1895,7 @@ async function openCheckoutModal(productIds) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        productIds: productIds
+        products: products
       })
     });
 
@@ -1826,20 +1925,47 @@ async function openCheckoutModal(productIds) {
     // Open Polar embedded checkout modal
     // Note: PolarEmbedCheckout is loaded from the CDN script in index.html
     if (typeof PolarEmbedCheckout === 'undefined') {
-      console.error('PolarEmbedCheckout not loaded. Falling back to redirect.');
-      window.location.href = data.url;
+      console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
+      alert('Checkout modal failed to load. Please refresh the page and try again.');
+      // Re-enable button
+      if (buyNowButton) {
+        buyNowButton.disabled = false;
+        buyNowButton.textContent = 'BUY NOW';
+      }
       return;
     }
 
     const checkout = await PolarEmbedCheckout.create(data.url, "light");
 
     // Handle successful checkout
-    checkout.addEventListener("success", () => {
-      console.log('Checkout completed successfully!');
-      // Show success message or redirect
-      alert('Purchase successful! Thank you for your order.');
-      // Optionally reload page or show download modal
-      window.location.reload();
+    checkout.addEventListener("success", async (eventData) => {
+      console.log('Checkout completed successfully!', eventData);
+      
+      // Extract customer email from checkout data if available
+      let customerEmail = null;
+      if (eventData && eventData.customer && eventData.customer.email) {
+        customerEmail = eventData.customer.email;
+      } else if (eventData && eventData.email) {
+        customerEmail = eventData.email;
+      }
+
+      // If email not available, prompt user
+      if (!customerEmail) {
+        customerEmail = prompt('Please enter your email address to access your downloads:');
+        if (!customerEmail) {
+          alert('Email is required to verify your purchase. Please contact support if you need assistance.');
+          return;
+        }
+      }
+
+      // Verify purchase and get download URLs
+      try {
+        await handlePurchaseSuccess(productIds, customerEmail);
+      } catch (error) {
+        console.error('Error handling purchase success:', error);
+        alert(`Purchase successful! However, we couldn't verify your purchase immediately. Please check your email for download links.\n\nError: ${error.message}`);
+        window.location.reload();
+      }
     });
 
     // Handle checkout close/cancel
@@ -1858,11 +1984,319 @@ async function openCheckoutModal(productIds) {
   }
 }
 
+// Handle purchase success - verify ownership and enable downloads
+async function handlePurchaseSuccess(productIds, customerEmail) {
+  console.log('Handling purchase success for:', productIds, customerEmail);
+
+  try {
+    // Step 1: Verify purchase ownership
+    const verifyResponse = await fetch('/api/verify-purchase', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: customerEmail,
+        productIds: productIds
+      })
+    });
+
+    if (!verifyResponse.ok) {
+      const errorData = await verifyResponse.json();
+      throw new Error(errorData.error || 'Failed to verify purchase');
+    }
+
+    const verifyData = await verifyResponse.json();
+    const ownedProducts = verifyData.ownedProducts || [];
+
+    if (ownedProducts.length === 0) {
+      console.warn('No products verified as owned');
+      // Still show success message, but downloads may not be available yet
+      alert('Purchase successful! Your purchase is being processed. You will receive download links via email shortly.');
+      window.location.reload();
+      return;
+    }
+
+    console.log('Verified owned products:', ownedProducts);
+
+    // Step 2: Get download URLs
+    const downloadResponse = await fetch('/api/get-download-urls', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: customerEmail,
+        productIds: ownedProducts
+      })
+    });
+
+    if (!downloadResponse.ok) {
+      const errorData = await downloadResponse.json();
+      throw new Error(errorData.error || 'Failed to get download URLs');
+    }
+
+    const downloadData = await downloadResponse.json();
+    const downloads = downloadData.downloads || [];
+
+    console.log('Download URLs retrieved:', downloads);
+
+    // Step 3: Store purchase info in sessionStorage
+    const purchaseInfo = {
+      email: customerEmail,
+      ownedProducts: ownedProducts,
+      downloads: downloads,
+      timestamp: new Date().toISOString()
+    };
+    sessionStorage.setItem('purchase_info', JSON.stringify(purchaseInfo));
+
+    // Store individual product ownership for quick checks
+    ownedProducts.forEach(productId => {
+      sessionStorage.setItem(`owned_${productId}`, 'true');
+    });
+
+    // Step 4: Show download modal
+    showDownloadModal(ownedProducts, downloads, customerEmail);
+
+    // Step 5: Update button visibility for current product if it was purchased
+    if (currentProduct) {
+      const productSlug = currentProduct.toLowerCase().replace(/\s+/g, '-');
+      const polarProduct = getPolarProductData(productSlug);
+      if (polarProduct && ownedProducts.includes(polarProduct.productId)) {
+        updateButtonVisibility(currentProduct);
+      }
+    }
+
+    // Step 6: Clear cart
+    cart.clear();
+    updateCheckoutButton();
+
+  } catch (error) {
+    console.error('Error in handlePurchaseSuccess:', error);
+    throw error;
+  }
+}
+
+// Show download modal with purchased products
+function showDownloadModal(purchasedProductIds, downloads, customerEmail) {
+  // Create modal overlay
+  const modalOverlay = document.createElement('div');
+  modalOverlay.id = 'download-modal-overlay';
+  modalOverlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: var(--space-medium);
+  `;
+
+  // Create modal content
+  const modalContent = document.createElement('div');
+  modalContent.style.cssText = `
+    background: white;
+    border-radius: 8px;
+    padding: var(--space-large);
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  `;
+
+  // Modal header
+  const modalHeader = document.createElement('div');
+  modalHeader.style.cssText = `
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-large);
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: var(--space-medium);
+  `;
+
+  const modalTitle = document.createElement('h2');
+  modalTitle.textContent = 'Purchase Successful!';
+  modalTitle.style.cssText = `
+    font-family: var(--font-visitor, 'Space Mono', monospace);
+    font-size: 24px;
+    margin: 0;
+    text-transform: uppercase;
+  `;
+
+  const closeButton = document.createElement('button');
+  closeButton.innerHTML = '&times;';
+  closeButton.style.cssText = `
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+  `;
+  closeButton.addEventListener('click', () => {
+    document.body.removeChild(modalOverlay);
+    window.location.reload();
+  });
+
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(closeButton);
+
+  // Modal body
+  const modalBody = document.createElement('div');
+  const successMessage = document.createElement('p');
+  successMessage.textContent = 'Thank you for your purchase! Download your products below:';
+  successMessage.style.cssText = `
+    margin-bottom: var(--space-large);
+    color: #333;
+  `;
+  modalBody.appendChild(successMessage);
+
+  // Download list
+  const downloadList = document.createElement('div');
+  downloadList.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-medium);
+  `;
+
+  // Create download items for each purchased product
+  purchasedProductIds.forEach(productId => {
+    const downloadItem = document.createElement('div');
+    downloadItem.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-medium);
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    `;
+
+    // Find product name
+    const productSlug = Object.keys(POLAR_PRODUCTS || {}).find(slug => {
+      const polar = POLAR_PRODUCTS[slug];
+      return polar && polar.productId === productId;
+    });
+    const productName = productSlug && POLAR_PRODUCTS[productSlug] 
+      ? POLAR_PRODUCTS[productSlug].name 
+      : `Product ${productId.substring(0, 8)}...`;
+
+    const productNameEl = document.createElement('span');
+    productNameEl.textContent = productName;
+    productNameEl.style.cssText = `
+      font-weight: 600;
+      color: #333;
+    `;
+
+    // Find download info
+    const downloadInfo = downloads.find(d => d.productId === productId);
+    const downloadBtn = document.createElement('button');
+    downloadBtn.textContent = downloadInfo ? 'DOWNLOAD' : 'PROCESSING...';
+    downloadBtn.disabled = !downloadInfo;
+    downloadBtn.style.cssText = `
+      background-color: var(--color-lello, #FFD700);
+      color: var(--color-void-black, #000);
+      border: 1px solid var(--color-void-black, #000);
+      padding: var(--space-small) var(--space-medium);
+      font-family: var(--font-visitor, 'Space Mono', monospace);
+      font-size: 14px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    `;
+
+    if (downloadInfo) {
+      downloadBtn.addEventListener('click', () => {
+        downloadProductFile(productId, customerEmail, downloadInfo.filename);
+      });
+    }
+
+    downloadItem.appendChild(productNameEl);
+    downloadItem.appendChild(downloadBtn);
+    downloadList.appendChild(downloadItem);
+  });
+
+  modalBody.appendChild(downloadList);
+
+  // Modal footer
+  const modalFooter = document.createElement('div');
+  modalFooter.style.cssText = `
+    margin-top: var(--space-large);
+    padding-top: var(--space-medium);
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+  `;
+
+  const continueButton = document.createElement('button');
+  continueButton.textContent = 'Continue Shopping';
+  continueButton.style.cssText = `
+    background-color: var(--color-void-black, #000);
+    color: white;
+    border: none;
+    padding: var(--space-small) var(--space-large);
+    font-family: var(--font-visitor, 'Space Mono', monospace);
+    font-size: 14px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  `;
+  continueButton.addEventListener('click', () => {
+    document.body.removeChild(modalOverlay);
+    window.location.reload();
+  });
+  modalFooter.appendChild(continueButton);
+
+  // Assemble modal
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalContent.appendChild(modalFooter);
+  modalOverlay.appendChild(modalContent);
+
+  // Add to page
+  document.body.appendChild(modalOverlay);
+
+  // Close on overlay click
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+      document.body.removeChild(modalOverlay);
+      window.location.reload();
+    }
+  });
+}
+
+// Download product file via proxy endpoint
+async function downloadProductFile(productId, customerEmail, filename) {
+  try {
+    const downloadUrl = `/api/download-file?email=${encodeURIComponent(customerEmail)}&productId=${encodeURIComponent(productId)}`;
+    
+    // Create temporary link to trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename || 'product.blend';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    console.log('Download initiated for product:', productId);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    alert(`Failed to download file: ${error.message}`);
+  }
+}
+
 // Handle Polar checkout
 async function handleCheckout() {
-  const productIds = cart.getProductIds();
+  const products = cart.getCheckoutProducts();
 
-  if (productIds.length === 0) {
+  if (products.length === 0) {
     console.error('No products in cart for checkout');
     alert('Your cart is empty');
     return;
@@ -1875,7 +2309,7 @@ async function handleCheckout() {
   }
 
   try {
-    console.log('Creating multi-product checkout for product IDs:', productIds);
+    console.log('Creating multi-product checkout for products:', products);
 
     // Call serverless function to create checkout session
     const response = await fetch('/api/create-checkout', {
@@ -1884,7 +2318,7 @@ async function handleCheckout() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        productIds: productIds
+        products: products
       })
     });
 
@@ -1910,12 +2344,62 @@ async function handleCheckout() {
     }
 
     console.log('Checkout session created:', data.id);
+    console.log('Opening embedded checkout with URL:', data.url);
 
-    // Redirect to Polar checkout
-    window.location.href = data.url;
+    // Open Polar embedded checkout modal
+    if (typeof PolarEmbedCheckout === 'undefined') {
+      console.error('PolarEmbedCheckout not loaded. Falling back to redirect.');
+      window.location.href = data.url;
+      return;
+    }
 
-    // Note: We don't clear the cart here because the user might cancel
-    // The cart will be cleared after successful payment via webhook or on return
+    const checkout = await PolarEmbedCheckout.create(data.url, "light");
+
+    // Handle successful checkout
+    checkout.addEventListener("success", async (eventData) => {
+      console.log('Checkout completed successfully!', eventData);
+      
+      // Extract customer email from checkout data if available
+      let customerEmail = null;
+      if (eventData && eventData.customer && eventData.customer.email) {
+        customerEmail = eventData.customer.email;
+      } else if (eventData && eventData.email) {
+        customerEmail = eventData.email;
+      }
+
+      // If email not available, prompt user
+      if (!customerEmail) {
+        customerEmail = prompt('Please enter your email address to access your downloads:');
+        if (!customerEmail) {
+          alert('Email is required to verify your purchase. Please contact support if you need assistance.');
+          return;
+        }
+      }
+
+      // Verify purchase and get download URLs
+      try {
+        await handlePurchaseSuccess(productIds, customerEmail);
+      } catch (error) {
+        console.error('Error handling purchase success:', error);
+        alert(`Purchase successful! However, we couldn't verify your purchase immediately. Please check your email for download links.\n\nError: ${error.message}`);
+        window.location.reload();
+      }
+    });
+
+    // Handle checkout close/cancel
+    checkout.addEventListener("close", () => {
+      console.log('Checkout modal closed');
+      // Re-enable checkout button
+      if (cartCheckoutButton) {
+        cartCheckoutButton.disabled = false;
+        cartCheckoutButton.textContent = 'Checkout';
+      }
+    });
+
+    // Handle checkout loaded
+    checkout.addEventListener("loaded", () => {
+      console.log('Checkout modal loaded');
+    });
 
   } catch (error) {
     console.error('Checkout failed:', error);

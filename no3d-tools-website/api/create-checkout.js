@@ -3,7 +3,7 @@
  *
  * Endpoint: /api/create-checkout
  * Method: POST
- * Body: { productIds: ["prod-id-1", "prod-id-2", ...] }
+ * Body: { products: [{ product_price_id: "price-id", quantity: 1 }, ...] }
  *
  * Returns: { url: "https://polar.sh/checkout/...", error: null }
  *
@@ -40,14 +40,27 @@ export default async (req, res) => {
   }
 
   try {
-    const { productIds } = req.body;
+    const { products } = req.body;
 
     // Validate input
-    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+    if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({
-        error: 'Invalid request: productIds array required',
+        error: 'Invalid request: products array required',
         url: null
       });
+    }
+
+    // Validate each product has required fields
+    for (const product of products) {
+      if (!product.product_price_id) {
+        return res.status(400).json({
+          error: 'Invalid request: each product must have product_price_id',
+          url: null
+        });
+      }
+      if (!product.quantity || product.quantity < 1) {
+        product.quantity = 1; // Default to 1 if not provided
+      }
     }
 
     // Validate environment
@@ -59,18 +72,18 @@ export default async (req, res) => {
       });
     }
 
-    console.log(`Creating checkout for ${productIds.length} products:`, productIds);
+    console.log(`Creating checkout for ${products.length} products:`, products);
 
     // Create checkout session with multiple products using new SDK
     let checkout;
     try {
       const checkoutData = {
-        products: productIds,
-        successUrl: `${req.headers.origin || 'https://no3dtools.com'}/success.html`,
+        products: products,
+        successUrl: `${req.headers.origin || 'https://no3dtools.com'}`, // Stay on same page for modal
         embed_origin: req.headers.origin || 'https://no3dtools.com', // Required for embedded checkout modal
         metadata: {
           source: 'custom_cart',
-          itemCount: productIds.length.toString(),
+          itemCount: products.length.toString(),
           timestamp: new Date().toISOString()
         }
       };
