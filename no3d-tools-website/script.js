@@ -1,6 +1,18 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
+// Import marked for markdown rendering
+import { marked } from 'marked';
+
+// Configure marked with security options
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+  sanitize: false, // We'll sanitize manually if needed
+  smartLists: true,
+  smartypants: true
+});
+
 // Multi-Library Configuration - Maps sections to GitHub repositories
 // Each section loads ALL products from its corresponding GitHub repo
 const LIBRARY_CONFIG = {
@@ -1404,6 +1416,13 @@ function updateButtonVisibility(productId) {
 function updateProductDisplay(productId) {
   const product = products[productId];
   
+  // Set productId on product card for markdown docs loading
+  const productCard = document.querySelector('.product-left-section')?.closest('.product-card') || 
+                      document.querySelector('.product-left-section')?.parentElement;
+  if (productCard) {
+    productCard.dataset.productId = productId || '';
+  }
+  
   if (!product) {
     // If no product, show type description if a type is active
     if (activeProductType) {
@@ -1520,8 +1539,80 @@ function toggleChangelogIcon(changelogIcon) {
   }
 }
 
+// Load markdown documentation for current product
+async function loadProductDocs(productId) {
+  const productDescription = document.getElementById('product-description');
+
+  if (!productId) {
+    productDescription.innerHTML = '<p>Select a product to view documentation.</p>';
+    return;
+  }
+
+  try {
+    // Try to load DOCS.md from assets
+    const docsUrl = `/assets/product-docs/${productId}/DOCS.md`;
+    const response = await fetch(docsUrl);
+
+    if (!response.ok) {
+      // Fallback to original description
+      const product = products[productId];
+      if (product && product.description) {
+        productDescription.innerHTML = `<p>${product.description}</p>`;
+      } else {
+        productDescription.innerHTML = '<p>No documentation available for this product.</p>';
+      }
+      return;
+    }
+
+    const markdownContent = await response.text();
+
+    // Transform image URLs in markdown to use /assets/
+    const transformedMarkdown = markdownContent.replace(
+      /!\[(.*?)\]\(((?!http|\/assets).*?)\)/g,
+      (match, alt, imgPath) => {
+        // Convert relative image paths to /assets/product-docs/{productId}/
+        const assetPath = `/assets/product-docs/${productId}/${imgPath.replace(/^\.\//, '')}`;
+        return `![${alt}](${assetPath})`;
+      }
+    );
+
+    // Auto-embed YouTube and Vimeo videos
+    const withEmbeddedVideos = transformedMarkdown.replace(
+      /\[VIDEO:\s*(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/)([^\]]+))\]/gi,
+      (match, url, videoId) => {
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          // Extract YouTube ID
+          const ytId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1];
+          return `<div class="video-embed"><iframe width="100%" height="400" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
+        } else if (url.includes('vimeo.com')) {
+          // Extract Vimeo ID
+          const vimeoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
+          return `<div class="video-embed"><iframe width="100%" height="400" src="https://player.vimeo.com/video/${vimeoId}" frameborder="0" allowfullscreen></iframe></div>`;
+        }
+        return match;
+      }
+    );
+
+    // Convert markdown to HTML
+    const htmlContent = marked.parse(withEmbeddedVideos);
+
+    // Update the description with rendered HTML
+    productDescription.innerHTML = htmlContent;
+
+  } catch (error) {
+    console.error('Error loading documentation:', error);
+    // Fallback to original description
+    const product = products[productId];
+    if (product && product.description) {
+      productDescription.innerHTML = `<p>${product.description}</p>`;
+    } else {
+      productDescription.innerHTML = '<p>Error loading documentation.</p>';
+    }
+  }
+}
+
 // Switch between tabs
-function switchTab(tabName) {
+async function switchTab(tabName) {
   // Update tab active states
   const tabs = document.querySelectorAll('.tab');
   tabs.forEach(tab => {
@@ -1550,12 +1641,17 @@ function switchTab(tabName) {
   // Update content based on tab
   const productDescription = document.getElementById('product-description');
   const changelogSection = document.querySelector('.changelog-section');
-  
+
   switch(tabName) {
-    case 'docs':
-      productDescription.style.display = 'block';
-      changelogSection.style.display = 'flex';
-      break;
+      case 'docs':
+        productDescription.style.display = 'block';
+        changelogSection.style.display = 'flex';
+        // Load markdown documentation
+        const productCard = document.querySelector('.product-left-section')?.closest('.product-card') || 
+                            document.querySelector('.product-left-section')?.parentElement;
+        const currentProductId = productCard?.dataset?.productId || currentProduct;
+        await loadProductDocs(currentProductId);
+        break;
     case 'vids':
       productDescription.innerHTML = '<p>Video content coming soon! Check back for tutorials and demonstrations.</p>';
       productDescription.style.display = 'block';
