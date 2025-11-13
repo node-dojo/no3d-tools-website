@@ -185,6 +185,37 @@ const product3dImage = document.getElementById('product-3d-image');
 const downloadButton = document.getElementById('download-button');
 
 // Initialize the application
+// Price refresh interval (refresh every 5 minutes)
+let priceRefreshInterval = null;
+
+// Start periodic price refresh
+function startPriceRefresh() {
+  // Only refresh in production (not local development)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return;
+  }
+
+  // Refresh prices every 5 minutes
+  priceRefreshInterval = setInterval(async () => {
+    console.log('Periodic price refresh...');
+    await refreshPricesFromPolar();
+  }, 5 * 60 * 1000); // 5 minutes
+
+  console.log('Price refresh interval started (every 5 minutes)');
+}
+
+// Stop periodic price refresh
+function stopPriceRefresh() {
+  if (priceRefreshInterval) {
+    clearInterval(priceRefreshInterval);
+    priceRefreshInterval = null;
+    console.log('Price refresh interval stopped');
+  }
+}
+
+// Expose refresh function globally for manual refresh
+window.refreshPolarPrices = refreshPricesFromPolar;
+
 document.addEventListener('DOMContentLoaded', async function() {
   try {
     await loadProductsFromJSON();
@@ -203,6 +234,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       updateProductDisplay(currentProduct);
       updateIconGrid();
     }
+    
+    // Start periodic price refresh
+    startPriceRefresh();
   } catch (error) {
     console.warn('Failed to load products from JSON, using fallback data:', error);
     products = defaultProducts;
@@ -223,8 +257,92 @@ document.addEventListener('DOMContentLoaded', async function() {
       updateProductDisplay(currentProduct);
       updateIconGrid();
     }
+    
+    // Start periodic price refresh even with fallback data
+    startPriceRefresh();
   }
 });
+
+// Sync prices from Polar API
+async function syncPricesFromPolar() {
+  try {
+    // Skip in local development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.log('⚠️ Skipping price sync in local development');
+      return {};
+    }
+
+    console.log('🔄 Fetching prices from Polar API...');
+    const response = await fetch('/api/get-polar-prices');
+    
+    if (!response.ok) {
+      console.error('❌ Failed to fetch Polar prices:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      return {};
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('❌ Error in Polar prices response:', data.error);
+      return {};
+    }
+
+    if (!data.prices || Object.keys(data.prices).length === 0) {
+      console.warn('⚠️ No prices returned from Polar API');
+      return {};
+    }
+
+    console.log('✅ Fetched prices for', Object.keys(data.prices).length, 'products from Polar');
+    console.log('📊 Available product IDs:', Object.keys(data.prices));
+    return data.prices;
+  } catch (error) {
+    console.error('❌ Error syncing prices from Polar:', error);
+    console.error('Error details:', error.message, error.stack);
+    return {};
+  }
+}
+
+// Update product prices from Polar and refresh display
+async function refreshPricesFromPolar() {
+  try {
+    const polarPrices = await syncPricesFromPolar();
+    let updatedCount = 0;
+
+    // Update prices for all products
+    for (const productId in products) {
+      if (typeof POLAR_PRODUCTS !== 'undefined' && POLAR_PRODUCTS[productId]) {
+        const polarProduct = POLAR_PRODUCTS[productId];
+        const polarPrice = polarPrices[polarProduct.productId];
+        
+        if (polarPrice && polarPrice.formatted) {
+          const oldPrice = products[productId].price;
+          products[productId].price = polarPrice.formatted;
+          
+          if (oldPrice !== polarPrice.formatted) {
+            updatedCount++;
+            console.log(`Updated price for ${productId}: ${oldPrice} → ${polarPrice.formatted}`);
+          }
+        }
+      }
+    }
+
+    // Update display if a product is currently selected
+    if (currentProduct && products[currentProduct]) {
+      updateProductDisplay(currentProduct);
+    }
+
+    if (updatedCount > 0) {
+      console.log(`Refreshed ${updatedCount} product prices from Polar`);
+    }
+
+    return updatedCount;
+  } catch (error) {
+    console.error('Error refreshing prices:', error);
+    return 0;
+  }
+}
 
 // Load Products from JSON Files
 async function loadProductsFromJSON() {
@@ -246,6 +364,9 @@ async function loadProductsFromJSON() {
     
     products = {};
     
+    // Fetch Polar prices first
+    const polarPrices = await syncPricesFromPolar();
+    
     for (const fileName of productFiles) {
       try {
         const response = await fetch(`assets/product-data/${fileName}`);
@@ -265,8 +386,36 @@ async function loadProductsFromJSON() {
           }
         }
         
-        // Get price from variants
-        const price = jsonData.variants && jsonData.variants[0] ? `$${parseFloat(jsonData.variants[0].price).toFixed(2)}` : '$0.00';
+        // Get price from Polar if available, otherwise use JSON variant price
+        let price = null;
+        
+        // Try to find matching Polar product by handle
+        if (typeof POLAR_PRODUCTS !== 'undefined' && POLAR_PRODUCTS[productId]) {
+          const polarProduct = POLAR_PRODUCTS[productId];
+          const polarPrice = polarPrices[polarProduct.productId];
+          
+          if (polarPrice && polarPrice.formatted) {
+            // Use price from Polar API
+            price = polarPrice.formatted;
+            console.log(`✅ Synced price for ${productId}: ${price} from Polar (productId: ${polarProduct.productId})`);
+          } else {
+            console.warn(`⚠️ No Polar price found for ${productId} (productId: ${polarProduct.productId}). Available prices:`, Object.keys(polarPrices));
+          }
+        } else {
+          console.warn(`⚠️ No Polar mapping found for product: ${productId}`);
+        }
+        
+        // Fallback to JSON variant price if Polar price not available
+        if (!price && jsonData.variants && jsonData.variants[0] && jsonData.variants[0].price) {
+          price = `$${parseFloat(jsonData.variants[0].price).toFixed(2)}`;
+          console.log(`📦 Using JSON variant price for ${productId}: ${price}`);
+        }
+        
+        // Final fallback: use default price or show error
+        if (!price) {
+          console.error(`❌ No price found for ${productId}. Polar mapping: ${typeof POLAR_PRODUCTS !== 'undefined' && POLAR_PRODUCTS[productId] ? 'exists' : 'missing'}, JSON variants: ${jsonData.variants ? jsonData.variants.length : 'none'}`);
+          price = '$0.00'; // Default fallback
+        }
         
         // Extract product groups from tags (tags that are capitalized or contain spaces)
         const productGroups = (jsonData.tags || []).filter(tag => {
@@ -295,6 +444,29 @@ async function loadProductsFromJSON() {
     }
     
     console.log('Loaded products from JSON:', Object.keys(products).length, 'products');
+    
+    // Log price summary
+    const productsWithPrices = Object.keys(products).filter(id => products[id].price && products[id].price !== '$0.00');
+    const productsWithoutPrices = Object.keys(products).filter(id => !products[id].price || products[id].price === '$0.00');
+    
+    console.log(`📊 Price Summary: ${productsWithPrices.length} products with prices, ${productsWithoutPrices.length} products without prices`);
+    if (productsWithoutPrices.length > 0) {
+      console.warn('⚠️ Products missing prices:', productsWithoutPrices);
+      console.warn('Polar prices available:', Object.keys(polarPrices).length, 'products');
+    }
+    
+    // Update display if a product is currently selected
+    if (currentProduct && products[currentProduct]) {
+      updateProductDisplay(currentProduct);
+    }
+    
+    // If we're missing prices, try to refresh them once more after a short delay
+    if (productsWithoutPrices.length > 0 && Object.keys(polarPrices).length > 0) {
+      console.log('🔄 Attempting to refresh missing prices...');
+      setTimeout(async () => {
+        await refreshPricesFromPolar();
+      }, 1000);
+    }
   } catch (error) {
     console.error('Error loading products from JSON:', error);
     throw error;
@@ -1883,133 +2055,285 @@ async function handleBuyNow() {
   }, 0);
 }
 
+// Checkout Modal UI Elements
+const checkoutModal = document.getElementById('checkout-modal');
+const checkoutModalBackdrop = document.getElementById('checkout-modal-backdrop');
+const checkoutCloseButton = document.getElementById('checkout-close-button');
+const checkoutContentContainer = document.getElementById('checkout-content-container');
+const checkoutLoading = document.getElementById('checkout-loading');
+const checkoutError = document.getElementById('checkout-error');
+
+// Open checkout modal UI
+function openCheckoutModalUI() {
+  checkoutModal.classList.add('active');
+  checkoutModalBackdrop.classList.add('active');
+  checkoutLoading.style.display = 'flex';
+  checkoutError.style.display = 'none';
+  // Clear any previous iframe content
+  const existingIframe = checkoutContentContainer.querySelector('iframe');
+  if (existingIframe) {
+    existingIframe.remove();
+  }
+  // Prevent body scroll when modal is open
+  document.body.style.overflow = 'hidden';
+}
+
+// Close checkout modal UI
+function closeCheckoutModalUI() {
+  checkoutModal.classList.remove('active');
+  checkoutModalBackdrop.classList.remove('active');
+  checkoutLoading.style.display = 'none';
+  checkoutError.style.display = 'none';
+  // Clear iframe content
+  const existingIframe = checkoutContentContainer.querySelector('iframe');
+  if (existingIframe) {
+    existingIframe.remove();
+  }
+  // Restore body scroll
+  document.body.style.overflow = '';
+}
+
+// According to Polar docs, PolarEmbedCheckout.create() accepts the full checkout URL
+// No need to extract ID - just use the URL directly
+
+// Check if we're in local development (no API available)
+function isLocalDevelopment() {
+  return window.location.hostname === 'localhost' || 
+         window.location.hostname === '127.0.0.1' ||
+         window.location.protocol === 'file:';
+}
+
+// Get checkout URL directly from product (for local dev fallback)
+function getDirectCheckoutUrl(productIds) {
+  // Try to get checkout URL from POLAR_PRODUCTS
+  if (typeof POLAR_PRODUCTS !== 'undefined' && productIds.length > 0) {
+    const productId = productIds[0];
+    const product = Object.values(POLAR_PRODUCTS).find(p => p.productId === productId);
+    if (product && product.url) {
+      return product.url;
+    }
+  }
+  return null;
+}
+
 // Open Polar embedded checkout modal
 async function openCheckoutModal(productIds) {
   console.log('Creating checkout for product IDs:', productIds);
 
+  // Open modal UI immediately
+  openCheckoutModalUI();
+
   try {
-    // Call serverless function to create checkout session
-    const response = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        productIds: productIds
-      })
-    });
-
-    // Check if response is JSON before parsing
-    const contentType = response.headers.get('content-type');
     let data;
-
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
+    
+    // In local development, API endpoint won't work - redirect directly to full page checkout
+    if (isLocalDevelopment()) {
+      console.log('Local development detected - API endpoint not available');
+      console.log('Redirecting directly to full page checkout...');
+      
+      // Show message briefly, then redirect
+      checkoutLoading.style.display = 'none';
+      checkoutError.style.display = 'flex';
+      checkoutError.innerHTML = `
+        <span class="checkout-error-text">
+          Local preview mode detected.<br><br>
+          Checkout API requires serverless functions.<br><br>
+          Redirecting to full page checkout...
+        </span>
+      `;
+      
+      // Try to create checkout via direct API call to Polar (if we have the token)
+      // Otherwise, just redirect to organization page
+      setTimeout(() => {
+        // For local dev, we can't create checkout sessions, so redirect to organization page
+        // In production, this will work properly with the API endpoint
+        const orgUrl = 'https://polar.sh/no3d-tools';
+        console.log('Redirecting to Polar organization page:', orgUrl);
+        window.location.href = orgUrl;
+      }, 2000);
+      return;
     } else {
-      const textResponse = await response.text();
-      console.error('Non-JSON response from API:', textResponse);
-      throw new Error(`Server error: ${response.status} ${response.statusText}`);
-    }
+      // Call serverless function to create checkout session
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productIds: productIds
+        })
+      });
 
-    if (!response.ok || data.error) {
-      throw new Error(data.error || 'Failed to create checkout session');
-    }
+      // Check if response is JSON before parsing
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const textResponse = await response.text();
+        console.error('Non-JSON response from API:', textResponse);
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
 
-    if (!data.url) {
-      throw new Error('No checkout URL returned');
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      if (!data.url) {
+        throw new Error('No checkout URL returned');
+      }
     }
 
     console.log('Checkout session created:', data.id);
-    console.log('Redirecting to checkout URL:', data.url);
+    console.log('Checkout URL:', data.url);
 
-    // Redirect directly to Polar checkout page
-    // This is simpler and more reliable than the embedded modal
-    window.location.href = data.url;
-    return;
+    // Try to use embedded checkout modal
+    try {
+      // Wait for PolarEmbedCheckout to be available
+      // According to Polar docs, the global build exposes PolarEmbedCheckout directly
+      let PolarEmbedCheckout = window.PolarEmbedCheckout;
 
-    // Note: The code below is kept for reference if we want to re-enable embedded checkout
-    // // Wait for PolarEmbedCheckout to be available
-    // let PolarEmbedCheckout = window.PolarEmbedCheckout;
-    //
-    // // If not available, try waiting a bit for the script to load
-    // if (!PolarEmbedCheckout) {
-    //   console.log('Waiting for PolarEmbedCheckout to load...');
-    //   await new Promise((resolve) => {
-    //     let attempts = 0;
-    //     const checkInterval = setInterval(() => {
-    //       PolarEmbedCheckout = window.PolarEmbedCheckout;
-    //       attempts++;
-    //       if (PolarEmbedCheckout || attempts > 20) {
-    //         clearInterval(checkInterval);
-    //         resolve();
-    //       }
-    //     }, 100);
-    //   });
-    // }
-    //
-    // // Open Polar embedded checkout modal
-    // if (!PolarEmbedCheckout) {
-    //   console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
-    //   alert('Checkout modal failed to load. Please refresh the page and try again.');
-    //   // Re-enable button
-    //   if (buyNowButton) {
-    //     buyNowButton.disabled = false;
-    //     buyNowButton.textContent = 'BUY NOW';
-    //   }
-    //   return;
-    // }
-    //
-    // const checkout = await PolarEmbedCheckout.create(data.url, "light");
-
-    // Handle successful checkout
-    checkout.addEventListener("success", async (eventData) => {
-      console.log('Checkout completed successfully!', eventData);
-      
-      // Extract customer email from checkout data if available
-      let customerEmail = null;
-      if (eventData && eventData.customer && eventData.customer.email) {
-        customerEmail = eventData.customer.email;
-      } else if (eventData && eventData.email) {
-        customerEmail = eventData.email;
+      // If not available, try waiting a bit for the script to load
+      if (!PolarEmbedCheckout) {
+        console.log('Waiting for PolarEmbedCheckout to load...');
+        await new Promise((resolve) => {
+          let attempts = 0;
+          const checkInterval = setInterval(() => {
+            PolarEmbedCheckout = window.PolarEmbedCheckout;
+            attempts++;
+            if (PolarEmbedCheckout || attempts > 30) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+        });
       }
 
-      // If email not available, prompt user
-      if (!customerEmail) {
-        customerEmail = prompt('Please enter your email address to access your downloads:');
-        if (!customerEmail) {
-          alert('Email is required to verify your purchase. Please contact support if you need assistance.');
-          return;
+      // Debug: Log what's available
+      console.log('Polar SDK check:', {
+        hasPolarEmbedCheckout: !!window.PolarEmbedCheckout,
+        windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('polar')),
+        scriptSrc: document.querySelector('script[src*="polar-sh/checkout"]')?.src
+      });
+
+      // If PolarEmbedCheckout is still not available after all checks
+      if (!PolarEmbedCheckout) {
+        console.error('PolarEmbedCheckout not found. Available window properties:', {
+          polarKeys: Object.keys(window).filter(k => k.toLowerCase().includes('polar')),
+          hasScript: document.querySelector('script[src*="polar-sh/checkout"]') !== null,
+          scriptSrc: document.querySelector('script[src*="polar-sh/checkout"]')?.src
+        });
+        throw new Error('PolarEmbedCheckout SDK not loaded. Please check that the script is loading correctly.');
+      }
+
+      // If PolarEmbedCheckout is available, use embedded modal
+      if (PolarEmbedCheckout) {
+        console.log('Using Polar embedded checkout modal');
+        console.log('Checkout URL:', data.url);
+        
+        if (!data.url) {
+          throw new Error('No checkout URL available');
         }
-      }
 
-      // Verify purchase and get download URLs
-      try {
-        await handlePurchaseSuccess(productIds, customerEmail);
-      } catch (error) {
-        console.error('Error handling purchase success:', error);
-        alert(`Purchase successful! However, we couldn't verify your purchase immediately. Please check your email for download links.\n\nError: ${error.message}`);
-        window.location.reload();
-      }
-    });
+        // Hide loading state
+        checkoutLoading.style.display = 'none';
 
-    // Handle checkout close/cancel
-    checkout.addEventListener("close", () => {
-      console.log('Checkout modal closed');
+        // According to Polar docs, PolarEmbedCheckout.create() accepts the full checkout URL
+        // Pass the full URL directly (not just the ID)
+        console.log('Creating embedded checkout with URL:', data.url);
+        const checkout = await PolarEmbedCheckout.create(data.url, "light");
+
+        // Handle successful checkout
+        checkout.addEventListener("success", async (eventData) => {
+          console.log('Checkout completed successfully!', eventData);
+          
+          // Extract customer email from checkout data if available
+          let customerEmail = null;
+          if (eventData && eventData.customer && eventData.customer.email) {
+            customerEmail = eventData.customer.email;
+          } else if (eventData && eventData.email) {
+            customerEmail = eventData.email;
+          }
+
+          // If email not available, prompt user
+          if (!customerEmail) {
+            customerEmail = prompt('Please enter your email address to access your downloads:');
+            if (!customerEmail) {
+              alert('Email is required to verify your purchase. Please contact support if you need assistance.');
+              closeCheckoutModalUI();
+              return;
+            }
+          }
+
+          // Verify purchase and get download URLs
+          try {
+            await handlePurchaseSuccess(productIds, customerEmail);
+            closeCheckoutModalUI();
+          } catch (error) {
+            console.error('Error handling purchase success:', error);
+            alert(`Purchase successful! However, we couldn't verify your purchase immediately. Please check your email for download links.\n\nError: ${error.message}`);
+            closeCheckoutModalUI();
+            window.location.reload();
+          }
+        });
+
+        // Handle checkout close/cancel
+        checkout.addEventListener("close", () => {
+          console.log('Checkout modal closed');
+          closeCheckoutModalUI();
+          // Re-enable button
+          if (buyNowButton) {
+            buyNowButton.disabled = false;
+            buyNowButton.textContent = 'BUY NOW';
+          }
+        });
+
+        // Handle checkout loaded
+        checkout.addEventListener("loaded", () => {
+          console.log('Checkout modal loaded');
+        });
+
+        return;
+      }
+    } catch (embeddedError) {
+      console.warn('Embedded checkout failed, falling back to redirect:', embeddedError);
+      console.error('Embedded checkout error details:', {
+        message: embeddedError.message,
+        stack: embeddedError.stack,
+        name: embeddedError.name
+      });
+    }
+
+    // Fallback: If embedded checkout fails, redirect to full page
+    console.log('Falling back to full page checkout');
+    checkoutLoading.style.display = 'none';
+    checkoutError.style.display = 'flex';
+    
+    // Wait a moment to show error message, then redirect
+    setTimeout(() => {
+      window.location.href = data.url;
+    }, 1500);
+
+  } catch (error) {
+    console.error('Checkout failed:', error);
+    
+    // Show error and fallback to redirect if we have a URL
+    checkoutLoading.style.display = 'none';
+    checkoutError.style.display = 'flex';
+    
+    // Try to get checkout URL from error or redirect to a generic checkout page
+    setTimeout(() => {
+      // If we have a URL from a previous attempt, use it
+      // Otherwise, show error and close modal
+      alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+      closeCheckoutModalUI();
+      
       // Re-enable button
       if (buyNowButton) {
         buyNowButton.disabled = false;
         buyNowButton.textContent = 'BUY NOW';
       }
-    });
-
-    // Handle checkout loaded
-    checkout.addEventListener("loaded", () => {
-      console.log('Checkout modal loaded');
-    });
-
-  } catch (error) {
-    console.error('Checkout failed:', error);
-    throw error;
+    }, 2000);
   }
 }
 
@@ -2331,148 +2655,30 @@ function handleCheckout() {
     return;
   }
 
+  // Close cart modal first
+  closeCartModal();
+
   // Disable checkout button immediately for instant feedback
   if (cartCheckoutButton) {
     cartCheckoutButton.disabled = true;
     cartCheckoutButton.textContent = 'Creating checkout...';
   }
 
-  // Defer checkout creation to avoid blocking UI (improves INP)
-  setTimeout(async () => {
-    try {
-      console.log('Creating multi-product checkout for product IDs:', productIds);
-
-      // Call serverless function to create checkout session
-      const response = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        productIds: productIds
-      })
-    });
-
-    // Check if response is JSON before parsing
-    const contentType = response.headers.get('content-type');
-    let data;
-    
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      // If not JSON, get text response for debugging
-      const textResponse = await response.text();
-      console.error('Non-JSON response from API:', textResponse);
-      throw new Error(`Server error: ${response.status} ${response.statusText}. Check console for details.`);
+  // Use the new checkout modal
+  openCheckoutModal(productIds).then(() => {
+    // Re-enable checkout button if modal fails to open
+    if (cartCheckoutButton) {
+      cartCheckoutButton.disabled = false;
+      cartCheckoutButton.textContent = 'CHECK OUT';
     }
-
-    if (!response.ok || data.error) {
-      throw new Error(data.error || 'Failed to create checkout session');
+  }).catch((error) => {
+    console.error('Checkout failed:', error);
+    // Re-enable checkout button
+    if (cartCheckoutButton) {
+      cartCheckoutButton.disabled = false;
+      cartCheckoutButton.textContent = 'CHECK OUT';
     }
-
-    if (!data.url) {
-      throw new Error('No checkout URL returned');
-    }
-
-    console.log('Checkout session created:', data.id);
-    console.log('Redirecting to checkout URL:', data.url);
-
-    // Redirect directly to Polar checkout page
-    // This is simpler and more reliable than the embedded modal
-    window.location.href = data.url;
-    return;
-
-    // Note: The code below is kept for reference if we want to re-enable embedded checkout
-    // // Wait for PolarEmbedCheckout to be available
-    // let PolarEmbedCheckout = window.PolarEmbedCheckout;
-    //
-    // // If not available, try waiting a bit for the script to load
-    // if (!PolarEmbedCheckout) {
-    //   console.log('Waiting for PolarEmbedCheckout to load...');
-    //   await new Promise((resolve) => {
-    //     let attempts = 0;
-    //     const checkInterval = setInterval(() => {
-    //       PolarEmbedCheckout = window.PolarEmbedCheckout;
-    //       attempts++;
-    //       if (PolarEmbedCheckout || attempts > 20) {
-    //         clearInterval(checkInterval);
-    //         resolve();
-    //       }
-    //     }, 100);
-    //   });
-    // }
-    //
-    // // Open Polar embedded checkout modal
-    // if (!PolarEmbedCheckout) {
-    //   console.error('PolarEmbedCheckout not loaded. Please refresh the page and try again.');
-    //   alert('Checkout modal failed to load. Please refresh the page and try again.');
-    //   // Re-enable checkout button
-    //   if (cartCheckoutButton) {
-    //     cartCheckoutButton.disabled = false;
-    //     cartCheckoutButton.textContent = 'Checkout';
-    //   }
-    //   return;
-    // }
-    //
-    // const checkout = await PolarEmbedCheckout.create(data.url, "light");
-
-    // Handle successful checkout
-    checkout.addEventListener("success", async (eventData) => {
-      console.log('Checkout completed successfully!', eventData);
-      
-      // Extract customer email from checkout data if available
-      let customerEmail = null;
-      if (eventData && eventData.customer && eventData.customer.email) {
-        customerEmail = eventData.customer.email;
-      } else if (eventData && eventData.email) {
-        customerEmail = eventData.email;
-      }
-
-      // If email not available, prompt user
-      if (!customerEmail) {
-        customerEmail = prompt('Please enter your email address to access your downloads:');
-        if (!customerEmail) {
-          alert('Email is required to verify your purchase. Please contact support if you need assistance.');
-          return;
-        }
-      }
-
-      // Verify purchase and get download URLs
-      try {
-        await handlePurchaseSuccess(productIds, customerEmail);
-      } catch (error) {
-        console.error('Error handling purchase success:', error);
-        alert(`Purchase successful! However, we couldn't verify your purchase immediately. Please check your email for download links.\n\nError: ${error.message}`);
-        window.location.reload();
-      }
-    });
-
-    // Handle checkout close/cancel
-    checkout.addEventListener("close", () => {
-      console.log('Checkout modal closed');
-      // Re-enable checkout button
-      if (cartCheckoutButton) {
-        cartCheckoutButton.disabled = false;
-        cartCheckoutButton.textContent = 'Checkout';
-      }
-    });
-
-    // Handle checkout loaded
-    checkout.addEventListener("loaded", () => {
-      console.log('Checkout modal loaded');
-    });
-
-    } catch (error) {
-      console.error('Checkout failed:', error);
-      alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
-
-      // Re-enable checkout button
-      if (cartCheckoutButton) {
-        cartCheckoutButton.disabled = false;
-        cartCheckoutButton.textContent = 'Checkout';
-      }
-    }
-  }, 0); // End setTimeout - defers work to improve INP
+  });
 }
 
 // Initialize cart functionality
@@ -2520,11 +2726,46 @@ function initializeCart() {
   console.log('Shopping cart initialized');
 }
 
+// Initialize checkout modal functionality
+function initializeCheckoutModal() {
+  // Checkout close button
+  if (checkoutCloseButton) {
+    checkoutCloseButton.addEventListener('click', closeCheckoutModalUI);
+  }
+  
+  // Checkout backdrop click to close
+  if (checkoutModalBackdrop) {
+    checkoutModalBackdrop.addEventListener('click', closeCheckoutModalUI);
+  }
+  
+  // ESC key to close checkout modal
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && checkoutModal && checkoutModal.classList.contains('active')) {
+      closeCheckoutModalUI();
+      // Re-enable button
+      if (buyNowButton) {
+        buyNowButton.disabled = false;
+        buyNowButton.textContent = 'BUY NOW';
+      }
+      if (cartCheckoutButton) {
+        cartCheckoutButton.disabled = false;
+        cartCheckoutButton.textContent = 'CHECK OUT';
+      }
+    }
+  });
+  
+  console.log('Checkout modal initialized');
+}
+
 // Initialize cart when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeCart);
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeCart();
+    initializeCheckoutModal();
+  });
 } else {
   initializeCart();
+  initializeCheckoutModal();
 }
 
 // Make cart accessible globally for debugging
