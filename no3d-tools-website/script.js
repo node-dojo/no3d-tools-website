@@ -378,22 +378,21 @@ async function loadProductsFromJSON() {
     
     for (const fileName of productFiles) {
       try {
-        // Load JSON from GitHub repository
-        const productFolderName = fileName.replace('.json', '');
-        const jsonUrl = getGitHubImageUrl(productFolderName, fileName);
-        
+        // Load JSON from local assets directory
+        const jsonUrl = `/assets/product-data/${fileName}`;
+
         const response = await fetch(jsonUrl);
         if (!response.ok) {
-          console.warn(`Failed to load ${fileName} from GitHub:`, response.status);
+          console.warn(`Failed to load ${fileName}:`, response.status);
           continue;
         }
-        
+
         const jsonData = await response.json();
-        
+
         // Create product ID from handle
         const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        
-        // Get thumbnail from metafields or use GitHub icon
+
+        // Get thumbnail from metafields or use local icon
         // Product folder name matches the JSON filename (without .json extension)
         const productFolderName = fileName.replace('.json', '');
         let thumbnail = null;
