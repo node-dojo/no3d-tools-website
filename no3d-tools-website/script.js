@@ -748,21 +748,24 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
   try {
     console.log(`Loading products from GitHub for ${libraryKey}:`, config);
     
-    // Use GitHub API to list repository contents
-    const apiUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents?ref=${config.branch}`;
+    // Use authenticated API endpoint to list repository contents
+    const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}`;
     const response = await fetch(apiUrl);
     
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`API error: ${response.status} ${response.statusText} - ${errorData.error || errorData.message || ''}`);
     }
 
-    const contents = await response.json();
+    const data = await response.json();
     
-    // Handle API errors (e.g., private repo, not found)
-    if (contents.message) {
-      console.error(`GitHub API error: ${contents.message}`);
-      throw new Error(`GitHub API error: ${contents.message}`);
+    // Handle API errors
+    if (data.error) {
+      console.error(`GitHub API error: ${data.error}`);
+      throw new Error(`GitHub API error: ${data.error}`);
     }
+
+    const contents = data.contents || [];
     
     // Get ALL directories (no prefix filtering)
     const productDirs = contents.filter(item => item.type === 'dir');
@@ -783,13 +786,16 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
           continue;
         }
 
-        // Try to find metadata.json in the directory
-        const dirContentsUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${dir.name}?ref=${config.branch}`;
+        // Try to find metadata.json in the directory using authenticated API
+        const dirContentsUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(dir.name)}`;
         const dirResponse = await fetch(dirContentsUrl);
         
         if (!dirResponse.ok) continue;
 
-        const dirContents = await dirResponse.json();
+        const dirData = await dirResponse.json();
+        if (dirData.error) continue;
+
+        const dirContents = dirData.contents || [];
         const jsonFile = dirContents.find(item => 
           item.type === 'file' && (item.name === 'metadata.json' || item.name.endsWith('.json'))
         );
@@ -797,7 +803,13 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
         if (!jsonFile) continue;
 
         // Fetch the JSON file content
-        const jsonResponse = await fetch(jsonFile.download_url);
+        // Use download_url if available, otherwise construct raw URL
+        let jsonUrl = jsonFile.download_url;
+        if (!jsonUrl && jsonFile.path) {
+          jsonUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${jsonFile.path}`;
+        }
+        
+        const jsonResponse = await fetch(jsonUrl);
         if (!jsonResponse.ok) continue;
 
         const jsonData = await jsonResponse.json();
