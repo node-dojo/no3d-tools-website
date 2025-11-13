@@ -64,11 +64,13 @@ export default async (req, res) => {
     console.log(`Fetching GitHub contents from: ${apiUrl}`);
 
     // Fetch from GitHub API with authentication
+    // GitHub accepts both "token" and "Bearer" formats, but "Bearer" is preferred
     const response = await fetch(apiUrl, {
       headers: {
-        'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+        'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'NO3D-Tools-Website'
+        'User-Agent': 'NO3D-Tools-Website',
+        'X-GitHub-Api-Version': '2022-11-28'
       }
     });
 
@@ -112,4 +114,5 @@ export default async (req, res) => {
     });
   }
 };
+
 

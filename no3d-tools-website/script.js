@@ -757,31 +757,39 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
   }
 
   try {
-    console.log(`Loading products from GitHub for ${libraryKey}:`, config);
+    console.log(`🔄 Loading products from GitHub for ${libraryKey}:`, config);
     
     // Use authenticated API endpoint to list repository contents
     const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}`;
+    console.log(`📡 Fetching from API: ${apiUrl}`);
+    
     const response = await fetch(apiUrl);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error(`❌ API request failed:`, response.status, response.statusText, errorData);
       throw new Error(`API error: ${response.status} ${response.statusText} - ${errorData.error || errorData.message || ''}`);
     }
 
     const data = await response.json();
+    console.log(`📥 API response received:`, data);
     
     // Handle API errors
     if (data.error) {
-      console.error(`GitHub API error: ${data.error}`);
+      console.error(`❌ GitHub API error: ${data.error}`);
       throw new Error(`GitHub API error: ${data.error}`);
     }
 
     const contents = data.contents || [];
+    console.log(`📁 Repository contents:`, contents.length, 'items');
     
     // Get ALL directories (no prefix filtering)
     const productDirs = contents.filter(item => item.type === 'dir');
-
-    console.log(`Found ${productDirs.length} directories in ${config.repo}`);
+    console.log(`📂 Found ${productDirs.length} directories in ${config.repo}`);
+    
+    if (productDirs.length === 0) {
+      console.warn(`⚠️ No directories found. All items:`, contents.map(item => ({ name: item.name, type: item.type })));
+    }
     
     if (productDirs.length === 0) {
       console.warn(`No directories found in ${config.repo}. Repository might be empty or private.`);
@@ -954,36 +962,62 @@ async function handleProductTypeToggle(typeKey) {
       // Load products from GitHub if needed for this library
       const config = LIBRARY_CONFIG[typeKey];
       if (config && !config.useLocalAssets) {
-        console.log(`Loading products from GitHub for ${typeKey} section...`);
+        console.log(`🔄 Loading products from GitHub for ${typeKey} section...`);
+        console.log(`   Repo: ${config.owner}/${config.repo}`);
         try {
           const githubProducts = await loadProductsFromGitHubLibrary(typeKey);
           
-          // Merge GitHub products into main products object
-          Object.keys(githubProducts).forEach(productId => {
-            products[productId] = githubProducts[productId];
-          });
+          console.log(`📦 Received ${Object.keys(githubProducts).length} products from GitHub`);
           
-          // Reorganize products by type
-          organizeProductsByType();
+          if (Object.keys(githubProducts).length === 0) {
+            console.warn(`⚠️ No products loaded for ${typeKey}. Check console for errors.`);
+            // Show a message in the sidebar
+            const typeDiv = document.querySelector(`.product-type[data-type="${typeKey}"]`);
+            if (typeDiv) {
+              const groupsContainer = typeDiv.querySelector('.product-groups-container');
+              if (groupsContainer) {
+                groupsContainer.innerHTML = '<div class="coming-soon-message">No products found. Check console for errors.</div>';
+              }
+            }
+          } else {
+            // Merge GitHub products into main products object
+            Object.keys(githubProducts).forEach(productId => {
+              products[productId] = githubProducts[productId];
+            });
+            
+            // Reorganize products by type
+            organizeProductsByType();
+            
+            // Re-render sidebar with new products
+            renderSidebar();
+            
+            // Expand the type again after re-render
+            const updatedType = document.querySelector(`.product-type[data-type="${typeKey}"]`);
+            if (updatedType) {
+              updatedType.classList.add('expanded');
+              const updatedCarrot = updatedType.querySelector('.type-header .carrot');
+              if (updatedCarrot) {
+                updatedCarrot.classList.remove('collapsed');
+                updatedCarrot.classList.add('expanded');
+                updatedCarrot.textContent = '▼';
+              }
+            }
+            
+            console.log(`✅ Successfully loaded ${Object.keys(githubProducts).length} products for ${typeKey} section`);
+            console.log(`   Product IDs:`, Object.keys(githubProducts));
+          }
+        } catch (error) {
+          console.error(`❌ Failed to load products for ${typeKey}:`, error);
+          console.error(`   Error details:`, error.message, error.stack);
           
-          // Re-render sidebar with new products
-          renderSidebar();
-          
-          // Expand the type again after re-render
-          const updatedType = document.querySelector(`.product-type[data-type="${typeKey}"]`);
-          if (updatedType) {
-            updatedType.classList.add('expanded');
-            const updatedCarrot = updatedType.querySelector('.type-header .carrot');
-            if (updatedCarrot) {
-              updatedCarrot.classList.remove('collapsed');
-              updatedCarrot.classList.add('expanded');
-              updatedCarrot.textContent = '▼';
+          // Show error message in sidebar
+          const typeDiv = document.querySelector(`.product-type[data-type="${typeKey}"]`);
+          if (typeDiv) {
+            const groupsContainer = typeDiv.querySelector('.product-groups-container');
+            if (groupsContainer) {
+              groupsContainer.innerHTML = `<div class="coming-soon-message">Error loading products: ${error.message}</div>`;
             }
           }
-          
-          console.log(`✅ Loaded ${Object.keys(githubProducts).length} products for ${typeKey} section`);
-        } catch (error) {
-          console.error(`Failed to load products for ${typeKey}:`, error);
         }
       }
       
