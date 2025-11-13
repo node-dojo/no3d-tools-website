@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLVET Product Library Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #fff;
+            border-bottom: 2px solid #e0e0e0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .product-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .controls {
+            background: #fff;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .product-card.dirty {
+            border-color: #ffc107;
+            border-width: 2px;
+        }
+
+        .product-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+
+        .product-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #f9f9f9;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .product-icon:hover {
+            border-color: #007bff;
+        }
+
+        .icon-upload-zone {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .icon-upload-zone:hover {
+            border-color: #007bff;
+            background: #f0f7ff;
+        }
+
+        .icon-upload-zone.drag-over {
+            border-color: #28a745;
+            background: #f0fff4;
+            border-style: solid;
+        }
+
+        .icon-upload-zone img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .icon-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            font-size: 0.7rem;
+            border-radius: 4px;
+        }
+
+        .icon-upload-zone:hover .icon-upload-overlay {
+            display: flex;
+        }
+
+        .icon-upload-text {
+            font-size: 0.65rem;
+            color: #666;
+            text-align: center;
+            margin-top: 0.25rem;
+        }
+
+        .icon-uploading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .icon-upload-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-title-input {
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-title-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .file-status {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .file-badge {
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            background: #e9ecef;
+        }
+
+        .file-badge.exists {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .file-badge.missing {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .form-group {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-input.invalid,
+        .form-textarea.invalid,
+        .form-select.invalid {
+            border-color: #dc3545;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .tags-input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .tags-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .collapsible {
+            margin-top: 1rem;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .collapsible-header:hover {
+            background: #e9ecef;
+        }
+
+        .collapsible-content {
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            display: none;
+        }
+
+        .collapsible-content.open {
+            display: block;
+        }
+
+        .variant-item,
+        .metafield-item,
+        .changelog-entry {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .changelog-entry {
+            border-left: 3px solid #007bff;
+        }
+
+        .changelog-entry-header {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .changelog-entry-header input[type="text"] {
+            flex: 0 0 auto;
+        }
+
+        .changelog-entry-header input[type="date"] {
+            flex: 0 0 auto;
+        }
+
+        .changelog-changes {
+            margin-top: 0.5rem;
+        }
+
+        .changelog-change-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            align-items: center;
+        }
+
+        .changelog-change-item input {
+            flex: 1;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .metafield-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 120px;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-success:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-archived {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 4px;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SOLVET Product Library Dashboard</h1>
+        <div class="header-controls">
+            <span class="product-count" id="productCount">No products loaded</span>
+            <button class="btn btn-secondary" id="configBtn">Configure Repo</button>
+            <button class="btn btn-secondary" id="loadBtn" disabled>Load Products</button>
+            <button class="btn btn-primary" id="saveBtn" disabled>Export Changes</button>
+            <button class="btn btn-success" id="pushAllBtn" disabled>Push All Changes</button>
+        </div>
+    </div>
+
+    <div class="modal" id="configModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="margin-bottom: 1rem;">GitHub Repository Configuration</h2>
+            <div class="form-group">
+                <label class="form-label">Repository Owner</label>
+                <input type="text" class="form-input" id="repoOwner" value="node-dojo" placeholder="node-dojo">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Repository Name</label>
+                <input type="text" class="form-input" id="repoName" value="no3d-tools-library" placeholder="no3d-tools-library">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Branch</label>
+                <input type="text" class="form-input" id="repoBranch" value="main" placeholder="main">
+            </div>
+            <div class="form-group">
+                <label class="form-label">GitHub Token (Required for private repos)</label>
+                <input type="password" class="form-input" id="githubToken" placeholder="ghp_... or set via ?token=xxx in URL">
+                <small style="color: #666; font-size: 0.85rem;">
+                    <strong>For private repos:</strong> Personal Access Token (PAT) required with <code>repo</code> scope.<br>
+                    <strong>For public repos:</strong> Optional (increases rate limit from 60 to 5000 req/hour).<br>
+                    <strong>Note:</strong> Deploy keys (SSH) don't work with GitHub API - only for Git operations.<br>
+                    Token can be set via URL: <code>?token=ghp_xxx</code> or localStorage: <code>github_token</code>
+                </small>
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn btn-primary" onclick="saveConfig()">Save & Load</button>
+                <button class="btn btn-secondary" onclick="closeConfigModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls" id="controls" style="display: none;">
+        <input type="text" class="search-box" id="searchBox" placeholder="Search products...">
+        <select class="filter-select" id="statusFilter">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+        </select>
+        <select class="filter-select" id="sortSelect">
+            <option value="name">Sort by Name</option>
+            <option value="status">Sort by Status</option>
+        </select>
+    </div>
+
+    <div id="productsGrid" class="products-grid">
+        <div class="empty-state">
+            <h2>No Products Loaded</h2>
+            <p>Click "Configure Repo" to set up GitHub repository, then "Load Products" to fetch products</p>
+        </div>
+    </div>
+
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <img class="modal-image" id="modalImage" alt="Product icon">
+        </div>
+    </div>
+
+    <script>
+        let repoConfig = {
+            owner: 'node-dojo',
+            repo: 'no3d-tools-library',
+            branch: 'main',
+            token: null
+        };
+        let products = [];
+        let dirtyProducts = new Set();
+
+        const productTypes = [
+            'Blender Add-on',
+            'Geometry Node',
+            'Material',
+            'Collection',
+            'Mesh Object',
+            'Node Group'
+        ];
+
+        const metafieldTypes = [
+            'single_line_text_field',
+            'multi_line_text_field',
+            'date',
+            'number_integer',
+            'number_decimal',
+            'boolean',
+            'json'
+        ];
+
+        const namespaces = ['no3d_tools', 'polar', 'shopify'];
+
+        // Load GitHub token from environment/URL/localStorage
+        function getGitHubToken() {
+            // 1. Check URL parameter (e.g., ?token=ghp_xxx or #token=ghp_xxx)
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const urlToken = urlParams.get('token') || hashParams.get('token');
+            if (urlToken) {
+                return urlToken;
+            }
+            
+            // 2. Check localStorage for token
+            const storedToken = localStorage.getItem('github_token');
+            if (storedToken) {
+                return storedToken;
+            }
+            
+            // 3. Check full config
+            const savedConfig = localStorage.getItem('repoConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                if (config.token) {
+                    return config.token;
+                }
+            }
+            
+            return null;
+        }
+
+        // Load saved config from localStorage
+        const savedConfig = localStorage.getItem('repoConfig');
+        if (savedConfig) {
+            const saved = JSON.parse(savedConfig);
+            // Only override if server hasn't injected values
+            if (!repoConfig.token || repoConfig.token === '') {
+                repoConfig = { ...repoConfig, ...saved };
+            } else {
+                // Keep server-injected values, but merge other settings
+                repoConfig = { ...repoConfig, ...saved, token: repoConfig.token };
+            }
+        }
+        
+        // Override token from environment/URL if available (but don't override server-injected token)
+        if (!repoConfig.token || repoConfig.token === '') {
+            const envToken = getGitHubToken();
+            if (envToken) {
+                repoConfig.token = envToken;
+            }
+        }
+
+        document.getElementById('configBtn').addEventListener('click', openConfigModal);
+        document.getElementById('loadBtn').addEventListener('click', loadProducts);
+        document.getElementById('saveBtn').addEventListener('click', exportChanges);
+        document.getElementById('pushAllBtn').addEventListener('click', pushAllChangesToGitHub);
+        document.getElementById('searchBox').addEventListener('input', filterProducts);
+        document.getElementById('statusFilter').addEventListener('change', filterProducts);
+        document.getElementById('sortSelect').addEventListener('change', sortProducts);
+        document.getElementById('imageModal').addEventListener('click', (e) => {
+            if (e.target.id === 'imageModal') {
+                document.getElementById('imageModal').classList.remove('open');
+            }
+        });
+
+        function openConfigModal() {
+            document.getElementById('repoOwner').value = repoConfig.owner;
+            document.getElementById('repoName').value = repoConfig.repo;
+            document.getElementById('repoBranch').value = repoConfig.branch;
+            // Show token from config, but don't overwrite if it's from URL/env
+            const displayToken = repoConfig.token || '';
+            document.getElementById('githubToken').value = displayToken;
+            document.getElementById('configModal').classList.add('open');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('open');
+        }
+
+        function saveConfig() {
+            repoConfig.owner = document.getElementById('repoOwner').value.trim();
+            repoConfig.repo = document.getElementById('repoName').value.trim();
+            repoConfig.branch = document.getElementById('repoBranch').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+            
+            // Save token to both repoConfig and separate localStorage key
+            if (token) {
+                repoConfig.token = token;
+                localStorage.setItem('github_token', token);
+            } else {
+                // If empty, check if token exists from URL/env
+                const envToken = getGitHubToken();
+                if (envToken) {
+                    repoConfig.token = envToken;
+                } else {
+                    repoConfig.token = null;
+                    localStorage.removeItem('github_token');
+                }
+            }
+            
+            localStorage.setItem('repoConfig', JSON.stringify(repoConfig));
+            closeConfigModal();
+            
+            document.getElementById('loadBtn').disabled = false;
+            loadProducts();
+        }
+
+        async function fetchGitHubAPI(endpoint, options = {}) {
+            const url = `https://api.github.com${endpoint}`;
+            const headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                ...(options.headers || {})
+            };
+            
+            // Debug: Log token status
+            if (!repoConfig.token) {
+                console.warn('⚠️ No GitHub token found in repoConfig');
+                console.warn('   Check: 1) .env file has GITHUB_TOKEN, 2) Server restarted, 3) Browser cache cleared');
+            } else {
+                const tokenType = repoConfig.token.startsWith('ghp_') ? 'PAT' : 
+                                 repoConfig.token.startsWith('gho_') ? 'OAuth' : 'Unknown';
+                console.log(`✅ Using GitHub token (${tokenType}):`, repoConfig.token.substring(0, 15) + '...');
+                console.log('   Token length:', repoConfig.token.length, 'chars');
+            }
+            
+            if (repoConfig.token) {
+                // GitHub API accepts both 'token' and 'Bearer' for PATs and OAuth tokens
+                // OAuth tokens (gho_) work with 'token' prefix
+                // Personal Access Tokens (ghp_) also work with 'token' prefix
+                const authHeader = `token ${repoConfig.token.trim()}`;
+                headers['Authorization'] = authHeader;
+            }
+            
+            // Add Content-Type for PUT/POST requests
+            if (options.method && (options.method === 'PUT' || options.method === 'POST')) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            const fetchOptions = {
+                method: options.method || 'GET',
+                headers: headers
+            };
+            
+            if (options.body) {
+                fetchOptions.body = options.body;
+            }
+            
+            const response = await fetch(url, fetchOptions);
+            
+            // Enhanced error handling
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => '');
+                let errorData = null;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch (e) {
+                    // Not JSON
+                }
+                
+                if (response.status === 404) {
+                    return null;
+                }
+                if (response.status === 401) {
+                    const message = errorData?.message || 'Authentication failed';
+                    throw new Error(`401 Unauthorized: ${message}. Check your GitHub token. For private repos, you need a Personal Access Token with "repo" scope.`);
+                }
+                if (response.status === 403) {
+                    const rateLimit = response.headers.get('X-RateLimit-Remaining');
+                    const message = errorData?.message || 'Access forbidden';
+                    throw new Error(`403 Forbidden: ${message}. Rate limit remaining: ${rateLimit || 'unknown'}. ${repoConfig.token ? 'Token may not have correct permissions or repo access.' : 'Token required for private repos.'}`);
+                }
+                throw new Error(`GitHub API error: ${response.status} ${response.statusText}. ${errorData?.message || ''}`);
+            }
+            return await response.json();
+        }
+
+        async function fetchGitHubRaw(path) {
+            // For private repos, use GitHub API instead of raw.githubusercontent.com
+            // Raw URLs don't support authentication for private repos
+            if (repoConfig.token) {
+                // Use GitHub API to get file content (supports private repos)
+                try {
+                    const apiPath = `/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${path}?ref=${repoConfig.branch}`;
+                    const fileData = await fetchGitHubAPI(apiPath);
+                    if (fileData && fileData.content) {
+                        // Decode base64 content
+                        return atob(fileData.content.replace(/\s/g, ''));
+                    }
+                    return null;
+                } catch (error) {
+                    console.warn(`Failed to fetch ${path} via API, trying raw URL:`, error.message);
+                    // Fallback to raw URL (won't work for private repos)
+                }
+            }
+            
+            // Fallback: Use raw URL (only works for public repos)
+            const url = `https://raw.githubusercontent.com/${repoConfig.owner}/${repoConfig.repo}/${repoConfig.branch}/${path}`;
+            const headers = {};
+            if (repoConfig.token) {
+                headers['Authorization'] = `token ${repoConfig.token}`;
+            }
+            
+            const response = await fetch(url, { headers });
+            if (!response.ok) {
+                if (response.status === 404) {
+                    return null;
+                }
+                throw new Error(`Failed to fetch ${path}: ${response.status}`);
+            }
+            return await response.text();
+        }
+
+        async function loadProducts() {
+            products = [];
+            dirtyProducts.clear();
+            
+            try {
+                document.getElementById('loadBtn').disabled = true;
+                document.getElementById('loadBtn').textContent = 'Loading...';
+                
+                // Debug: Log current config
+                console.log('🔍 Loading products with config:', {
+                    owner: repoConfig.owner,
+                    repo: repoConfig.repo,
+                    branch: repoConfig.branch,
+                    hasToken: !!repoConfig.token,
+                    tokenType: repoConfig.token ? repoConfig.token.substring(0, 4) : 'none',
+                    tokenPrefix: repoConfig.token ? repoConfig.token.substring(0, 15) + '...' : 'none',
+                    tokenLength: repoConfig.token ? repoConfig.token.length : 0
+                });
+                
+                // Validate token before making request
+                if (!repoConfig.token) {
+                    throw new Error('No GitHub token found. Please configure token in .env file or via config modal.');
+                }
+                
+                if (repoConfig.token.length < 20) {
+                    throw new Error(`Invalid token length: ${repoConfig.token.length}. Token should be 40+ characters.`);
+                }
+                
+                // Fetch root directory contents
+                const rootContents = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents`);
+                if (!rootContents) {
+                    throw new Error('Repository not found or inaccessible');
+                }
+
+                // Find all directories starting with "Dojo"
+                const productDirs = rootContents.filter(item => 
+                    item.type === 'dir' && item.name.startsWith('Dojo')
+                );
+
+                // Load each product
+                for (const dir of productDirs) {
+                    const product = await loadProductFromGitHub(dir.name);
+                    if (product) {
+                        products.push(product);
+                    }
+                }
+                
+                updateProductCount();
+                renderProducts();
+                document.getElementById('controls').style.display = 'flex';
+                document.getElementById('loadBtn').disabled = false;
+                document.getElementById('loadBtn').textContent = 'Load Products';
+                showMessage(`Loaded ${products.length} products`, 'success');
+            } catch (error) {
+                showMessage('Error loading products: ' + error.message, 'error');
+                document.getElementById('loadBtn').disabled = false;
+                document.getElementById('loadBtn').textContent = 'Load Products';
+            }
+        }
+
+        async function loadProductFromGitHub(dirName) {
+            try {
+                // Get directory contents
+                const dirContents = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${dirName}`);
+                if (!dirContents) return null;
+
+                let jsonFileName = null;
+                let jsonPath = null;
+                let iconPath = null;
+                let iconUrl = null;
+                let hasBlend = false;
+
+                // Find files
+                for (const item of dirContents) {
+                    if (item.type === 'file') {
+                        if (item.name.endsWith('.json')) {
+                            jsonFileName = item.name;
+                            jsonPath = `${dirName}/${item.name}`;
+                        } else if (item.name.startsWith('icon_') && item.name.endsWith('.png')) {
+                            iconPath = `${dirName}/${item.name}`;
+                            // For private repos, load image via API and convert to data URL
+                            iconUrl = await loadImageAsDataUrl(iconPath);
+                        } else if (item.name.endsWith('.blend')) {
+                            hasBlend = true;
+                        }
+                    }
+                }
+
+                if (!jsonPath) return null;
+
+                // Fetch JSON file
+                const jsonText = await fetchGitHubRaw(jsonPath);
+                if (!jsonText) return null;
+
+                const productData = JSON.parse(jsonText);
+
+                return {
+                    dirName,
+                    jsonPath,
+                    jsonFileName,
+                    iconPath,
+                    iconUrl,
+                    hasBlend,
+                    data: productData,
+                    originalData: JSON.parse(JSON.stringify(productData))
+                };
+            } catch (error) {
+                console.error('Error loading product from', dirName, error);
+                return null;
+            }
+        }
+
+        async function loadImageAsDataUrl(imagePath) {
+            try {
+                // For private repos, use GitHub API to get image
+                if (repoConfig.token) {
+                    const apiPath = `/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${imagePath}?ref=${repoConfig.branch}`;
+                    const fileData = await fetchGitHubAPI(apiPath);
+                    if (fileData && fileData.content && fileData.encoding === 'base64') {
+                        // Convert base64 to data URL
+                        const base64Content = fileData.content.replace(/\s/g, '');
+                        // Determine MIME type from file extension
+                        const mimeType = imagePath.endsWith('.png') ? 'image/png' : 
+                                       imagePath.endsWith('.jpg') || imagePath.endsWith('.jpeg') ? 'image/jpeg' :
+                                       imagePath.endsWith('.gif') ? 'image/gif' : 'image/png';
+                        return `data:${mimeType};base64,${base64Content}`;
+                    }
+                }
+                
+                // Fallback: Try raw URL (only works for public repos)
+                const rawUrl = `https://raw.githubusercontent.com/${repoConfig.owner}/${repoConfig.repo}/${repoConfig.branch}/${imagePath}`;
+                const headers = {};
+                if (repoConfig.token) {
+                    headers['Authorization'] = `token ${repoConfig.token}`;
+                }
+                
+                const response = await fetch(rawUrl, { headers });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                }
+                
+                return null;
+            } catch (error) {
+                console.warn('Failed to load image:', imagePath, error);
+                return null;
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h2>No Products Found</h2></div>';
+                return;
+            }
+
+            products.forEach((product, index) => {
+                const card = createProductCard(product, index);
+                grid.appendChild(card);
+            });
+        }
+
+        function createProductCard(product, index) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            if (dirtyProducts.has(index)) {
+                card.classList.add('dirty');
+            }
+
+            const hasIcon = product.iconUrl !== null;
+            const hasBlend = product.hasBlend || false;
+            const hasJson = product.jsonPath !== null;
+
+            card.innerHTML = `
+                <div class="product-header">
+                    <div class="icon-upload-zone" id="icon-zone-${index}"
+                         onclick="document.getElementById('icon-input-${index}').click()"
+                         ondragover="handleIconDragOver(event, ${index})"
+                         ondragleave="handleIconDragLeave(event, ${index})"
+                         ondrop="handleIconDrop(event, ${index})">
+                        ${hasIcon ? `
+                            <img src="${product.iconUrl}" alt="Product icon">
+                            <div class="icon-upload-overlay">
+                                <div>📁 Upload</div>
+                                <div style="font-size: 0.6rem;">or drag & drop</div>
+                            </div>
+                        ` : `
+                            <div style="text-align: center; color: #999; font-size: 0.7rem;">
+                                <div>📁</div>
+                                <div>Upload Icon</div>
+                            </div>
+                        `}
+                    </div>
+                    <input type="file" id="icon-input-${index}" accept="image/*" style="display: none;"
+                           onchange="handleIconFileSelect(event, ${index})">
+                    <div class="product-info">
+                        <input type="text" class="product-title-input" value="${escapeHtml(product.data.title)}" 
+                               onchange="updateProduct(${index}, 'title', this.value)">
+                        <div class="file-status">
+                            <span class="file-badge ${hasJson ? 'exists' : 'missing'}">JSON</span>
+                            <span class="file-badge ${hasBlend ? 'exists' : 'missing'}">BLEND</span>
+                            <span class="file-badge ${hasIcon ? 'exists' : 'missing'}">ICON</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Price</label>
+                    <input type="text" class="form-input" value="${product.data.variants && product.data.variants[0] ? escapeHtml(product.data.variants[0].price) : '0.00'}" 
+                           onchange="updateProductPrice(${index}, this.value)" 
+                           pattern="^\\d+\\.\\d{2}$">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" onchange="updateProduct(${index}, 'description', this.value)">${escapeHtml(product.data.description)}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" onchange="updateProduct(${index}, 'status', this.value)">
+                        <option value="active" ${product.data.status === 'active' ? 'selected' : ''}>Active</option>
+                        <option value="draft" ${product.data.status === 'draft' ? 'selected' : ''}>Draft</option>
+                        <option value="archived" ${product.data.status === 'archived' ? 'selected' : ''}>Archived</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Product Type</label>
+                    <select class="form-select" onchange="updateProduct(${index}, 'product_type', this.value)">
+                        ${productTypes.map(type => 
+                            `<option value="${type}" ${product.data.product_type === type ? 'selected' : ''}>${type}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tags (comma-separated)</label>
+                    <input type="text" class="tags-input" value="${product.data.tags.join(', ')}" 
+                           onchange="updateProductTags(${index}, this.value)">
+                    <div class="tags-display">
+                        ${product.data.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label class="form-label" style="margin-bottom: 0;">Changelog</label>
+                    <button class="btn btn-success btn-small" onclick="pushProductToGitHub(${index})" 
+                            ${dirtyProducts.has(index) ? '' : 'disabled'} 
+                            style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                        ${dirtyProducts.has(index) ? '📤 Push' : '✓ Synced'}
+                    </button>
+                </div>
+                <div class="changelog-container">
+                        ${(product.data.changelog || []).map((entry, entryIndex) => `
+                            <div class="changelog-entry">
+                                <div class="changelog-entry-header">
+                                    <input type="text" class="form-input" placeholder="Version" 
+                                           value="${escapeHtml(entry.version || '')}" 
+                                           style="max-width: 120px;"
+                                           onchange="updateChangelogEntry(${index}, ${entryIndex}, 'version', this.value)">
+                                    <input type="date" class="form-input" 
+                                           value="${escapeHtml(entry.date || '')}" 
+                                           style="max-width: 150px;"
+                                           onchange="updateChangelogEntry(${index}, ${entryIndex}, 'date', this.value)">
+                                    <button class="btn btn-danger btn-small" onclick="removeChangelogEntry(${index}, ${entryIndex})">Remove</button>
+                                </div>
+                                <div class="changelog-changes">
+                                    ${(entry.changes || []).map((change, changeIndex) => `
+                                        <div class="changelog-change-item">
+                                            <input type="text" class="form-input" 
+                                                   value="${escapeHtml(change)}" 
+                                                   placeholder="Change description"
+                                                   onchange="updateChangelogChange(${index}, ${entryIndex}, ${changeIndex}, this.value)">
+                                            <button class="btn btn-danger btn-small" onclick="removeChangelogChange(${index}, ${entryIndex}, ${changeIndex})">×</button>
+                                        </div>
+                                    `).join('')}
+                                    <button class="btn btn-secondary btn-small" onclick="addChangelogChange(${index}, ${entryIndex})" style="margin-top: 0.25rem;">+ Add Change</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                        <button class="btn btn-secondary btn-small" onclick="addChangelogEntry(${index})" style="margin-top: 0.5rem;">+ Add Changelog Entry</button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function updateProduct(index, field, value) {
+            products[index].data[field] = value;
+            markDirty(index);
+            validateProduct(index);
+        }
+
+        function updateProductPrice(index, value) {
+            // Ensure variants array exists and has at least one variant
+            if (!products[index].data.variants || products[index].data.variants.length === 0) {
+                products[index].data.variants = [{
+                    price: value,
+                    sku: '',
+                    inventory_policy: 'continue',
+                    inventory_management: 'shopify'
+                }];
+            } else {
+                products[index].data.variants[0].price = value;
+            }
+            markDirty(index);
+            validateProduct(index);
+        }
+
+        function updateProductTags(index, value) {
+            const tags = value.split(',').map(t => t.trim()).filter(t => t);
+            products[index].data.tags = tags;
+            markDirty(index);
+
+            // Update tags display
+            const card = document.querySelectorAll('.product-card')[index];
+            const tagsDisplay = card.querySelector('.tags-display');
+            tagsDisplay.innerHTML = tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+        }
+
+        // Icon Upload Functions
+        function handleIconDragOver(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const zone = document.getElementById(`icon-zone-${index}`);
+            zone.classList.add('drag-over');
+        }
+
+        function handleIconDragLeave(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const zone = document.getElementById(`icon-zone-${index}`);
+            zone.classList.remove('drag-over');
+        }
+
+        async function handleIconDrop(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const zone = document.getElementById(`icon-zone-${index}`);
+            zone.classList.remove('drag-over');
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    await uploadProductIcon(index, file);
+                } else {
+                    showMessage('Please drop an image file', 'error');
+                }
+            }
+        }
+
+        async function handleIconFileSelect(event, index) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    await uploadProductIcon(index, file);
+                } else {
+                    showMessage('Please select an image file', 'error');
+                }
+            }
+            // Reset input so same file can be selected again
+            event.target.value = '';
+        }
+
+        async function uploadProductIcon(index, file) {
+            const product = products[index];
+            const zone = document.getElementById(`icon-zone-${index}`);
+
+            try {
+                // Show loading state
+                zone.classList.add('icon-uploading');
+                zone.innerHTML = '<div class="icon-upload-spinner"></div>';
+
+                // Read file as data URL for preview
+                const reader = new FileReader();
+                const dataUrl = await new Promise((resolve, reject) => {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                // Determine icon filename from product
+                const iconFileName = product.data.metafields?.find(m => m.key === 'thumbnail')?.value
+                    || `icon_${product.data.title}.png`;
+
+                // Get base64 content (remove data URL prefix)
+                const base64Content = dataUrl.split(',')[1];
+
+                // Upload to GitHub if token is available
+                if (repoConfig.token) {
+                    const iconPath = `${product.folderName}/${iconFileName}`;
+
+                    try {
+                        // Get current file SHA if it exists (needed for updates)
+                        let sha = null;
+                        try {
+                            const currentFile = await fetchFromGitHub(iconPath);
+                            if (currentFile) {
+                                const apiUrl = `https://api.github.com/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${iconPath}`;
+                                const response = await fetch(apiUrl, {
+                                    headers: {
+                                        'Authorization': `token ${repoConfig.token}`,
+                                        'Accept': 'application/vnd.github.v3+json'
+                                    }
+                                });
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    sha = data.sha;
+                                }
+                            }
+                        } catch (e) {
+                            // File doesn't exist yet, that's okay
+                            console.log('Icon file does not exist yet, will create new');
+                        }
+
+                        // Upload to GitHub
+                        const apiUrl = `https://api.github.com/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${iconPath}`;
+                        const response = await fetch(apiUrl, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${repoConfig.token}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: `Update icon for ${product.data.title}`,
+                                content: base64Content,
+                                branch: repoConfig.branch,
+                                ...(sha && { sha }) // Include SHA if updating existing file
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Failed to upload icon to GitHub');
+                        }
+
+                        showMessage(`Icon uploaded successfully for ${product.data.title}`, 'success');
+                    } catch (error) {
+                        console.error('GitHub upload failed:', error);
+                        showMessage(`GitHub upload failed: ${error.message}. Using local preview.`, 'error');
+                    }
+                }
+
+                // Update local preview
+                product.iconUrl = dataUrl;
+
+                // Update thumbnail metafield if it doesn't exist
+                if (!product.data.metafields) {
+                    product.data.metafields = [];
+                }
+                const thumbnailField = product.data.metafields.find(m => m.key === 'thumbnail');
+                if (!thumbnailField) {
+                    product.data.metafields.push({
+                        namespace: 'no3d_tools',
+                        key: 'thumbnail',
+                        value: iconFileName,
+                        type: 'single_line_text_field'
+                    });
+                }
+
+                markDirty(index);
+
+                // Re-render the product card
+                renderProducts();
+
+            } catch (error) {
+                console.error('Icon upload failed:', error);
+                showMessage(`Failed to upload icon: ${error.message}`, 'error');
+
+                // Restore the zone
+                renderProducts();
+            }
+        }
+
+        function ensureChangelog(index) {
+            if (!products[index].data.changelog) {
+                products[index].data.changelog = [];
+            }
+        }
+
+        function updateChangelogEntry(index, entryIndex, field, value) {
+            ensureChangelog(index);
+            if (!products[index].data.changelog[entryIndex]) {
+                products[index].data.changelog[entryIndex] = { version: '', date: '', changes: [] };
+            }
+            products[index].data.changelog[entryIndex][field] = value;
+            markDirty(index);
+        }
+
+        function updateChangelogChange(index, entryIndex, changeIndex, value) {
+            ensureChangelog(index);
+            if (!products[index].data.changelog[entryIndex]) {
+                products[index].data.changelog[entryIndex] = { version: '', date: '', changes: [] };
+            }
+            if (!products[index].data.changelog[entryIndex].changes) {
+                products[index].data.changelog[entryIndex].changes = [];
+            }
+            products[index].data.changelog[entryIndex].changes[changeIndex] = value;
+            markDirty(index);
+        }
+
+        function addChangelogEntry(index) {
+            ensureChangelog(index);
+            const today = new Date().toISOString().split('T')[0];
+            products[index].data.changelog.push({
+                version: '',
+                date: today,
+                changes: ['']
+            });
+            markDirty(index);
+            renderProducts();
+        }
+
+        function removeChangelogEntry(index, entryIndex) {
+            ensureChangelog(index);
+            products[index].data.changelog.splice(entryIndex, 1);
+            markDirty(index);
+            renderProducts();
+        }
+
+        function addChangelogChange(index, entryIndex) {
+            ensureChangelog(index);
+            if (!products[index].data.changelog[entryIndex]) {
+                products[index].data.changelog[entryIndex] = { version: '', date: '', changes: [] };
+            }
+            if (!products[index].data.changelog[entryIndex].changes) {
+                products[index].data.changelog[entryIndex].changes = [];
+            }
+            products[index].data.changelog[entryIndex].changes.push('');
+            markDirty(index);
+            renderProducts();
+        }
+
+        function removeChangelogChange(index, entryIndex, changeIndex) {
+            ensureChangelog(index);
+            if (products[index].data.changelog[entryIndex] && products[index].data.changelog[entryIndex].changes) {
+                products[index].data.changelog[entryIndex].changes.splice(changeIndex, 1);
+                // Remove entry if no changes left
+                if (products[index].data.changelog[entryIndex].changes.length === 0) {
+                    products[index].data.changelog.splice(entryIndex, 1);
+                }
+                markDirty(index);
+                renderProducts();
+            }
+        }
+
+        function markDirty(index) {
+            dirtyProducts.add(index);
+            const card = document.querySelectorAll('.product-card')[index];
+            if (card) {
+                card.classList.add('dirty');
+                // Update individual push button
+                const pushBtn = card.querySelector('button[onclick*="pushProductToGitHub"]');
+                if (pushBtn) {
+                    pushBtn.disabled = false;
+                    pushBtn.textContent = '📤 Push';
+                }
+            }
+            document.getElementById('saveBtn').disabled = dirtyProducts.size === 0;
+            document.getElementById('pushAllBtn').disabled = dirtyProducts.size === 0 || !repoConfig.token;
+        }
+
+        function validateProduct(index) {
+            const product = products[index].data;
+            const card = document.querySelectorAll('.product-card')[index];
+            
+            // Validate price format
+            const priceLabel = Array.from(card.querySelectorAll('.form-label')).find(label => label.textContent === 'Price');
+            if (priceLabel) {
+                const priceInput = priceLabel.nextElementSibling;
+                if (priceInput && priceInput.tagName === 'INPUT') {
+                    const price = product.variants && product.variants[0] ? product.variants[0].price : '0.00';
+                    if (!/^\d+\.\d{2}$/.test(price)) {
+                        priceInput.classList.add('invalid');
+                    } else {
+                        priceInput.classList.remove('invalid');
+                    }
+                }
+            }
+        }
+
+        function exportChanges() {
+            if (dirtyProducts.size === 0) {
+                showMessage('No changes to export', 'error');
+                return;
+            }
+
+            try {
+                const savedIndices = Array.from(dirtyProducts);
+                const exportData = {
+                    repo: `${repoConfig.owner}/${repoConfig.repo}`,
+                    branch: repoConfig.branch,
+                    timestamp: new Date().toISOString(),
+                    products: []
+                };
+
+                for (const index of savedIndices) {
+                    const product = products[index];
+                    const jsonText = JSON.stringify(product.data, null, 2);
+                    
+                    // Validate JSON
+                    try {
+                        JSON.parse(jsonText);
+                    } catch (e) {
+                        showMessage(`Invalid JSON for ${product.data.title}: ${e.message}`, 'error');
+                        continue;
+                    }
+
+                    exportData.products.push({
+                        path: product.jsonPath,
+                        filename: product.jsonFileName,
+                        content: jsonText
+                    });
+                }
+
+                // Create downloadable JSON file
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `product-changes-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showMessage(`Exported ${exportData.products.length} product(s). Review and commit manually.`, 'success');
+            } catch (error) {
+                showMessage('Error exporting: ' + error.message, 'error');
+            }
+        }
+
+        async function getFileSHA(filePath) {
+            try {
+                const fileData = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${filePath}?ref=${repoConfig.branch}`);
+                return fileData ? fileData.sha : null;
+            } catch (error) {
+                // File might not exist yet
+                return null;
+            }
+        }
+
+        async function updateFileOnGitHub(filePath, content, message) {
+            const sha = await getFileSHA(filePath);
+            const contentBase64 = btoa(unescape(encodeURIComponent(content)));
+            
+            const body = {
+                message: message,
+                content: contentBase64,
+                branch: repoConfig.branch
+            };
+            
+            if (sha) {
+                body.sha = sha;
+            }
+            
+            const response = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${filePath}`, {
+                method: 'PUT',
+                body: JSON.stringify(body)
+            });
+            
+            return response;
+        }
+
+        async function syncLocalFile(filePath, content) {
+            try {
+                console.log(`🔄 Syncing local file: ${filePath}`);
+                console.log(`   Content length: ${content.length} characters`);
+                
+                const response = await fetch('/api/sync-local-file', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ filePath, content })
+                });
+                
+                console.log(`   Response status: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`❌ Sync failed - Response:`, errorText);
+                    let error;
+                    try {
+                        error = JSON.parse(errorText);
+                    } catch (e) {
+                        error = { error: errorText || `HTTP ${response.status}` };
+                    }
+                    throw new Error(error.error || 'Failed to sync local file');
+                }
+                
+                const result = await response.json();
+                console.log(`✅ Local file synced: ${filePath}`);
+                console.log(`   File size: ${result.size || 'unknown'} bytes`);
+                return result;
+            } catch (error) {
+                console.error('❌ Failed to sync local file:', error);
+                console.error('   Error details:', {
+                    message: error.message,
+                    stack: error.stack
+                });
+                showMessage(`Warning: Local file sync failed: ${error.message}`, 'error');
+                // Don't throw - this is a convenience feature, not critical
+                return null;
+            }
+        }
+
+        async function pushProductToGitHub(index) {
+            if (!repoConfig.token) {
+                showMessage('GitHub token required. Please configure in settings.', 'error');
+                return;
+            }
+
+            const product = products[index];
+            if (!dirtyProducts.has(index)) {
+                showMessage('No changes to push for this product', 'error');
+                return;
+            }
+
+            const pushBtn = document.querySelectorAll('.product-card')[index]?.querySelector('button[onclick*="pushProductToGitHub"]');
+            if (pushBtn) {
+                pushBtn.disabled = true;
+                pushBtn.textContent = '⏳ Pushing...';
+            }
+
+            try {
+                const jsonText = JSON.stringify(product.data, null, 2);
+                
+                // Validate JSON
+                JSON.parse(jsonText);
+                
+                const commitMessage = `Update ${product.data.title} from dashboard`;
+                await updateFileOnGitHub(product.jsonPath, jsonText, commitMessage);
+                
+                // Sync local file to match GitHub (after successful push)
+                let syncError = null;
+                try {
+                    await syncLocalFile(product.jsonPath, jsonText);
+                } catch (error) {
+                    syncError = error;
+                    // Log but don't fail the push
+                    console.error('Local sync error (non-critical):', error);
+                }
+                
+                // Mark as clean
+                dirtyProducts.delete(index);
+                const card = document.querySelectorAll('.product-card')[index];
+                if (card) {
+                    card.classList.remove('dirty');
+                }
+                
+                // Update button
+                if (pushBtn) {
+                    pushBtn.textContent = '✓ Synced';
+                    pushBtn.disabled = true;
+                }
+                
+                // Update global buttons
+                document.getElementById('saveBtn').disabled = dirtyProducts.size === 0;
+                document.getElementById('pushAllBtn').disabled = dirtyProducts.size === 0 || !repoConfig.token;
+                
+                // Show success message, then error if sync failed (with delay so both are visible)
+                showMessage(`✅ Pushed ${product.data.title} to GitHub`, 'success');
+                if (syncError) {
+                    setTimeout(() => {
+                        showMessage(`⚠️ GitHub push succeeded, but local sync failed: ${syncError.message}`, 'error');
+                    }, 500);
+                }
+            } catch (error) {
+                showMessage(`Error pushing ${product.data.title}: ${error.message}`, 'error');
+                if (pushBtn) {
+                    pushBtn.disabled = false;
+                    pushBtn.textContent = '📤 Push';
+                }
+            }
+        }
+
+        async function pushAllChangesToGitHub() {
+            if (!repoConfig.token) {
+                showMessage('GitHub token required. Please configure in settings.', 'error');
+                return;
+            }
+
+            if (dirtyProducts.size === 0) {
+                showMessage('No changes to push', 'error');
+                return;
+            }
+
+            const pushBtn = document.getElementById('pushAllBtn');
+            const originalText = pushBtn.textContent;
+            pushBtn.disabled = true;
+            pushBtn.textContent = '⏳ Pushing...';
+            document.body.classList.add('loading');
+
+            let successCount = 0;
+            let errorCount = 0;
+            const errors = [];
+
+            try {
+                const dirtyIndices = Array.from(dirtyProducts);
+                
+                for (const index of dirtyIndices) {
+                    const product = products[index];
+                    try {
+                        const jsonText = JSON.stringify(product.data, null, 2);
+                        
+                        // Validate JSON
+                        JSON.parse(jsonText);
+                        
+                        const commitMessage = `Update ${product.data.title} from dashboard`;
+                        await updateFileOnGitHub(product.jsonPath, jsonText, commitMessage);
+                        
+                        // Sync local file to match GitHub (after successful push)
+                        let syncError = null;
+                        try {
+                            await syncLocalFile(product.jsonPath, jsonText);
+                        } catch (error) {
+                            syncError = error;
+                            // Log but don't fail the push
+                            console.error(`Local sync error for ${product.data.title} (non-critical):`, error);
+                        }
+                        
+                        // Track sync errors for summary
+                        if (syncError) {
+                            errors.push({ product: product.data.title, error: syncError.message, type: 'sync' });
+                        }
+                        
+                        // Mark as clean
+                        dirtyProducts.delete(index);
+                        const card = document.querySelectorAll('.product-card')[index];
+                        if (card) {
+                            card.classList.remove('dirty');
+                            const productPushBtn = card.querySelector('button[onclick*="pushProductToGitHub"]');
+                            if (productPushBtn) {
+                                productPushBtn.textContent = '✓ Synced';
+                                productPushBtn.disabled = true;
+                            }
+                        }
+                        
+                        successCount++;
+                    } catch (error) {
+                        errorCount++;
+                        errors.push({ product: product.data.title, error: error.message, type: 'push' });
+                        console.error(`Error pushing ${product.data.title}:`, error);
+                    }
+                }
+                
+                // Update global buttons
+                document.getElementById('saveBtn').disabled = dirtyProducts.size === 0;
+                document.getElementById('pushAllBtn').disabled = dirtyProducts.size === 0 || !repoConfig.token;
+                
+                if (errorCount === 0 && errors.length === 0) {
+                    showMessage(`✅ Successfully pushed ${successCount} product(s) to GitHub`, 'success');
+                } else {
+                    const pushErrors = errors.filter(e => e.type === 'push');
+                    const syncErrors = errors.filter(e => e.type === 'sync');
+                    
+                    if (pushErrors.length > 0) {
+                        showMessage(`⚠️ Pushed ${successCount} product(s), ${pushErrors.length} failed. Check console for details.`, 'error');
+                        console.error('Push errors:', pushErrors);
+                    } else {
+                        // Only push errors, no sync errors - show success
+                        showMessage(`✅ Successfully pushed ${successCount} product(s) to GitHub`, 'success');
+                    }
+                    
+                    if (syncErrors.length > 0) {
+                        setTimeout(() => {
+                            showMessage(`⚠️ GitHub push succeeded, but ${syncErrors.length} local sync(s) failed. Check console for details.`, 'error');
+                        }, 500);
+                        console.error('Local sync errors:', syncErrors);
+                    }
+                }
+                
+                // Re-render to update all buttons
+                renderProducts();
+            } catch (error) {
+                showMessage(`Error pushing changes: ${error.message}`, 'error');
+            } finally {
+                pushBtn.disabled = dirtyProducts.size === 0 || !repoConfig.token;
+                pushBtn.textContent = originalText;
+                document.body.classList.remove('loading');
+            }
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            let filtered = products.map((product, index) => ({ product, index })).filter(({ product }) => {
+                const matchesSearch = product.data.title.toLowerCase().includes(searchTerm) ||
+                                    product.data.description.toLowerCase().includes(searchTerm) ||
+                                    product.data.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+                const matchesStatus = !statusFilter || product.data.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            renderFilteredProducts(filtered);
+        }
+
+        function sortProducts() {
+            const sortBy = document.getElementById('sortSelect').value;
+            const sorted = products.map((product, index) => ({ product, index })).sort((a, b) => {
+                if (sortBy === 'name') {
+                    return a.product.data.title.localeCompare(b.product.data.title);
+                } else if (sortBy === 'status') {
+                    return a.product.data.status.localeCompare(b.product.data.status);
+                }
+                return 0;
+            });
+            renderFilteredProducts(sorted);
+        }
+
+        function renderFilteredProducts(filteredProducts) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h2>No Products Match Filters</h2></div>';
+                return;
+            }
+
+            filteredProducts.forEach(({ product, index }) => {
+                const card = createProductCard(product, index);
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleCollapsible(header) {
+            const content = header.nextElementSibling;
+            const isOpen = content.classList.contains('open');
+            content.classList.toggle('open', !isOpen);
+            header.querySelector('span:last-child').textContent = isOpen ? '▼' : '▲';
+        }
+
+        function showImageModal(imageUrl) {
+            document.getElementById('modalImage').src = imageUrl;
+            document.getElementById('imageModal').classList.add('open');
+        }
+
+        function updateProductCount() {
+            document.getElementById('productCount').textContent = `${products.length} products`;
+        }
+
+        function showMessage(text, type) {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            document.body.appendChild(message);
+
+            // Error messages persist longer and appear on top
+            const duration = type === 'error' ? 6000 : 3000;
+            if (type === 'error') {
+                message.style.zIndex = '10000';
+                message.style.backgroundColor = '#ff4444';
+            }
+
+            setTimeout(() => {
+                message.remove();
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Make functions globally accessible
+        window.updateProduct = updateProduct;
+        window.updateProductPrice = updateProductPrice;
+        window.updateProductTags = updateProductTags;
+        window.updateChangelogEntry = updateChangelogEntry;
+        window.updateChangelogChange = updateChangelogChange;
+        window.addChangelogEntry = addChangelogEntry;
+        window.removeChangelogEntry = removeChangelogEntry;
+        window.addChangelogChange = addChangelogChange;
+        window.removeChangelogChange = removeChangelogChange;
+        window.pushProductToGitHub = pushProductToGitHub;
+        window.toggleCollapsible = toggleCollapsible;
+        window.showImageModal = showImageModal;
+        window.saveConfig = saveConfig;
+        window.closeConfigModal = closeConfigModal;
+
+        // Auto-load if config exists
+        if (savedConfig) {
+            document.getElementById('loadBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>
+
