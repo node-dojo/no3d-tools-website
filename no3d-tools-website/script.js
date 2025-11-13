@@ -1,17 +1,16 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
-// Import marked for markdown rendering
-import { marked } from 'marked';
-
-// Configure marked with security options
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  sanitize: false, // We'll sanitize manually if needed
-  smartLists: true,
-  smartypants: true
-});
+// Configure marked (loaded from CDN) with security options
+if (typeof marked !== 'undefined') {
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+    sanitize: false, // We'll sanitize manually if needed
+    smartLists: true,
+    smartypants: true
+  });
+}
 
 // Multi-Library Configuration - Maps sections to GitHub repositories
 // Each section loads ALL products from its corresponding GitHub repo
@@ -1594,7 +1593,14 @@ async function loadProductDocs(productId) {
     );
 
     // Convert markdown to HTML
-    const htmlContent = marked.parse(withEmbeddedVideos);
+    let htmlContent;
+    if (typeof marked !== 'undefined') {
+      htmlContent = marked.parse(withEmbeddedVideos);
+    } else {
+      // Fallback if marked is not loaded
+      console.warn('Marked.js not loaded, using plain text');
+      htmlContent = `<pre>${withEmbeddedVideos}</pre>`;
+    }
 
     // Update the description with rendered HTML
     productDescription.innerHTML = htmlContent;
