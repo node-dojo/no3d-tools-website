@@ -1,6 +1,41 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
+// Multi-Library Configuration - Maps sections to GitHub repositories
+// Each section loads ALL products from its corresponding GitHub repo
+const LIBRARY_CONFIG = {
+  tools: {
+    owner: 'node-dojo',
+    repo: 'no3d-tools-library',
+    branch: 'main',
+    useLocalAssets: true // Use local assets for tools
+  },
+  tutorials: {
+    owner: 'node-dojo',
+    repo: 'no3d-tools-library',
+    branch: 'main',
+    useLocalAssets: true
+  },
+  prints: {
+    owner: 'node-dojo',
+    repo: 'no3d-prints-library',
+    branch: 'main',
+    useLocalAssets: false // Load from GitHub
+  },
+  apps: {
+    owner: 'node-dojo',
+    repo: 'no3d-tools-library',
+    branch: 'main',
+    useLocalAssets: true
+  },
+  docs: {
+    owner: 'node-dojo',
+    repo: 'no3d-not3s-library',
+    branch: 'main',
+    useLocalAssets: false // Load from GitHub
+  }
+};
+
 // GitHub Repository Configuration (kept for reference, but using local assets now)
 const REPO_CONFIG = {
   owner: 'node-dojo',
@@ -695,8 +730,141 @@ function renderSidebar() {
   });
 }
 
+// Load products from GitHub API for a specific library
+// Loads ALL directories from the repo (no prefix filtering)
+async function loadProductsFromGitHubLibrary(libraryKey) {
+  const config = LIBRARY_CONFIG[libraryKey];
+  if (!config) {
+    console.error(`No library config found for: ${libraryKey}`);
+    return {};
+  }
+
+  // If using local assets, skip GitHub loading
+  if (config.useLocalAssets) {
+    console.log(`Using local assets for ${libraryKey}, skipping GitHub load`);
+    return {};
+  }
+
+  try {
+    console.log(`Loading products from GitHub for ${libraryKey}:`, config);
+    
+    // Use GitHub API to list repository contents
+    const apiUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents?ref=${config.branch}`;
+    const response = await fetch(apiUrl);
+    
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+    }
+
+    const contents = await response.json();
+    
+    // Get ALL directories (no prefix filtering)
+    const productDirs = contents.filter(item => item.type === 'dir');
+
+    console.log(`Found ${productDirs.length} directories in ${config.repo}`);
+
+    const loadedProducts = {};
+
+    // Load each product's metadata.json file
+    for (const dir of productDirs) {
+      try {
+        // Skip common non-product directories
+        if (['.git', 'node_modules', 'scripts', 'archive'].includes(dir.name)) {
+          continue;
+        }
+
+        // Try to find metadata.json in the directory
+        const dirContentsUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${dir.name}?ref=${config.branch}`;
+        const dirResponse = await fetch(dirContentsUrl);
+        
+        if (!dirResponse.ok) continue;
+
+        const dirContents = await dirResponse.json();
+        const jsonFile = dirContents.find(item => 
+          item.type === 'file' && (item.name === 'metadata.json' || item.name.endsWith('.json'))
+        );
+
+        if (!jsonFile) continue;
+
+        // Fetch the JSON file content
+        const jsonResponse = await fetch(jsonFile.download_url);
+        if (!jsonResponse.ok) continue;
+
+        const jsonData = await jsonResponse.json();
+
+        // Create product ID from handle or title
+        const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+        // Find thumbnail/icon image - check common patterns
+        let thumbnail = null;
+        
+        // Try common icon/thumbnail filename patterns
+        const possibleIconNames = [
+          `icon_${dir.name}.png`,
+          `thumbnail_${dir.name}.png`,
+          `preview_${dir.name}.png`,
+          `${dir.name}.png`,
+          'icon.png',
+          'thumbnail.png',
+          'preview.png'
+        ];
+
+        const iconFile = dirContents.find(item => 
+          item.type === 'file' && possibleIconNames.includes(item.name)
+        );
+
+        if (iconFile) {
+          thumbnail = iconFile.download_url;
+        } else if (jsonData.metafields) {
+          const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
+          if (thumbnailField) {
+            // Construct GitHub raw URL for thumbnail
+            thumbnail = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${dir.name}/${thumbnailField.value}`;
+          }
+        }
+
+        // Get price from variants or metafields
+        let price = null;
+        if (jsonData.variants && jsonData.variants[0] && jsonData.variants[0].price) {
+          price = `$${parseFloat(jsonData.variants[0].price).toFixed(2)}`;
+        }
+
+        // Extract product groups from tags
+        const productGroups = (jsonData.tags || []).filter(tag => {
+          return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
+        });
+
+        loadedProducts[productId] = {
+          name: jsonData.title || dir.name,
+          price: price || 'Free',
+          description: jsonData.description || '',
+          changelog: jsonData.changelog || [],
+          image3d: thumbnail || '',
+          icon: thumbnail || '',
+          productType: libraryKey,
+          groups: productGroups,
+          handle: jsonData.handle,
+          metafields: jsonData.metafields || [],
+          folderName: dir.name
+        };
+
+      } catch (error) {
+        console.warn(`Failed to load product from ${dir.name}:`, error);
+        continue;
+      }
+    }
+
+    console.log(`Loaded ${Object.keys(loadedProducts).length} products from ${config.repo}`);
+    return loadedProducts;
+
+  } catch (error) {
+    console.error(`Error loading products from GitHub for ${libraryKey}:`, error);
+    return {};
+  }
+}
+
 // Handle Product Type Toggle (Accordion - only one expanded)
-function handleProductTypeToggle(typeKey) {
+async function handleProductTypeToggle(typeKey) {
   // Close all product types
   document.querySelectorAll('.product-type').forEach(typeDiv => {
     typeDiv.classList.remove('expanded');
@@ -731,6 +899,43 @@ function handleProductTypeToggle(typeKey) {
       }
       activeProductType = typeKey;
       updateHeaderLogo(activeProductType);
+      
+      // Load products from GitHub if needed for this library
+      const config = LIBRARY_CONFIG[typeKey];
+      if (config && !config.useLocalAssets) {
+        console.log(`Loading products from GitHub for ${typeKey} section...`);
+        try {
+          const githubProducts = await loadProductsFromGitHubLibrary(typeKey);
+          
+          // Merge GitHub products into main products object
+          Object.keys(githubProducts).forEach(productId => {
+            products[productId] = githubProducts[productId];
+          });
+          
+          // Reorganize products by type
+          organizeProductsByType();
+          
+          // Re-render sidebar with new products
+          renderSidebar();
+          
+          // Expand the type again after re-render
+          const updatedType = document.querySelector(`.product-type[data-type="${typeKey}"]`);
+          if (updatedType) {
+            updatedType.classList.add('expanded');
+            const updatedCarrot = updatedType.querySelector('.type-header .carrot');
+            if (updatedCarrot) {
+              updatedCarrot.classList.remove('collapsed');
+              updatedCarrot.classList.add('expanded');
+              updatedCarrot.textContent = '▼';
+            }
+          }
+          
+          console.log(`✅ Loaded ${Object.keys(githubProducts).length} products for ${typeKey} section`);
+        } catch (error) {
+          console.error(`Failed to load products for ${typeKey}:`, error);
+        }
+      }
+      
       updateProductCardForType(activeProductType);
     }
     
