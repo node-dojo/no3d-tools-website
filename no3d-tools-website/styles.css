@@ -993,7 +993,7 @@ body {
   position: fixed;
   bottom: 0;
   right: 0;
-  height: 40px; /* Match footer height */
+  height: 68px; /* Increased by 70% from 40px */
   width: auto;
   object-fit: contain;
   z-index: 201; /* Above footer z-index */
