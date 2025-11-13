@@ -758,10 +758,20 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
 
     const contents = await response.json();
     
+    // Handle API errors (e.g., private repo, not found)
+    if (contents.message) {
+      console.error(`GitHub API error: ${contents.message}`);
+      throw new Error(`GitHub API error: ${contents.message}`);
+    }
+    
     // Get ALL directories (no prefix filtering)
     const productDirs = contents.filter(item => item.type === 'dir');
 
     console.log(`Found ${productDirs.length} directories in ${config.repo}`);
+    
+    if (productDirs.length === 0) {
+      console.warn(`No directories found in ${config.repo}. Repository might be empty or private.`);
+    }
 
     const loadedProducts = {};
 
@@ -823,10 +833,12 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
           }
         }
 
-        // Get price from variants or metafields
+        // Get price from variants or metafields or direct price field
         let price = null;
         if (jsonData.variants && jsonData.variants[0] && jsonData.variants[0].price) {
           price = `$${parseFloat(jsonData.variants[0].price).toFixed(2)}`;
+        } else if (jsonData.price) {
+          price = `$${parseFloat(jsonData.price).toFixed(2)}`;
         }
 
         // Extract product groups from tags
@@ -834,11 +846,25 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
           return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
         });
 
+        // Normalize changelog format - handle both array of objects and array of strings
+        let changelog = [];
+        if (jsonData.changelog && Array.isArray(jsonData.changelog)) {
+          changelog = jsonData.changelog.map(entry => {
+            if (typeof entry === 'string') {
+              return entry;
+            } else if (entry && entry.changes) {
+              // Handle object format: {version, date, changes}
+              return typeof entry.changes === 'string' ? entry.changes : entry.changes.join(', ');
+            }
+            return '';
+          }).filter(entry => entry);
+        }
+
         loadedProducts[productId] = {
           name: jsonData.title || dir.name,
           price: price || 'Free',
           description: jsonData.description || '',
-          changelog: jsonData.changelog || [],
+          changelog: changelog,
           image3d: thumbnail || '',
           icon: thumbnail || '',
           productType: libraryKey,
@@ -847,6 +873,8 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
           metafields: jsonData.metafields || [],
           folderName: dir.name
         };
+
+        console.log(`✅ Loaded product: ${productId} from ${dir.name}`);
 
       } catch (error) {
         console.warn(`Failed to load product from ${dir.name}:`, error);
