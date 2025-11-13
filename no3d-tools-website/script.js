@@ -1,28 +1,24 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
-// GitHub Repository Configuration
+// GitHub Repository Configuration (kept for reference, but using local assets now)
 const REPO_CONFIG = {
   owner: 'node-dojo',
   repo: 'no3d-tools-library',
   branch: 'main'
 };
 
-// GitHub API base URL
-const GITHUB_API_BASE = 'https://api.github.com';
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com';
-const GITHUB_REPO_OWNER = 'node-dojo';
-const GITHUB_REPO_NAME = 'no3d-tools-library';
-const GITHUB_BRANCH = 'main';
+// Local assets directory for product images
+const ASSETS_BASE = '/assets/product-images';
 
-// Generate GitHub raw URL for product images
-function getGitHubImageUrl(productFolder, imageFileName) {
-  return `${GITHUB_RAW_BASE}/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${GITHUB_BRANCH}/${encodeURIComponent(productFolder)}/${encodeURIComponent(imageFileName)}`;
+// Generate local asset URL for product images
+function getProductImageUrl(imageFileName) {
+  return `${ASSETS_BASE}/${imageFileName}`;
 }
 
-// Generate GitHub raw URL for product icon
+// Generate local asset URL for product icon
 function getProductIconUrl(productName) {
-  return getGitHubImageUrl(productName, `icon_${productName}.png`);
+  return getProductImageUrl(`icon_${productName}.png`);
 }
 
 // Check if Polar products are loaded
@@ -404,12 +400,12 @@ async function loadProductsFromJSON() {
         if (jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
-            // If thumbnail is specified, use GitHub URL
-            thumbnail = getGitHubImageUrl(productFolderName, thumbnailField.value);
+            // If thumbnail is specified, use local asset
+            thumbnail = getProductImageUrl(thumbnailField.value);
           }
         }
-        
-        // Default to GitHub icon URL if no thumbnail specified
+
+        // Default to local icon if no thumbnail specified
         if (!thumbnail) {
           thumbnail = getProductIconUrl(productFolderName);
         }
@@ -456,8 +452,8 @@ async function loadProductsFromJSON() {
           price: price,
           description: jsonData.description || generateDescription(jsonData.title),
           changelog: generateChangelog(jsonData.title),
-          image3d: thumbnail, // Always use GitHub URL
-          icon: thumbnail, // Always use GitHub URL
+          image3d: thumbnail, // Use local assets
+          icon: thumbnail, // Use local assets
           productType: jsonData.productType || 'tools',
           groups: productGroups,
           handle: jsonData.handle || productId
