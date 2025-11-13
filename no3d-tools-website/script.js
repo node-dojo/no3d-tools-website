@@ -11,6 +11,19 @@ const REPO_CONFIG = {
 // GitHub API base URL
 const GITHUB_API_BASE = 'https://api.github.com';
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com';
+const GITHUB_REPO_OWNER = 'node-dojo';
+const GITHUB_REPO_NAME = 'no3d-tools-library';
+const GITHUB_BRANCH = 'main';
+
+// Generate GitHub raw URL for product images
+function getGitHubImageUrl(productFolder, imageFileName) {
+  return `${GITHUB_RAW_BASE}/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${GITHUB_BRANCH}/${encodeURIComponent(productFolder)}/${encodeURIComponent(imageFileName)}`;
+}
+
+// Generate GitHub raw URL for product icon
+function getProductIconUrl(productName) {
+  return getGitHubImageUrl(productName, `icon_${productName}.png`);
+}
 
 // Check if Polar products are loaded
 console.log('=== Script Loading ===');
@@ -344,7 +357,7 @@ async function refreshPricesFromPolar() {
   }
 }
 
-// Load Products from JSON Files
+// Load Products from JSON Files (from GitHub repository)
 async function loadProductsFromJSON() {
   try {
     const productFiles = [
@@ -369,21 +382,36 @@ async function loadProductsFromJSON() {
     
     for (const fileName of productFiles) {
       try {
-        const response = await fetch(`assets/product-data/${fileName}`);
-        if (!response.ok) continue;
+        // Load JSON from GitHub repository
+        const productFolderName = fileName.replace('.json', '');
+        const jsonUrl = getGitHubImageUrl(productFolderName, fileName);
+        
+        const response = await fetch(jsonUrl);
+        if (!response.ok) {
+          console.warn(`Failed to load ${fileName} from GitHub:`, response.status);
+          continue;
+        }
         
         const jsonData = await response.json();
         
         // Create product ID from handle
         const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         
-        // Get thumbnail from metafields or use default
+        // Get thumbnail from metafields or use GitHub icon
+        // Product folder name matches the JSON filename (without .json extension)
+        const productFolderName = fileName.replace('.json', '');
         let thumbnail = null;
         if (jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
-            thumbnail = `assets/product-images/${thumbnailField.value}`;
+            // If thumbnail is specified, use GitHub URL
+            thumbnail = getGitHubImageUrl(productFolderName, thumbnailField.value);
           }
+        }
+        
+        // Default to GitHub icon URL if no thumbnail specified
+        if (!thumbnail) {
+          thumbnail = getProductIconUrl(productFolderName);
         }
         
         // Get price from Polar if available, otherwise use JSON variant price
@@ -428,8 +456,8 @@ async function loadProductsFromJSON() {
           price: price,
           description: jsonData.description || generateDescription(jsonData.title),
           changelog: generateChangelog(jsonData.title),
-          image3d: thumbnail || `assets/product-images/icon_${jsonData.title}.png`,
-          icon: thumbnail || `assets/product-images/icon_${jsonData.title}.png`,
+          image3d: thumbnail, // Always use GitHub URL
+          icon: thumbnail, // Always use GitHub URL
           productType: jsonData.productType || 'tools',
           groups: productGroups,
           handle: jsonData.handle || productId
@@ -845,11 +873,11 @@ async function loadProductsFromGitHub() {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
       
-      // Create product data with local image URLs
-      const iconUrl = `assets/product-images/icon_${productName}.png`;
+      // Create product data with GitHub image URLs
+      const iconUrl = getProductIconUrl(productName);
       const image3dUrl = iconUrl; // Use icon as 3D image for now
 
-      console.log(`Using local images for ${productName}:`, iconUrl);
+      console.log(`Using GitHub images for ${productName}:`, iconUrl);
       
       products[productId] = {
         name: productName.toUpperCase(),
