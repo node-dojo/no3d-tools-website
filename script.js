@@ -346,6 +346,9 @@ function updateIconGrid() {
     iconItem.appendChild(iconImg);
     iconGrid.appendChild(iconItem);
   });
+
+  // Also update mobile carousel
+  updateMobileCarousel();
 }
 
 // Set up event listeners
@@ -364,6 +367,11 @@ function initializeEventListeners() {
       const iconItem = e.target.closest('.icon-item');
       const productId = iconItem.dataset.product;
       selectProduct(productId);
+      
+      // If on mobile, scroll carousel to selected item
+      if (window.innerWidth <= 768) {
+        scrollToActiveItem();
+      }
     }
 
     // Tab icon expansion/collapse
@@ -466,6 +474,124 @@ function updateChangelog(changelogItems) {
   ).join('');
 }
 
+// Update mobile carousel with icons
+function updateMobileCarousel() {
+  const mobileCarousel = document.getElementById('icon-carousel-mobile');
+  if (!mobileCarousel) return;
+  
+  // Clear existing items
+  mobileCarousel.innerHTML = '';
+  
+  // Add spacer at the beginning for centering
+  const startSpacer = document.createElement('div');
+  startSpacer.style.flex = '0 0 auto';
+  startSpacer.style.minWidth = 'calc(50vw - 40px)';
+  mobileCarousel.appendChild(startSpacer);
+  
+  // Add icons from loaded data
+  Object.keys(products).forEach((productId, index) => {
+    const product = products[productId];
+    const iconItem = document.createElement('div');
+    iconItem.className = `icon-item ${index === 0 ? 'active centered' : ''}`;
+    iconItem.dataset.product = productId;
+    
+    const iconImg = document.createElement('img');
+    iconImg.src = product.icon;
+    iconImg.alt = `${product.name} Icon`;
+    iconImg.onerror = function() {
+      // Fallback to a placeholder if image fails to load
+      this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjBGMEYwIi8+Cjx0ZXh0IHg9IjI1IiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SWNvbjwvdGV4dD4KPC9zdmc+';
+    };
+    
+    iconItem.appendChild(iconImg);
+    mobileCarousel.appendChild(iconItem);
+  });
+
+  // Add spacer at the end for centering
+  const endSpacer = document.createElement('div');
+  endSpacer.style.flex = '0 0 auto';
+  endSpacer.style.minWidth = 'calc(50vw - 40px)';
+  mobileCarousel.appendChild(endSpacer);
+
+  // Initialize carousel scroll detection
+  initializeCarouselScrollDetection();
+  
+  // Scroll to active item on initial load
+  setTimeout(() => {
+    scrollToActiveItem();
+  }, 100);
+}
+
+// Initialize carousel scroll detection to find centered icon
+function initializeCarouselScrollDetection() {
+  const mobileCarousel = document.getElementById('icon-carousel-mobile');
+  if (!mobileCarousel) return;
+
+  let scrollTimeout;
+  
+  const detectCenteredIcon = () => {
+    const carouselRect = mobileCarousel.getBoundingClientRect();
+    const carouselCenter = carouselRect.left + carouselRect.width / 2;
+    
+    const iconItems = mobileCarousel.querySelectorAll('.icon-item');
+    let closestIcon = null;
+    let closestDistance = Infinity;
+    
+    iconItems.forEach((item) => {
+      const itemRect = item.getBoundingClientRect();
+      const itemCenter = itemRect.left + itemRect.width / 2;
+      const distance = Math.abs(itemCenter - carouselCenter);
+      
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIcon = item;
+      }
+      
+      // Remove centered class from all items
+      item.classList.remove('centered');
+    });
+    
+    // Add centered class to closest icon
+    if (closestIcon) {
+      closestIcon.classList.add('centered');
+      
+      // Update product display if different from current
+      const productId = closestIcon.dataset.product;
+      if (productId && productId !== currentProduct) {
+        selectProduct(productId);
+      }
+    }
+  };
+
+  // Detect on scroll
+  mobileCarousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(detectCenteredIcon, 50);
+  });
+
+  // Detect on initial load and resize
+  detectCenteredIcon();
+  window.addEventListener('resize', detectCenteredIcon);
+}
+
+// Scroll carousel to show active product
+function scrollToActiveItem() {
+  const mobileCarousel = document.getElementById('icon-carousel-mobile');
+  if (!mobileCarousel) return;
+
+  const activeItem = mobileCarousel.querySelector(`.icon-item[data-product="${currentProduct}"]`);
+  if (activeItem) {
+    const carouselRect = mobileCarousel.getBoundingClientRect();
+    const itemRect = activeItem.getBoundingClientRect();
+    const scrollLeft = activeItem.offsetLeft - (carouselRect.width / 2) + (itemRect.width / 2);
+    
+    mobileCarousel.scrollTo({
+      left: scrollLeft,
+      behavior: 'smooth'
+    });
+  }
+}
+
 // Update active states for sidebar and icon grid
 function updateActiveStates(productId) {
   // Update sidebar active state
@@ -487,6 +613,23 @@ function updateActiveStates(productId) {
       item.classList.remove('active');
     }
   });
+
+  // Update mobile carousel active state and scroll to it
+  const mobileCarousel = document.getElementById('icon-carousel-mobile');
+  if (mobileCarousel) {
+    const carouselItems = mobileCarousel.querySelectorAll('.icon-item');
+    carouselItems.forEach(item => {
+      if (item.dataset.product === productId) {
+        item.classList.add('active');
+        // Scroll to this item
+        setTimeout(() => {
+          scrollToActiveItem();
+        }, 100);
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
 }
 
 // Toggle tab icon expansion/collapse
@@ -656,6 +799,15 @@ const searchResultsEmpty = document.getElementById('search-results-empty');
 
 let searchResults = [];
 let selectedResultIndex = -1;
+
+// Search icon button click handler
+const searchIconButton = document.getElementById('search-icon-button');
+if (searchIconButton) {
+  searchIconButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    openSearchModal();
+  });
+}
 
 // Open search modal with CMD+K or Ctrl+K
 document.addEventListener('keydown', function(e) {

@@ -350,7 +350,7 @@ body {
 }
 
 .product-name {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: var(--letter-spacing-normal);
@@ -627,7 +627,7 @@ body {
 }
 
 .product-title {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: 37.533px;
   font-weight: normal;
   letter-spacing: var(--letter-spacing-normal);
@@ -817,6 +817,11 @@ body {
   letter-spacing: var(--letter-spacing-normal);
 }
 
+/* Hide mobile carousel on desktop */
+.icon-carousel-mobile {
+  display: none;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .sidebar {
@@ -899,6 +904,56 @@ body {
   /* Hide icon grid on mobile */
   .icon-grid {
     display: none !important;
+  }
+
+  /* Mobile Icon Carousel */
+  .icon-carousel-mobile {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: var(--space-medium);
+    padding: var(--space-medium) var(--space-small);
+    margin-top: var(--space-large);
+    margin-bottom: var(--space-medium);
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .icon-carousel-mobile::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  .icon-carousel-mobile .icon-item {
+    flex: 0 0 auto;
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    scroll-snap-align: center;
+    transition: transform var(--transition-normal), opacity var(--transition-normal);
+    opacity: 0.6;
+    transform: scale(0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-carousel-mobile .icon-item.centered {
+    opacity: 1;
+    transform: scale(1.2);
+    z-index: 10;
+  }
+
+  .icon-carousel-mobile .icon-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
   }
 
   /* Header adjustments */
@@ -1138,11 +1193,12 @@ body {
   width: 100%;
   padding: var(--space-small) var(--space-medium);
   font-family: var(--font-mono);
-  font-size: var(--font-size-base);
+  font-size: 18px;
   font-weight: var(--font-mono-weight);
   color: var(--color-void-black);
   background-color: var(--color-paper-white);
   border: 1px solid var(--color-stone-gray);
+  border-radius: 0;
   outline: none;
   transition: border-color var(--transition-fast);
   /* Ensure input is always focusable */
@@ -1203,7 +1259,7 @@ body {
 }
 
 .search-result-title {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: var(--font-size-h3);
   font-weight: 700;
   color: var(--color-void-black);
@@ -1299,6 +1355,16 @@ body {
   .search-hint {
     font-size: var(--font-size-micro);
     gap: var(--space-small);
+  }
+
+  .search-input {
+    font-size: 18px;
+    line-height: 1.4;
+    border-radius: 0;
+  }
+
+  .search-input::placeholder {
+    font-size: 18px;
   }
 }
 
@@ -1449,7 +1515,7 @@ body {
 }
 
 .cart-item-name {
-  font-family: var(--font-visitor);
+  font-family: 'Visitor TT1 BRK', 'Visitor', var(--font-visitor) !important;
   font-size: var(--font-size-h3);
   font-weight: 700;
   text-transform: uppercase;
@@ -1591,5 +1657,56 @@ body {
 
   .cart-items-container {
     max-height: calc(85vh - 200px);
+  }
+}
+
+/* Search Icon Button - Fixed Bottom Right */
+.search-icon-button {
+  position: fixed;
+  bottom: var(--space-medium);
+  right: var(--space-medium);
+  width: 48px;
+  height: 48px;
+  background-color: var(--color-lello);
+  border: 1px solid var(--color-void-black);
+  border-radius: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-medium);
+}
+
+.search-icon-button:hover {
+  background-color: var(--color-lello-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lello-glow);
+}
+
+.search-icon-button:active {
+  background-color: #d4e600;
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(240, 255, 0, 0.2);
+}
+
+.search-icon-button i {
+  font-size: 20px;
+  color: var(--color-void-black);
+  pointer-events: none;
+}
+
+/* Responsive styles for search icon button */
+@media (max-width: 768px) {
+  .search-icon-button {
+    width: 44px;
+    height: 44px;
+    bottom: var(--space-small);
+    right: var(--space-small);
+  }
+
+  .search-icon-button i {
+    font-size: 18px;
   }
 }
