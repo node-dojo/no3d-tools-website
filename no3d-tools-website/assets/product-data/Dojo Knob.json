@@ -4,7 +4,6 @@
   "description": "Blender asset: Dojo Knob",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
-  "productType": "tools",
   "tags": [
     "Super Primitive",
     "blender",
@@ -15,7 +14,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "4.44",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-KNOB",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -31,13 +30,13 @@
     {
       "namespace": "no3d_tools",
       "key": "blender_version",
-      "value": "4.5.2+",
+      "value": "5.0.0+",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-10-24",
+      "value": "2025-11-15",
       "type": "date"
     },
     {

@@ -4,7 +4,6 @@
   "description": "Blender asset: Dojo Bolt Gen v05_Obj",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
-  "productType": "tools",
   "tags": [
     "blender",
     "addon",
@@ -14,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "4.44",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-BOLT-GEN-V05-OBJ",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -30,13 +29,13 @@
     {
       "namespace": "no3d_tools",
       "key": "blender_version",
-      "value": "4.5.2+",
+      "value": "5.0.0+",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-10-24",
+      "value": "2025-11-15",
       "type": "date"
     },
     {
@@ -66,19 +65,19 @@
     {
       "namespace": "no3d_tools",
       "key": "custom_m3",
-      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"M3\", address=0x600014c6ab70>",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"M3\", address=0x6000218da070>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_mm",
-      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"MM\", address=0x600014c6ac20>",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"MM\", address=0x6000218da120>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_hops",
-      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"hops\", address=0x600014c6acd0>",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"hops\", address=0x6000218da1d0>",
       "type": "single_line_text_field"
     },
     {
