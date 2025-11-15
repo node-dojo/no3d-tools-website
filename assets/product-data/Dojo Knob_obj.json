@@ -30,13 +30,13 @@
     {
       "namespace": "no3d_tools",
       "key": "blender_version",
-      "value": "4.5.2+",
+      "value": "5.0.0+",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-10-24",
+      "value": "2025-11-15",
       "type": "date"
     },
     {
@@ -66,19 +66,19 @@
     {
       "namespace": "no3d_tools",
       "key": "custom_m3",
-      "value": "<bpy id prop: owner=\"OBDojo Knob_obj\", name=\"M3\", address=0x600014c4dc50>",
+      "value": "<bpy id prop: owner=\"OBDojo Knob_obj\", name=\"M3\", address=0x6000218dfe00>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_mm",
-      "value": "<bpy id prop: owner=\"OBDojo Knob_obj\", name=\"MM\", address=0x600014c4dd00>",
+      "value": "<bpy id prop: owner=\"OBDojo Knob_obj\", name=\"MM\", address=0x6000218dfeb0>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_hops",
-      "value": "<bpy id prop: owner=\"OBDojo Knob_obj\", name=\"hops\", address=0x600014c4ddb0>",
+      "value": "<bpy id prop: owner=\"OBDojo Knob_obj\", name=\"hops\", address=0x6000218dff60>",
       "type": "single_line_text_field"
     },
     {

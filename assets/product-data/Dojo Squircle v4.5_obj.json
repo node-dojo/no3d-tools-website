@@ -30,13 +30,13 @@
     {
       "namespace": "no3d_tools",
       "key": "blender_version",
-      "value": "4.5.2+",
+      "value": "5.0.0+",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-10-24",
+      "value": "2025-11-15",
       "type": "date"
     },
     {
@@ -66,31 +66,31 @@
     {
       "namespace": "no3d_tools",
       "key": "custom_m3",
-      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"M3\", address=0x600014fa5f10>",
+      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"M3\", address=0x6000218e14c0>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_mm",
-      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"MM\", address=0x600014fa5fc0>",
+      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"MM\", address=0x6000218e1570>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_hops",
-      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"hops\", address=0x600014fa6070>",
+      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"hops\", address=0x6000218e1620>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_sanctus_decal_settings",
-      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"sanctus_decal_settings\", address=0x600014fa6120>",
+      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"sanctus_decal_settings\", address=0x6000218e16d0>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_baking_queue",
-      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"baking_queue\", address=0x600014fa61d0>",
+      "value": "<bpy id prop: owner=\"OBDojo Squircle v4.5_obj\", name=\"baking_queue\", address=0x6000218e1780>",
       "type": "single_line_text_field"
     },
     {

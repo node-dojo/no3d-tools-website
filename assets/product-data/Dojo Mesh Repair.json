@@ -29,13 +29,13 @@
     {
       "namespace": "no3d_tools",
       "key": "blender_version",
-      "value": "4.5.2+",
+      "value": "5.0.0+",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-10-24",
+      "value": "2025-11-15",
       "type": "date"
     },
     {
