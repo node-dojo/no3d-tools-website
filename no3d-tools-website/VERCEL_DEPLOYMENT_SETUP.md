@@ -81,9 +81,67 @@ After fixing the integration:
 - ⚠️ GitHub webhook integration needs verification
 - ⚠️ Auto-deployment not currently working (manual redeploy required)
 
+## Fixing the GitHub Integration (Required Now)
+
+The GitHub integration is currently not detecting new commits. Follow these steps to fix it:
+
+### Step 1: Verify GitHub Integration Connection
+
+1. Go to: https://vercel.com/node-dojos-projects/no3dtoolssite/settings/git
+2. Check if repository shows: `node-dojo/no3d-tools-website`
+3. Verify Production Branch is: `main`
+4. Verify Root Directory is: `no3d-tools-website`
+
+### Step 2: Reconnect GitHub Integration (If Needed)
+
+If the repository shows as disconnected or incorrect:
+
+1. Click **"Disconnect"** (if connected)
+2. Click **"Connect Git Repository"**
+3. Select **"node-dojo/no3d-tools-website"**
+4. Configure settings:
+   - **Root Directory**: `no3d-tools-website`
+   - **Production Branch**: `main`
+   - **Framework Preset**: Leave as "Other" or "Vite"
+5. Click **"Connect"**
+
+### Step 3: Verify GitHub Webhook
+
+1. Go to: https://github.com/node-dojo/no3d-tools-website/settings/hooks
+2. Look for a webhook with URL containing `vercel.com`
+3. Verify it's **Active** and listening to:
+   - `push` events
+   - `pull_request` events (optional)
+4. If webhook is missing or inactive, Vercel should create it automatically when you reconnect
+
+### Step 4: Test Auto-Deployment
+
+After reconnecting:
+
+1. Make a small change (e.g., add a comment to `script.js`)
+2. Commit and push: `git commit -am "Test: Verify auto-deployment" && git push`
+3. Check Vercel dashboard within 30 seconds - a new deployment should start automatically
+4. Verify the deployment shows the correct commit SHA
+
+### Step 5: Manual Redeploy Current Commits
+
+To deploy the fixes immediately while fixing the integration:
+
+1. Go to: https://vercel.com/node-dojos-projects/no3dtoolssite/deployments
+2. Click the three dots (⋯) on the latest deployment
+3. Select **"Redeploy"**
+4. Or go to: https://vercel.com/node-dojos-projects/no3dtoolssite and click **"Redeploy"**
+
+This will deploy commit `9a9f2b2` which includes:
+- ✅ Fixed JavaScript errors (`a43de38`)
+- ✅ Fixed price matching logic
+- ✅ GITHUB_TOKEN environment variable
+- ✅ Fixed vercel.json syntax
+
 ## Next Steps
 
-1. Verify GitHub integration in Vercel dashboard
-2. Test auto-deployment with a new commit
-3. Monitor deployments to ensure they trigger automatically
+1. ✅ Fix GitHub integration in Vercel dashboard (follow steps above)
+2. ✅ Manually redeploy to get fixes live immediately
+3. ✅ Test auto-deployment with a new commit
+4. ✅ Monitor deployments to ensure they trigger automatically going forward
 
