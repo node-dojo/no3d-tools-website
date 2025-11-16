@@ -365,15 +365,15 @@ async function refreshPricesFromPolar() {
     const polarPrices = await syncPricesFromPolar();
     let updatedCount = 0;
 
-    // Update prices for all products
+    // Update prices for all products using stored polarProductId
     for (const productId in products) {
-      if (typeof POLAR_PRODUCTS !== 'undefined' && POLAR_PRODUCTS[productId]) {
-        const polarProduct = POLAR_PRODUCTS[productId];
-        const polarPrice = polarPrices[polarProduct.productId];
+      const product = products[productId];
+      if (product.polarProductId) {
+        const polarPrice = polarPrices[product.polarProductId];
         
         if (polarPrice && polarPrice.formatted) {
-          const oldPrice = products[productId].price;
-          products[productId].price = polarPrice.formatted;
+          const oldPrice = product.price;
+          product.price = polarPrice.formatted;
           
           if (oldPrice !== polarPrice.formatted) {
             updatedCount++;
@@ -458,20 +458,20 @@ async function loadProductsFromJSON() {
         // Get price from Polar if available, otherwise use JSON variant price
         let price = null;
         
-        // Try to find matching Polar product by handle
-        if (typeof POLAR_PRODUCTS !== 'undefined' && POLAR_PRODUCTS[productId]) {
-          const polarProduct = POLAR_PRODUCTS[productId];
-          const polarPrice = polarPrices[polarProduct.productId];
+        // Try to find matching Polar product using polar.product_id from JSON
+        if (jsonData.polar && jsonData.polar.product_id) {
+          const polarProductId = jsonData.polar.product_id;
+          const polarPrice = polarPrices[polarProductId];
           
           if (polarPrice && polarPrice.formatted) {
             // Use price from Polar API
             price = polarPrice.formatted;
-            console.log(`✅ Synced price for ${productId}: ${price} from Polar (productId: ${polarProduct.productId})`);
+            console.log(`✅ Synced price for ${productId}: ${price} from Polar (productId: ${polarProductId})`);
           } else {
-            console.warn(`⚠️ No Polar price found for ${productId} (productId: ${polarProduct.productId}). Available prices:`, Object.keys(polarPrices));
+            console.warn(`⚠️ No Polar price found for ${productId} (polarProductId: ${polarProductId}). Available prices:`, Object.keys(polarPrices));
           }
         } else {
-          console.warn(`⚠️ No Polar mapping found for product: ${productId}`);
+          console.warn(`⚠️ No polar.product_id found in JSON for product: ${productId}`);
         }
         
         // Fallback to JSON variant price if Polar price not available
@@ -501,7 +501,8 @@ async function loadProductsFromJSON() {
           icon: thumbnail, // Use local assets
           productType: jsonData.productType || 'tools',
           groups: productGroups,
-          handle: jsonData.handle || productId
+          handle: jsonData.handle || productId,
+          polarProductId: jsonData.polar?.product_id || null // Store Polar product ID for price updates
         };
       } catch (error) {
         console.warn(`Failed to load ${fileName}:`, error);
@@ -3361,7 +3362,7 @@ function updateHorizontalIconGrid() {
 
     // Add click handler to load product
     iconItem.addEventListener('click', () => {
-      loadProductDetails(product.id);
+      selectProduct(product.id);
 
       // Update active state
       grid.querySelectorAll('.horizontal-icon-item').forEach(item => {
@@ -3393,11 +3394,11 @@ if (typeof handleProductTypeToggle === 'function') {
   };
 }
 
-// Hook into loadProductDetails to update active state
-const originalLoadProductDetails = loadProductDetails;
-if (typeof loadProductDetails === 'function') {
-  loadProductDetails = function(productId) {
-    originalLoadProductDetails(productId);
+// Hook into selectProduct to update active state in horizontal grid
+const originalSelectProduct = selectProduct;
+if (typeof selectProduct === 'function') {
+  selectProduct = function(productId) {
+    originalSelectProduct(productId);
 
     // Update active state in horizontal grid
     const grid = document.getElementById('horizontal-icon-grid');
