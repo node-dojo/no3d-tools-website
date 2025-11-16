@@ -469,6 +469,9 @@ body {
   margin-right: var(--icon-grid-width);
   background-color: var(--color-stone-gray);
   overflow-x: hidden;
+  width: 100%;
+  max-width: 802px;
+  box-sizing: border-box;
 }
 
 .product-card-container {
