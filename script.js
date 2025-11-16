@@ -1492,64 +1492,54 @@ function updateHorizontalIconGrid() {
     return;
   }
 
-  // Only show grid when Tools section is active
-  const isToolsActive = activeProductType === 'Tools';
+  // Always show the grid (it's for all products, not just Tools)
+  container.classList.add('visible');
 
-  if (!isToolsActive) {
+  // Get all products from the products object
+  const productEntries = Object.entries(products || {});
+
+  if (productEntries.length === 0) {
+    console.warn('No products available for horizontal grid');
     container.classList.remove('visible');
     return;
   }
-
-  // Show container
-  container.classList.add('visible');
-
-  // Get all products from the Tools section
-  const toolsProducts = Object.keys(allProductsData)
-    .filter(productId => {
-      const product = allProductsData[productId];
-      return product && product.product_type === 'Tools';
-    })
-    .map(productId => ({
-      id: productId,
-      ...allProductsData[productId]
-    }))
-    .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
 
   // Clear existing grid
   grid.innerHTML = '';
 
   // Populate grid with product icons
-  toolsProducts.forEach(product => {
+  productEntries.forEach(([productId, product]) => {
     const iconItem = document.createElement('div');
     iconItem.className = 'horizontal-icon-item';
-    iconItem.dataset.productId = product.id;
+    iconItem.dataset.productId = productId;
 
     // Mark current product as active
-    if (currentProduct && product.id === currentProduct) {
+    if (currentProduct && productId === currentProduct) {
       iconItem.classList.add('active');
     }
 
     // Create image element
     const img = document.createElement('img');
 
-    // Use thumbnail from product data if available
-    const thumbnailField = product.metafields?.find(f => f.key === 'thumbnail');
-    if (thumbnailField && thumbnailField.value) {
-      // Use GitHub raw URL for the thumbnail
-      const libraryPath = product.library || 'no3d-tools-library';
-      const productFolder = product.folder || product.id;
-      img.src = `https://raw.githubusercontent.com/node-dojo/${libraryPath}/main/${productFolder}/${thumbnailField.value}`;
+    // Use icon from product data
+    if (product.icon) {
+      img.src = product.icon;
     } else {
       // Fallback to placeholder
       img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNFOEU4RTgiLz4KICA8dGV4dCB4PSIzMiIgeT0iMzQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
     }
 
-    img.alt = product.title;
+    img.alt = product.name || productId;
     img.loading = 'lazy';
+    img.onerror = () => {
+      // Fallback if image fails to load
+      img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNFOEU4RTgiLz4KICA8dGV4dCB4PSIzMiIgeT0iMzQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
+    };
 
-    // Add click handler to load product
+    // Add click handler to switch products
     iconItem.addEventListener('click', () => {
-      loadProductDetails(product.id);
+      currentProduct = productId;
+      updateProductDisplay(productId);
 
       // Update active state
       grid.querySelectorAll('.horizontal-icon-item').forEach(item => {
@@ -1568,7 +1558,7 @@ function updateHorizontalIconGrid() {
   // Update scroll indicators
   updateScrollIndicators();
 
-  console.log(`✅ Horizontal grid populated with ${toolsProducts.length} products`);
+  console.log(`✅ Horizontal grid populated with ${productEntries.length} products`);
 }
 
 /**
@@ -1669,57 +1659,19 @@ function initializeHorizontalGrid() {
   console.log('✅ Horizontal grid interactions initialized');
 }
 
-// Hook into existing product type toggle to update horizontal grid
-const originalHandleProductTypeToggle = window.handleProductTypeToggle;
-if (typeof originalHandleProductTypeToggle === 'function') {
-  window.handleProductTypeToggle = async function(typeKey) {
-    await originalHandleProductTypeToggle(typeKey);
-
-    // Update horizontal grid after section changes
-    setTimeout(() => {
-      updateHorizontalIconGrid();
-    }, 100);
-  };
-}
-
-// Hook into loadProductDetails to update active state and center item
-const originalLoadProductDetails = window.loadProductDetails;
-if (typeof originalLoadProductDetails === 'function') {
-  window.loadProductDetails = function(productId) {
-    originalLoadProductDetails(productId);
-
-    // Update active state in horizontal grid and center the item
-    const grid = document.getElementById('horizontal-icon-grid');
-    if (grid) {
-      let activeItem = null;
-      grid.querySelectorAll('.horizontal-icon-item').forEach(item => {
-        const isActive = item.dataset.productId === productId;
-        item.classList.toggle('active', isActive);
-        if (isActive) {
-          activeItem = item;
-        }
-      });
-
-      // Auto-center the active item on mobile
-      if (activeItem) {
-        setTimeout(() => scrollToActiveIcon(activeItem), 150);
-      }
-    }
-  };
-}
-
-// Initialize horizontal grid on page load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    initializeHorizontalGrid();
-    setTimeout(updateHorizontalIconGrid, 500);
-  });
-} else {
-  initializeHorizontalGrid();
-  setTimeout(updateHorizontalIconGrid, 500);
-}
+// Initialize horizontal grid when products are loaded
+// The grid will be populated by calling updateHorizontalIconGrid() after products load
 
 // Update indicators on window resize
 window.addEventListener('resize', () => {
   updateScrollIndicators();
+});
+
+// Call updateHorizontalIconGrid after initial product load
+window.addEventListener('load', () => {
+  initializeHorizontalGrid();
+  // Wait a bit for products to load, then populate grid
+  setTimeout(() => {
+    updateHorizontalIconGrid();
+  }, 1000);
 });
