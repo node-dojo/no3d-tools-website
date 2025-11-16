@@ -12,9 +12,4 @@
       "maxDuration": 10
     }
   },
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  }
 }
