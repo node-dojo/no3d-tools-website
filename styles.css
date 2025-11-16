@@ -1710,3 +1710,176 @@ body {
     font-size: 18px;
   }
 }
+
+/* ============================================================================
+   HORIZONTAL SCROLLING ICON GRID (Tools Section Only)
+   ============================================================================ */
+
+.horizontal-icon-grid-container {
+  display: none; /* Hidden by default, shown only when Tools section is active */
+  grid-column: 2; /* Center column in grid layout */
+  width: 100%;
+  margin-top: var(--space-medium);
+  padding: 0 var(--space-medium);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.horizontal-icon-grid-container.visible {
+  display: block;
+}
+
+.horizontal-icon-grid {
+  display: flex;
+  gap: var(--space-small);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-small) 0;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+
+  /* Snap scrolling for better mobile experience */
+  scroll-snap-type: x mandatory;
+
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-void-black) transparent;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar-thumb {
+  background-color: var(--color-void-black);
+  border-radius: 3px;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-lello);
+}
+
+/* Icon items in horizontal grid */
+.horizontal-icon-item {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), opacity var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+  border: 2px solid transparent;
+  scroll-snap-align: center; /* Snap to center when scrolling */
+}
+
+.horizontal-icon-item:hover {
+  transform: scale(1.1);
+}
+
+.horizontal-icon-item.active {
+  opacity: 1;
+  border-color: var(--color-lello);
+  box-shadow: 0 0 0 2px var(--color-lello);
+}
+
+.horizontal-icon-item:not(.active) {
+  opacity: 0.6;
+}
+
+.horizontal-icon-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none; /* Prevent image drag on mobile */
+}
+
+/* Scroll indicators (fade effect on edges) */
+.horizontal-icon-grid-container::before,
+.horizontal-icon-grid-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity var(--transition-normal);
+}
+
+.horizontal-icon-grid-container::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-paper-white), transparent);
+}
+
+.horizontal-icon-grid-container::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-paper-white), transparent);
+}
+
+/* Hide scroll indicators when not needed */
+.horizontal-icon-grid-container.no-scroll::before,
+.horizontal-icon-grid-container.no-scroll::after {
+  opacity: 0;
+}
+
+/* Mobile-optimized styles */
+@media (max-width: 768px) {
+  .horizontal-icon-grid-container {
+    padding: 0 var(--space-small);
+    margin-top: var(--space-small);
+  }
+
+  .horizontal-icon-grid {
+    gap: var(--space-medium); /* More spacing on mobile for easier touch targets */
+    padding: var(--space-medium) 0;
+    scroll-padding: var(--space-small); /* Better snap positioning */
+  }
+
+  .horizontal-icon-item {
+    width: 72px; /* Larger touch targets on mobile */
+    height: 72px;
+    border-width: 3px; /* Thicker border for better visibility */
+  }
+
+  .horizontal-icon-item.active {
+    box-shadow: 0 0 0 3px var(--color-lello);
+    transform: scale(1.05); /* Subtle scale on active state */
+  }
+
+  /* Enhance touch feedback */
+  .horizontal-icon-item:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+
+  /* Hide scrollbar on mobile for cleaner look */
+  .horizontal-icon-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .horizontal-icon-grid {
+    scrollbar-width: none;
+  }
+
+  /* More prominent scroll indicators on mobile */
+  .horizontal-icon-grid-container::before,
+  .horizontal-icon-grid-container::after {
+    width: 60px;
+  }
+}
+
+/* Extra small devices (phones in portrait) */
+@media (max-width: 480px) {
+  .horizontal-icon-grid {
+    gap: var(--space-large); /* Even more spacing on small screens */
+  }
+
+  .horizontal-icon-item {
+    width: 80px; /* Even larger on very small screens */
+    height: 80px;
+  }
+}

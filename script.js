@@ -1475,3 +1475,251 @@ if (document.readyState === 'loading') {
 window.cart = cart;
 
 console.log('Shopping cart functionality loaded');
+
+// ============================================================================
+// HORIZONTAL SCROLLING ICON GRID (Tools Section Only)
+// ============================================================================
+
+/**
+ * Populate and show/hide the horizontal icon grid based on active section
+ */
+function updateHorizontalIconGrid() {
+  const container = document.getElementById('horizontal-icon-grid-container');
+  const grid = document.getElementById('horizontal-icon-grid');
+
+  if (!container || !grid) {
+    console.warn('Horizontal icon grid elements not found');
+    return;
+  }
+
+  // Only show grid when Tools section is active
+  const isToolsActive = activeProductType === 'Tools';
+
+  if (!isToolsActive) {
+    container.classList.remove('visible');
+    return;
+  }
+
+  // Show container
+  container.classList.add('visible');
+
+  // Get all products from the Tools section
+  const toolsProducts = Object.keys(allProductsData)
+    .filter(productId => {
+      const product = allProductsData[productId];
+      return product && product.product_type === 'Tools';
+    })
+    .map(productId => ({
+      id: productId,
+      ...allProductsData[productId]
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
+
+  // Clear existing grid
+  grid.innerHTML = '';
+
+  // Populate grid with product icons
+  toolsProducts.forEach(product => {
+    const iconItem = document.createElement('div');
+    iconItem.className = 'horizontal-icon-item';
+    iconItem.dataset.productId = product.id;
+
+    // Mark current product as active
+    if (currentProduct && product.id === currentProduct) {
+      iconItem.classList.add('active');
+    }
+
+    // Create image element
+    const img = document.createElement('img');
+
+    // Use thumbnail from product data if available
+    const thumbnailField = product.metafields?.find(f => f.key === 'thumbnail');
+    if (thumbnailField && thumbnailField.value) {
+      // Use GitHub raw URL for the thumbnail
+      const libraryPath = product.library || 'no3d-tools-library';
+      const productFolder = product.folder || product.id;
+      img.src = `https://raw.githubusercontent.com/node-dojo/${libraryPath}/main/${productFolder}/${thumbnailField.value}`;
+    } else {
+      // Fallback to placeholder
+      img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNFOEU4RTgiLz4KICA8dGV4dCB4PSIzMiIgeT0iMzQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
+    }
+
+    img.alt = product.title;
+    img.loading = 'lazy';
+
+    // Add click handler to load product
+    iconItem.addEventListener('click', () => {
+      loadProductDetails(product.id);
+
+      // Update active state
+      grid.querySelectorAll('.horizontal-icon-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      iconItem.classList.add('active');
+
+      // Scroll item into view (center align on mobile)
+      scrollToActiveIcon(iconItem);
+    });
+
+    iconItem.appendChild(img);
+    grid.appendChild(iconItem);
+  });
+
+  // Update scroll indicators
+  updateScrollIndicators();
+
+  console.log(`✅ Horizontal grid populated with ${toolsProducts.length} products`);
+}
+
+/**
+ * Scroll the active icon to center of viewport (mobile-optimized)
+ */
+function scrollToActiveIcon(iconElement) {
+  if (!iconElement) return;
+
+  const grid = iconElement.parentElement;
+  if (!grid) return;
+
+  // Calculate scroll position to center the icon
+  const gridRect = grid.getBoundingClientRect();
+  const iconRect = iconElement.getBoundingClientRect();
+
+  const scrollLeft = grid.scrollLeft + (iconRect.left - gridRect.left) - (gridRect.width / 2) + (iconRect.width / 2);
+
+  grid.scrollTo({
+    left: scrollLeft,
+    behavior: 'smooth'
+  });
+}
+
+/**
+ * Update scroll indicators based on scroll position
+ */
+function updateScrollIndicators() {
+  const container = document.getElementById('horizontal-icon-grid-container');
+  const grid = document.getElementById('horizontal-icon-grid');
+
+  if (!container || !grid) return;
+
+  // Check if grid is scrollable
+  const isScrollable = grid.scrollWidth > grid.clientWidth;
+
+  if (!isScrollable) {
+    container.classList.add('no-scroll');
+  } else {
+    container.classList.remove('no-scroll');
+  }
+}
+
+/**
+ * Mobile swipe gesture handler
+ */
+let touchStartX = 0;
+let touchStartY = 0;
+let isSwiping = false;
+
+function handleTouchStart(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  isSwiping = false;
+}
+
+function handleTouchMove(e) {
+  if (!touchStartX || !touchStartY) return;
+
+  const touchEndX = e.touches[0].clientX;
+  const touchEndY = e.touches[0].clientY;
+
+  const deltaX = Math.abs(touchEndX - touchStartX);
+  const deltaY = Math.abs(touchEndY - touchStartY);
+
+  // Detect horizontal swipe
+  if (deltaX > deltaY && deltaX > 10) {
+    isSwiping = true;
+    // Prevent vertical scroll while swiping horizontally
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+  }
+}
+
+function handleTouchEnd() {
+  touchStartX = 0;
+  touchStartY = 0;
+  isSwiping = false;
+}
+
+/**
+ * Initialize horizontal grid interactions
+ */
+function initializeHorizontalGrid() {
+  const grid = document.getElementById('horizontal-icon-grid');
+  if (!grid) return;
+
+  // Add scroll event listener to update indicators
+  grid.addEventListener('scroll', () => {
+    updateScrollIndicators();
+  });
+
+  // Add touch event listeners for mobile gestures
+  grid.addEventListener('touchstart', handleTouchStart, { passive: true });
+  grid.addEventListener('touchmove', handleTouchMove, { passive: false });
+  grid.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+  console.log('✅ Horizontal grid interactions initialized');
+}
+
+// Hook into existing product type toggle to update horizontal grid
+const originalHandleProductTypeToggle = window.handleProductTypeToggle;
+if (typeof originalHandleProductTypeToggle === 'function') {
+  window.handleProductTypeToggle = async function(typeKey) {
+    await originalHandleProductTypeToggle(typeKey);
+
+    // Update horizontal grid after section changes
+    setTimeout(() => {
+      updateHorizontalIconGrid();
+    }, 100);
+  };
+}
+
+// Hook into loadProductDetails to update active state and center item
+const originalLoadProductDetails = window.loadProductDetails;
+if (typeof originalLoadProductDetails === 'function') {
+  window.loadProductDetails = function(productId) {
+    originalLoadProductDetails(productId);
+
+    // Update active state in horizontal grid and center the item
+    const grid = document.getElementById('horizontal-icon-grid');
+    if (grid) {
+      let activeItem = null;
+      grid.querySelectorAll('.horizontal-icon-item').forEach(item => {
+        const isActive = item.dataset.productId === productId;
+        item.classList.toggle('active', isActive);
+        if (isActive) {
+          activeItem = item;
+        }
+      });
+
+      // Auto-center the active item on mobile
+      if (activeItem) {
+        setTimeout(() => scrollToActiveIcon(activeItem), 150);
+      }
+    }
+  };
+}
+
+// Initialize horizontal grid on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeHorizontalGrid();
+    setTimeout(updateHorizontalIconGrid, 500);
+  });
+} else {
+  initializeHorizontalGrid();
+  setTimeout(updateHorizontalIconGrid, 500);
+}
+
+// Update indicators on window resize
+window.addEventListener('resize', () => {
+  updateScrollIndicators();
+});
