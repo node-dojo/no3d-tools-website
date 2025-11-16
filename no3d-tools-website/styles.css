@@ -467,22 +467,23 @@ body {
 .product-card {
   padding: 0;
   margin-left: var(--sidebar-width);
-  margin-right: calc(var(--icon-grid-width) + var(--icon-grid-right-spacing));
+  margin-right: 0;
   background-color: var(--color-stone-gray);
   overflow-x: hidden;
-  width: 100%;
-  max-width: 802px;
+  width: calc(100% - var(--sidebar-width));
+  max-width: none;
   box-sizing: border-box;
 }
 
 .product-card-container {
   width: 100%;
-  max-width: 802px;
+  max-width: 100%;
   height: 494px;
   display: flex;
   gap: 10px;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 /* Left Section Styles */
@@ -912,25 +913,9 @@ body {
   box-shadow: 0 2px 4px rgba(240, 255, 0, 0.2);
 }
 
-/* Right Icon Grid */
+/* Right Icon Grid - Hidden */
 .icon-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: auto; /* Auto-generate rows as needed based on content */
-  gap: var(--space-small);
-  padding: var(--space-small);
-  position: fixed;
-  right: var(--icon-grid-right-spacing); /* Spacing from right edge of viewport */
-  top: 40px; /* Account for fixed header */
-  bottom: 40px; /* Account for fixed footer */
-  width: var(--icon-grid-width); /* Fixed width, not responsive */
-  max-width: min(var(--icon-grid-width), calc(100vw - var(--sidebar-width) - var(--icon-grid-right-spacing))); /* Prevent overflow, account for right spacing */
-  height: calc(100vh - 80px); /* Full height minus header and footer */
-  background-color: var(--color-stone-gray);
-  overflow-y: auto;
-  overflow-x: hidden; /* Prevent horizontal overflow */
-  z-index: 100;
-  box-sizing: border-box; /* Include padding in width calculation */
+  display: none !important;
 }
 
 .icon-item {
@@ -1012,7 +997,8 @@ body {
 
   .product-card {
     margin-left: 120px;
-    margin-right: calc(var(--icon-grid-width) + var(--icon-grid-right-spacing));
+    margin-right: 0;
+    width: calc(100% - 120px);
   }
 }
 
@@ -1032,17 +1018,7 @@ body {
   }
 
   .icon-grid {
-    position: fixed;
-    right: 0;
-    top: 40px;
-    bottom: 40px;
-    width: 100%;
-    max-width: 100%;
-    height: calc(100vh - 80px);
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    background-color: var(--color-stone-gray);
-    overflow-x: hidden;
+    display: none !important;
   }
 }
 
