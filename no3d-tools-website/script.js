@@ -1,5 +1,6 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
+// Test: GitHub-Vercel integration auto-deployment verification
 
 // Configure marked (loaded from CDN) with security options
 if (typeof marked !== 'undefined') {
