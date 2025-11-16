@@ -56,5 +56,11 @@
       "value": "icon_Dojo Print Viz_V4.5.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "3039bc76-ae86-4bc8-913a-bd92b006e206",
+    "benefit_id": "a77364e8-9900-4425-a950-dae28352c4e6",
+    "file_id": "0a56c538-aff3-4c25-a6a4-9475bc19fb80",
+    "last_synced": "2025-11-16T02:23:56.752Z"
+  }
 }

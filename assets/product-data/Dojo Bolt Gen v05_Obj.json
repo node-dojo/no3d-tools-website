@@ -92,5 +92,11 @@
       "value": "icon_Dojo Bolt Gen v05_Obj.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "ca9ed199-9314-4388-955a-322fe7729671",
+    "benefit_id": "b95a30e2-da3b-4946-8486-2b712f9ce00b",
+    "file_id": "8d28147b-e906-4db8-bc2a-02836d6c28ce",
+    "last_synced": "2025-11-16T02:23:44.354Z"
+  }
 }

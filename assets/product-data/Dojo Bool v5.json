@@ -56,5 +56,11 @@
       "value": "icon_Dojo Bool v5.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "39c390b9-2324-417d-b523-e7a22bbb267d",
+    "benefit_id": "85245ddf-f5d8-41fd-8d41-ff9017d063a8",
+    "file_id": "559ef6b4-78b6-4177-a585-03234d32ddb8",
+    "last_synced": "2025-11-16T02:23:45.862Z"
+  }
 }

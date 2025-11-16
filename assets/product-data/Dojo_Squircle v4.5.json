@@ -57,5 +57,11 @@
       "value": "icon_Dojo_Squircle v4.5.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "45d0851e-9f07-48d1-926d-dc8a94ec0c0d",
+    "benefit_id": "45c33025-af92-40c5-97a2-268dcff76b3f",
+    "file_id": "de2bc61e-797d-4be1-823c-639074164f11",
+    "last_synced": "2025-11-16T02:23:59.802Z"
+  }
 }

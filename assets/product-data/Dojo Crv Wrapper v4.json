@@ -56,5 +56,11 @@
       "value": "icon_Dojo Crv Wrapper v4.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "a8c28ada-0476-4519-894a-f2baa4997e37",
+    "benefit_id": "6e0ca031-c11f-458e-bd6d-54368b1c33d3",
+    "file_id": "1134228e-295c-4bae-b088-278b29feb11c",
+    "last_synced": "2025-11-16T02:23:49.047Z"
+  }
 }

@@ -104,5 +104,11 @@
       "value": "icon_Dojo Gluefinity Grid_obj.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "641d48cb-27cc-4c6d-9f73-4024f0a7f1a6",
+    "benefit_id": "2dd8f62d-927c-498d-b695-4793e2c83057",
+    "file_id": "acf08813-d37a-4d34-b27f-2abad08182c6",
+    "last_synced": "2025-11-16T02:23:50.680Z"
+  }
 }

@@ -57,5 +57,11 @@
       "value": "icon_Dojo Knob.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "575c65c7-88f7-4801-a003-ad3596697780",
+    "benefit_id": "8a581be2-a7ac-4b97-852b-f6b868edba9f",
+    "file_id": "08e25e70-51f6-4875-868b-b1a43d152a18",
+    "last_synced": "2025-11-16T02:23:52.110Z"
+  }
 }

@@ -116,5 +116,11 @@
       "value": "icon_Dojo Calipers.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "6d675dc6-9a9d-4628-9b19-b53c7b56f664",
+    "benefit_id": "c17dbb8a-e930-4741-85c0-88fd1f9f5dba",
+    "file_id": "3607b84c-edd6-4005-979a-c97286568bc4",
+    "last_synced": "2025-11-16T02:23:47.519Z"
+  }
 }
