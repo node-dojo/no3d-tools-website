@@ -2026,12 +2026,15 @@ body {
   padding: var(--space-small) var(--space-medium);
   padding-right: 60px; /* Space for button */
   font-family: var(--font-visitor);
-  font-size: var(--font-size-base);
+  font-size: 16px; /* Minimum 16px to prevent auto-zoom on mobile browsers */
   letter-spacing: var(--letter-spacing-normal);
   text-transform: uppercase;
   width: 100%;
   height: 44px; /* Standard mobile touch target */
   box-sizing: border-box;
+  /* Prevent zoom on focus for iOS Safari and other mobile browsers */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .mobile-search-input::placeholder {
@@ -2086,5 +2089,94 @@ body {
   /* Hide footer search hint on mobile since we have the search bar */
   .footer-text {
     display: none;
+  }
+}
+
+/* ============================================================================
+   HORIZONTAL SCROLLING ICON GRID (Tools Section Only)
+   ============================================================================ */
+
+.horizontal-icon-grid-container {
+  display: none; /* Hidden by default, shown only when Tools section is active */
+  grid-column: 2; /* Center column in grid layout */
+  width: 100%;
+  margin-top: var(--space-medium);
+  padding: 0 var(--space-medium);
+  box-sizing: border-box;
+}
+
+.horizontal-icon-grid-container.visible {
+  display: block;
+}
+
+.horizontal-icon-grid {
+  display: flex;
+  gap: var(--space-small);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-small) 0;
+  scroll-behavior: smooth;
+
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-void-black) transparent;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar-thumb {
+  background-color: var(--color-void-black);
+  border-radius: 3px;
+}
+
+.horizontal-icon-grid::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-lello);
+}
+
+/* Icon items in horizontal grid */
+.horizontal-icon-item {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+  position: relative;
+}
+
+.horizontal-icon-item:hover {
+  transform: scale(1.1);
+}
+
+.horizontal-icon-item.active {
+  opacity: 1;
+}
+
+.horizontal-icon-item:not(.active) {
+  opacity: 0.6;
+}
+
+.horizontal-icon-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .horizontal-icon-grid-container {
+    padding: 0 var(--space-small);
+    margin-top: var(--space-small);
+  }
+
+  .horizontal-icon-item {
+    width: 56px;
+    height: 56px;
   }
 }
