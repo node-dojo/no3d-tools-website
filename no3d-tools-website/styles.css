@@ -916,7 +916,7 @@ body {
 .icon-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(8, 1fr);
+  grid-auto-rows: auto; /* Auto-generate rows as needed based on content */
   gap: var(--space-small);
   padding: var(--space-small);
   position: fixed;
