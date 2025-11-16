@@ -41,6 +41,7 @@
   --content-max-width: 900px;
   --sidebar-width: 250px;
   --icon-grid-width: 210px;
+  --icon-grid-right-spacing: 30px; /* Spacing from right edge of viewport */
   
   /* Transitions */
   --transition-fast: 0.15s ease;
@@ -466,7 +467,7 @@ body {
 .product-card {
   padding: 0;
   margin-left: var(--sidebar-width);
-  margin-right: var(--icon-grid-width);
+  margin-right: calc(var(--icon-grid-width) + var(--icon-grid-right-spacing));
   background-color: var(--color-stone-gray);
   overflow-x: hidden;
   width: 100%;
@@ -918,13 +919,12 @@ body {
   grid-template-rows: repeat(8, 1fr);
   gap: var(--space-small);
   padding: var(--space-small);
-  padding-right: 30px; /* 30px negative space between grid and window edge */
   position: fixed;
-  right: 0;
+  right: var(--icon-grid-right-spacing); /* Spacing from right edge of viewport */
   top: 40px; /* Account for fixed header */
   bottom: 40px; /* Account for fixed footer */
-  width: 210px; /* Fixed width, not responsive */
-  max-width: min(210px, calc(100vw - var(--sidebar-width))); /* Prevent overflow beyond viewport */
+  width: var(--icon-grid-width); /* Fixed width, not responsive */
+  max-width: min(var(--icon-grid-width), calc(100vw - var(--sidebar-width) - var(--icon-grid-right-spacing))); /* Prevent overflow, account for right spacing */
   height: calc(100vh - 80px); /* Full height minus header and footer */
   background-color: var(--color-stone-gray);
   overflow-y: auto;
@@ -1012,7 +1012,7 @@ body {
 
   .product-card {
     margin-left: 120px;
-    margin-right: 210px;
+    margin-right: calc(var(--icon-grid-width) + var(--icon-grid-right-spacing));
   }
 }
 
