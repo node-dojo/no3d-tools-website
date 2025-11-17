@@ -73,16 +73,29 @@ export default async (req, res) => {
       // Get the first active price (usually the main price)
       const activePrice = product.prices?.find(p => !p.isArchived);
       if (activePrice) {
-        // Convert from cents to dollars
-        const amount = activePrice.priceAmount / 100;
-        const currency = activePrice.priceCurrency || 'USD';
+        // Handle different price types
+        let amount, currency, formatted;
+
+        if (activePrice.amountType === 'free') {
+          amount = 0;
+          currency = 'USD';
+          formatted = 'FREE';
+        } else if (activePrice.priceAmount !== undefined && activePrice.priceAmount !== null) {
+          // Convert from cents to dollars for paid prices
+          amount = activePrice.priceAmount / 100;
+          currency = activePrice.priceCurrency || 'USD';
+          formatted = `$${amount.toFixed(2)}`;
+        } else {
+          // Skip prices without amount info
+          continue;
+        }
 
         prices[product.id] = {
           productId: product.id,
           priceId: activePrice.id,
           amount: amount,
           currency: currency,
-          formatted: `$${amount.toFixed(2)}`,
+          formatted: formatted,
           name: product.name
         };
       }
