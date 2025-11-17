@@ -2595,17 +2595,17 @@ async function openCheckoutModal(productIds) {
 
     // Try to use embedded checkout modal
     try {
-      // Wait for PolarEmbedCheckout to be available
-      // According to Polar docs, the global build exposes PolarEmbedCheckout directly
-      let PolarEmbedCheckout = window.PolarEmbedCheckout;
+      // Wait for Polar SDK to be available
+      // The SDK exposes window.Polar.EmbedCheckout
+      let PolarEmbedCheckout = window.Polar?.EmbedCheckout;
 
       // If not available, try waiting a bit for the script to load
       if (!PolarEmbedCheckout) {
-        console.log('Waiting for PolarEmbedCheckout to load...');
+        console.log('Waiting for Polar SDK to load...');
         await new Promise((resolve) => {
           let attempts = 0;
           const checkInterval = setInterval(() => {
-            PolarEmbedCheckout = window.PolarEmbedCheckout;
+            PolarEmbedCheckout = window.Polar?.EmbedCheckout;
             attempts++;
             if (PolarEmbedCheckout || attempts > 30) {
               clearInterval(checkInterval);
@@ -2617,26 +2617,28 @@ async function openCheckoutModal(productIds) {
 
       // Debug: Log what's available
       console.log('Polar SDK check:', {
-        hasPolarEmbedCheckout: !!window.PolarEmbedCheckout,
+        hasPolar: !!window.Polar,
+        hasPolarEmbedCheckout: !!window.Polar?.EmbedCheckout,
         windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('polar')),
         scriptSrc: document.querySelector('script[src*="polar-sh/checkout"]')?.src
       });
 
-      // If PolarEmbedCheckout is still not available after all checks
+      // If Polar SDK is still not available after all checks
       if (!PolarEmbedCheckout) {
-        console.error('PolarEmbedCheckout not found. Available window properties:', {
+        console.error('Polar SDK not found. Available window properties:', {
           polarKeys: Object.keys(window).filter(k => k.toLowerCase().includes('polar')),
+          hasPolar: !!window.Polar,
           hasScript: document.querySelector('script[src*="polar-sh/checkout"]') !== null,
           scriptSrc: document.querySelector('script[src*="polar-sh/checkout"]')?.src
         });
-        throw new Error('PolarEmbedCheckout SDK not loaded. Please check that the script is loading correctly.');
+        throw new Error('Polar SDK not loaded. Please check that the script is loading correctly.');
       }
 
-      // If PolarEmbedCheckout is available, use embedded modal
+      // If Polar SDK is available, use embedded modal
       if (PolarEmbedCheckout) {
         console.log('Using Polar embedded checkout modal');
         console.log('Checkout URL:', data.url);
-        
+
         if (!data.url) {
           throw new Error('No checkout URL available');
         }
@@ -2644,8 +2646,8 @@ async function openCheckoutModal(productIds) {
         // Hide loading state
         checkoutLoading.style.display = 'none';
 
-        // According to Polar docs, PolarEmbedCheckout.create() accepts the full checkout URL
-        // Pass the full URL directly (not just the ID)
+        // Create checkout using Polar.EmbedCheckout.create()
+        // Pass the full URL directly
         console.log('Creating embedded checkout with URL:', data.url);
         const checkout = await PolarEmbedCheckout.create(data.url, "light");
 
@@ -3280,6 +3282,150 @@ function initializeMobileSearch() {
         mobileSearchInput.value = '';
       }
     });
+
+    // ============================================
+    // Mobile Keyboard Handling - Visual Viewport API
+    // ============================================
+    const mobileSearchBar = document.getElementById('mobile-search-bar');
+    if (mobileSearchBar) {
+      let keyboardHeight = 0;
+      let isKeyboardOpen = false;
+      let viewportChangeTimeout = null;
+      const DEBOUNCE_DELAY = 100; // ms
+
+      // Helper function to calculate and apply keyboard positioning
+      function updateSearchBarPosition() {
+        if (!mobileSearchBar || !mobileSearchInput) return;
+
+        const windowHeight = window.innerHeight;
+        let newKeyboardHeight = 0;
+        let shouldBeAboveKeyboard = false;
+
+        // Use Visual Viewport API if available (modern browsers)
+        if (window.visualViewport) {
+          const visualViewport = window.visualViewport;
+          const viewportHeight = visualViewport.height;
+          const heightDifference = windowHeight - viewportHeight;
+          
+          // Consider keyboard open if height difference is significant (more than 150px)
+          // This threshold accounts for browser UI changes and actual keyboard
+          if (heightDifference > 150) {
+            newKeyboardHeight = heightDifference;
+            shouldBeAboveKeyboard = true;
+          }
+        } else {
+          // Fallback: Use window resize for older browsers
+          // This is less accurate but works as fallback
+          const currentViewportHeight = window.innerHeight;
+          const storedViewportHeight = window.initialViewportHeight || windowHeight;
+          
+          if (storedViewportHeight && currentViewportHeight < storedViewportHeight - 150) {
+            newKeyboardHeight = storedViewportHeight - currentViewportHeight;
+            shouldBeAboveKeyboard = true;
+          }
+        }
+
+        // Only update if there's a meaningful change (avoid jitter)
+        if (Math.abs(newKeyboardHeight - keyboardHeight) > 10 || shouldBeAboveKeyboard !== isKeyboardOpen) {
+          keyboardHeight = newKeyboardHeight;
+          isKeyboardOpen = shouldBeAboveKeyboard;
+
+          if (isKeyboardOpen && keyboardHeight > 0) {
+            // Position search bar above keyboard
+            mobileSearchBar.style.bottom = `${keyboardHeight}px`;
+            mobileSearchBar.classList.add('keyboard-open');
+            
+            // Ensure input stays in view without scrolling the page
+            // Use scrollIntoView with block: 'nearest' to avoid page jump
+            if (document.activeElement === mobileSearchInput) {
+              // Small delay to ensure keyboard animation has started
+              setTimeout(() => {
+                mobileSearchInput.scrollIntoView({ 
+                  behavior: 'smooth', 
+                  block: 'nearest',
+                  inline: 'nearest'
+                });
+              }, 50);
+            }
+          } else {
+            // Reset to bottom when keyboard closes
+            mobileSearchBar.style.bottom = '0';
+            mobileSearchBar.classList.remove('keyboard-open');
+          }
+        }
+      }
+
+      // Debounced viewport change handler
+      function handleViewportChange() {
+        clearTimeout(viewportChangeTimeout);
+        viewportChangeTimeout = setTimeout(() => {
+          updateSearchBarPosition();
+        }, DEBOUNCE_DELAY);
+      }
+
+      // Visual Viewport API handler (preferred method)
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleViewportChange);
+        window.visualViewport.addEventListener('scroll', handleViewportChange);
+      }
+
+      // Fallback: Window resize handler for browsers without Visual Viewport API
+      let lastWindowHeight = window.innerHeight;
+      window.addEventListener('resize', () => {
+        const currentHeight = window.innerHeight;
+        // Only trigger if height changed significantly (likely keyboard)
+        if (Math.abs(currentHeight - lastWindowHeight) > 100) {
+          lastWindowHeight = currentHeight;
+          // Store initial viewport height for fallback calculation
+          if (!window.initialViewportHeight) {
+            window.initialViewportHeight = Math.max(
+              window.initialViewportHeight || 0,
+              currentHeight
+            );
+          }
+          handleViewportChange();
+        }
+      });
+
+      // Store initial viewport height on load
+      window.initialViewportHeight = window.innerHeight;
+
+      // Handle focus events to trigger position update
+      mobileSearchInput.addEventListener('focus', () => {
+        // Small delay to allow keyboard animation to start
+        setTimeout(() => {
+          updateSearchBarPosition();
+        }, 300);
+      });
+
+      // Handle blur events to reset position
+      mobileSearchInput.addEventListener('blur', () => {
+        // Delay to check if keyboard actually closed (user might tap elsewhere)
+        setTimeout(() => {
+          // Only reset if input is not focused (keyboard truly closed)
+          if (document.activeElement !== mobileSearchInput) {
+            keyboardHeight = 0;
+            isKeyboardOpen = false;
+            mobileSearchBar.style.bottom = '0';
+            mobileSearchBar.classList.remove('keyboard-open');
+          }
+        }, 100);
+      });
+
+      // Handle orientation change (landscape/portrait)
+      window.addEventListener('orientationchange', () => {
+        // Reset and recalculate after orientation change
+        setTimeout(() => {
+          window.initialViewportHeight = window.innerHeight;
+          keyboardHeight = 0;
+          isKeyboardOpen = false;
+          updateSearchBarPosition();
+        }, 500); // Allow time for orientation change to complete
+      });
+
+      // Initial position check
+      updateSearchBarPosition();
+    }
   }
 }
 

@@ -16,25 +16,25 @@
     <!-- Marked.js for markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
     <!-- Polar Embedded Checkout -->
-    <!-- Using official Polar CDN as per documentation -->
-    <script src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@0.1/dist/embed.global.js" defer></script>
+    <!-- Using official Polar CDN - exposes window.Polar.EmbedCheckout -->
+    <script src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@latest/dist/embed.global.js" defer></script>
     <script>
       // Debug: Check when Polar SDK loads
       (function() {
         function checkPolarSDK() {
-          // According to Polar docs, the global build exposes PolarEmbedCheckout directly
-          if (window.PolarEmbedCheckout) {
-            console.log('✅ Polar SDK loaded!', window.PolarEmbedCheckout);
+          // The SDK exposes window.Polar.EmbedCheckout
+          if (window.Polar && window.Polar.EmbedCheckout) {
+            console.log('✅ Polar SDK loaded!', window.Polar.EmbedCheckout);
             return true;
           }
-          
+
           // Log what's available for debugging
           console.log('Checking for Polar SDK...');
-          console.log('window.PolarEmbedCheckout:', window.PolarEmbedCheckout);
+          console.log('window.Polar:', window.Polar);
           console.log('All window keys with "polar":', Object.keys(window).filter(k => k.toLowerCase().includes('polar')));
           return false;
         }
-        
+
         // Check after script loads
         window.addEventListener('load', function() {
           if (!checkPolarSDK()) {
