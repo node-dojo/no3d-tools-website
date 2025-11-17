@@ -1047,8 +1047,9 @@ async function handleProductTypeToggle(typeKey) {
       
       updateProductCardForType(activeProductType);
     }
-    
+
     updateIconGrid();
+    updateHorizontalIconGrid();
   }
 }
 
@@ -1069,6 +1070,8 @@ function expandProductType(typeKey) {
     if (!currentProduct || !products[currentProduct]) {
       updateProductCardForType(typeKey);
     }
+    // Update horizontal grid visibility based on product type
+    updateHorizontalIconGrid();
   }
 }
 
@@ -3761,8 +3764,9 @@ function updateHorizontalIconGrid() {
   console.log('📊 activeProductType:', activeProductType);
   console.log('📊 productDataByType:', Object.keys(productDataByType));
 
-  // Only show grid when Tools section is active
-  const isToolsActive = activeProductType && activeProductType.toLowerCase() === 'tools';
+  // Show grid when Tools section is active (or default/null)
+  // Hide only when a different section is explicitly selected
+  const isToolsActive = !activeProductType || activeProductType.toLowerCase() === 'tools';
   console.log('📊 isToolsActive:', isToolsActive);
 
   if (!isToolsActive) {
