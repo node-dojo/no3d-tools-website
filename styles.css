@@ -930,9 +930,11 @@ body {
 }
 
 .carousel-arrow img {
-  width: 24px;
-  height: 24px;
+  width: 10px;
+  height: 10px;
   display: block;
+  object-fit: contain;
+  aspect-ratio: 1 / 1;
 }
 
 .product-image-container:hover .carousel-arrow.visible {
@@ -1383,8 +1385,10 @@ body {
   }
 
   .carousel-arrow img {
-    width: 20px;
-    height: 20px;
+    width: 8px;
+    height: 8px;
+    object-fit: contain;
+    aspect-ratio: 1 / 1;
   }
 
   /* Hide icon grid on mobile */
