@@ -837,31 +837,106 @@ body {
   justify-content: center;
   padding: 0;
   margin: 0;
+  position: relative;
 }
 
-.product-image {
+.product-image-carousel {
   width: 100%;
   height: 320px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-stone-gray);
+  overflow: hidden;
+}
+
+.carousel-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.3s ease;
+  will-change: transform;
+}
+
+.carousel-item {
+  min-width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-stone-gray);
-  border: none; /* Removed border */
-  border-radius: 0;
-  overflow: hidden;
-  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.product-image img {
+.carousel-item img,
+.carousel-item video {
   width: 100%;
   height: 100%;
   object-fit: contain;
   object-position: center;
   max-width: 555px;
   max-height: 320px;
-  margin: 0;
-  padding: 0;
   display: block;
+}
+
+.carousel-item .model-viewer-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-stone-gray);
+  color: var(--color-void-black);
+  font-size: 0.9rem;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.carousel-arrow.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.carousel-arrow:hover {
+  opacity: 0.8;
+}
+
+.carousel-arrow-left {
+  left: 0.5rem;
+}
+
+.carousel-arrow-right {
+  right: 0.5rem;
+}
+
+.carousel-arrow img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.product-image-container:hover .carousel-arrow.visible {
+  opacity: 1;
 }
 
 .product-details {
@@ -1293,16 +1368,23 @@ body {
     padding: 0 var(--space-medium);
   }
 
-  .product-image {
+  .product-image-carousel {
     height: 250px;
-    margin-top: 0; /* No top margin */
-    padding-top: 0; /* No top padding */
   }
 
   .product-image-container {
     margin-top: 0; /* No top margin on mobile - start immediately */
     padding-top: 0; /* Explicitly remove top padding */
     justify-content: flex-start; /* Align to top instead of center */
+  }
+
+  .carousel-arrow {
+    padding: 0.25rem;
+  }
+
+  .carousel-arrow img {
+    width: 20px;
+    height: 20px;
   }
 
   /* Hide icon grid on mobile */

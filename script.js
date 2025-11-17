@@ -193,7 +193,7 @@ let expandedProductGroups = new Set();
 const productTitle = document.getElementById('product-title');
 const productPrice = document.getElementById('product-price');
 const productDescription = document.getElementById('product-description');
-const product3dImage = document.getElementById('product-3d-image');
+// product3dImage removed - now using carousel
 const downloadButton = document.getElementById('download-button');
 
 // Initialize the application
@@ -1475,8 +1475,138 @@ function updateButtonVisibility(productId) {
   }
 }
 
+// Load card assets for a product from GitHub
+async function loadProductCardAssets(productId) {
+  const product = products[productId];
+  if (!product) {
+    return [];
+  }
+
+  const cardAssets = [];
+  const folderName = product.folderName || product.name;
+  const cardAssetsFolder = `${folderName} card assets`;
+  const library = product.library || 'no3d-tools-library';
+  const config = LIBRARY_CONFIG[product.productType] || LIBRARY_CONFIG.tools;
+  
+  try {
+    // Check for icon GIF first
+    const iconGifName = `icon_${folderName}.gif`;
+    const iconGifPath = `${folderName}/${iconGifName}`;
+    
+    // Try to fetch icon GIF
+    try {
+      const gifUrl = config.useLocalAssets 
+        ? getProductImageUrl(iconGifName)
+        : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconGifPath}`;
+      
+      // Test if file exists by trying to fetch it
+      const testResponse = await fetch(gifUrl, { method: 'HEAD' });
+      if (testResponse.ok) {
+        cardAssets.push({
+          type: 'image',
+          url: gifUrl,
+          format: 'gif',
+          name: iconGifName,
+          isIcon: true
+        });
+      }
+    } catch (e) {
+      // GIF doesn't exist, that's okay
+    }
+
+    // Load card assets folder contents
+    try {
+      const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(cardAssetsFolder)}`;
+      const response = await fetch(apiUrl);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.contents && Array.isArray(data.contents)) {
+          const supportedFormats = {
+            image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
+            video: ['mp4', 'webm', 'ogg', 'mov'],
+            model3d: ['usd', 'obj', 'stl']
+          };
+          
+          for (const item of data.contents) {
+            if (item.type === 'file') {
+              const ext = item.name.split('.').pop().toLowerCase();
+              let mediaType = 'other';
+              
+              if (supportedFormats.image.includes(ext)) {
+                mediaType = 'image';
+              } else if (supportedFormats.video.includes(ext)) {
+                mediaType = 'video';
+              } else if (supportedFormats.model3d.includes(ext)) {
+                mediaType = 'model3d';
+              }
+              
+              if (mediaType !== 'other') {
+                // For local assets, we need to construct the path differently
+                // Card assets are in a subfolder, so we'll use GitHub raw URL for now
+                // In the future, we could sync these to local assets too
+                const fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsFolder}/${item.name}`;
+                
+                cardAssets.push({
+                  type: mediaType,
+                  url: fileUrl,
+                  format: ext,
+                  name: item.name,
+                  isIcon: false
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log(`Card assets folder doesn't exist yet for ${folderName}:`, error);
+    }
+
+    // Add static PNG icon at the end (if GIF was found) or at the beginning (if no GIF)
+    const iconPngName = `icon_${folderName}.png`;
+    const iconPngPath = `${folderName}/${iconPngName}`;
+    const iconPngUrl = config.useLocalAssets
+      ? getProductIconUrl(folderName)
+      : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconPngPath}`;
+    
+    const iconPngItem = {
+      type: 'image',
+      url: iconPngUrl,
+      format: 'png',
+      name: iconPngName,
+      isIcon: true
+    };
+    
+    // If GIF exists, add PNG at end; otherwise add at beginning
+    if (cardAssets.some(item => item.format === 'gif' && item.isIcon)) {
+      cardAssets.push(iconPngItem);
+    } else {
+      cardAssets.unshift(iconPngItem);
+    }
+
+    return cardAssets;
+  } catch (error) {
+    console.error(`Error loading card assets for ${productId}:`, error);
+    // Fallback to just the icon
+    const folderName = product.folderName || product.name;
+    const config = LIBRARY_CONFIG[product.productType] || LIBRARY_CONFIG.tools;
+    const iconPngUrl = config.useLocalAssets
+      ? getProductIconUrl(folderName)
+      : product.icon;
+    
+    return [{
+      type: 'image',
+      url: iconPngUrl,
+      format: 'png',
+      name: `icon_${folderName}.png`,
+      isIcon: true
+    }];
+  }
+}
+
 // Update the product display with new data
-function updateProductDisplay(productId) {
+async function updateProductDisplay(productId) {
   const product = products[productId];
   
   // Set productId on product card for markdown docs loading
@@ -1501,9 +1631,8 @@ function updateProductDisplay(productId) {
     paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
   ).join('');
 
-  // Update 3D image
-  product3dImage.src = product.image3d;
-  product3dImage.alt = `${product.name} 3D Render`;
+  // Load and display carousel assets
+  await initializeCarousel(productId);
 
   // Update changelog
   updateChangelog(product.changelog);
@@ -2072,14 +2201,8 @@ document.addEventListener('error', function(e) {
   if (e.target.tagName === 'IMG') {
     console.warn(`Failed to load image: ${e.target.src}`);
     
-    // Different fallback images based on context
-    if (e.target.id === 'product-3d-image') {
-      // Fallback for 3D product images
-      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDMyMCAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjU2IiBmaWxsPSIjRThFOEU4Ii8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIDNEIEltYWdlPC90ZXh0Pgo8L3N2Zz4=';
-    } else {
-      // Fallback for icon images
-      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjBGMEYwIi8+Cjx0ZXh0IHg9IjI1IiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SWNvbjwvdGV4dD4KPC9zdmc+';
-    }
+    // Fallback for icon images (carousel handles its own fallbacks)
+    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRjBGMEYwIi8+Cjx0ZXh0IHg9IjI1IiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SWNvbjwvdGV4dD4KPC9zdmc+';
   }
 }, true);
 
@@ -3896,4 +4019,157 @@ if (document.readyState === 'loading') {
   });
 } else {
   setTimeout(updateHorizontalIconGrid, 500);
+}
+
+// ============================================================================
+// PRODUCT CARD CAROUSEL
+// ============================================================================
+
+let carouselCurrentIndex = 0;
+let carouselItems = [];
+
+// Initialize carousel with product assets
+async function initializeCarousel(productId) {
+  const track = document.getElementById('carousel-track');
+  const leftArrow = document.getElementById('carousel-arrow-left');
+  const rightArrow = document.getElementById('carousel-arrow-right');
+  
+  if (!track) {
+    console.warn('Carousel track not found');
+    return;
+  }
+
+  // Load card assets
+  carouselItems = await loadProductCardAssets(productId);
+  carouselCurrentIndex = 0;
+
+  // Clear existing items
+  track.innerHTML = '';
+
+  if (carouselItems.length === 0) {
+    // Fallback: show placeholder
+    const placeholder = document.createElement('div');
+    placeholder.className = 'carousel-item';
+    placeholder.innerHTML = '<div class="model-viewer-placeholder">No images available</div>';
+    track.appendChild(placeholder);
+    updateCarouselArrows();
+    return;
+  }
+
+  // Create carousel items
+  carouselItems.forEach((asset, index) => {
+    const item = document.createElement('div');
+    item.className = 'carousel-item';
+    item.dataset.index = index;
+
+    if (asset.type === 'image') {
+      const img = document.createElement('img');
+      img.src = asset.url;
+      img.alt = asset.name;
+      img.loading = index === 0 ? 'eager' : 'lazy';
+      img.onerror = function() {
+        this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDMyMCAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjU2IiBmaWxsPSIjRThFOEU4Ii8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4=';
+      };
+      item.appendChild(img);
+    } else if (asset.type === 'video') {
+      const video = document.createElement('video');
+      video.src = asset.url;
+      video.controls = true;
+      video.preload = index === 0 ? 'auto' : 'metadata';
+      item.appendChild(video);
+    } else if (asset.type === 'model3d') {
+      // Placeholder for 3D models
+      const placeholder = document.createElement('div');
+      placeholder.className = 'model-viewer-placeholder';
+      placeholder.textContent = `3D Model: ${asset.name}`;
+      item.appendChild(placeholder);
+    }
+
+    track.appendChild(item);
+  });
+
+  // Set initial position
+  updateCarouselPosition();
+  updateCarouselArrows();
+
+  // Add event listeners for arrows
+  if (leftArrow) {
+    leftArrow.onclick = () => navigateCarousel('prev');
+  }
+  if (rightArrow) {
+    rightArrow.onclick = () => navigateCarousel('next');
+  }
+
+  // Add touch/swipe support
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  track.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  track.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  }, { passive: true });
+
+  function handleSwipe() {
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+    
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        // Swipe left - next
+        navigateCarousel('next');
+      } else {
+        // Swipe right - prev
+        navigateCarousel('prev');
+      }
+    }
+  }
+}
+
+// Navigate carousel
+function navigateCarousel(direction) {
+  if (carouselItems.length === 0) return;
+
+  if (direction === 'prev') {
+    carouselCurrentIndex = Math.max(0, carouselCurrentIndex - 1);
+  } else if (direction === 'next') {
+    carouselCurrentIndex = Math.min(carouselItems.length - 1, carouselCurrentIndex + 1);
+  }
+
+  updateCarouselPosition();
+  updateCarouselArrows();
+}
+
+// Update carousel position
+function updateCarouselPosition() {
+  const track = document.getElementById('carousel-track');
+  if (!track) return;
+
+  const offset = -carouselCurrentIndex * 100;
+  track.style.transform = `translateX(${offset}%)`;
+}
+
+// Update arrow visibility
+function updateCarouselArrows() {
+  const leftArrow = document.getElementById('carousel-arrow-left');
+  const rightArrow = document.getElementById('carousel-arrow-right');
+
+  if (leftArrow) {
+    if (carouselCurrentIndex > 0 && carouselItems.length > 1) {
+      leftArrow.classList.add('visible');
+    } else {
+      leftArrow.classList.remove('visible');
+    }
+  }
+
+  if (rightArrow) {
+    if (carouselCurrentIndex < carouselItems.length - 1 && carouselItems.length > 1) {
+      rightArrow.classList.add('visible');
+    } else {
+      rightArrow.classList.remove('visible');
+    }
+  }
 }
