@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step required'",
-    "start": "vercel dev"
+    "start": "vercel dev",
+    "test-mobile": "node test-mobile-server.js",
+    "test-mobile:8000": "node test-mobile-server.js 8000"
   },
   "dependencies": {
     "@polar-sh/checkout": "^0.1.14",

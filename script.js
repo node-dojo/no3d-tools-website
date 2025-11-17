@@ -3335,22 +3335,23 @@ function initializeMobileSearch() {
             mobileSearchBar.style.bottom = `${keyboardHeight}px`;
             mobileSearchBar.classList.add('keyboard-open');
             
-            // Ensure input stays in view without scrolling the page
-            // Use scrollIntoView with block: 'nearest' to avoid page jump
-            if (document.activeElement === mobileSearchInput) {
-              // Small delay to ensure keyboard animation has started
-              setTimeout(() => {
-                mobileSearchInput.scrollIntoView({ 
-                  behavior: 'smooth', 
-                  block: 'nearest',
-                  inline: 'nearest'
-                });
-              }, 50);
+            // Adjust site container height to account for keyboard
+            // This prevents content from being hidden behind keyboard
+            const siteContainer = document.querySelector('.site-container');
+            if (siteContainer && window.visualViewport) {
+              const viewportHeight = window.visualViewport.height;
+              siteContainer.style.minHeight = `${viewportHeight}px`;
             }
           } else {
             // Reset to bottom when keyboard closes
             mobileSearchBar.style.bottom = '0';
             mobileSearchBar.classList.remove('keyboard-open');
+            
+            // Reset site container height
+            const siteContainer = document.querySelector('.site-container');
+            if (siteContainer) {
+              siteContainer.style.minHeight = '';
+            }
           }
         }
       }
@@ -3391,11 +3392,44 @@ function initializeMobileSearch() {
       window.initialViewportHeight = window.innerHeight;
 
       // Handle focus events to trigger position update
+      let savedScrollPosition = 0;
+      let isRestoringScroll = false;
+      
       mobileSearchInput.addEventListener('focus', () => {
+        // Store current scroll position to prevent jumping
+        savedScrollPosition = window.scrollY || window.pageYOffset;
+        isRestoringScroll = true;
+        
+        // Monitor and restore scroll position if browser tries to change it
+        const restoreScroll = () => {
+          const currentScroll = window.scrollY || window.pageYOffset;
+          // If scroll position changed significantly (browser auto-scrolled)
+          if (isRestoringScroll && Math.abs(currentScroll - savedScrollPosition) > 20) {
+            window.scrollTo({
+              top: savedScrollPosition,
+              behavior: 'auto' // Instant, no animation
+            });
+          }
+        };
+        
+        // Check scroll position periodically for a short time
+        const scrollCheckInterval = setInterval(() => {
+          restoreScroll();
+          if (!isRestoringScroll) {
+            clearInterval(scrollCheckInterval);
+          }
+        }, 50);
+        
+        // Stop monitoring after keyboard animation completes
+        setTimeout(() => {
+          isRestoringScroll = false;
+          clearInterval(scrollCheckInterval);
+        }, 600);
+        
         // Small delay to allow keyboard animation to start
         setTimeout(() => {
           updateSearchBarPosition();
-        }, 300);
+        }, 100);
       });
 
       // Handle blur events to reset position
@@ -3408,6 +3442,12 @@ function initializeMobileSearch() {
             isKeyboardOpen = false;
             mobileSearchBar.style.bottom = '0';
             mobileSearchBar.classList.remove('keyboard-open');
+            
+            // Reset site container height
+            const siteContainer = document.querySelector('.site-container');
+            if (siteContainer) {
+              siteContainer.style.minHeight = '';
+            }
           }
         }, 100);
       });
