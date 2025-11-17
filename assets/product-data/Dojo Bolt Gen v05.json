@@ -62,6 +62,22 @@
     "benefit_id": "24ccf893-6439-4e5c-8a99-6461ff8e4d75",
     "file_id": "45153005-40bc-4414-a7b8-e9ad25f49ff3",
     "last_synced": "2025-11-16T13:39:53.645Z",
-    "price_id": "48b6b433-f395-47d7-9c05-f72b6f312374"
-  }
+    "price_id": "514cf2d7-e997-4559-ac67-647c4e35d9b5"
+  },
+  "changelog": [
+    {
+      "version": ".00",
+      "date": "2025-11-12",
+      "changes": [
+        "First pass"
+      ]
+    },
+    {
+      "version": ".10",
+      "date": "2025-11-15",
+      "changes": [
+        "updated gizmo behavior"
+      ]
+    }
+  ]
 }
