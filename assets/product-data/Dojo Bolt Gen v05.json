@@ -62,11 +62,11 @@
     "benefit_id": "24ccf893-6439-4e5c-8a99-6461ff8e4d75",
     "file_id": "45153005-40bc-4414-a7b8-e9ad25f49ff3",
     "last_synced": "2025-11-16T13:39:53.645Z",
-    "price_id": "514cf2d7-e997-4559-ac67-647c4e35d9b5"
+    "price_id": "f6054c4f-c813-40c8-814f-822af9286af1"
   },
   "changelog": [
     {
-      "version": ".00",
+      "version": "Alpha",
       "date": "2025-11-12",
       "changes": [
         "First pass"
