@@ -3814,21 +3814,21 @@ function updateHorizontalIconGrid() {
     // Create image element
     const img = document.createElement('img');
 
-    // Use thumbnail from product data if available
-    const thumbnailField = product.metafields?.find(f => f.key === 'thumbnail');
-    if (thumbnailField && thumbnailField.value) {
-      // Use GitHub raw URL for the thumbnail
-      const libraryPath = product.library || 'no3d-tools-library';
-      const productFolder = product.folder || product.id;
-      img.src = `https://raw.githubusercontent.com/node-dojo/${libraryPath}/main/${productFolder}/${thumbnailField.value}`;
+    // Use product.icon directly, same as regular icon grid
+    if (product.icon) {
+      img.src = product.icon;
       console.log(`🖼️ Loading icon for ${product.title || product.name}:`, img.src);
     } else {
       // Fallback to placeholder
-      console.log(`⚠️ No thumbnail field for product:`, product.title || product.name || product.id);
+      console.log(`⚠️ No icon property for product:`, product.title || product.name || product.id);
       img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNFOEU4RTgiLz4KICA8dGV4dCB4PSIzMiIgeT0iMzQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
     }
 
     img.alt = product.title || product.name || product.id;
+    img.onerror = function() {
+      // Fallback to placeholder if image fails to load
+      this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNFOEU4RTgiLz4KICA8dGV4dCB4PSIzMiIgeT0iMzQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
+    };
     img.loading = 'lazy';
 
     // Add click handler to load product
