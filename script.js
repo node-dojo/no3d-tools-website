@@ -501,7 +501,10 @@ async function loadProductsFromJSON() {
           groups: productGroups,
           handle: jsonData.handle || productId,
           polarProductId: jsonData.polar?.product_id || null, // Store Polar product ID for price updates
-          folderName: folderName // Store folder name for docs filename construction
+          folderName: folderName, // Store folder name for docs filename construction
+          metafields: jsonData.metafields || [], // Include metafields for thumbnail access
+          folder: folderName, // Store folder for icon path construction
+          library: 'no3d-tools-library' // Default library name
         };
       } catch (error) {
         console.warn(`Failed to load ${fileName}:`, error);
