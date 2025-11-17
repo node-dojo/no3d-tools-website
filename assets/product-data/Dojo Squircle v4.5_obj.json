@@ -111,6 +111,22 @@
     "benefit_id": "6b25cea7-3ce0-4533-bd9b-73293ced7082",
     "file_id": "9c71cb4e-cb1d-41ec-b157-1d6007fe198e",
     "last_synced": "2025-11-16T13:40:24.418Z",
-    "price_id": "25de25fa-56e4-45a5-af4a-0a4787df0131"
-  }
+    "price_id": "911bae7d-57f8-4d61-b801-e0ad28584d7d"
+  },
+  "changelog": [
+    {
+      "version": "",
+      "date": "2025-11-17",
+      "changes": [
+        "Minor bug fixes"
+      ]
+    },
+    {
+      "version": "V4.5",
+      "date": "2025-11-17",
+      "changes": [
+        ""
+      ]
+    }
+  ]
 }
