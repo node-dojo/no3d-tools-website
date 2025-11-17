@@ -1,14 +1,13 @@
 {
   "title": "Dojo Bolt Gen v05",
   "handle": "dojo-bolt-gen-v05",
-  "description": "new description",
+  "description": "Drag and drop this node utility into your scene to generate infinite possible 3D printable fasteners.\n",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
   "tags": [
-    "blender",
-    "addon",
-    "3d",
-    "asset"
+    "Node Group",
+    "3D printing",
+    "Hardware"
   ],
   "status": "active",
   "variants": [
@@ -62,7 +61,7 @@
     "benefit_id": "24ccf893-6439-4e5c-8a99-6461ff8e4d75",
     "file_id": "45153005-40bc-4414-a7b8-e9ad25f49ff3",
     "last_synced": "2025-11-16T13:39:53.645Z",
-    "price_id": "eda62023-da80-40f1-8a95-a970f115b241"
+    "price_id": "4327c838-2b24-42c4-a3fe-134859b8ca6c"
   },
   "changelog": [
     {
