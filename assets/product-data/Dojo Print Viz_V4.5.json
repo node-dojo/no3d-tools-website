@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "5.55",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-PRINT-VIZ-V4.5",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -61,7 +61,6 @@
     "product_id": "c668211b-f0ac-4b54-82ac-5f97c8f4adcc",
     "benefit_id": "f15d5e49-8ae8-40e4-a871-dd19dfe18df6",
     "file_id": "cf10be98-2037-4e52-aafd-5ac0e6fd8d94",
-    "last_synced": "2025-11-16T13:40:21.486Z",
-    "price_id": "7e147044-e81d-4cdd-9c0b-a6568a469593"
+    "last_synced": "2025-11-16T13:40:21.486Z"
   }
 }

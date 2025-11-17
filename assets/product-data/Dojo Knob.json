@@ -14,7 +14,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "5.55",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-KNOB",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -62,7 +62,6 @@
     "product_id": "c17384fb-dee6-4d86-891c-ed02bbb2e5d7",
     "benefit_id": "237a5446-d783-497e-884a-84445ee18b36",
     "file_id": "b825aff1-98e4-43d5-872e-2c82cedbba84",
-    "last_synced": "2025-11-16T13:40:12.049Z",
-    "price_id": "32cec2ee-0107-4d1f-8363-97d3b38bc98a"
+    "last_synced": "2025-11-16T13:40:12.049Z"
   }
 }
