@@ -3380,6 +3380,14 @@ function updateHorizontalIconGrid() {
   });
 
   console.log(`✅ Horizontal grid populated with ${toolsProducts.length} products`);
+
+  // Auto-scroll to active item on mobile for better UX
+  const activeItem = grid.querySelector('.horizontal-icon-item.active');
+  if (activeItem && window.innerWidth <= 768) {
+    setTimeout(() => {
+      activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }, 100);
+  }
 }
 
 // Hook into existing product type toggle to update horizontal grid
