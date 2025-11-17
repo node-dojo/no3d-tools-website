@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "7.77",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-BOLT-GEN-V05-OBJ",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -92,11 +92,5 @@
       "value": "icon_Dojo Bolt Gen v05_Obj.png",
       "type": "single_line_text_field"
     }
-  ],
-  "polar": {
-    "product_id": "eb28f590-e6eb-463a-830d-95243e51de89",
-    "benefit_id": "d983eadc-2a2d-4272-aedf-7f3266aaa4ad",
-    "file_id": "9c3b012a-0333-4e95-bab4-2d0ee92f42a3",
-    "last_synced": "2025-11-16T13:39:56.964Z"
-  }
+  ]
 }

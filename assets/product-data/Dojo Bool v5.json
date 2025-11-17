@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "7.77",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-BOOL-V5",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -56,11 +56,5 @@
       "value": "icon_Dojo Bool v5.png",
       "type": "single_line_text_field"
     }
-  ],
-  "polar": {
-    "product_id": "9e9925e7-788f-4ca1-81ec-9c1b5ae61e43",
-    "benefit_id": "23e145e0-65b6-452a-b723-df95b44d60da",
-    "file_id": "fa4ac555-cb87-4484-9296-59157760ac8b",
-    "last_synced": "2025-11-16T13:39:59.661Z"
-  }
+  ]
 }

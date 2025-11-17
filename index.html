@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="deployment-version" content="3c1bbbe">
     <title>NO3D TOOLS</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,6 +11,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Silka Mono font - using JetBrains Mono as alternative since Silka Mono requires license -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Visitor font - using Space Mono as closest alternative -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <!-- Polar Embedded Checkout -->
+    <!-- Using official Polar CDN as per documentation -->
+    <script src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@0.1/dist/embed.global.js" defer></script>
+    <script>
+      // Debug: Check when Polar SDK loads
+      (function() {
+        function checkPolarSDK() {
+          // According to Polar docs, the global build exposes PolarEmbedCheckout directly
+          if (window.PolarEmbedCheckout) {
+            console.log('✅ Polar SDK loaded!', window.PolarEmbedCheckout);
+            return true;
+          }
+          
+          // Log what's available for debugging
+          console.log('Checking for Polar SDK...');
+          console.log('window.PolarEmbedCheckout:', window.PolarEmbedCheckout);
+          console.log('All window keys with "polar":', Object.keys(window).filter(k => k.toLowerCase().includes('polar')));
+          return false;
+        }
+        
+        // Check after script loads
+        window.addEventListener('load', function() {
+          if (!checkPolarSDK()) {
+            // Retry a few times in case script loads after window.load
+            let attempts = 0;
+            const retryInterval = setInterval(() => {
+              attempts++;
+              if (checkPolarSDK() || attempts > 10) {
+                clearInterval(retryInterval);
+              }
+            }, 200);
+          }
+        });
+      })();
+    </script>
     <!-- Visitor font - self-hosted WOFF2 webfont -->
     <!-- Preload Visitor font for better performance -->
     <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
@@ -37,8 +77,6 @@
         font-display: swap;
       }
     </style>
-    <!-- Fallback: Space Mono as closest alternative if Visitor font fails to load -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -50,7 +88,7 @@
                 <button class="hamburger-menu-button" id="hamburger-menu-button" aria-label="Toggle menu">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="logo">NO3D TOOLS</div>
+                <img src="assets/NO3D TOOLS.png" alt="NO3D TOOLS" class="logo" id="header-logo">
             </div>
             <div class="header-icons">
                 <div class="cart-icon-wrapper" id="cart-icon-wrapper">
@@ -66,60 +104,8 @@
 
         <!-- Left Sidebar Navigation -->
         <nav class="sidebar" id="sidebar">
-            <div class="sidebar-content">
-                <div class="category-header">
-                    <span class="category-name">WORKFLOW</span>
-                    <span class="carrot expanded">▼</span>
-                </div>
-                <div class="category-section expanded">
-                    <div class="category-subheader">
-                        <span class="category-name">ADV 3D DESIGN</span>
-                        <span class="carrot expanded">▼</span>
-                    </div>
-                    <div class="product-list">
-                        <div class="product-item" data-product="dojo-bolt-gen">
-                            <span class="product-name">DOJO BOLT GEN V05</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-bool">
-                            <span class="product-name">DOJO BOOL V5</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-calipers">
-                            <span class="product-name">DOJO CALIPERS</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-crv-wrapper">
-                            <span class="product-name">DOJO CRV WRAPPER V4</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-gluefinity">
-                            <span class="product-name">DOJO GLUEFINITY GRID_OBJ</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-knob">
-                            <span class="product-name">DOJO KNOB</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-knob-obj">
-                            <span class="product-name">DOJO KNOB_OBJ</span>
-                        </div>
-                        <div class="product-item active" data-product="dojo-mesh-repair">
-                            <span class="product-name">DOJO MESH REPAIR</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-print-viz">
-                            <span class="product-name">DOJO PRINT VIZ_V4.5</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-squircle-obj">
-                            <span class="product-name">DOJO SQUIRCLE V4.5_OBJ</span>
-                        </div>
-                        <div class="product-item" data-product="dojo-squircle">
-                            <span class="product-name">DOJO_SQUIRCLE V4.5</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-header">
-                    <span class="category-name">MOGRAPH</span>
-                    <span class="carrot collapsed">▶</span>
-                </div>
-                <div class="category-header">
-                    <span class="category-name">WORKFLOW</span>
-                    <span class="carrot collapsed">▶</span>
-                </div>
+            <div class="sidebar-content" id="sidebar-content">
+                <!-- 3-tier sidebar structure will be generated by JavaScript -->
             </div>
         </nav>
 
@@ -137,10 +123,12 @@
                     
                     <!-- Product Details -->
                     <div class="product-details">
-                        <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
-                        <div class="product-price" id="product-price">PRICE: $7.99</div>
-                        <button class="download-button" id="download-button">DOWNLOAD</button>
-                        <button class="add-to-cart-button" id="add-to-cart-button">ADD TO CART</button>
+                        <div class="product-header-row">
+                            <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
+                            <div class="product-price" id="product-price">PRICE: $7.99</div>
+                        </div>
+                        <button class="download-button" id="download-button" style="display: none;">DOWNLOAD</button>
+                        <button class="buy-now-button" id="buy-now-button">BUY NOW</button>
                     </div>
                 </div>
 
@@ -156,15 +144,15 @@
                         </div>
                         <div class="tab-container">
                             <div class="tab-icon collapsed" data-tab="vids">
-                                <div class="tab-arrow">►</div>
+                                <div class="tab-arrow">▶</div>
                             </div>
                             <div class="tab" data-tab="vids">VIDS</div>
                         </div>
                         <div class="tab-container">
-                            <div class="tab-icon collapsed" data-tab="issues">
-                                <div class="tab-arrow">►</div>
+                            <div class="tab-icon collapsed" data-tab="faqs">
+                                <div class="tab-arrow">▶</div>
                             </div>
-                            <div class="tab" data-tab="issues">ISSUES</div>
+                            <div class="tab" data-tab="faqs">FAQS</div>
                         </div>
                     </div>
 
@@ -203,54 +191,24 @@
         </div>
 
         <!-- Right Icon Grid -->
+        <!-- Icons are dynamically generated from GitHub repository -->
         <aside class="icon-grid">
-            <div class="icon-item" data-product="dojo-bolt-gen">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bolt-gen-icon.png" alt="Dojo Bolt Gen Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-bool">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bool-icon.png" alt="Dojo Bool Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-calipers">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-calipers-icon.png" alt="Dojo Calipers Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-crv-wrapper">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-crv-wrapper-icon.png" alt="Dojo Crv Wrapper Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-gluefinity">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-gluefinity-grid-icon.png" alt="Dojo Gluefinity Grid Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-knob">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-knob-icon.png" alt="Dojo Knob Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-print-bed">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-bed-icon.png" alt="Dojo Print Bed Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-print-viz">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-viz-icon.png" alt="Dojo Print Viz Icon">
-            </div>
-            <div class="icon-item active" data-product="dojo-mesh-repair">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-mesh-repair-icon.png" alt="Dojo Mesh Repair Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-squircle">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-squircle-icon.png" alt="Dojo Squircle Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-slug-tool">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-slug-tool-icon.png" alt="Dojo Slug Tool Icon">
-            </div>
-            <div class="icon-item" data-product="dojo-bool">
-                <img src="https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bool-icon.png" alt="Dojo Bool Icon">
-            </div>
+            <!-- Icon items will be populated by JavaScript from no3d-tools-library repository -->
         </aside>
     </div>
 
-    <footer class="footer">
-        <span class="footer-text">RTHEUELLTRROT</span>
-    </footer>
+    <!-- Mobile Search Bar (bottom of screen, mobile only) -->
+    <div class="mobile-search-bar" id="mobile-search-bar">
+        <input type="text" class="mobile-search-input" id="mobile-search-input" placeholder="SEARCH TOOLS..." aria-label="Search tools">
+        <button class="mobile-search-button" id="mobile-search-button" aria-label="Search">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
 
-    <!-- Search Icon Button - Fixed Bottom Right -->
-    <button class="search-icon-button" id="search-icon-button" aria-label="Search">
-        <i class="fas fa-search"></i>
-    </button>
+    <footer class="footer">
+        <span class="footer-text" id="footer-text">Cmd/ctrl + K to Search</span>
+        <img src="assets/stone logo.png" alt="Stone Logo" class="footer-logo">
+    </footer>
 
     <!-- Command Palette Search Modal -->
     <div class="search-modal-backdrop" id="search-modal-backdrop"></div>
@@ -313,13 +271,29 @@
         </div>
     </div>
 
-    <!-- Vercel Analytics for static sites -->
-    <script>
-      // Initialize Vercel Analytics if available
-      if (typeof window !== 'undefined' && window.__VERCEL_ANALYTICS__) {
-        // Analytics will be automatically injected by Vercel
-      }
-    </script>
+    <!-- Checkout Modal -->
+    <div class="checkout-modal-backdrop" id="checkout-modal-backdrop"></div>
+    <div class="checkout-modal" id="checkout-modal">
+        <div class="checkout-modal-container">
+            <div class="checkout-modal-header">
+                <h2 class="checkout-title">CHECKOUT</h2>
+                <button class="checkout-close-button" id="checkout-close-button" aria-label="Close checkout">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="checkout-content-container" id="checkout-content-container">
+                <div class="checkout-loading" id="checkout-loading">
+                    <span class="checkout-loading-text">Loading checkout...</span>
+                </div>
+                <div class="checkout-error" id="checkout-error" style="display: none;">
+                    <span class="checkout-error-text">Unable to load checkout modal. Redirecting to checkout page...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vercel Analytics -->
+    <script defer src="https://cdn.vercel-insights.com/script.js"></script>
     <script src="polar-products.js"></script>
     <script type="module" src="script.js"></script>
 </body>
