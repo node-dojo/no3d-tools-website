@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "7.77",
+      "price": "5.55",
       "sku": "NO3D-TOOLS-DOJO-CRV-WRAPPER-V4",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -61,6 +61,7 @@
     "product_id": "5d70352c-a1fa-4f2f-8729-6eec35126387",
     "benefit_id": "aa76f4d1-8a9f-4f25-a5f7-6511dbc917f6",
     "file_id": "94abfd97-9755-4a2b-9408-3679568a7759",
-    "last_synced": "2025-11-16T13:40:06.055Z"
+    "last_synced": "2025-11-16T13:40:06.055Z",
+    "price_id": "a2390697-3ae1-4a87-b30f-121c2d110b49"
   }
 }
