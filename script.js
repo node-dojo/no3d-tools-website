@@ -1554,15 +1554,23 @@ async function loadProductCardAssets(productId) {
               }
               
               if (mediaType !== 'other') {
-                // Construct URL based on whether we're using local assets or GitHub
+                // Use download_url from GitHub API if available (properly encoded)
+                // Otherwise construct URL manually
                 let fileUrl;
-                if (config.useLocalAssets) {
-                  // For local assets, card assets would need to be synced to website repo
-                  // For now, fall back to GitHub raw URL since card assets aren't synced yet
-                  // TODO: Update sync script to copy card assets to website repo
-                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${item.name}`;
+                if (item.download_url) {
+                  // GitHub API provides properly encoded download_url
+                  fileUrl = item.download_url;
                 } else {
-                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${item.name}`;
+                  // Fallback: construct URL manually with proper encoding
+                  const encodedFileName = encodeURIComponent(item.name);
+                  if (config.useLocalAssets) {
+                    // For local assets, card assets would need to be synced to website repo
+                    // For now, fall back to GitHub raw URL since card assets aren't synced yet
+                    // TODO: Update sync script to copy card assets to website repo
+                    fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${encodedFileName}`;
+                  } else {
+                    fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${encodedFileName}`;
+                  }
                 }
                 
                 cardAssets.push({
@@ -1572,7 +1580,7 @@ async function loadProductCardAssets(productId) {
                   name: item.name,
                   isIcon: false
                 });
-                console.log(`📦 Added card asset: ${item.name} (${mediaType})`);
+                console.log(`📦 Added card asset: ${item.name} (${mediaType}) - URL: ${fileUrl}`);
               }
             }
           }
