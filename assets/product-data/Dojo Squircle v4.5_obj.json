@@ -14,7 +14,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "7.77",
+      "price": "5.55",
       "sku": "NO3D-TOOLS-DOJO-SQUIRCLE-V4.5-OBJ",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -110,6 +110,7 @@
     "product_id": "67c6c182-8a09-4687-914e-2fbb01eff5dc",
     "benefit_id": "6b25cea7-3ce0-4533-bd9b-73293ced7082",
     "file_id": "9c71cb4e-cb1d-41ec-b157-1d6007fe198e",
-    "last_synced": "2025-11-16T13:40:24.418Z"
+    "last_synced": "2025-11-16T13:40:24.418Z",
+    "price_id": "25de25fa-56e4-45a5-af4a-0a4787df0131"
   }
 }
