@@ -3783,7 +3783,8 @@ function updateHorizontalIconGrid() {
       id: productId,
       ...currentProducts[productId]
     }))
-    .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
+    .filter(product => product && product.title) // Filter out products without titles
+    .sort((a, b) => (a.title || '').localeCompare(b.title || '')); // Sort alphabetically with fallback
 
   // Clear existing grid
   grid.innerHTML = '';
