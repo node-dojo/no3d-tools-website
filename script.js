@@ -1521,7 +1521,12 @@ async function loadProductCardAssets(productId) {
       
       if (response.ok) {
         const data = await response.json();
-        if (data.contents && Array.isArray(data.contents)) {
+        // Handle both error responses and successful responses
+        if (data.error) {
+          // Folder doesn't exist yet, that's okay
+          console.log(`ℹ️ Card assets folder doesn't exist yet for ${folderName} (this is normal if folder hasn't been pushed to GitHub)`);
+        } else if (data.contents && Array.isArray(data.contents)) {
+          console.log(`📁 Found ${data.contents.length} items in card assets folder for ${folderName}`);
           const supportedFormats = {
             image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
             video: ['mp4', 'webm', 'ogg', 'mov'],
@@ -1542,10 +1547,16 @@ async function loadProductCardAssets(productId) {
               }
               
               if (mediaType !== 'other') {
-                // For local assets, we need to construct the path differently
-                // Card assets are in a subfolder, so we'll use GitHub raw URL for now
-                // In the future, we could sync these to local assets too
-                const fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsFolder}/${item.name}`;
+                // Construct URL based on whether we're using local assets or GitHub
+                let fileUrl;
+                if (config.useLocalAssets) {
+                  // For local assets, card assets would need to be synced to website repo
+                  // For now, fall back to GitHub raw URL since card assets aren't synced yet
+                  // TODO: Update sync script to copy card assets to website repo
+                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsFolder}/${item.name}`;
+                } else {
+                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsFolder}/${item.name}`;
+                }
                 
                 cardAssets.push({
                   type: mediaType,
@@ -1554,6 +1565,7 @@ async function loadProductCardAssets(productId) {
                   name: item.name,
                   isIcon: false
                 });
+                console.log(`📦 Added card asset: ${item.name} (${mediaType})`);
               }
             }
           }
@@ -1581,10 +1593,13 @@ async function loadProductCardAssets(productId) {
     // If GIF exists, add PNG at end; otherwise add at beginning
     if (cardAssets.some(item => item.format === 'gif' && item.isIcon)) {
       cardAssets.push(iconPngItem);
+      console.log(`🖼️ Added icon PNG at end (GIF found first)`);
     } else {
       cardAssets.unshift(iconPngItem);
+      console.log(`🖼️ Added icon PNG at beginning (no GIF found)`);
     }
 
+    console.log(`📊 Final carousel assets count: ${cardAssets.length}`);
     return cardAssets;
   } catch (error) {
     console.error(`Error loading card assets for ${productId}:`, error);
@@ -4040,7 +4055,9 @@ async function initializeCarousel(productId) {
   }
 
   // Load card assets
+  console.log(`🔄 Loading carousel assets for product: ${productId}`);
   carouselItems = await loadProductCardAssets(productId);
+  console.log(`✅ Loaded ${carouselItems.length} carousel items:`, carouselItems.map(item => item.name));
   carouselCurrentIndex = 0;
 
   // Clear existing items
@@ -4048,6 +4065,7 @@ async function initializeCarousel(productId) {
 
   if (carouselItems.length === 0) {
     // Fallback: show placeholder
+    console.warn('⚠️ No carousel items found, showing placeholder');
     const placeholder = document.createElement('div');
     placeholder.className = 'carousel-item';
     placeholder.innerHTML = '<div class="model-viewer-placeholder">No images available</div>';
@@ -4146,10 +4164,14 @@ function navigateCarousel(direction) {
 // Update carousel position
 function updateCarouselPosition() {
   const track = document.getElementById('carousel-track');
-  if (!track) return;
+  if (!track) {
+    console.warn('Carousel track not found in updateCarouselPosition');
+    return;
+  }
 
   const offset = -carouselCurrentIndex * 100;
   track.style.transform = `translateX(${offset}%)`;
+  console.log(`📍 Carousel position updated: index ${carouselCurrentIndex}, offset ${offset}%`);
 }
 
 // Update arrow visibility
