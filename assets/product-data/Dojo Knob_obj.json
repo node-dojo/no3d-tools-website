@@ -12,12 +12,9 @@
     "asset"
   ],
   "status": "active",
-  "polar": {
-    "product_id": "2cf511d2-25b7-4573-a076-0be8998cee9b"
-  },
   "variants": [
     {
-      "price": "0.00",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-KNOB-OBJ",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -96,5 +93,11 @@
       "value": "icon_Dojo Knob_obj.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "53bbe0f8-7f9f-4d40-8387-473355277ece",
+    "benefit_id": "c85987f6-1ef1-4136-b69f-c72be3174824",
+    "file_id": "532afadd-5368-4a8d-aff7-97380f854b76",
+    "last_synced": "2025-11-16T13:40:15.197Z"
+  }
 }

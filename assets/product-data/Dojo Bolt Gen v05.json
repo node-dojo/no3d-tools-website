@@ -1,7 +1,7 @@
 {
   "title": "Dojo Bolt Gen v05",
   "handle": "dojo-bolt-gen-v05",
-  "description": "Blender asset: Dojo Bolt Gen v05",
+  "description": "Test the the product description editor.\nPHASE 2\n",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
   "tags": [
@@ -11,12 +11,9 @@
     "asset"
   ],
   "status": "active",
-  "polar": {
-    "product_id": "a7f3c119-0b1a-48bf-8c51-5cd771e554cb"
-  },
   "variants": [
     {
-      "price": "0.00",
+      "price": "12.34",
       "sku": "NO3D-TOOLS-DOJO-BOLT-GEN-V05",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -59,5 +56,12 @@
       "value": "icon_Dojo Bolt Gen v05.png",
       "type": "single_line_text_field"
     }
-  ]
+  ],
+  "polar": {
+    "product_id": "2fbe03f5-f6bc-4d53-a309-1b9aa7fa010c",
+    "benefit_id": "24ccf893-6439-4e5c-8a99-6461ff8e4d75",
+    "file_id": "45153005-40bc-4414-a7b8-e9ad25f49ff3",
+    "last_synced": "2025-11-16T13:39:53.645Z",
+    "price_id": "254493eb-440b-4421-bdfd-2d692662f787"
+  }
 }
