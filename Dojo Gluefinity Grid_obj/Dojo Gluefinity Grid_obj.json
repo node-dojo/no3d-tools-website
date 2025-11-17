@@ -1,0 +1,115 @@
+{
+  "title": "Dojo Gluefinity Grid_obj",
+  "handle": "dojo-gluefinity-grid-obj",
+  "description": "Blender asset: Dojo Gluefinity Grid_obj",
+  "vendor": "The Well Tarot",
+  "product_type": "Blender Add-on",
+  "tags": [
+    "blender",
+    "addon",
+    "3d",
+    "asset"
+  ],
+  "status": "active",
+  "variants": [
+    {
+      "price": "5.55",
+      "sku": "NO3D-TOOLS-DOJO-GLUEFINITY-GRID-OBJ",
+      "inventory_policy": "continue",
+      "inventory_management": "shopify"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "MESH",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blender_version",
+      "value": "5.0.0+",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-11-15",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "source_file",
+      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "vertices",
+      "value": "1",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "faces",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "materials",
+      "value": "1",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_m3",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"M3\", address=0x6000218de3e0>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_mm",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"MM\", address=0x6000218de490>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_hops",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"hops\", address=0x6000218de540>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_v3d",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"v3d\", address=0x6000218de5f0>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_sanctus_decal_settings",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"sanctus_decal_settings\", address=0x6000218de6a0>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blend_file",
+      "value": "Dojo Gluefinity Grid_obj.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_Dojo Gluefinity Grid_obj.png",
+      "type": "single_line_text_field"
+    }
+  ],
+  "polar": {
+    "product_id": "b3c265a8-272d-41b7-930d-529538b41f8a",
+    "benefit_id": "d1f2b4a0-2701-4ea9-9a7e-99efff468028",
+    "file_id": "e4901984-72a1-468a-b460-e6b4b03df707",
+    "last_synced": "2025-11-16T13:40:09.051Z",
+    "price_id": "139e0396-17dd-47e4-b619-9e113d88e07e"
+  }
+}
