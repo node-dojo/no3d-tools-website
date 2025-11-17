@@ -672,6 +672,31 @@ body {
   letter-spacing: -0.08px;
 }
 
+.changelog-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.changelog-content li {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.changelog-content li:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.changelog-entry-header {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--color-void-black);
+  margin-right: 0.5rem;
+}
+
 /* Right Section Styles */
 .product-right-section {
   width: 473px;

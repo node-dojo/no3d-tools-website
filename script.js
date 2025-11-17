@@ -449,26 +449,39 @@ async function loadProductsFromJSON() {
           return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
         });
 
-        // Normalize changelog format - handle both array of objects and array of strings
+        // Normalize changelog format - preserve full entry structure with version and date
         let changelog = [];
         if (jsonData.changelog && Array.isArray(jsonData.changelog) && jsonData.changelog.length > 0) {
-          // Process each changelog entry
+          // Process each changelog entry and preserve structure
           jsonData.changelog.forEach(entry => {
             if (typeof entry === 'string') {
-              // Simple string entry
-              changelog.push(entry);
+              // Simple string entry - convert to object format
+              changelog.push({
+                version: '',
+                date: '',
+                changes: [entry]
+              });
             } else if (entry && entry.changes) {
               // Handle object format: {version, date, changes}
+              const normalizedEntry = {
+                version: entry.version || '',
+                date: entry.date || '',
+                changes: []
+              };
+              
               if (Array.isArray(entry.changes)) {
                 // Multiple changes in one entry
-                entry.changes.forEach(change => {
-                  if (change && change.trim()) {
-                    changelog.push(change.trim());
-                  }
-                });
+                normalizedEntry.changes = entry.changes
+                  .filter(change => change && change.trim())
+                  .map(change => change.trim());
               } else if (typeof entry.changes === 'string' && entry.changes.trim()) {
                 // Single change as string
-                changelog.push(entry.changes.trim());
+                normalizedEntry.changes = [entry.changes.trim()];
+              }
+              
+              // Only add entry if it has changes
+              if (normalizedEntry.changes.length > 0) {
+                changelog.push(normalizedEntry);
               }
             }
           });
@@ -478,7 +491,7 @@ async function loadProductsFromJSON() {
           name: jsonData.title.toUpperCase(),
           price: price,
           description: jsonData.description || generateDescription(jsonData.title),
-          changelog: changelog, // Use changelog from JSON, empty array if none
+          changelog: changelog, // Array of {version, date, changes[]} objects
           image3d: thumbnail, // Use local assets
           icon: thumbnail, // Use local assets
           productType: jsonData.productType || 'tools',
@@ -860,26 +873,39 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
           return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
         });
 
-        // Normalize changelog format - handle both array of objects and array of strings
+        // Normalize changelog format - preserve full entry structure with version and date
         let changelog = [];
         if (jsonData.changelog && Array.isArray(jsonData.changelog) && jsonData.changelog.length > 0) {
-          // Process each changelog entry
+          // Process each changelog entry and preserve structure
           jsonData.changelog.forEach(entry => {
             if (typeof entry === 'string') {
-              // Simple string entry
-              changelog.push(entry);
+              // Simple string entry - convert to object format
+              changelog.push({
+                version: '',
+                date: '',
+                changes: [entry]
+              });
             } else if (entry && entry.changes) {
               // Handle object format: {version, date, changes}
+              const normalizedEntry = {
+                version: entry.version || '',
+                date: entry.date || '',
+                changes: []
+              };
+              
               if (Array.isArray(entry.changes)) {
                 // Multiple changes in one entry
-                entry.changes.forEach(change => {
-                  if (change && change.trim()) {
-                    changelog.push(change.trim());
-                  }
-                });
+                normalizedEntry.changes = entry.changes
+                  .filter(change => change && change.trim())
+                  .map(change => change.trim());
               } else if (typeof entry.changes === 'string' && entry.changes.trim()) {
                 // Single change as string
-                changelog.push(entry.changes.trim());
+                normalizedEntry.changes = [entry.changes.trim()];
+              }
+              
+              // Only add entry if it has changes
+              if (normalizedEntry.changes.length > 0) {
+                changelog.push(normalizedEntry);
               }
             }
           });
@@ -889,7 +915,7 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
           name: jsonData.title || dir.name,
           price: price || 'Free',
           description: jsonData.description || '',
-          changelog: changelog,
+          changelog: changelog, // Array of {version, date, changes[]} objects
           image3d: thumbnail || '',
           icon: thumbnail || '',
           productType: libraryKey,
@@ -1516,14 +1542,58 @@ function updateChangelog(changelogItems) {
     return;
   }
 
-  // Display changelog items
-  changelogContent.innerHTML = changelogItems.map(item => {
-    // Simple HTML escaping
-    const escaped = String(item).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-    return `<li><span class="leading-[1.05]">${escaped}</span></li>`;
+  // Helper function to escape HTML
+  function escapeHtml(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  // Helper function to format date
+  function formatDate(dateString) {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString; // Return original if invalid
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (e) {
+      return dateString; // Return original if parsing fails
+    }
+  }
+
+  // Display changelog items with version and date
+  changelogContent.innerHTML = changelogItems.map(entry => {
+    // Handle both old format (array of strings) and new format (array of objects)
+    if (typeof entry === 'string') {
+      // Legacy format: just a string
+      return `<li><span class="leading-[1.05]">${escapeHtml(entry)}</span></li>`;
+    } else if (entry && entry.changes) {
+      // New format: object with version, date, and changes
+      const version = entry.version ? escapeHtml(entry.version) : '';
+      const date = formatDate(entry.date);
+      const changes = Array.isArray(entry.changes) ? entry.changes : [entry.changes];
+      
+      // Build version and date header
+      let header = '';
+      if (version || date) {
+        const parts = [];
+        if (version) parts.push(`v${version}`);
+        if (date) parts.push(date);
+        header = `<span class="changelog-entry-header" style="font-weight: 600; margin-right: 0.5rem;">${parts.join(' • ')}</span>`;
+      }
+      
+      // Build changes list
+      const changesHtml = changes.map(change => {
+        const escaped = escapeHtml(change);
+        return `<span class="leading-[1.05]">${escaped}</span>`;
+      }).join('<br>');
+      
+      return `<li>${header}${changesHtml}</li>`;
+    } else {
+      // Fallback for unexpected format
+      return `<li><span class="leading-[1.05]">${escapeHtml(String(entry))}</span></li>`;
+    }
   }).join('');
 
-  // Update title (could show version if available, but for now just "CHANGELOG")
+  // Update title
   if (changelogTitle) changelogTitle.textContent = 'CHANGELOG';
 }
 
