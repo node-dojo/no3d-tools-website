@@ -118,7 +118,7 @@ body {
   display: none; /* Hidden on desktop, shown on mobile */
   background: none;
   border: 1px solid var(--color-void-black);
-  padding: var(--space-tiny) var(--space-small);
+  padding: 0;
   cursor: pointer;
   color: var(--color-void-black);
   font-size: var(--space-medium);
@@ -1264,10 +1264,9 @@ body {
   .download-button,
   .buy-now-button {
     width: 100%;
-    max-width: 300px;
+    max-width: none; /* Remove max-width to fill full width on mobile */
     margin-right: 0;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0; /* Remove auto margins to fill width */
     height: 48px; /* Increased height for mobile touch */
     min-height: 48px;
     display: flex;
@@ -1342,11 +1341,30 @@ body {
     padding: 0; /* Remove padding to allow precise alignment */
   }
 
-  .hamburger-menu-button {
+  /* Ensure header-left centers logo */
+  .site-header .header-left {
+    position: absolute; /* Position absolutely to truly center */
+    left: 50%; /* Position at center */
+    transform: translateX(-50%); /* Shift back by half its width */
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Position hamburger in upper left corner - now outside header-left */
+  .site-header .hamburger-menu-button {
     display: flex; /* Show hamburger on mobile */
-    position: absolute; /* Position absolutely */
+    position: fixed; /* Use fixed to position relative to viewport */
+    top: 0; /* Flush with top */
+    left: 0; /* Flush with left edge of viewport */
+    z-index: 201; /* Above header */
+  }
+
+  .site-header .header-icons {
+    position: absolute; /* Position absolutely to mirror hamburger */
+    right: var(--space-small); /* 10px from right - matches hamburger distance */
     top: 50%; /* Position at vertical center of header */
-    left: var(--space-small); /* 10px from left */
     transform: translateY(-50%); /* Center vertically */
     z-index: 201; /* Above header */
   }
@@ -1361,18 +1379,15 @@ body {
     line-height: 1; /* Prevent extra line height spacing */
   }
 
-  .site-header .header-left {
-    flex: 1; /* Take up available space */
-    justify-content: center; /* Center logo horizontally */
-    align-items: center; /* Center logo vertically */
-  }
-
   /* Sidebar becomes hamburger dropdown menu */
   .sidebar {
     width: 280px; /* Wider on mobile for better touch targets */
     height: calc(100vh - 40px);
     transform: translateX(-100%); /* Hidden by default */
-    top: 40px;
+    top: 0px; /* Align exactly with header bottom */
+    left: 0;
+    margin: 0; /* Ensure no margin creates gap */
+    padding-top: 0; /* Remove top padding to align edge perfectly */
     z-index: 200;
     box-shadow: var(--shadow-strong);
   }
@@ -1406,8 +1421,10 @@ body {
   }
 
   .product-item {
-    padding: var(--space-small) var(--space-medium);
-    min-height: 44px; /* iOS touch target minimum */
+    padding: 0 var(--space-medium); /* Remove vertical padding to let height control spacing */
+    height: 44px; /* Fixed height for consistent spacing */
+    display: flex;
+    align-items: center; /* Center text vertically */
   }
 
   .product-name {
