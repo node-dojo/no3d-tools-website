@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const firstProductId = Object.keys(products)[0];
     if (firstProductId) {
       currentProduct = firstProductId;
-      updateProductDisplay(currentProduct);
+      await updateProductDisplay(currentProduct);
       updateIconGrid();
     }
     
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const firstProductId = Object.keys(products)[0];
     if (firstProductId) {
       currentProduct = firstProductId;
-      updateProductDisplay(currentProduct);
+      await updateProductDisplay(currentProduct);
       updateIconGrid();
     }
     
@@ -342,7 +342,7 @@ async function refreshPricesFromPolar() {
 
     // Update display if a product is currently selected
     if (currentProduct && products[currentProduct]) {
-      updateProductDisplay(currentProduct);
+      await updateProductDisplay(currentProduct);
     }
 
     if (updatedCount > 0) {
@@ -488,7 +488,8 @@ async function loadProductsFromJSON() {
         }
         
         // Extract folder name from file path for docs filename
-        const folderName = fileName.includes('/') ? fileName.split('/')[0] : null;
+        // For local JSON files, the folder name is the filename without .json extension
+        const folderName = fileName.replace('.json', '');
         
         products[productId] = {
           name: jsonData.title.toUpperCase(),
@@ -529,7 +530,7 @@ async function loadProductsFromJSON() {
     
     // Update display if a product is currently selected
     if (currentProduct && products[currentProduct]) {
-      updateProductDisplay(currentProduct);
+      await updateProductDisplay(currentProduct);
     }
     
     // If we're missing prices, try to refresh them once more after a short delay
@@ -1150,7 +1151,7 @@ function initializeSidebarEventListeners() {
     if (e.target.closest('.product-item')) {
       const productItem = e.target.closest('.product-item');
       const productId = productItem.dataset.product;
-      selectProduct(productId);
+      (async () => { await selectProduct(productId); })();
     }
   });
 }
@@ -1347,19 +1348,19 @@ function updateIconGrid() {
 // Set up event listeners
 function initializeEventListeners() {
   // Use event delegation for dynamically generated content
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', async function(e) {
     // Sidebar product selection
     if (e.target.closest('.product-item')) {
       const productItem = e.target.closest('.product-item');
       const productId = productItem.dataset.product;
-      selectProduct(productId);
+      await selectProduct(productId);
     }
     
     // Icon grid selection
     if (e.target.closest('.icon-item')) {
       const iconItem = e.target.closest('.icon-item');
       const productId = iconItem.dataset.product;
-      selectProduct(productId);
+      await selectProduct(productId);
     }
 
     // Tab icon expansion/collapse
@@ -1417,7 +1418,7 @@ function initializeEventListeners() {
 }
 
 // Select a product and update the display
-function selectProduct(productId) {
+async function selectProduct(productId) {
   if (!products[productId]) {
     console.warn(`Product ${productId} not found`);
     return;
@@ -1426,7 +1427,7 @@ function selectProduct(productId) {
   currentProduct = productId;
   // Update button visibility based on subscriber status
   updateButtonVisibility(productId);
-  updateProductDisplay(productId);
+  await updateProductDisplay(productId);
   updateActiveStates(productId);
 }
 
@@ -1477,16 +1478,20 @@ function updateButtonVisibility(productId) {
 
 // Load card assets for a product from GitHub
 async function loadProductCardAssets(productId) {
+  console.log(`📦 loadProductCardAssets called for: ${productId}`);
   const product = products[productId];
   if (!product) {
+    console.warn(`⚠️ Product not found in loadProductCardAssets: ${productId}`);
     return [];
   }
 
   const cardAssets = [];
   const folderName = product.folderName || product.name;
   const cardAssetsFolder = `${folderName} card assets`;
+  console.log(`📁 Looking for card assets folder: "${cardAssetsFolder}"`);
   const library = product.library || 'no3d-tools-library';
   const config = LIBRARY_CONFIG[product.productType] || LIBRARY_CONFIG.tools;
+  console.log(`⚙️ Using config: owner=${config.owner}, repo=${config.repo}, branch=${config.branch}`);
   
   try {
     // Check for icon GIF first
@@ -1622,6 +1627,7 @@ async function loadProductCardAssets(productId) {
 
 // Update the product display with new data
 async function updateProductDisplay(productId) {
+  console.log(`🔄 updateProductDisplay called for: ${productId}`);
   const product = products[productId];
   
   // Set productId on product card for markdown docs loading
@@ -1632,12 +1638,15 @@ async function updateProductDisplay(productId) {
   }
   
   if (!product) {
+    console.warn(`⚠️ Product not found: ${productId}`);
     // If no product, show type description if a type is active
     if (activeProductType) {
       updateProductCardForType(activeProductType);
     }
     return;
   }
+
+  console.log(`✅ Product found: ${product.name}, folderName: ${product.folderName || 'NOT SET'}`);
 
   // Update product information
   productTitle.textContent = product.name;
@@ -1647,6 +1656,7 @@ async function updateProductDisplay(productId) {
   ).join('');
 
   // Load and display carousel assets
+  console.log(`🔄 About to initialize carousel for: ${productId}`);
   await initializeCarousel(productId);
 
   // Update changelog
@@ -2197,11 +2207,11 @@ async function downloadProduct(productId) {
 }
 
 // Keyboard navigation support
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', async function(e) {
   if (e.key === 'Escape') {
     // Close any open modals or reset selections
     console.log('Escape pressed - resetting to default product');
-    selectProduct('dojo-bool-v5');
+    await selectProduct('dojo-bool-v5');
   }
 });
 
@@ -2284,7 +2294,7 @@ searchInput.addEventListener('keydown', function(e) {
   } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
     e.preventDefault();
     const productId = searchResults[selectedResultIndex];
-    selectProduct(productId);
+    (async () => { await selectProduct(productId); })();
     closeSearchModal();
   }
 });
@@ -2363,8 +2373,8 @@ function renderSearchResults() {
       </div>
     `;
 
-    resultItem.addEventListener('click', () => {
-      selectProduct(productId);
+    resultItem.addEventListener('click', async () => {
+      await selectProduct(productId);
       closeSearchModal();
     });
 
@@ -3970,8 +3980,8 @@ function updateHorizontalIconGrid() {
     img.loading = 'lazy';
 
     // Add click handler to load product
-    iconItem.addEventListener('click', () => {
-      selectProduct(product.id);
+    iconItem.addEventListener('click', async () => {
+      await selectProduct(product.id);
 
       // Update active state
       grid.querySelectorAll('.horizontal-icon-item').forEach(item => {
@@ -4045,12 +4055,17 @@ let carouselItems = [];
 
 // Initialize carousel with product assets
 async function initializeCarousel(productId) {
+  console.log(`🎠 initializeCarousel called for: ${productId}`);
   const track = document.getElementById('carousel-track');
   const leftArrow = document.getElementById('carousel-arrow-left');
   const rightArrow = document.getElementById('carousel-arrow-right');
   
+  console.log(`🎠 Carousel track element:`, track ? 'FOUND' : 'NOT FOUND');
+  console.log(`🎠 Left arrow:`, leftArrow ? 'FOUND' : 'NOT FOUND');
+  console.log(`🎠 Right arrow:`, rightArrow ? 'FOUND' : 'NOT FOUND');
+  
   if (!track) {
-    console.warn('Carousel track not found');
+    console.warn('⚠️ Carousel track not found - carousel cannot initialize');
     return;
   }
 
@@ -4062,6 +4077,7 @@ async function initializeCarousel(productId) {
 
   // Clear existing items
   track.innerHTML = '';
+  console.log(`🎠 Cleared carousel track, preparing to add ${carouselItems.length} items`);
 
   if (carouselItems.length === 0) {
     // Fallback: show placeholder
@@ -4075,7 +4091,9 @@ async function initializeCarousel(productId) {
   }
 
   // Create carousel items
+  console.log(`🎠 Creating ${carouselItems.length} carousel items...`);
   carouselItems.forEach((asset, index) => {
+    console.log(`🎠 Creating carousel item ${index}: ${asset.name} (type: ${asset.type})`);
     const item = document.createElement('div');
     item.className = 'carousel-item';
     item.dataset.index = index;
@@ -4104,11 +4122,15 @@ async function initializeCarousel(productId) {
     }
 
     track.appendChild(item);
+    console.log(`🎠 Added carousel item ${index} to track`);
   });
 
+  console.log(`🎠 All carousel items created. Track now has ${track.children.length} children`);
+  
   // Set initial position
   updateCarouselPosition();
   updateCarouselArrows();
+  console.log(`🎠 Carousel initialized and positioned`);
 
   // Add event listeners for arrows
   if (leftArrow) {
