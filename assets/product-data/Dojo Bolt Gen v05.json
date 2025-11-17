@@ -11,6 +11,9 @@
     "asset"
   ],
   "status": "active",
+  "polar": {
+    "product_id": "caa98690-507b-43ef-8438-7262e0bd0b64"
+  },
   "variants": [
     {
       "price": "0.00",
