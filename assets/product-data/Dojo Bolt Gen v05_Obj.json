@@ -98,11 +98,18 @@
     "benefit_id": "d983eadc-2a2d-4272-aedf-7f3266aaa4ad",
     "file_id": "9c3b012a-0333-4e95-bab4-2d0ee92f42a3",
     "last_synced": "2025-11-16T13:39:56.964Z",
-    "price_id": "ee7f7157-8ad7-4b1e-b063-dca5ad7885f2"
+    "price_id": "42bb7f74-8562-4b3f-9f4b-e2fcb7783dc9"
   },
   "changelog": [
     {
-      "version": "Alpha",
+      "version": "",
+      "date": "2025-11-17",
+      "changes": [
+        "Minor bug fixes"
+      ]
+    },
+    {
+      "version": "v1",
       "date": "2025-11-17",
       "changes": [
         "first version launched"
