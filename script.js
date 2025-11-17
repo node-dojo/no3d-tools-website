@@ -87,11 +87,7 @@ const defaultProducts = {
     description: `Introducing FlowBoard, the ultimate workspace companion designed to streamline your creative process and keep your ideas flowing effortlessly. Whether you're a designer, developer, or team leader, FlowBoard combines the clarity of a whiteboard with the precision of a task manager—bridging the gap between freeform creativity and structured productivity. Every interaction feels fluid and intuitive, giving you a workspace that adapts to how you think, not the other way around.
 
 At its core, FlowBoard is built around real-time collaboration and visual modularity. Each board can host sketches, notes, images, and embedded tasks that update instantly across devices. The drag-and-drop interface feels alive, responding smoothly to every gesture, while the built-in AI assistant organizes your ideas, detects dependencies, and even suggests next steps based on your workflow patterns. It's not just another project management app—it's a dynamic extension of your creative mind.`,
-    changelog: [
-      'Added dark mode toggle for better nighttime readability.',
-      'Improved sync speed for cloud backups by 40%.',
-      'Fixed a bug causing notifications to repeat after device restart.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-slug-tool-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-slug-tool-icon.png'
   },
@@ -101,11 +97,7 @@ At its core, FlowBoard is built around real-time collaboration and visual modula
     description: `The Dojo Squircle tool revolutionizes 3D modeling with its unique approach to creating organic, flowing shapes. Perfect for character design, architectural elements, and artistic sculptures, this tool combines the mathematical precision of circles with the dynamic energy of squares.
 
 Advanced algorithms ensure smooth transitions between curved and straight edges, giving you unprecedented control over form and function. Whether you're designing futuristic interfaces or organic architectural elements, Dojo Squircle adapts to your creative vision.`,
-    changelog: [
-      'Enhanced curve smoothing algorithms for better edge transitions.',
-      'Added new preset shape libraries for common use cases.',
-      'Improved performance for complex multi-segment shapes.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-squircle-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-squircle-icon.png'
   },
@@ -115,11 +107,7 @@ Advanced algorithms ensure smooth transitions between curved and straight edges,
     description: `Professional mesh repair and optimization tool designed for 3D artists and engineers. Dojo Mesh Repair automatically detects and fixes common mesh issues including holes, non-manifold edges, overlapping faces, and inverted normals.
 
 With its intelligent algorithms, the tool preserves the original geometry while ensuring watertight meshes suitable for 3D printing, rendering, and simulation. Save hours of manual cleanup with automated repair processes that maintain the artistic integrity of your models.`,
-    changelog: [
-      'Added support for complex non-manifold geometry repair.',
-      'Improved hole detection accuracy by 60%.',
-      'New batch processing mode for multiple files.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-mesh-repair-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-mesh-repair-icon.png'
   },
@@ -129,11 +117,7 @@ With its intelligent algorithms, the tool preserves the original geometry while 
     description: `Visualize your 3D models in real-world print scenarios with Dojo Print Viz. This powerful tool simulates 3D printing processes, showing layer-by-layer construction, support material requirements, and potential printing issues before you commit to a print.
 
 Perfect for makers, designers, and educators, Dojo Print Viz helps optimize models for successful 3D printing while providing educational insights into additive manufacturing processes.`,
-    changelog: [
-      'Added support for new 3D printer profiles.',
-      'Enhanced support material visualization.',
-      'Improved print time estimation accuracy.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-viz-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-viz-icon.png'
   },
@@ -141,11 +125,7 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
     name: 'DOJO PRINT BED',
     price: '$6.75',
     description: `Optimize your 3D printing setup with Dojo Print Bed. This tool helps you arrange multiple models on your print bed for maximum efficiency, calculates optimal print settings, and provides real-time feedback on print feasibility.`,
-    changelog: [
-      'Added multi-model arrangement algorithms.',
-      'Improved bed utilization calculations.',
-      'New print time estimation features.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-bed-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-print-bed-icon.png'
   },
@@ -153,11 +133,7 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
     name: 'DOJO GLUEFINITY GRID',
     price: '$8.25',
     description: `Create complex grid-based structures with Dojo Gluefinity Grid. Perfect for architectural visualization, game environments, and parametric design, this tool generates infinite grid patterns with customizable parameters.`,
-    changelog: [
-      'Added parametric grid generation.',
-      'Enhanced pattern customization options.',
-      'Improved performance for large grids.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-gluefinity-grid-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-gluefinity-grid-icon.png'
   },
@@ -165,11 +141,7 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
     name: 'DOJO KNOB',
     price: '$4.50',
     description: `Precision control interface for 3D modeling operations. Dojo Knob provides intuitive parameter adjustment with haptic feedback simulation, making complex modeling tasks more accessible and enjoyable.`,
-    changelog: [
-      'Added haptic feedback simulation.',
-      'Improved parameter precision controls.',
-      'New customizable interface themes.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-knob-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-knob-icon.png'
   },
@@ -177,11 +149,7 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
     name: 'DOJO BOLT GEN',
     price: '$11.99',
     description: `Generate realistic threaded fasteners and mechanical components with Dojo Bolt Gen. From simple screws to complex threaded assemblies, this tool creates accurate 3D models ready for engineering and manufacturing.`,
-    changelog: [
-      'Added support for metric and imperial thread standards.',
-      'Enhanced thread detail generation.',
-      'New material property calculations.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bolt-gen-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bolt-gen-icon.png'
   },
@@ -189,11 +157,7 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
     name: 'DOJO CALIPERS',
     price: '$5.25',
     description: `Precision measurement tool for 3D modeling and reverse engineering. Dojo Calipers provides accurate distance, angle, and dimension measurements with real-time feedback and export capabilities.`,
-    changelog: [
-      'Added angle measurement capabilities.',
-      'Enhanced measurement precision.',
-      'New export formats for measurements.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-calipers-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-calipers-icon.png'
   },
@@ -201,11 +165,7 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
     name: 'DOJO CRV WRAPPER',
     price: '$7.50',
     description: `Advanced curve manipulation and wrapping tool for complex 3D modeling tasks. Perfect for creating organic shapes, architectural elements, and artistic sculptures with precise curve control.`,
-    changelog: [
-      'Added advanced curve wrapping algorithms.',
-      'Enhanced curve editing precision.',
-      'New preset curve libraries.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-crv-wrapper-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-crv-wrapper-icon.png'
   },
@@ -213,11 +173,7 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
     name: 'DOJO BOOL',
     price: '$9.50',
     description: `Boolean operations made simple and powerful. Dojo Bool provides intuitive union, intersection, and difference operations for complex 3D modeling with real-time preview and error checking.`,
-    changelog: [
-      'Added real-time boolean preview.',
-      'Enhanced error detection and correction.',
-      'Improved performance for complex operations.'
-    ],
+    changelog: [], // Changelog loaded from JSON files
     image3d: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bool-3d.png',
     icon: 'https://github.com/node-dojo/no3d-tools-library/raw/main/assets/dojo-bool-icon.png'
   }
@@ -492,12 +448,37 @@ async function loadProductsFromJSON() {
           // Product groups are tags that are capitalized or contain spaces
           return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
         });
+
+        // Normalize changelog format - handle both array of objects and array of strings
+        let changelog = [];
+        if (jsonData.changelog && Array.isArray(jsonData.changelog) && jsonData.changelog.length > 0) {
+          // Process each changelog entry
+          jsonData.changelog.forEach(entry => {
+            if (typeof entry === 'string') {
+              // Simple string entry
+              changelog.push(entry);
+            } else if (entry && entry.changes) {
+              // Handle object format: {version, date, changes}
+              if (Array.isArray(entry.changes)) {
+                // Multiple changes in one entry
+                entry.changes.forEach(change => {
+                  if (change && change.trim()) {
+                    changelog.push(change.trim());
+                  }
+                });
+              } else if (typeof entry.changes === 'string' && entry.changes.trim()) {
+                // Single change as string
+                changelog.push(entry.changes.trim());
+              }
+            }
+          });
+        }
         
         products[productId] = {
           name: jsonData.title.toUpperCase(),
           price: price,
           description: jsonData.description || generateDescription(jsonData.title),
-          changelog: generateChangelog(jsonData.title),
+          changelog: changelog, // Use changelog from JSON, empty array if none
           image3d: thumbnail, // Use local assets
           icon: thumbnail, // Use local assets
           productType: jsonData.productType || 'tools',
@@ -881,16 +862,27 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
 
         // Normalize changelog format - handle both array of objects and array of strings
         let changelog = [];
-        if (jsonData.changelog && Array.isArray(jsonData.changelog)) {
-          changelog = jsonData.changelog.map(entry => {
+        if (jsonData.changelog && Array.isArray(jsonData.changelog) && jsonData.changelog.length > 0) {
+          // Process each changelog entry
+          jsonData.changelog.forEach(entry => {
             if (typeof entry === 'string') {
-              return entry;
+              // Simple string entry
+              changelog.push(entry);
             } else if (entry && entry.changes) {
               // Handle object format: {version, date, changes}
-              return typeof entry.changes === 'string' ? entry.changes : entry.changes.join(', ');
+              if (Array.isArray(entry.changes)) {
+                // Multiple changes in one entry
+                entry.changes.forEach(change => {
+                  if (change && change.trim()) {
+                    changelog.push(change.trim());
+                  }
+                });
+              } else if (typeof entry.changes === 'string' && entry.changes.trim()) {
+                // Single change as string
+                changelog.push(entry.changes.trim());
+              }
             }
-            return '';
-          }).filter(entry => entry);
+          });
         }
 
         loadedProducts[productId] = {
@@ -1170,7 +1162,7 @@ async function loadProductsFromGitHub() {
         name: productName.toUpperCase(),
         price: generatePrice(),
         description: generateDescription(productName),
-        changelog: generateChangelog(productName),
+        changelog: [], // Changelog will be loaded from JSON files
         image3d: image3dUrl,
         icon: iconUrl
       };
@@ -1511,11 +1503,28 @@ function updateProductCardForType(typeKey) {
 // Update changelog content
 function updateChangelog(changelogItems) {
   const changelogContent = document.querySelector('.changelog-content ul');
+  const changelogTitle = document.querySelector('#changelog-title');
   if (!changelogContent) return;
 
-  changelogContent.innerHTML = changelogItems.map(item => 
-    `<li><span class="leading-[1.05]">${item}</span></li>`
-  ).join('');
+  // Clear any existing content
+  changelogContent.innerHTML = '';
+
+  // If no changelog items, show empty state
+  if (!changelogItems || changelogItems.length === 0) {
+    changelogContent.innerHTML = '<li style="color: #666; font-style: italic;">No changelog entries yet.</li>';
+    if (changelogTitle) changelogTitle.textContent = 'CHANGELOG';
+    return;
+  }
+
+  // Display changelog items
+  changelogContent.innerHTML = changelogItems.map(item => {
+    // Simple HTML escaping
+    const escaped = String(item).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    return `<li><span class="leading-[1.05]">${escaped}</span></li>`;
+  }).join('');
+
+  // Update title (could show version if available, but for now just "CHANGELOG")
+  if (changelogTitle) changelogTitle.textContent = 'CHANGELOG';
 }
 
 // Update active states for sidebar and icon grid
@@ -1685,24 +1694,22 @@ async function switchTab(tabName) {
   const changelogSection = document.querySelector('.changelog-section');
 
   switch(tabName) {
-      case 'docs':
-        productDescription.style.display = 'block';
-        changelogSection.style.display = 'flex';
-        // Load markdown documentation
-        const productCard = document.querySelector('.product-left-section')?.closest('.product-card') || 
-                            document.querySelector('.product-left-section')?.parentElement;
-        const currentProductId = productCard?.dataset?.productId || currentProduct;
-        await loadProductDocs(currentProductId);
-        break;
-    case 'vids':
-      productDescription.innerHTML = '<p>Video content coming soon! Check back for tutorials and demonstrations.</p>';
+    case 'description':
+      // Show product description and changelog from JSON
       productDescription.style.display = 'block';
-      changelogSection.style.display = 'none';
+      changelogSection.style.display = 'flex';
+      // The description and changelog are already populated in the HTML
+      // from the product data during product selection
       break;
-    case 'faqs':
-      productDescription.innerHTML = '<p>Frequently asked questions coming soon! Check back for answers to common questions.</p>';
+    case 'docs':
+      // Hide description and changelog, load markdown documentation
       productDescription.style.display = 'block';
       changelogSection.style.display = 'none';
+      // Load markdown documentation
+      const productCard = document.querySelector('.product-left-section')?.closest('.product-card') ||
+                          document.querySelector('.product-left-section')?.parentElement;
+      const currentProductId = productCard?.dataset?.productId || currentProduct;
+      await loadProductDocs(currentProductId);
       break;
   }
 }

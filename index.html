@@ -137,22 +137,16 @@
                     <!-- Tab Navigation -->
                     <div class="product-tabs">
                         <div class="tab-container">
-                            <div class="tab-icon expanded" data-tab="docs">
+                            <div class="tab-icon expanded" data-tab="description">
                                 <div class="tab-arrow">▼</div>
                             </div>
-                            <div class="tab active" data-tab="docs">DOCS</div>
+                            <div class="tab active" data-tab="description">DESCRIPTION</div>
                         </div>
                         <div class="tab-container">
-                            <div class="tab-icon collapsed" data-tab="vids">
+                            <div class="tab-icon collapsed" data-tab="docs">
                                 <div class="tab-arrow">▶</div>
                             </div>
-                            <div class="tab" data-tab="vids">VIDS</div>
-                        </div>
-                        <div class="tab-container">
-                            <div class="tab-icon collapsed" data-tab="faqs">
-                                <div class="tab-arrow">▶</div>
-                            </div>
-                            <div class="tab" data-tab="faqs">FAQS</div>
+                            <div class="tab" data-tab="docs">DOCS</div>
                         </div>
                     </div>
 
@@ -169,13 +163,11 @@
                             <div class="changelog-icon expanded">
                                 <div class="changelog-arrow">▼</div>
                             </div>
-                            <span class="changelog-title">CHANGELOG v2.3.1</span>
+                            <span class="changelog-title" id="changelog-title">CHANGELOG</span>
                         </div>
                         <div class="changelog-content">
-                            <ul>
-                                <li>• Added support for complex non-manifold geometry repair.</li>
-                                <li>• Improved hole detection accuracy by 60%.</li>
-                                <li>• New batch processing mode for multiple files.</li>
+                            <ul id="changelog-list">
+                                <!-- Changelog items will be populated from product JSON data -->
                             </ul>
                         </div>
                     </div>
