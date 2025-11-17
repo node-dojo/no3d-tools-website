@@ -1520,8 +1520,10 @@ async function loadProductCardAssets(productId) {
     }
 
     // Load card assets folder contents
+    // Card assets folder is a subfolder within the product folder
+    const cardAssetsPath = `${folderName}/${cardAssetsFolder}`;
     try {
-      const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(cardAssetsFolder)}`;
+      const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(cardAssetsPath)}`;
       const response = await fetch(apiUrl);
       
       if (response.ok) {
@@ -1558,9 +1560,9 @@ async function loadProductCardAssets(productId) {
                   // For local assets, card assets would need to be synced to website repo
                   // For now, fall back to GitHub raw URL since card assets aren't synced yet
                   // TODO: Update sync script to copy card assets to website repo
-                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsFolder}/${item.name}`;
+                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${item.name}`;
                 } else {
-                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsFolder}/${item.name}`;
+                  fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${item.name}`;
                 }
                 
                 cardAssets.push({
