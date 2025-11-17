@@ -5,11 +5,7 @@
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
   "tags": [
-    "Super Primitive",
-    "blender",
-    "addon",
-    "3d",
-    "asset"
+    "Super Primitive"
   ],
   "status": "active",
   "variants": [
@@ -63,7 +59,7 @@
     "benefit_id": "237a5446-d783-497e-884a-84445ee18b36",
     "file_id": "b825aff1-98e4-43d5-872e-2c82cedbba84",
     "last_synced": "2025-11-16T13:40:12.049Z",
-    "price_id": "edcd027f-24e6-4093-8aa5-2ea37ebffb70"
+    "price_id": "00198a0e-919f-40d2-9560-167d34b49fc1"
   },
   "changelog": [
     {

@@ -1,14 +1,13 @@
 {
   "title": "Dojo Bolt Gen v05_Obj",
   "handle": "dojo-bolt-gen-v05-obj",
-  "description": "new description",
+  "description": "Drag and drop this Mesh object, with geometry node modify embedded, into your 3D scene to quickly generate a customizable 3D printable fastener in your designs. ",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
   "tags": [
-    "blender",
-    "addon",
-    "3d",
-    "asset"
+    "Node Group",
+    "3D printing",
+    "Hardware"
   ],
   "status": "active",
   "variants": [
@@ -98,7 +97,7 @@
     "benefit_id": "d983eadc-2a2d-4272-aedf-7f3266aaa4ad",
     "file_id": "9c3b012a-0333-4e95-bab4-2d0ee92f42a3",
     "last_synced": "2025-11-16T13:39:56.964Z",
-    "price_id": "42bb7f74-8562-4b3f-9f4b-e2fcb7783dc9"
+    "price_id": "a8776e49-6584-406a-84ad-dc915f9db0a7"
   },
   "changelog": [
     {

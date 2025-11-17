@@ -1,14 +1,12 @@
 {
   "title": "Dojo Bool v5",
   "handle": "dojo-bool-v5",
-  "description": "A simple node group, but its in my top 5 most used node tools of all time.",
+  "description": "A simple node group, but its in my top 5 most used node tools of all time. Seriously I use this thing a million times every day. ",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
   "tags": [
-    "blender",
-    "addon",
-    "3d",
-    "asset"
+    "Node Group",
+    "Workflow"
   ],
   "status": "active",
   "variants": [
@@ -62,7 +60,7 @@
     "benefit_id": "23e145e0-65b6-452a-b723-df95b44d60da",
     "file_id": "fa4ac555-cb87-4484-9296-59157760ac8b",
     "last_synced": "2025-11-16T13:39:59.661Z",
-    "price_id": "e3c21ebb-0d02-4374-bd63-00d2fe09e862"
+    "price_id": "f2ecbf98-3ac8-44c5-a0f5-d34039067ee8"
   },
   "changelog": [
     {
