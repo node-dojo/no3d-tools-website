@@ -4,7 +4,12 @@
   "description": "Blender asset: Dojo Mesh Repair",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
-  "tags": [],
+  "tags": [
+    "blender",
+    "addon",
+    "3d",
+    "asset"
+  ],
   "status": "active",
   "variants": [
     {
@@ -57,7 +62,7 @@
     "benefit_id": "142e5315-c030-4c4c-946e-5df35068f3be",
     "file_id": "77d29461-758c-4bba-9aae-8ab0bd4424ee",
     "last_synced": "2025-11-16T13:40:18.119Z",
-    "price_id": "b45f405c-3923-46ac-95d1-67a9cfeddb63"
+    "price_id": "6b5859a2-31a6-47c7-9b45-fd8b15f38c65"
   },
   "changelog": [
     {
