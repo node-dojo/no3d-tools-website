@@ -930,8 +930,8 @@ body {
 }
 
 .carousel-arrow img {
-  width: 10px;
-  height: 10px;
+  width: 12.5px;
+  height: 12.5px;
   display: block;
   object-fit: contain;
   aspect-ratio: 1 / 1;
@@ -1385,8 +1385,8 @@ body {
   }
 
   .carousel-arrow img {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     object-fit: contain;
     aspect-ratio: 1 / 1;
   }
