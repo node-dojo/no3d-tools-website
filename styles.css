@@ -491,7 +491,7 @@ body {
 
 /* Left Section Styles */
 .product-left-section {
-  width: 320px;
+  width: 555px;
   height: 494px;
   display: flex;
   flex-direction: column;
@@ -709,7 +709,7 @@ body {
   height: 100%;
   object-fit: contain;
   object-position: center;
-  max-width: 320px;
+  max-width: 555px;
   max-height: 320px;
   margin: 0;
   padding: 0;
