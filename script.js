@@ -487,6 +487,9 @@ async function loadProductsFromJSON() {
           });
         }
         
+        // Extract folder name from file path for docs filename
+        const folderName = fileName.includes('/') ? fileName.split('/')[0] : null;
+        
         products[productId] = {
           name: jsonData.title.toUpperCase(),
           price: price,
@@ -497,7 +500,8 @@ async function loadProductsFromJSON() {
           productType: jsonData.productType || 'tools',
           groups: productGroups,
           handle: jsonData.handle || productId,
-          polarProductId: jsonData.polar?.product_id || null // Store Polar product ID for price updates
+          polarProductId: jsonData.polar?.product_id || null, // Store Polar product ID for price updates
+          folderName: folderName // Store folder name for docs filename construction
         };
       } catch (error) {
         console.warn(`Failed to load ${fileName}:`, error);
@@ -922,7 +926,7 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
           groups: productGroups,
           handle: jsonData.handle,
           metafields: jsonData.metafields || [],
-          folderName: dir.name
+          folderName: dir.name // Store folder name for docs filename construction
         };
 
         console.log(`✅ Loaded product: ${productId} from ${dir.name}`);
@@ -1663,13 +1667,31 @@ async function loadProductDocs(productId) {
   }
 
   try {
-    // Try to load DOCS.md from assets
-    const docsUrl = `/assets/product-docs/${productId}/DOCS.md`;
-    const response = await fetch(docsUrl);
+    const product = products[productId];
+    if (!product) {
+      productDescription.innerHTML = '<p>Product not found.</p>';
+      return;
+    }
+
+    // Get folder name from product (used for docs filename)
+    // folderName is the original folder name like "Dojo Bolt Gen v05"
+    const folderName = product.folderName || product.name;
+    
+    // Construct docs filename: docs_{folderName}.md
+    const docsFilename = `docs_${folderName}.md`;
+    const docsUrl = `/assets/product-docs/${folderName}/${docsFilename}`;
+    
+    // Try new format first
+    let response = await fetch(docsUrl);
+    
+    // Fallback to legacy DOCS.md if new format doesn't exist
+    if (!response.ok) {
+      const legacyUrl = `/assets/product-docs/${folderName}/DOCS.md`;
+      response = await fetch(legacyUrl);
+    }
 
     if (!response.ok) {
       // Fallback to original description
-      const product = products[productId];
       if (product && product.description) {
         productDescription.innerHTML = `<p>${product.description}</p>`;
       } else {
@@ -1679,14 +1701,48 @@ async function loadProductDocs(productId) {
     }
 
     const markdownContent = await response.text();
+    const docsBasePath = `/assets/product-docs/${folderName}`;
 
     // Transform image URLs in markdown to use /assets/
-    const transformedMarkdown = markdownContent.replace(
-      /!\[(.*?)\]\(((?!http|\/assets).*?)\)/g,
+    let transformedMarkdown = markdownContent.replace(
+      /!\[(.*?)\]\(((?!http|https|\/assets).*?)\)/g,
       (match, alt, imgPath) => {
-        // Convert relative image paths to /assets/product-docs/{productId}/
-        const assetPath = `/assets/product-docs/${productId}/${imgPath.replace(/^\.\//, '')}`;
+        // Handle paths relative to markdown file or docs-assets folder
+        const cleanPath = imgPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
+        const assetPath = cleanPath.startsWith('docs-assets/') 
+          ? `${docsBasePath}/${cleanPath}`
+          : `${docsBasePath}/${cleanPath}`;
         return `![${alt}](${assetPath})`;
+      }
+    );
+
+    // Convert local video references to HTML5 video tags
+    // Pattern: ![alt](video.mp4) or ![alt](docs-assets/video.mp4)
+    transformedMarkdown = transformedMarkdown.replace(
+      /!\[([^\]]*)\]\(([^)]+\.(mp4|webm|ogg|mov))\)/gi,
+      (match, alt, videoPath) => {
+        const cleanPath = videoPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
+        const fullVideoPath = cleanPath.startsWith('docs-assets/') 
+          ? `${docsBasePath}/${cleanPath}`
+          : `${docsBasePath}/${cleanPath}`;
+        return `<div class="video-wrapper"><video controls><source src="${fullVideoPath}" type="video/${videoPath.split('.').pop()}">Your browser does not support the video tag.</video></div>`;
+      }
+    );
+
+    // Convert 3D object references to Three.js viewer
+    // Pattern: ![3D](model.obj) or [3D: model.obj] or ![3D](docs-assets/model.obj)
+    transformedMarkdown = transformedMarkdown.replace(
+      /(?:!\[([^\]]*)\]\(|\[3D:\s*)([^)]+\.(obj|stl))\)?/gi,
+      (match, alt, modelPath) => {
+        const cleanPath = modelPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
+        const fullModelPath = cleanPath.startsWith('docs-assets/') 
+          ? `${docsBasePath}/${cleanPath}`
+          : `${docsBasePath}/${cleanPath}`;
+        const modelId = `model-${Math.random().toString(36).substr(2, 9)}`;
+        const fileExt = modelPath.split('.').pop().toLowerCase();
+        return `<div class="model-viewer-container" id="${modelId}" data-model-path="${fullModelPath}" data-model-type="${fileExt}">
+          <div style="color: #666; text-align: center;">Loading 3D model...</div>
+        </div>`;
       }
     );
 
@@ -1720,6 +1776,18 @@ async function loadProductDocs(productId) {
     // Update the description with rendered HTML
     productDescription.innerHTML = htmlContent;
 
+    // Load 3D models if Three.js is available
+    if (typeof THREE !== 'undefined') {
+      const modelContainers = productDescription.querySelectorAll('.model-viewer-container');
+      modelContainers.forEach(container => {
+        const modelPath = container.dataset.modelPath;
+        const modelType = container.dataset.modelType;
+        if (modelPath && modelType) {
+          load3DModel(container, modelPath, modelType);
+        }
+      });
+    }
+
   } catch (error) {
     console.error('Error loading documentation:', error);
     // Fallback to original description
@@ -1729,6 +1797,126 @@ async function loadProductDocs(productId) {
     } else {
       productDescription.innerHTML = '<p>Error loading documentation.</p>';
     }
+  }
+}
+
+// Load 3D model using Three.js (low priority feature)
+async function load3DModel(container, modelPath, modelType) {
+  if (typeof THREE === 'undefined') {
+    container.innerHTML = '<div style="color: #999; text-align: center;">3D viewer not available</div>';
+    return;
+  }
+
+  try {
+    // Dynamically import loaders if not available
+    let OBJLoader, STLLoader;
+    if (typeof THREE.OBJLoader !== 'undefined') {
+      OBJLoader = THREE.OBJLoader;
+      STLLoader = THREE.STLLoader;
+    } else {
+      // Try to load from CDN dynamically
+      try {
+        const objModule = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/OBJLoader.js');
+        const stlModule = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/STLLoader.js');
+        OBJLoader = objModule.OBJLoader;
+        STLLoader = stlModule.STLLoader;
+      } catch (e) {
+        console.warn('Could not load Three.js loaders:', e);
+        container.innerHTML = '<div style="color: #999; text-align: center;">3D loader not available</div>';
+        return;
+      }
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / 400, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    
+    renderer.setSize(container.clientWidth, 400);
+    renderer.setClearColor(0xf5f5f5, 1);
+    container.innerHTML = '';
+    container.appendChild(renderer.domElement);
+
+    // Add lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+
+    // Load model
+    const loader = modelType === 'obj' 
+      ? new OBJLoader()
+      : new STLLoader();
+
+    loader.load(
+      modelPath,
+      (object) => {
+        // Handle STL geometry differently from OBJ
+        let model;
+        if (modelType === 'stl' && object.isBufferGeometry) {
+          const material = new THREE.MeshStandardMaterial({ color: 0x888888 });
+          model = new THREE.Mesh(object, material);
+        } else {
+          model = object;
+        }
+
+        // Center and scale model
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = maxDim > 0 ? 2 / maxDim : 1;
+        
+        model.scale.multiplyScalar(scale);
+        model.position.sub(center.multiplyScalar(scale));
+        
+        scene.add(model);
+        
+        // Position camera
+        camera.position.set(3, 3, 3);
+        camera.lookAt(0, 0, 0);
+        
+        // Add controls (simple rotation)
+        let mouseDown = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        renderer.domElement.addEventListener('mousedown', (e) => {
+          mouseDown = true;
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        });
+        
+        renderer.domElement.addEventListener('mousemove', (e) => {
+          if (!mouseDown) return;
+          const deltaX = e.clientX - mouseX;
+          const deltaY = e.clientY - mouseY;
+          model.rotation.y += deltaX * 0.01;
+          model.rotation.x += deltaY * 0.01;
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        });
+        
+        renderer.domElement.addEventListener('mouseup', () => {
+          mouseDown = false;
+        });
+        
+        // Animation loop
+        function animate() {
+          requestAnimationFrame(animate);
+          renderer.render(scene, camera);
+        }
+        animate();
+      },
+      undefined,
+      (error) => {
+        console.error('Error loading 3D model:', error);
+        container.innerHTML = '<div style="color: #999; text-align: center;">Failed to load 3D model</div>';
+      }
+    );
+  } catch (error) {
+    console.error('Error initializing 3D viewer:', error);
+    container.innerHTML = '<div style="color: #999; text-align: center;">3D viewer initialization failed</div>';
   }
 }
 
@@ -3570,7 +3758,7 @@ function updateHorizontalIconGrid() {
   }
 
   // Only show grid when Tools section is active
-  const isToolsActive = activeProductType === 'Tools';
+  const isToolsActive = activeProductType && activeProductType.toLowerCase() === 'tools';
 
   if (!isToolsActive) {
     container.classList.remove('visible');
@@ -3580,15 +3768,12 @@ function updateHorizontalIconGrid() {
   // Show container
   container.classList.add('visible');
 
-  // Get all products from the Tools section
-  const toolsProducts = Object.keys(allProductsData)
-    .filter(productId => {
-      const product = allProductsData[productId];
-      return product && product.product_type === 'Tools';
-    })
+  // Get all products from the currently active product type (library)
+  const currentProducts = productDataByType[activeProductType] || {};
+  const toolsProducts = Object.keys(currentProducts)
     .map(productId => ({
       id: productId,
-      ...allProductsData[productId]
+      ...currentProducts[productId]
     }))
     .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
 
