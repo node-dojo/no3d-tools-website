@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "7.77",
+      "price": "5.55",
       "sku": "NO3D-TOOLS-DOJO-GLUEFINITY-GRID-OBJ",
       "inventory_policy": "continue",
       "inventory_management": "shopify"
@@ -109,6 +109,7 @@
     "product_id": "b3c265a8-272d-41b7-930d-529538b41f8a",
     "benefit_id": "d1f2b4a0-2701-4ea9-9a7e-99efff468028",
     "file_id": "e4901984-72a1-468a-b460-e6b4b03df707",
-    "last_synced": "2025-11-16T13:40:09.051Z"
+    "last_synced": "2025-11-16T13:40:09.051Z",
+    "price_id": "139e0396-17dd-47e4-b619-9e113d88e07e"
   }
 }
