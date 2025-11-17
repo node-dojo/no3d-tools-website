@@ -3783,8 +3783,12 @@ function updateHorizontalIconGrid() {
       id: productId,
       ...currentProducts[productId]
     }))
-    .filter(product => product && product.title) // Filter out products without titles
-    .sort((a, b) => (a.title || '').localeCompare(b.title || '')); // Sort alphabetically with fallback
+    .filter(product => product && (product.title || product.name)) // Filter out products without title or name
+    .sort((a, b) => {
+      const aName = a.title || a.name || '';
+      const bName = b.title || b.name || '';
+      return aName.localeCompare(bName);
+    }); // Sort alphabetically with fallback
 
   // Clear existing grid
   grid.innerHTML = '';
@@ -3815,7 +3819,7 @@ function updateHorizontalIconGrid() {
       img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNFOEU4RTgiLz4KICA8dGV4dCB4PSIzMiIgeT0iMzQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
     }
 
-    img.alt = product.title;
+    img.alt = product.title || product.name || product.id;
     img.loading = 'lazy';
 
     // Add click handler to load product
