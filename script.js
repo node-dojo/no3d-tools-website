@@ -3749,21 +3749,29 @@ if (document.readyState === 'loading') {
  * Populate and show/hide the horizontal icon grid based on active section
  */
 function updateHorizontalIconGrid() {
+  console.log('🔍 updateHorizontalIconGrid called');
   const container = document.getElementById('horizontal-icon-grid-container');
   const grid = document.getElementById('horizontal-icon-grid');
 
   if (!container || !grid) {
-    console.warn('Horizontal icon grid elements not found');
+    console.warn('❌ Horizontal icon grid elements not found');
     return;
   }
+
+  console.log('📊 activeProductType:', activeProductType);
+  console.log('📊 productDataByType:', Object.keys(productDataByType));
 
   // Only show grid when Tools section is active
   const isToolsActive = activeProductType && activeProductType.toLowerCase() === 'tools';
+  console.log('📊 isToolsActive:', isToolsActive);
 
   if (!isToolsActive) {
+    console.log('❌ Tools not active, hiding grid');
     container.classList.remove('visible');
     return;
   }
+
+  console.log('✅ Tools active, showing grid');
 
   // Show container
   container.classList.add('visible');
