@@ -192,6 +192,7 @@ let expandedProductGroups = new Set();
 // DOM elements
 const productTitle = document.getElementById('product-title');
 const productPrice = document.getElementById('product-price');
+let originalDescriptionContent = ''; // Store original description to restore when switching tabs
 const productDescription = document.getElementById('product-description');
 // product3dImage removed - now using carousel
 const downloadButton = document.getElementById('download-button');
@@ -1661,9 +1662,12 @@ async function updateProductDisplay(productId) {
   // Update product information
   productTitle.textContent = product.name;
   productPrice.textContent = `PRICE: ${product.price}`;
-  productDescription.innerHTML = product.description.split('\n').map(paragraph => 
+  const descriptionHTML = product.description.split('\n').map(paragraph => 
     paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
   ).join('');
+  productDescription.innerHTML = descriptionHTML;
+  // Store original description for tab switching
+  originalDescriptionContent = descriptionHTML;
 
   // Update product tags
   const tagsList = document.getElementById('tags-list');
@@ -2224,8 +2228,23 @@ async function switchTab(tabName) {
       // Show product description and changelog from JSON
       productDescription.style.display = 'block';
       changelogSection.style.display = 'flex';
-      // The description and changelog are already populated in the HTML
-      // from the product data during product selection
+      // Restore original description content if it was replaced by docs
+      if (originalDescriptionContent) {
+        productDescription.innerHTML = originalDescriptionContent;
+      } else {
+        // Fallback: get description from current product
+        const productCard = document.querySelector('.product-left-section')?.closest('.product-card') ||
+                            document.querySelector('.product-left-section')?.parentElement;
+        const currentProductId = productCard?.dataset?.productId || currentProduct;
+        const product = products[currentProductId];
+        if (product && product.description) {
+          const descriptionHTML = product.description.split('\n').map(paragraph => 
+            paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
+          ).join('');
+          productDescription.innerHTML = descriptionHTML;
+          originalDescriptionContent = descriptionHTML;
+        }
+      }
       break;
     case 'docs':
       // Hide description and changelog, load markdown documentation
