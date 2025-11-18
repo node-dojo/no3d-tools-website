@@ -1665,6 +1665,15 @@ async function updateProductDisplay(productId) {
     paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
   ).join('');
 
+  // Update product tags
+  const tagsList = document.getElementById('tags-list');
+  if (tagsList && product.tags && product.tags.length > 0) {
+    // Display all tags, separated by commas
+    tagsList.textContent = product.tags.join(', ');
+  } else if (tagsList) {
+    tagsList.textContent = '';
+  }
+
   // Load and display carousel assets
   console.log(`🔄 About to initialize carousel for: ${productId}`);
   await initializeCarousel(productId);
@@ -1953,10 +1962,16 @@ async function loadProductDocs(productId) {
       /!\[([^\]]*)\]\(([^)]+\.(mp4|webm|ogg|mov))\)/gi,
       (match, alt, videoPath) => {
         const cleanPath = videoPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
+        // URL encode the path components to handle spaces and special characters
+        const pathParts = cleanPath.split('/');
+        const encodedParts = pathParts.map(part => encodeURIComponent(part));
+        const encodedPath = encodedParts.join('/');
         const fullVideoPath = cleanPath.startsWith('docs-assets/') 
-          ? `${docsBasePath}/${cleanPath}`
-          : `${docsBasePath}/${cleanPath}`;
-        return `<div class="video-wrapper"><video controls><source src="${fullVideoPath}" type="video/${videoPath.split('.').pop()}">Your browser does not support the video tag.</video></div>`;
+          ? `${docsBasePath}/${encodedPath}`
+          : `${docsBasePath}/${encodedPath}`;
+        const videoType = videoPath.split('.').pop().toLowerCase();
+        const mimeType = videoType === 'mov' ? 'video/quicktime' : `video/${videoType}`;
+        return `<div class="video-wrapper"><video controls preload="metadata"><source src="${fullVideoPath}" type="${mimeType}">Your browser does not support the video tag.</video></div>`;
       }
     );
 
@@ -1966,12 +1981,19 @@ async function loadProductDocs(productId) {
       /<video\s+([^>]*?)src=["']([^"']+\.(mp4|webm|ogg|mov))["']([^>]*?)>/gi,
       (match, beforeSrc, videoPath, ext, afterSrc) => {
         const cleanPath = videoPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
+        // URL encode the path components to handle spaces and special characters
+        const pathParts = cleanPath.split('/');
+        const encodedParts = pathParts.map(part => encodeURIComponent(part));
+        const encodedPath = encodedParts.join('/');
         const fullVideoPath = cleanPath.startsWith('docs-assets/') 
-          ? `${docsBasePath}/${cleanPath}`
-          : `${docsBasePath}/${cleanPath}`;
-        // Preserve all attributes and update src
+          ? `${docsBasePath}/${encodedPath}`
+          : `${docsBasePath}/${encodedPath}`;
+        // Preserve all attributes and update src with encoded path
         const attrs = (beforeSrc + ' ' + afterSrc).trim().replace(/\s+/g, ' ');
-        return `<div class="video-wrapper"><video ${attrs} src="${fullVideoPath}"></video></div>`;
+        // Ensure preload is set for better loading
+        const hasPreload = attrs.includes('preload');
+        const finalAttrs = hasPreload ? attrs : attrs + ' preload="metadata"';
+        return `<div class="video-wrapper"><video ${finalAttrs} src="${fullVideoPath}"></video></div>`;
       }
     );
 
