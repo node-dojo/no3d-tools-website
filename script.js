@@ -1843,22 +1843,83 @@ async function loadProductDocs(productId) {
       return;
     }
 
-    // Get folder name from product (used for docs filename)
+    // Get folder name from product (used for docs folder)
     // folderName is the original folder name like "Dojo Bolt Gen v05"
     const folderName = product.folderName || product.name;
+    const docsBasePath = `/assets/product-docs/${folderName}`;
     
-    // Construct docs filename: docs_{folderName}.md
-    const docsFilename = `docs_${folderName}.md`;
-    const docsUrl = `/assets/product-docs/${folderName}/${docsFilename}`;
+    // Try to find any docs_*.md file in the folder
+    // First, try to get a list of files from the server (if API available)
+    let docsUrl = null;
+    let response = null;
     
-    // Try new format first
-    let response = await fetch(docsUrl);
-    
-    // Fallback to legacy DOCS.md if new format doesn't exist
-    if (!response.ok) {
-      const legacyUrl = `/assets/product-docs/${folderName}/DOCS.md`;
-      response = await fetch(legacyUrl);
+    try {
+      // Try API endpoint to list files (if available)
+      const listResponse = await fetch(`${docsBasePath}/?list=1`);
+      if (listResponse.ok) {
+        const files = await listResponse.json();
+        // Find first file starting with docs_ and ending with .md
+        const docsFile = files.find(file => 
+          file.toLowerCase().startsWith('docs_') && 
+          file.toLowerCase().endsWith('.md')
+        );
+        if (docsFile) {
+          docsUrl = `${docsBasePath}/${docsFile}`;
+        }
+      }
+    } catch (e) {
+      // API not available, fall back to trying common patterns
     }
+    
+    // If no file found via API, try common filename patterns
+    if (!docsUrl) {
+      const patterns = [
+        `docs_${folderName}.md`,           // Exact match: docs_Dojo Bolt Gen v05.md
+        `docs_${folderName.toLowerCase().replace(/\s+/g, ' ')}.md`, // Lowercase: docs_dojo bolt gen v05.md
+        `docs_${folderName.toLowerCase().replace(/\s+/g, '-')}.md`, // Kebab: docs_dojo-bolt-gen-v05.md
+        `docs_${folderName.toLowerCase().replace(/\s+/g, '_')}.md`, // Snake: docs_dojo_bolt_gen_v05.md
+        `docs_${folderName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}.md`, // Title case
+      ];
+      
+      // Try each pattern until one works
+      // Use Promise.allSettled to try all patterns in parallel for better performance
+      const patternPromises = patterns.map(async (pattern) => {
+        const testUrl = `${docsBasePath}/${pattern}`;
+        try {
+          const testResponse = await fetch(testUrl, { method: 'HEAD' });
+          if (testResponse.ok) {
+            return testUrl;
+          }
+        } catch (e) {
+          // If HEAD fails, try GET (some servers don't support HEAD)
+          try {
+            const testResponse = await fetch(testUrl);
+            if (testResponse.ok) {
+              return testUrl;
+            }
+          } catch (e2) {
+            // Ignore errors
+          }
+        }
+        return null;
+      });
+      
+      const results = await Promise.allSettled(patternPromises);
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value) {
+          docsUrl = result.value;
+          break;
+        }
+      }
+    }
+    
+    // If still no file found, try legacy DOCS.md
+    if (!docsUrl) {
+      docsUrl = `${docsBasePath}/DOCS.md`;
+    }
+    
+    // Fetch the documentation file
+    response = await fetch(docsUrl);
 
     if (!response.ok) {
       // Fallback to original description
@@ -1871,7 +1932,7 @@ async function loadProductDocs(productId) {
     }
 
     const markdownContent = await response.text();
-    const docsBasePath = `/assets/product-docs/${folderName}`;
+    // docsBasePath already defined above
 
     // Transform image URLs in markdown to use /assets/
     let transformedMarkdown = markdownContent.replace(
@@ -1896,6 +1957,21 @@ async function loadProductDocs(productId) {
           ? `${docsBasePath}/${cleanPath}`
           : `${docsBasePath}/${cleanPath}`;
         return `<div class="video-wrapper"><video controls><source src="${fullVideoPath}" type="video/${videoPath.split('.').pop()}">Your browser does not support the video tag.</video></div>`;
+      }
+    );
+
+    // Also handle existing HTML video tags with relative paths
+    // Pattern: <video controls src="video.mp4"> or <video src="video.mp4" controls>
+    transformedMarkdown = transformedMarkdown.replace(
+      /<video\s+([^>]*?)src=["']([^"']+\.(mp4|webm|ogg|mov))["']([^>]*?)>/gi,
+      (match, beforeSrc, videoPath, ext, afterSrc) => {
+        const cleanPath = videoPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
+        const fullVideoPath = cleanPath.startsWith('docs-assets/') 
+          ? `${docsBasePath}/${cleanPath}`
+          : `${docsBasePath}/${cleanPath}`;
+        // Preserve all attributes and update src
+        const attrs = (beforeSrc + ' ' + afterSrc).trim().replace(/\s+/g, ' ');
+        return `<div class="video-wrapper"><video ${attrs} src="${fullVideoPath}"></video></div>`;
       }
     );
 

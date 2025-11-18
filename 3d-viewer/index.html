@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NO3D TOOLS - 3D Asset Viewer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+    <!-- THREE.js Loaders -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+    </script>
+
+    <!-- Visitor Font -->
+    <style>
+      @font-face {
+        font-family: 'Visitor';
+        src: url('../fonts/visitor.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+
+    <!-- Custom Tailwind Config -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'stone-gray': '#E8E8E8',
+              'void-black': '#000000'
+            },
+            fontFamily: {
+              'visitor': ['Visitor', 'monospace'],
+              'mono': ['JetBrains Mono', 'monospace']
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        font-family: 'Visitor', monospace;
+        background-color: #E8E8E8;
+        color: #000000;
+      }
+
+      /* Almost invisible UI - only shows on hover */
+      .minimal-ui {
+        opacity: 0.15;
+        transition: opacity 0.3s ease;
+      }
+
+      .minimal-ui:hover {
+        opacity: 1;
+      }
+
+      /* Viewer container */
+      #viewer-container {
+        width: 100%;
+        height: calc(100vh - 120px);
+        position: relative;
+        background: #E8E8E8;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* Loading indicator */
+      .loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+
+      /* File input custom styling */
+      input[type="file"]::file-selector-button {
+        background: #000;
+        color: #E8E8E8;
+        border: none;
+        padding: 8px 16px;
+        font-family: 'Visitor', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        cursor: pointer;
+        letter-spacing: 1px;
+      }
+
+      input[type="file"]::file-selector-button:hover {
+        background: #333;
+      }
+
+      /* Button styling */
+      button {
+        font-family: 'Visitor', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* URL input */
+      input[type="url"], input[type="text"] {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+      }
+
+      /* Model info - minimal display */
+      #model-info {
+        font-size: 9px;
+        letter-spacing: 1px;
+      }
+    </style>
+</head>
+<body class="bg-stone-gray text-void-black">
+    <!-- Header -->
+    <header class="border-b border-void-black/10 py-4">
+        <div class="container mx-auto px-4">
+            <h1 class="text-xs uppercase tracking-[3px]">NO3D TOOLS → 3D Asset Viewer</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Controls Panel - Minimal UI -->
+        <div class="minimal-ui mb-4 space-y-3">
+            <!-- File Upload -->
+            <div class="flex items-center gap-4">
+                <input
+                    type="file"
+                    id="file-input"
+                    accept=".glb,.gltf,.stl,.usd,.usdz"
+                    class="text-xs"
+                />
+                <span class="text-[9px] uppercase tracking-wider opacity-50">
+                    Supported: GLB, GLTF, STL, USD, USDZ
+                </span>
+            </div>
+
+            <!-- URL Input -->
+            <div class="flex gap-2">
+                <input
+                    type="url"
+                    id="url-input"
+                    placeholder="https://example.com/model.glb"
+                    class="flex-1 px-3 py-2 bg-white/50 border border-void-black/20 rounded text-xs"
+                />
+                <button
+                    id="load-url-btn"
+                    class="px-4 py-2 bg-void-black text-stone-gray hover:bg-void-black/80 rounded"
+                >
+                    Load URL
+                </button>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="flex gap-2 flex-wrap">
+                <button
+                    id="toggle-rotation-btn"
+                    class="px-3 py-1.5 bg-void-black text-stone-gray hover:bg-void-black/80 rounded"
+                >
+                    ▶ Auto-Rotate
+                </button>
+                <button
+                    id="reset-camera-btn"
+                    class="px-3 py-1.5 bg-white/50 border border-void-black/20 hover:bg-white rounded"
+                >
+                    Reset View
+                </button>
+                <div class="flex items-center gap-2">
+                    <label class="text-[9px] uppercase">Speed:</label>
+                    <input
+                        type="range"
+                        id="rotation-speed"
+                        min="0.1"
+                        max="3"
+                        step="0.1"
+                        value="1"
+                        class="w-24"
+                    />
+                    <span id="speed-value" class="text-[9px] font-mono">1.0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Viewer Container -->
+        <div id="viewer-container" class="rounded-sm">
+            <div class="loading">Loading viewer...</div>
+        </div>
+
+        <!-- Model Info - Minimal display -->
+        <div id="model-info" class="minimal-ui mt-3 text-void-black/60">
+            <div class="grid grid-cols-3 gap-2">
+                <div>
+                    <span class="uppercase">Format:</span>
+                    <span id="info-format" class="font-mono ml-2">—</span>
+                </div>
+                <div>
+                    <span class="uppercase">Status:</span>
+                    <span id="info-status" class="font-mono ml-2">Ready</span>
+                </div>
+                <div>
+                    <span class="uppercase">Auto-Rotate:</span>
+                    <span id="info-rotate" class="font-mono ml-2">On</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions - Very minimal -->
+        <div class="minimal-ui mt-6 text-[9px] uppercase tracking-wider text-void-black/40 space-y-1">
+            <p>→ Drag to rotate manually</p>
+            <p>→ Scroll to zoom</p>
+            <p>→ Load your 3D assets via file or URL</p>
+        </div>
+    </main>
+
+    <!-- Viewer Component Script (must be module for dynamic imports) -->
+    <script type="module" src="viewer-component.js"></script>
+
+    <!-- Main App Script -->
+    <script type="module">
+        let viewer = null;
+
+        // Initialize viewer with retry logic
+        async function initializeViewer() {
+            const container = document.getElementById('viewer-container');
+
+            try {
+                console.log('🔄 Checking for AssetViewer...');
+
+                if (!window.AssetViewer) {
+                    throw new Error('AssetViewer not loaded yet');
+                }
+
+                console.log('🔄 Creating AssetViewer instance...');
+                viewer = new window.AssetViewer(container, {
+                    autoRotate: true,
+                    autoRotateSpeed: 1.0,
+                    backgroundColor: '#E8E8E8',
+                    cameraFOV: 45,
+                    showGrid: false,
+                    showAxes: false
+                });
+
+                console.log('🔄 Initializing viewer...');
+                await viewer.init();
+
+                // Remove loading message
+                const loading = container.querySelector('.loading');
+                if (loading) {
+                    console.log('🗑️ Removing loading message');
+                    loading.remove();
+                }
+
+                console.log('✅ Viewer ready');
+                updateStatus('Ready');
+                return true;
+            } catch (error) {
+                console.error('❌ Failed to initialize viewer:', error);
+                updateStatus('Error: ' + error.message);
+                return false;
+            }
+        }
+
+        // Retry initialization with exponential backoff
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        async function tryInitialize() {
+            attempts++;
+            console.log(`Attempt ${attempts}/${maxAttempts} to initialize viewer`);
+
+            try {
+                const success = await initializeViewer();
+                if (success) {
+                    console.log('✅ Viewer initialized successfully');
+                    return;
+                }
+            } catch (error) {
+                console.error('Initialization attempt failed:', error);
+            }
+
+            if (attempts < maxAttempts) {
+                const delay = Math.min(100 * Math.pow(2, attempts - 1), 2000);
+                console.log(`⏳ Retrying in ${delay}ms...`);
+                setTimeout(tryInitialize, delay);
+            } else {
+                console.error('❌ Failed to initialize viewer after', maxAttempts, 'attempts');
+                const container = document.getElementById('viewer-container');
+                const loading = container.querySelector('.loading');
+                if (loading) {
+                    loading.textContent = 'Failed to load viewer. Please refresh the page.';
+                    loading.style.color = '#ff0000';
+                }
+            }
+        }
+
+        // Start initialization
+        tryInitialize();
+
+        // File input handler
+        document.getElementById('file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const url = URL.createObjectURL(file);
+            const format = file.name.split('.').pop().toLowerCase();
+
+            updateStatus('Loading...');
+            updateFormat(format.toUpperCase());
+
+            try {
+                await viewer.loadModel(url, format);
+                updateStatus('Loaded');
+            } catch (error) {
+                updateStatus('Error: ' + error.message);
+            }
+        });
+
+        // URL input handler
+        document.getElementById('load-url-btn').addEventListener('click', async () => {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) return;
+
+            const format = url.split('.').pop().toLowerCase().split('?')[0];
+
+            updateStatus('Loading...');
+            updateFormat(format.toUpperCase());
+
+            try {
+                await viewer.loadModel(url, format);
+                updateStatus('Loaded');
+            } catch (error) {
+                updateStatus('Error: ' + error.message);
+            }
+        });
+
+        // Toggle auto-rotation
+        document.getElementById('toggle-rotation-btn').addEventListener('click', () => {
+            const isRotating = viewer.toggleAutoRotate();
+            const btn = document.getElementById('toggle-rotation-btn');
+            btn.textContent = isRotating ? '❚❚ Auto-Rotate' : '▶ Auto-Rotate';
+            updateRotateStatus(isRotating ? 'On' : 'Off');
+        });
+
+        // Reset camera
+        document.getElementById('reset-camera-btn').addEventListener('click', () => {
+            viewer.resetCamera();
+        });
+
+        // Rotation speed control
+        document.getElementById('rotation-speed').addEventListener('input', (e) => {
+            const speed = parseFloat(e.target.value);
+            viewer.setAutoRotateSpeed(speed);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        // Listen for viewer events
+        document.getElementById('viewer-container').addEventListener('modelLoaded', (e) => {
+            console.log('🎉 Model loaded:', e.detail);
+        });
+
+        document.getElementById('viewer-container').addEventListener('loadProgress', (e) => {
+            updateStatus(`Loading ${e.detail.percent}%`);
+        });
+
+        // Helper functions
+        function updateStatus(status) {
+            document.getElementById('info-status').textContent = status;
+        }
+
+        function updateFormat(format) {
+            document.getElementById('info-format').textContent = format;
+        }
+
+        function updateRotateStatus(status) {
+            document.getElementById('info-rotate').textContent = status;
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (viewer) {
+                viewer.dispose();
+            }
+        });
+    </script>
+</body>
+</html>

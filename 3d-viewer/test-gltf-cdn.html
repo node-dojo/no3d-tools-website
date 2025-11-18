@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test GLTF CDN</title>
+</head>
+<body>
+    <h1>Testing GLTF Loader from CDN</h1>
+    <div id="status">Loading...</div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        console.log('THREE:', THREE);
+        console.log('GLTFLoader:', GLTFLoader);
+
+        window.THREE = THREE;
+        window.GLTFLoader = GLTFLoader;
+
+        document.getElementById('status').textContent = 'GLTFLoader loaded! Check console.';
+    </script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Viewer Test - NO3D TOOLS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #E8E8E8;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #000;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .file-selector {
+            background: #000;
+            color: #E8E8E8;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .file-selector input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            color: #E8E8E8;
+            border: 1px solid #666;
+            margin-bottom: 15px;
+        }
+
+        .quick-load {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .quick-load button {
+            padding: 10px;
+            background: #444;
+            color: #E8E8E8;
+            border: 1px solid #666;
+            cursor: pointer;
+        }
+
+        .quick-load button:hover {
+            background: #666;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .viewer-section {
+            border: 3px solid #000;
+            background: #fff;
+        }
+
+        .viewer-header {
+            background: #000;
+            color: #E8E8E8;
+            padding: 15px;
+        }
+
+        .viewer-container {
+            width: 100%;
+            height: 500px;
+            background: #E8E8E8;
+            position: relative;
+        }
+
+        .status {
+            padding: 15px;
+            background: #f0f0f0;
+            border-top: 2px solid #000;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #ffc107;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator.ready {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-indicator.error {
+            background: #f44336;
+            color: white;
+        }
+
+        .info-box {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000;
+            font-size: 16px;
+        }
+
+        .recommendation {
+            background: #fffacd;
+            border: 3px solid #000;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>3D VIEWER TEST - STL LOADING</h1>
+        <p style="margin-bottom: 20px;">Comparing two approaches for loading and displaying STL files</p>
+
+        <!-- File Selector -->
+        <div class="file-selector">
+            <h2>SELECT TEST FILE</h2>
+            <input type="file" id="file-input" accept=".stl,.glb,.gltf">
+            <div class="quick-load">
+                <button onclick="loadSample('Vert_015_20250902_192454.stl')">Small STL (76KB)</button>
+                <button onclick="loadSample('Cube_005_20250808_140127.stl')">Medium STL (1.2MB)</button>
+                <button onclick="loadSample('loose_snake_lighter_20251112_225345.stl')">Large STL (3.8MB)</button>
+            </div>
+        </div>
+
+        <!-- Comparison Grid -->
+        <div class="comparison-grid">
+            <!-- Option 1: Simple Inline Three.js -->
+            <div class="viewer-section">
+                <div class="viewer-header">
+                    <h2>SIMPLE INLINE THREE.JS</h2>
+                    <p>Minimal implementation - just the basics</p>
+                </div>
+                <div class="viewer-container" id="simple-container">
+                    <div class="loading">Initializing...</div>
+                </div>
+                <div class="status">
+                    <div class="status-indicator" id="simple-status">⏳ Initializing</div>
+                    <div id="simple-info" class="info-box">Ready to load STL files</div>
+                </div>
+            </div>
+
+            <!-- Option 2: Our Custom AssetViewer Component -->
+            <div class="viewer-section">
+                <div class="viewer-header">
+                    <h2>CUSTOM ASSETVIEWER COMPONENT</h2>
+                    <p>Our modular viewer with full features</p>
+                </div>
+                <div class="viewer-container" id="custom-container">
+                    <div class="loading">Initializing...</div>
+                </div>
+                <div class="status">
+                    <div class="status-indicator" id="custom-status">⏳ Initializing</div>
+                    <div id="custom-info" class="info-box">Ready to load STL files</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="recommendation">
+            <h2>💡 TEST RESULTS</h2>
+            <p>Load an STL file to see which implementation works better.</p>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                <li><strong>Simple Inline:</strong> Bare-bones, easy to debug, minimal code</li>
+                <li><strong>Custom Component:</strong> Reusable, modular, feature-rich</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- THREE.js (local) -->
+    <script src="libs/three.min.js"></script>
+
+    <!-- Simple Inline Viewer -->
+    <script>
+        console.log('🔄 Setting up simple inline viewer...');
+
+        // Simple viewer setup
+        const simpleContainer = document.getElementById('simple-container');
+        const simpleScene = new THREE.Scene();
+        simpleScene.background = new THREE.Color(0xE8E8E8);
+
+        const simpleCamera = new THREE.PerspectiveCamera(45, simpleContainer.clientWidth / simpleContainer.clientHeight, 0.1, 1000);
+        simpleCamera.position.set(0, 2, 5);
+
+        const simpleRenderer = new THREE.WebGLRenderer({ antialias: true });
+        simpleRenderer.setSize(simpleContainer.clientWidth, simpleContainer.clientHeight);
+        simpleContainer.innerHTML = '';
+        simpleContainer.appendChild(simpleRenderer.domElement);
+
+        // Lighting
+        const simpleLight1 = new THREE.DirectionalLight(0xffffff, 1);
+        simpleLight1.position.set(5, 5, 5);
+        simpleScene.add(simpleLight1);
+
+        const simpleLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+        simpleLight2.position.set(-5, 5, -5);
+        simpleScene.add(simpleLight2);
+
+        const simpleAmbient = new THREE.AmbientLight(0x404040, 1);
+        simpleScene.add(simpleAmbient);
+
+        let simpleMesh = null;
+        let simpleRotating = true;
+
+        // Animation loop
+        function animateSimple() {
+            requestAnimationFrame(animateSimple);
+
+            if (simpleMesh && simpleRotating) {
+                simpleMesh.rotation.y += 0.01;
+            }
+
+            simpleRenderer.render(simpleScene, simpleCamera);
+        }
+        animateSimple();
+
+        // Update status
+        document.getElementById('simple-status').textContent = '✅ Ready';
+        document.getElementById('simple-status').className = 'status-indicator ready';
+        console.log('✅ Simple viewer initialized');
+
+        // Load STL function for simple viewer
+        async function loadIntoSimple(url, filename) {
+            document.getElementById('simple-status').textContent = '⏳ Loading...';
+            document.getElementById('simple-status').className = 'status-indicator';
+
+            try {
+                // Dynamic import of STL loader
+                const { STLLoader } = await import('./libs/STLLoader.js');
+                const loader = new STLLoader();
+
+                loader.load(url, (geometry) => {
+                    console.log('✅ Simple viewer: STL loaded');
+
+                    // Remove old mesh
+                    if (simpleMesh) {
+                        simpleScene.remove(simpleMesh);
+                    }
+
+                    // Create new mesh
+                    const material = new THREE.MeshPhongMaterial({
+                        color: 0x888888,
+                        specular: 0x111111,
+                        shininess: 200
+                    });
+
+                    simpleMesh = new THREE.Mesh(geometry, material);
+
+                    // Center and scale
+                    const box = new THREE.Box3().setFromObject(simpleMesh);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+
+                    simpleMesh.position.sub(center);
+
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 2 / maxDim;
+                    simpleMesh.scale.multiplyScalar(scale);
+
+                    simpleScene.add(simpleMesh);
+
+                    document.getElementById('simple-status').textContent = '✅ Loaded';
+                    document.getElementById('simple-status').className = 'status-indicator ready';
+                    document.getElementById('simple-info').textContent = `${filename} - ${geometry.attributes.position.count} vertices - Scale: ${scale.toFixed(3)}`;
+                }, undefined, (error) => {
+                    console.error('❌ Simple viewer error:', error);
+                    document.getElementById('simple-status').textContent = '❌ Error';
+                    document.getElementById('simple-status').className = 'status-indicator error';
+                    document.getElementById('simple-info').textContent = 'Error: ' + error.message;
+                });
+            } catch (error) {
+                console.error('❌ Failed to load STL loader:', error);
+                document.getElementById('simple-status').textContent = '❌ Error';
+                document.getElementById('simple-status').className = 'status-indicator error';
+            }
+        }
+    </script>
+
+    <!-- Custom AssetViewer -->
+    <script type="module">
+        console.log('🔄 Setting up custom AssetViewer...');
+
+        import { AssetViewer } from './viewer-component.js';
+
+        let customViewer = null;
+
+        async function initCustomViewer() {
+            const container = document.getElementById('custom-container');
+
+            try {
+                customViewer = new AssetViewer(container, {
+                    autoRotate: true,
+                    autoRotateSpeed: 1.0,
+                    backgroundColor: '#E8E8E8'
+                });
+
+                await customViewer.init();
+
+                container.innerHTML = '';
+
+                document.getElementById('custom-status').textContent = '✅ Ready';
+                document.getElementById('custom-status').className = 'status-indicator ready';
+                console.log('✅ Custom viewer initialized');
+            } catch (error) {
+                console.error('❌ Custom viewer init error:', error);
+                document.getElementById('custom-status').textContent = '❌ Error';
+                document.getElementById('custom-status').className = 'status-indicator error';
+                document.getElementById('custom-info').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        initCustomViewer();
+
+        // Make load function available globally
+        window.loadIntoCustom = async function(url, filename) {
+            if (!customViewer) {
+                console.error('Custom viewer not initialized');
+                return;
+            }
+
+            document.getElementById('custom-status').textContent = '⏳ Loading...';
+            document.getElementById('custom-status').className = 'status-indicator';
+
+            try {
+                const format = filename.split('.').pop().toLowerCase();
+                await customViewer.loadModel(url, format);
+
+                document.getElementById('custom-status').textContent = '✅ Loaded';
+                document.getElementById('custom-status').className = 'status-indicator ready';
+                document.getElementById('custom-info').textContent = `${filename} loaded successfully`;
+            } catch (error) {
+                console.error('❌ Custom viewer load error:', error);
+                document.getElementById('custom-status').textContent = '❌ Error';
+                document.getElementById('custom-status').className = 'status-indicator error';
+                document.getElementById('custom-info').textContent = 'Error: ' + error.message;
+            }
+        };
+    </script>
+
+    <!-- File Loading Logic -->
+    <script>
+        // File input handler
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const url = URL.createObjectURL(file);
+            console.log(`📁 Loading file: ${file.name}`);
+
+            loadIntoSimple(url, file.name);
+            loadIntoCustom(url, file.name);
+        });
+
+        // Sample loader
+        window.loadSample = async function(filename) {
+            const url = `test-assets/${filename}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('File not found');
+
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+
+                console.log(`📁 Loading sample: ${filename}`);
+
+                loadIntoSimple(objectUrl, filename);
+                loadIntoCustom(objectUrl, filename);
+            } catch (error) {
+                console.error('❌ Failed to load sample:', error);
+                alert(`Failed to load ${filename}. Make sure it exists in test-assets/`);
+            }
+        };
+
+        console.log('✅ Page loaded and ready');
+    </script>
+</body>
+</html>

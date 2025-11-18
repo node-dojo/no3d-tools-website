@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Viewer Test - NO3D TOOLS</title>
+
+    <!-- Import map MUST come before any ES modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"
+        }
+    }
+    </script>
+
+    <!-- THREE.js for STL conversion -->
+    <script src="libs/three.min.js"></script>
+    <script src="libs/STLLoader-global.js"></script>
+
+    <!-- Load GLTFExporter as ES module -->
+    <script type="module">
+        import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/exporters/GLTFExporter.js';
+        window.GLTFExporter = GLTFExporter;
+        window.gltfExporterReady = true;
+        console.log('✅ GLTFExporter imported and ready');
+    </script>
+
+    <!-- Load model-viewer AFTER importmap -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* Full viewport viewer */
+        #viewer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            min-width: 1px;
+            min-height: 1px;
+            overflow: hidden;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            min-width: 1px;
+            min-height: 1px;
+            background-color: transparent;
+            display: block;
+        }
+
+        /* Sidebar controls panel */
+        .controls-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform: translateX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .controls-panel.collapsed {
+            transform: translateX(320px);
+        }
+
+        /* Toggle button */
+        .toggle-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .toggle-controls:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .toggle-controls::before {
+            content: '⚙';
+            font-size: 20px;
+            color: #fff;
+        }
+
+        /* Panel header */
+        .panel-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .panel-header p {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+        }
+
+        /* Control sections */
+        .control-section {
+            margin-bottom: 24px;
+        }
+
+        .control-section h3 {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 12px;
+        }
+
+        /* Control items */
+        .control-item {
+            margin-bottom: 16px;
+        }
+
+        .control-item label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-value {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Range sliders */
+        input[type="range"] {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 1px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Color pickers */
+        input[type="color"] {
+            width: 100%;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        input[type="color"]:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Selects and inputs */
+        select, input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        select:hover, input[type="text"]:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Buttons */
+        button {
+            width: 100%;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Checkboxes */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #fff;
+        }
+
+        /* File input */
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        input[type="file"]::file-selector-button {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 11px;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Status bar */
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 11px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.ready {
+            background: #4caf50;
+        }
+
+        .status-indicator.loading {
+            background: #ffc107;
+        }
+
+        .status-indicator.error {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Scrollbar styling */
+        .controls-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .controls-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Full viewport viewer -->
+    <div id="viewer-container">
+        <model-viewer
+            id="viewer"
+            camera-controls
+            touch-action="pan-y"
+            auto-rotate
+            auto-rotate-delay="0"
+            rotation-per-second="30deg"
+            exposure="1.0"
+            shadow-intensity="1"
+            autoplay
+            ar
+            ar-modes="webxr scene-viewer quick-look"
+            camera-orbit="0deg 75deg 1.5m"
+        ></model-viewer>
+    </div>
+
+    <!-- Toggle button -->
+    <div class="toggle-controls" onclick="togglePanel()"></div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+        <span class="status-indicator ready" id="status"></span>
+        <span id="info">Ready. Load an STL, GLB, GLTF, or 3MF model to view it.</span>
+    </div>
+
+    <!-- Sidebar controls panel -->
+    <div class="controls-panel" id="controls-panel">
+        <div class="panel-header">
+            <h1>Model Viewer</h1>
+            <p>Google Model Viewer - STL/GLB/GLTF/3MF</p>
+        </div>
+
+        <!-- File Selection -->
+        <div class="control-section">
+            <h3>Load Model</h3>
+            <div class="control-item">
+                <input type="file" id="file-input" accept=".stl,.glb,.gltf,.3mf">
+            </div>
+        </div>
+
+        <!-- Viewer Size & Aspect Ratio -->
+        <div class="control-section">
+            <h3>Viewer Size & Aspect Ratio</h3>
+            <div class="control-item">
+                <label>Aspect Ratio Preset</label>
+                <select id="aspect-ratio-preset">
+                    <option value="custom">Custom</option>
+                    <option value="1:1">1:1 (Square)</option>
+                    <option value="4:3">4:3 (Classic)</option>
+                    <option value="16:9">16:9 (Widescreen)</option>
+                    <option value="3:2">3:2 (Photo)</option>
+                    <option value="21:9">21:9 (Ultrawide)</option>
+                    <option value="9:16">9:16 (Portrait)</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Width <span class="control-value"><span id="viewer-width-val">100</span><span id="width-unit">%</span></span></label>
+                <input type="range" id="viewer-width" min="10" max="100" step="5" value="100">
+            </div>
+            <div class="control-item">
+                <label>Height <span class="control-value"><span id="viewer-height-val">100</span><span id="height-unit">%</span></span></label>
+                <input type="range" id="viewer-height" min="10" max="100" step="5" value="100">
+            </div>
+            <div class="control-item">
+                <label>Max Width <span class="control-value"><span id="max-width-val">100</span><span id="max-width-unit">%</span></span></label>
+                <input type="range" id="max-width" min="10" max="100" step="5" value="100">
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Use Pixels Instead of %</span>
+                    <input type="checkbox" id="use-pixels">
+                </label>
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Maintain Aspect Ratio</span>
+                    <input type="checkbox" id="maintain-aspect" checked>
+                </label>
+            </div>
+        </div>
+
+        <!-- Embed Settings -->
+        <div class="control-section">
+            <h3>Embed Settings</h3>
+            <div class="control-item">
+                <label>Background Color</label>
+                <input type="color" id="bg-color" value="#0a0a0a">
+            </div>
+            <div class="control-item">
+                <label>Background Opacity <span class="control-value" id="bg-opacity-val">1.0</span></label>
+                <input type="range" id="bg-opacity" min="0" max="1" step="0.1" value="1.0">
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Transparent Background</span>
+                    <input type="checkbox" id="transparent-bg">
+                </label>
+            </div>
+            <div class="control-item">
+                <label>Interaction Mode</label>
+                <select id="interaction-mode">
+                    <option value="full">Full Controls</option>
+                    <option value="rotate-only">Rotate Only</option>
+                    <option value="none">No Interaction</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Enable AR</span>
+                    <input type="checkbox" id="enable-ar" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <label>Loading Strategy</label>
+                <select id="loading-strategy">
+                    <option value="auto">Auto</option>
+                    <option value="lazy">Lazy</option>
+                    <option value="eager">Eager</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Reveal Strategy</label>
+                <select id="reveal-strategy">
+                    <option value="auto">Auto</option>
+                    <option value="interaction">On Interaction</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div class="control-section">
+            <h3>Performance</h3>
+            <div class="control-item">
+                <label>Render Quality</label>
+                <select id="render-quality">
+                    <option value="auto">Auto</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Enable Shadows</span>
+                    <input type="checkbox" id="enable-shadows" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Enable Tone Mapping</span>
+                    <input type="checkbox" id="enable-tone-mapping" checked>
+                </label>
+            </div>
+        </div>
+
+        <!-- Camera Controls -->
+        <div class="control-section">
+            <h3>Camera</h3>
+            <div class="control-item">
+                <label>
+                    <span>Auto Rotate</span>
+                    <input type="checkbox" id="auto-rotate" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <label>Rotation Speed <span class="control-value"><span id="rotation-speed-val">30</span>°/s</span></label>
+                <input type="range" id="rotation-speed" min="0" max="180" step="10" value="30">
+            </div>
+            <div class="control-item">
+                <label>FOV <span class="control-value"><span id="fov-val">45</span>°</span></label>
+                <input type="range" id="fov" min="1" max="900" step="1" value="45">
+            </div>
+            <div class="control-item">
+                <label>Camera Distance <span class="control-value"><span id="camera-distance-val">1.0</span>x</span></label>
+                <input type="range" id="camera-distance" min="0.01" max="500" step="0.1" value="1.0">
+            </div>
+            <div class="control-item">
+                <label>Zoom Level <span class="control-value"><span id="zoom-level-val">1.0</span>x</span></label>
+                <input type="range" id="zoom-level" min="0.1" max="3" step="0.1" value="1.0">
+            </div>
+            <div class="control-item">
+                <label>Model Scale <span class="control-value"><span id="model-scale-val">1.0</span>x</span></label>
+                <input type="range" id="model-scale" min="0.1" max="1.9" step="0.01" value="1.0">
+            </div>
+            <div class="control-item" style="display: flex; gap: 8px;">
+                <button onclick="zoomIn()" style="flex: 1;">Zoom In</button>
+                <button onclick="zoomOut()" style="flex: 1;">Zoom Out</button>
+            </div>
+            <div class="control-item">
+                <button onclick="fitToView()">Fit to View</button>
+            </div>
+            <div class="control-item">
+                <button onclick="resetCamera()">Reset Camera</button>
+            </div>
+        </div>
+
+        <!-- Lighting -->
+        <div class="control-section">
+            <h3>Lighting</h3>
+            <div class="control-item">
+                <label>Exposure <span class="control-value" id="exposure-val">1.0</span></label>
+                <input type="range" id="exposure" min="0.1" max="3" step="0.1" value="1.0">
+            </div>
+            <div class="control-item">
+                <label>Shadow Intensity <span class="control-value" id="shadow-val">1.0</span></label>
+                <input type="range" id="shadow-intensity" min="0" max="2" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <!-- Environment -->
+        <div class="control-section">
+            <h3>Environment</h3>
+            <div class="control-item">
+                <label>Skybox URL</label>
+                <input type="text" id="skybox-url" placeholder="https://example.com/skybox.hdr">
+            </div>
+            <div class="control-item">
+                <button onclick="applySkybox()">Apply Skybox</button>
+            </div>
+        </div>
+
+        <!-- View Options -->
+        <div class="control-section">
+            <h3>View Options</h3>
+            <div class="control-item">
+                <label>
+                    <span>Camera Controls</span>
+                    <input type="checkbox" id="camera-controls" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <button onclick="resetCamera()">Reset Camera</button>
+            </div>
+        </div>
+
+        <!-- Animation -->
+        <div class="control-section">
+            <h3>Animation</h3>
+            <div class="control-item">
+                <label>
+                    <span>Auto-play</span>
+                    <input type="checkbox" id="animation-autoplay" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <button onclick="toggleAnimation()">Play/Pause</button>
+            </div>
+        </div>
+
+        <!-- Export & Code -->
+        <div class="control-section">
+            <h3>Export & Embed Code</h3>
+            <div class="control-item">
+                <label>Preview Size</label>
+                <select id="preview-size">
+                    <option value="full">Full Screen</option>
+                    <option value="card">Product Card (400x400)</option>
+                    <option value="thumbnail">Thumbnail (200x200)</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <button onclick="generateEmbedCode()">Generate Embed Code</button>
+            </div>
+            <div class="control-item">
+                <button onclick="copyEmbedCode()">Copy to Clipboard</button>
+            </div>
+            <div class="control-item">
+                <label>Embed Code</label>
+                <textarea id="embed-code" rows="8" readonly style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; font-family: 'Courier New', monospace; font-size: 11px; resize: vertical;"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Container (shows embedded view) -->
+    <div id="preview-container" style="display: none; position: fixed; bottom: 20px; right: 340px; width: 400px; height: 400px; background: #fff; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 8px; overflow: hidden; z-index: 999; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);">
+        <div style="position: absolute; top: 0; left: 0; right: 0; padding: 8px; background: rgba(0, 0, 0, 0.7); color: #fff; font-size: 11px; text-align: center; z-index: 1;">
+            Preview: Product Card Embed
+        </div>
+        <model-viewer
+            id="preview-viewer"
+            style="width: 100%; height: 100%;"
+        ></model-viewer>
+    </div>
+
+    <script>
+        const viewer = document.getElementById('viewer');
+        const statusEl = document.getElementById('status');
+        const infoEl = document.getElementById('info');
+        let viewerReady = false;
+
+        // Wait for model-viewer custom element to be defined
+        async function initViewer() {
+            try {
+                // Wait for custom element to be defined
+                if (!customElements.get('model-viewer')) {
+                    console.log('⏳ Waiting for model-viewer custom element...');
+                    await customElements.whenDefined('model-viewer');
+                }
+                
+                // Wait a frame for layout
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                
+                // Ensure viewer has dimensions
+                let rect = viewer.getBoundingClientRect();
+                let attempts = 0;
+                while ((rect.width === 0 || rect.height === 0) && attempts < 5) {
+                    console.warn(`⚠️ Viewer has zero dimensions (attempt ${attempts + 1}), forcing resize`);
+                    viewer.style.width = window.innerWidth + 'px';
+                    viewer.style.height = window.innerHeight + 'px';
+                    // Force a reflow
+                    void viewer.offsetHeight;
+                    // Wait for layout
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                    rect = viewer.getBoundingClientRect();
+                    attempts++;
+                }
+
+                if (rect.width === 0 || rect.height === 0) {
+                    console.error('❌ Failed to initialize viewer dimensions after multiple attempts');
+                    infoEl.textContent = 'Error: Viewer initialization failed';
+                    return false;
+                }
+
+                console.log('✅ Model Viewer initialized', {
+                    dimensions: {
+                        width: rect.width,
+                        height: rect.height
+                    },
+                    readyState: viewer.readyState
+                });
+
+                viewerReady = true;
+                return true;
+            } catch (error) {
+                console.error('❌ Viewer initialization error:', error);
+                infoEl.textContent = `Initialization error: ${error.message}`;
+                return false;
+            }
+        }
+
+        // Initialize on page load
+        initViewer();
+
+        // Toggle panel visibility
+        function togglePanel() {
+            const panel = document.getElementById('controls-panel');
+            panel.classList.toggle('collapsed');
+        }
+
+        // Convert STL to GLB
+        async function convertSTLtoGLB(file) {
+            return new Promise((resolve, reject) => {
+                statusEl.className = 'status-indicator loading';
+                infoEl.textContent = `Converting ${file.name} to GLB...`;
+
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const loader = new THREE.STLLoader();
+                        const geometry = loader.parse(event.target.result);
+
+                        // Create material
+                        const material = new THREE.MeshStandardMaterial({
+                            color: 0x888888,
+                            metalness: 0.3,
+                            roughness: 0.4
+                        });
+
+                        // Create mesh
+                        const mesh = new THREE.Mesh(geometry, material);
+
+                        // Correct for Blender's Z-up coordinate system
+                        mesh.rotation.x = -Math.PI / 2;
+
+                        // Center geometry
+                        geometry.computeBoundingBox();
+                        const boundingBox = geometry.boundingBox;
+                        const center = new THREE.Vector3();
+                        boundingBox.getCenter(center);
+                        geometry.translate(-center.x, -center.y, -center.z);
+
+                        // Create scene with mesh
+                        const scene = new THREE.Scene();
+                        scene.add(mesh);
+
+                        // Export to GLB
+                        if (!window.GLTFExporter) {
+                            reject(new Error('GLTFExporter not loaded'));
+                            return;
+                        }
+
+                        const exporter = new window.GLTFExporter();
+                        exporter.parse(
+                            scene,
+                            (gltf) => {
+                                const blob = new Blob([gltf], { type: 'model/gltf-binary' });
+                                const url = URL.createObjectURL(blob);
+                                console.log('✅ STL converted to GLB');
+                                resolve(url);
+                            },
+                            (error) => {
+                                console.error('❌ GLB export error:', error);
+                                reject(error);
+                            },
+                            { binary: true }
+                        );
+                    } catch (error) {
+                        console.error('❌ STL conversion error:', error);
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // File input handler
+        document.getElementById('file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Wait for viewer to be ready
+            if (!viewerReady) {
+                infoEl.textContent = 'Initializing viewer...';
+                const initialized = await initViewer();
+                if (!initialized) {
+                    statusEl.className = 'status-indicator error';
+                    infoEl.textContent = 'Failed to initialize viewer. Please refresh the page.';
+                    return;
+                }
+            }
+
+            let url;
+            const fileExt = file.name.split('.').pop().toLowerCase();
+
+            // Convert STL to GLB if needed
+            if (fileExt === 'stl') {
+                try {
+                    url = await convertSTLtoGLB(file);
+                } catch (error) {
+                    statusEl.className = 'status-indicator error';
+                    infoEl.textContent = `STL conversion failed: ${error.message}`;
+                    console.error('❌ STL conversion failed:', error);
+                    return;
+                }
+            } else {
+                url = URL.createObjectURL(file);
+            }
+
+            statusEl.className = 'status-indicator loading';
+            infoEl.textContent = `Loading ${file.name}...`;
+
+            // Clean up previous blob URL if exists
+            if (viewer.src && viewer.src.startsWith('blob:')) {
+                URL.revokeObjectURL(viewer.src);
+            }
+
+            // Ensure viewer dimensions before loading - with retry logic
+            let rect = viewer.getBoundingClientRect();
+            let dimensionAttempts = 0;
+            while ((rect.width === 0 || rect.height === 0) && dimensionAttempts < 3) {
+                console.warn(`⚠️ Zero dimensions before load (attempt ${dimensionAttempts + 1}), fixing...`);
+                viewer.style.width = window.innerWidth + 'px';
+                viewer.style.height = window.innerHeight + 'px';
+                // Force a reflow
+                void viewer.offsetHeight;
+                // Wait for layout
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                rect = viewer.getBoundingClientRect();
+                dimensionAttempts++;
+            }
+
+            if (rect.width === 0 || rect.height === 0) {
+                statusEl.className = 'status-indicator error';
+                infoEl.textContent = 'Error: Viewer has invalid dimensions. Please refresh.';
+                URL.revokeObjectURL(url);
+                console.error('❌ Cannot load model: viewer has zero dimensions', {
+                    width: rect.width,
+                    height: rect.height,
+                    windowSize: {
+                        width: window.innerWidth,
+                        height: window.innerHeight
+                    }
+                });
+                return;
+            }
+
+            console.log('📦 Loading model:', {
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                viewerDimensions: {
+                    width: rect.width,
+                    height: rect.height
+                }
+            });
+
+            try {
+                viewer.src = url;
+
+                viewer.addEventListener('load', () => {
+                    statusEl.className = 'status-indicator ready';
+                    infoEl.textContent = `${file.name} loaded successfully`;
+                    // Update camera zoom and preview after model loads
+                    setTimeout(() => {
+                        updateCameraZoom();
+                        updatePreview();
+                    }, 100);
+                    console.log('✅ Model loaded');
+                }, { once: true });
+
+                viewer.addEventListener('error', (e) => {
+                    statusEl.className = 'status-indicator error';
+                    const errorDetail = e.detail || {};
+                    const errorMsg = errorDetail.message || errorDetail.type || 'Unknown error';
+                    const rect = viewer.getBoundingClientRect();
+                    
+                    infoEl.textContent = `Error: ${errorMsg}`;
+                    
+                    console.error('❌ Model load error:', {
+                        message: errorMsg,
+                        type: errorDetail.type || e.type,
+                        source: errorDetail.sourceError || 'N/A',
+                        detail: JSON.stringify(errorDetail, null, 2),
+                        src: viewer.src,
+                        dimensions: {
+                            width: rect.width,
+                            height: rect.height,
+                            valid: rect.width > 0 && rect.height > 0
+                        },
+                        viewerState: {
+                            loaded: viewer.loaded,
+                            readyState: viewer.readyState,
+                            hasAttributeSrc: viewer.hasAttribute('src')
+                        }
+                    });
+                    
+                    // If dimensions are zero, try to fix and reload
+                    if (rect.width === 0 || rect.height === 0) {
+                        console.warn('⚠️ Zero dimensions detected, attempting to fix...');
+                        viewer.style.width = window.innerWidth + 'px';
+                        viewer.style.height = window.innerHeight + 'px';
+                        // Force a reflow
+                        void viewer.offsetHeight;
+                    }
+                }, { once: true });
+            } catch (error) {
+                statusEl.className = 'status-indicator error';
+                infoEl.textContent = `Error: ${error.message}`;
+                console.error('❌ Failed to set model source:', error);
+                URL.revokeObjectURL(url);
+            }
+        });
+
+        // Auto rotate control
+        document.getElementById('auto-rotate').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                viewer.setAttribute('auto-rotate', '');
+            } else {
+                viewer.removeAttribute('auto-rotate');
+            }
+        });
+
+        // Rotation speed
+        document.getElementById('rotation-speed').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('rotation-speed-val').textContent = val;
+            viewer.setAttribute('rotation-per-second', `${val}deg`);
+        });
+
+        // FOV
+        document.getElementById('fov').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('fov-val').textContent = val;
+            viewer.setAttribute('field-of-view', `${val}deg`);
+        });
+
+        // Exposure
+        document.getElementById('exposure').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('exposure-val').textContent = val;
+            viewer.setAttribute('exposure', val);
+        });
+
+        // Shadow intensity
+        document.getElementById('shadow-intensity').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('shadow-val').textContent = val;
+            viewer.setAttribute('shadow-intensity', val);
+        });
+
+        // Camera controls
+        document.getElementById('camera-controls').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                viewer.setAttribute('camera-controls', '');
+            } else {
+                viewer.removeAttribute('camera-controls');
+            }
+        });
+
+        // Apply skybox
+        function applySkybox() {
+            const url = document.getElementById('skybox-url').value.trim();
+            if (!url) {
+                alert('Please enter a skybox URL');
+                return;
+            }
+            viewer.setAttribute('skybox-image', url);
+            console.log('Applied skybox:', url);
+        }
+
+        // Reset camera
+        function resetCamera() {
+            viewer.resetTurntableRotation();
+            viewer.fieldOfView = '45deg';
+            // Reset zoom, camera distance, and scale
+            document.getElementById('camera-distance').value = 1.0;
+            document.getElementById('camera-distance-val').textContent = '1.0';
+            document.getElementById('zoom-level').value = 1.0;
+            document.getElementById('zoom-level-val').textContent = '1.0';
+            document.getElementById('model-scale').value = 1.0;
+            document.getElementById('model-scale-val').textContent = '1.0';
+            currentCameraDistance = 1.0;
+            currentZoom = 1.0;
+            currentModelScale = 1.0;
+            viewer.scale = '1 1 1';
+            updateCameraZoom();
+            console.log('Camera and scale reset');
+        }
+
+        // Camera zoom controls
+        let currentZoom = 1.0;
+        let currentCameraDistance = 1.0;
+        let currentModelScale = 1.0;
+
+        document.getElementById('camera-distance').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('camera-distance-val').textContent = val.toFixed(2);
+            currentCameraDistance = val;
+            updateCameraZoom();
+        });
+
+        document.getElementById('zoom-level').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('zoom-level-val').textContent = val.toFixed(1);
+            currentZoom = val;
+            updateCameraZoom();
+        });
+
+        document.getElementById('model-scale').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('model-scale-val').textContent = val.toFixed(2);
+            currentModelScale = val;
+            viewer.scale = `${val} ${val} ${val}`;
+            updatePreview();
+            console.log('Model scale set to:', val);
+        });
+
+        function updateCameraZoom() {
+            // Use camera-orbit attribute to control zoom
+            // camera-orbit format: "theta phi distance"
+            try {
+                let orbit = viewer.cameraOrbit || '0deg 75deg 1.5m';
+                const parts = orbit.split(' ');
+                const theta = parts[0] || '0deg';
+                const phi = parts[1] || '75deg';
+                let distance = parts[2] || '1.5m';
+                
+                // Extract numeric value from distance (e.g., "1.5m" -> 1.5)
+                const distanceValue = parseFloat(distance);
+                
+                // Calculate new distance based on zoom and camera distance
+                // Lower zoom = further away (zoom out), higher zoom = closer (zoom in)
+                // Higher camera distance = further away
+                const baseDistance = 1.5; // Default distance
+                const newDistance = baseDistance * currentCameraDistance / currentZoom;
+                
+                viewer.cameraOrbit = `${theta} ${phi} ${newDistance.toFixed(2)}m`;
+            } catch (error) {
+                console.warn('Error updating camera zoom:', error);
+                // Fallback: set a simple orbit
+                const distance = 1.5 * currentCameraDistance / currentZoom;
+                viewer.cameraOrbit = `0deg 75deg ${distance.toFixed(2)}m`;
+            }
+        }
+
+        function zoomIn() {
+            const zoomSlider = document.getElementById('zoom-level');
+            const currentVal = parseFloat(zoomSlider.value);
+            const newVal = Math.min(3, currentVal + 0.2);
+            zoomSlider.value = newVal;
+            document.getElementById('zoom-level-val').textContent = newVal.toFixed(1);
+            currentZoom = newVal;
+            updateCameraZoom();
+        }
+
+        function zoomOut() {
+            const zoomSlider = document.getElementById('zoom-level');
+            const currentVal = parseFloat(zoomSlider.value);
+            const newVal = Math.max(0.1, currentVal - 0.2);
+            zoomSlider.value = newVal;
+            document.getElementById('zoom-level-val').textContent = newVal.toFixed(1);
+            currentZoom = newVal;
+            updateCameraZoom();
+        }
+
+        function fitToView() {
+            // Reset camera to fit model in view
+            viewer.resetTurntableRotation();
+            if (viewer.model) {
+                // Calculate bounding box and adjust camera
+                viewer.cameraOrbit = '0deg 75deg auto';
+                viewer.updateFraming();
+            }
+            // Reset zoom and scale controls
+            document.getElementById('camera-distance').value = 1.0;
+            document.getElementById('camera-distance-val').textContent = '1.0';
+            document.getElementById('zoom-level').value = 1.0;
+            document.getElementById('zoom-level-val').textContent = '1.0';
+            document.getElementById('model-scale').value = 1.0;
+            document.getElementById('model-scale-val').textContent = '1.0';
+            currentZoom = 1.0;
+            currentCameraDistance = 1.0;
+            currentModelScale = 1.0;
+            viewer.scale = '1 1 1';
+            console.log('Fitted to view');
+        }
+
+        // Animation controls
+        document.getElementById('animation-autoplay').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                viewer.setAttribute('autoplay', '');
+                viewer.play();
+            } else {
+                viewer.removeAttribute('autoplay');
+            }
+        });
+
+        function toggleAnimation() {
+            if (viewer.paused) {
+                viewer.play();
+                console.log('▶️ Animation playing');
+            } else {
+                viewer.pause();
+                console.log('⏸️ Animation paused');
+            }
+        }
+
+        // Viewer Size & Aspect Ratio Controls
+        let currentAspectRatio = null;
+        let maintainAspect = true;
+        let usePixels = false;
+
+        document.getElementById('use-pixels').addEventListener('change', (e) => {
+            usePixels = e.target.checked;
+            const widthSlider = document.getElementById('viewer-width');
+            const heightSlider = document.getElementById('viewer-height');
+            const maxWidthSlider = document.getElementById('max-width');
+            
+            if (usePixels) {
+                widthSlider.min = 100;
+                widthSlider.max = 1920;
+                widthSlider.step = 10;
+                widthSlider.value = window.innerWidth;
+                
+                heightSlider.min = 100;
+                heightSlider.max = 1920;
+                heightSlider.step = 10;
+                heightSlider.value = window.innerHeight;
+                
+                maxWidthSlider.min = 100;
+                maxWidthSlider.max = 1920;
+                maxWidthSlider.step = 10;
+                maxWidthSlider.value = window.innerWidth;
+                
+                document.getElementById('width-unit').textContent = 'px';
+                document.getElementById('height-unit').textContent = 'px';
+                document.getElementById('max-width-unit').textContent = 'px';
+            } else {
+                widthSlider.min = 10;
+                widthSlider.max = 100;
+                widthSlider.step = 5;
+                widthSlider.value = 100;
+                
+                heightSlider.min = 10;
+                heightSlider.max = 100;
+                heightSlider.step = 5;
+                heightSlider.value = 100;
+                
+                maxWidthSlider.min = 10;
+                maxWidthSlider.max = 100;
+                maxWidthSlider.step = 5;
+                maxWidthSlider.value = 100;
+                
+                document.getElementById('width-unit').textContent = '%';
+                document.getElementById('height-unit').textContent = '%';
+                document.getElementById('max-width-unit').textContent = '%';
+            }
+            updateViewerSize();
+        });
+
+        document.getElementById('aspect-ratio-preset').addEventListener('change', (e) => {
+            const preset = e.target.value;
+            if (preset === 'custom') {
+                maintainAspect = false;
+                document.getElementById('maintain-aspect').checked = false;
+                currentAspectRatio = null;
+                return;
+            }
+            
+            maintainAspect = true;
+            document.getElementById('maintain-aspect').checked = true;
+            
+            const [w, h] = preset.split(':').map(Number);
+            currentAspectRatio = w / h;
+            updateViewerSize();
+        });
+
+        document.getElementById('viewer-width').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('viewer-width-val').textContent = val;
+            if (maintainAspect && currentAspectRatio) {
+                const newHeight = usePixels ? val / currentAspectRatio : val;
+                document.getElementById('viewer-height').value = usePixels ? Math.round(newHeight) : newHeight;
+                document.getElementById('viewer-height-val').textContent = usePixels ? Math.round(newHeight) : newHeight;
+            }
+            updateViewerSize();
+        });
+
+        document.getElementById('viewer-height').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('viewer-height-val').textContent = val;
+            if (maintainAspect && currentAspectRatio) {
+                const newWidth = usePixels ? val * currentAspectRatio : val;
+                document.getElementById('viewer-width').value = usePixels ? Math.round(newWidth) : newWidth;
+                document.getElementById('viewer-width-val').textContent = usePixels ? Math.round(newWidth) : newWidth;
+            }
+            updateViewerSize();
+        });
+
+        document.getElementById('max-width').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('max-width-val').textContent = val;
+            updateViewerSize();
+        });
+
+        document.getElementById('maintain-aspect').addEventListener('change', (e) => {
+            maintainAspect = e.target.checked;
+            if (!maintainAspect) {
+                currentAspectRatio = null;
+            } else if (document.getElementById('aspect-ratio-preset').value !== 'custom') {
+                const preset = document.getElementById('aspect-ratio-preset').value;
+                const [w, h] = preset.split(':').map(Number);
+                currentAspectRatio = w / h;
+            }
+            updateViewerSize();
+        });
+
+        function updateViewerSize() {
+            const container = document.getElementById('viewer-container');
+            const width = parseInt(document.getElementById('viewer-width').value);
+            const height = parseInt(document.getElementById('viewer-height').value);
+            const maxWidth = parseInt(document.getElementById('max-width').value);
+            
+            if (maintainAspect && currentAspectRatio) {
+                if (usePixels) {
+                    const newHeight = Math.round(width / currentAspectRatio);
+                    container.style.width = width + 'px';
+                    container.style.height = newHeight + 'px';
+                    container.style.maxWidth = maxWidth + 'px';
+                    container.style.aspectRatio = 'auto';
+                } else {
+                    container.style.width = width + '%';
+                    container.style.height = 'auto';
+                    // Convert decimal aspect ratio to CSS format (e.g., 1.777 -> "16 / 9")
+                    const aspectPreset = document.getElementById('aspect-ratio-preset').value;
+                    if (aspectPreset !== 'custom') {
+                        container.style.aspectRatio = aspectPreset.replace(':', ' / ');
+                    } else {
+                        container.style.aspectRatio = `${currentAspectRatio}`;
+                    }
+                    container.style.maxWidth = maxWidth + '%';
+                }
+            } else {
+                if (usePixels) {
+                    container.style.width = width + 'px';
+                    container.style.height = height + 'px';
+                    container.style.maxWidth = maxWidth + 'px';
+                } else {
+                    container.style.width = width + '%';
+                    container.style.height = height + '%';
+                    container.style.maxWidth = maxWidth + '%';
+                }
+                container.style.aspectRatio = 'auto';
+            }
+            
+            // Update preview if visible
+            updatePreview();
+        }
+
+        // Embed Settings Controls
+        document.getElementById('bg-color').addEventListener('input', (e) => {
+            const color = e.target.value;
+            const opacity = parseFloat(document.getElementById('bg-opacity').value);
+            const transparent = document.getElementById('transparent-bg').checked;
+            
+            if (transparent) {
+                document.body.style.backgroundColor = 'transparent';
+                viewer.style.backgroundColor = 'transparent';
+            } else {
+                const rgba = hexToRgba(color, opacity);
+                document.body.style.backgroundColor = rgba;
+                viewer.style.backgroundColor = rgba;
+            }
+            updatePreview();
+        });
+
+        document.getElementById('bg-opacity').addEventListener('input', (e) => {
+            const opacity = parseFloat(e.target.value);
+            document.getElementById('bg-opacity-val').textContent = opacity.toFixed(1);
+            const color = document.getElementById('bg-color').value;
+            const transparent = document.getElementById('transparent-bg').checked;
+            
+            if (!transparent) {
+                const rgba = hexToRgba(color, opacity);
+                document.body.style.backgroundColor = rgba;
+                viewer.style.backgroundColor = rgba;
+            }
+            updatePreview();
+        });
+
+        document.getElementById('transparent-bg').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                document.body.style.backgroundColor = 'transparent';
+                viewer.style.backgroundColor = 'transparent';
+            } else {
+                const color = document.getElementById('bg-color').value;
+                const opacity = parseFloat(document.getElementById('bg-opacity').value);
+                const rgba = hexToRgba(color, opacity);
+                document.body.style.backgroundColor = rgba;
+                viewer.style.backgroundColor = rgba;
+            }
+            updatePreview();
+        });
+
+        document.getElementById('interaction-mode').addEventListener('change', (e) => {
+            const mode = e.target.value;
+            if (mode === 'full') {
+                viewer.setAttribute('camera-controls', '');
+                viewer.setAttribute('touch-action', 'pan-y');
+            } else if (mode === 'rotate-only') {
+                viewer.setAttribute('camera-controls', '');
+                viewer.removeAttribute('touch-action');
+            } else {
+                viewer.removeAttribute('camera-controls');
+            }
+            updatePreview();
+        });
+
+        document.getElementById('enable-ar').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                viewer.setAttribute('ar', '');
+                viewer.setAttribute('ar-modes', 'webxr scene-viewer quick-look');
+            } else {
+                viewer.removeAttribute('ar');
+                viewer.removeAttribute('ar-modes');
+            }
+            updatePreview();
+        });
+
+        document.getElementById('loading-strategy').addEventListener('change', (e) => {
+            viewer.setAttribute('loading', e.target.value);
+            updatePreview();
+        });
+
+        document.getElementById('reveal-strategy').addEventListener('change', (e) => {
+            viewer.setAttribute('reveal', e.target.value);
+            updatePreview();
+        });
+
+        // Performance Controls
+        document.getElementById('render-quality').addEventListener('change', (e) => {
+            const quality = e.target.value;
+            if (quality !== 'auto') {
+                viewer.setAttribute('render-quality', quality);
+            } else {
+                viewer.removeAttribute('render-quality');
+            }
+            updatePreview();
+        });
+
+        document.getElementById('enable-shadows').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                viewer.setAttribute('shadow-intensity', document.getElementById('shadow-intensity').value);
+            } else {
+                viewer.setAttribute('shadow-intensity', '0');
+            }
+            updatePreview();
+        });
+
+        document.getElementById('enable-tone-mapping').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                viewer.setAttribute('tone-mapping', 'auto');
+            } else {
+                viewer.removeAttribute('tone-mapping');
+            }
+            updatePreview();
+        });
+
+        // Preview Controls
+        const previewViewer = document.getElementById('preview-viewer');
+        const previewContainer = document.getElementById('preview-container');
+
+        document.getElementById('preview-size').addEventListener('change', (e) => {
+            const size = e.target.value;
+            if (size === 'full') {
+                previewContainer.style.display = 'none';
+            } else {
+                previewContainer.style.display = 'block';
+                if (size === 'card') {
+                    previewContainer.style.width = '400px';
+                    previewContainer.style.height = '400px';
+                } else if (size === 'thumbnail') {
+                    previewContainer.style.width = '200px';
+                    previewContainer.style.height = '200px';
+                }
+                updatePreview();
+            }
+        });
+
+        function updatePreview() {
+            if (previewContainer.style.display === 'none') return;
+
+            // Copy src if main viewer has one
+            if (viewer.src) {
+                previewViewer.src = viewer.src;
+            }
+
+            // Copy all attributes from main viewer to preview
+            const attrs = ['camera-controls', 'auto-rotate', 'rotation-per-second',
+                          'exposure', 'shadow-intensity', 'field-of-view', 'ar', 'ar-modes',
+                          'loading', 'reveal', 'render-quality', 'scale', 'autoplay'];
+
+            attrs.forEach(attr => {
+                if (viewer.hasAttribute(attr)) {
+                    previewViewer.setAttribute(attr, viewer.getAttribute(attr));
+                } else {
+                    previewViewer.removeAttribute(attr);
+                }
+            });
+
+            // Copy background
+            previewViewer.style.backgroundColor = viewer.style.backgroundColor;
+
+            console.log('Preview updated with src:', viewer.src);
+        }
+
+        // Generate Embed Code
+        function generateEmbedCode() {
+            const width = document.getElementById('viewer-width').value;
+            const height = document.getElementById('viewer-height').value;
+            const maxWidth = document.getElementById('max-width').value;
+            const usePx = document.getElementById('use-pixels').checked;
+            const unit = usePx ? 'px' : '%';
+            const bgColor = document.getElementById('bg-color').value;
+            const bgOpacity = document.getElementById('bg-opacity').value;
+            const transparent = document.getElementById('transparent-bg').checked;
+            const autoRotate = document.getElementById('auto-rotate').checked;
+            const rotationSpeed = document.getElementById('rotation-speed').value;
+            const fov = document.getElementById('fov').value;
+            const exposure = document.getElementById('exposure').value;
+            const shadowIntensity = document.getElementById('shadow-intensity').value;
+            const cameraControls = document.getElementById('camera-controls').checked;
+            const enableAR = document.getElementById('enable-ar').checked;
+            const loading = document.getElementById('loading-strategy').value;
+            const reveal = document.getElementById('reveal-strategy').value;
+            const renderQuality = document.getElementById('render-quality').value;
+            const enableShadows = document.getElementById('enable-shadows').checked;
+            const maintainAspect = document.getElementById('maintain-aspect').checked;
+            const aspectPreset = document.getElementById('aspect-ratio-preset').value;
+            const modelScale = document.getElementById('model-scale').value;
+            
+            let bgStyle = transparent ? 'transparent' : hexToRgba(bgColor, parseFloat(bgOpacity));
+            
+            let styleProps = [];
+            styleProps.push(`width: ${width}${unit}`);
+            
+            if (maintainAspect && aspectPreset !== 'custom') {
+                const [w, h] = aspectPreset.split(':').map(Number);
+                styleProps.push(`aspect-ratio: ${w} / ${h}`);
+            } else {
+                styleProps.push(`height: ${height}${unit}`);
+            }
+            
+            styleProps.push(`max-width: ${maxWidth}${unit}`);
+            styleProps.push(`background-color: ${bgStyle}`);
+            
+            let code = `<model-viewer\n`;
+            code += `    src="YOUR_MODEL_URL.glb"\n`;
+            code += `    style="${styleProps.join('; ')}"\n`;
+            
+            if (cameraControls) code += `    camera-controls\n`;
+            if (autoRotate) code += `    auto-rotate\n`;
+            if (autoRotate) code += `    rotation-per-second="${rotationSpeed}deg"\n`;
+            if (enableAR) code += `    ar\n`;
+            if (enableAR) code += `    ar-modes="webxr scene-viewer quick-look"\n`;
+            if (loading !== 'auto') code += `    loading="${loading}"\n`;
+            if (reveal !== 'auto') code += `    reveal="${reveal}"\n`;
+            if (renderQuality !== 'auto') code += `    render-quality="${renderQuality}"\n`;
+            
+            code += `    field-of-view="${fov}deg"\n`;
+            code += `    exposure="${exposure}"\n`;
+            if (enableShadows) {
+                code += `    shadow-intensity="${shadowIntensity}"\n`;
+            }
+            if (parseFloat(modelScale) !== 1.0) {
+                code += `    scale="${modelScale} ${modelScale} ${modelScale}"\n`;
+            }
+            code += `></model-viewer>\n\n`;
+            
+            code += `<!-- Include model-viewer script -->\n`;
+            const scriptTag = '<' + 'script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"><' + '/script>';
+            code += scriptTag;
+            
+            document.getElementById('embed-code').value = code;
+        }
+
+        function copyEmbedCode() {
+            const code = document.getElementById('embed-code').value;
+            if (!code) {
+                alert('Please generate embed code first');
+                return;
+            }
+            navigator.clipboard.writeText(code).then(() => {
+                infoEl.textContent = 'Embed code copied to clipboard!';
+                setTimeout(() => {
+                    infoEl.textContent = 'Ready. Load an STL, GLB, GLTF, or 3MF model to view it.';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function hexToRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // Handle window resize to ensure viewer maintains dimensions
+        window.addEventListener('resize', () => {
+            if (viewer) {
+                const rect = viewer.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) {
+                    viewer.style.width = window.innerWidth + 'px';
+                    viewer.style.height = window.innerHeight + 'px';
+                }
+            }
+            updateViewerSize();
+        });
+
+        console.log('✅ Model Viewer script loaded');
+    </script>
+</body>
+</html>
