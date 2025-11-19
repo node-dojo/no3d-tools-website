@@ -495,6 +495,43 @@
             </div>
         </div>
 
+        <!-- Display Settings -->
+        <div class="control-section">
+            <h3>Display Settings</h3>
+            <div class="control-item">
+                <label>Render Style</label>
+                <select id="render-style">
+                    <option value="realistic">Realistic (PBR)</option>
+                    <option value="flat">Flat Shading</option>
+                    <option value="wireframe">Wireframe</option>
+                    <option value="sketch">Sketch Mode (Coming Soon)</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Material Type</label>
+                <select id="material-type">
+                    <option value="default">Default</option>
+                    <option value="matte">Matte</option>
+                    <option value="glossy">Glossy</option>
+                    <option value="metallic">Metallic</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Roughness <span class="control-value"><span id="roughness-val">0.5</span></span></label>
+                <input type="range" id="roughness" min="0" max="1" step="0.05" value="0.5">
+            </div>
+            <div class="control-item">
+                <label>Metalness <span class="control-value"><span id="metalness-val">0.0</span></span></label>
+                <input type="range" id="metalness" min="0" max="1" step="0.05" value="0.0">
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Enable Post-Processing</span>
+                    <input type="checkbox" id="enable-post-processing">
+                </label>
+            </div>
+        </div>
+
         <!-- Performance -->
         <div class="control-section">
             <h3>Performance</h3>
@@ -1345,6 +1382,67 @@
         document.getElementById('reveal-strategy').addEventListener('change', (e) => {
             viewer.setAttribute('reveal', e.target.value);
             updatePreview();
+        });
+
+        // Display Settings Controls
+        document.getElementById('render-style').addEventListener('change', (e) => {
+            const style = e.target.value;
+            console.log('Render style:', style);
+
+            if (style === 'sketch') {
+                alert('⚠️ Sketch Mode requires THREE.js post-processing.\n\nFor full pencil-lines effect, please use the THREE.js viewer (simple-test.html) which supports the mayacoda/pencil-lines shader.');
+            } else if (style === 'wireframe' || style === 'flat') {
+                console.warn('⚠️ Model Viewer has limited support for', style, 'rendering. Full support requires THREE.js viewer.');
+            }
+
+            updatePreview();
+        });
+
+        document.getElementById('material-type').addEventListener('change', (e) => {
+            const type = e.target.value;
+            console.log('Material type:', type);
+
+            // Model Viewer uses glTF materials, so we can only adjust via roughness/metalness
+            if (type === 'matte') {
+                document.getElementById('roughness').value = 1.0;
+                document.getElementById('roughness-val').textContent = '1.0';
+                document.getElementById('metalness').value = 0.0;
+                document.getElementById('metalness-val').textContent = '0.0';
+            } else if (type === 'glossy') {
+                document.getElementById('roughness').value = 0.1;
+                document.getElementById('roughness-val').textContent = '0.1';
+                document.getElementById('metalness').value = 0.0;
+                document.getElementById('metalness-val').textContent = '0.0';
+            } else if (type === 'metallic') {
+                document.getElementById('roughness').value = 0.3;
+                document.getElementById('roughness-val').textContent = '0.3';
+                document.getElementById('metalness').value = 1.0;
+                document.getElementById('metalness-val').textContent = '1.0';
+            }
+
+            console.warn('⚠️ Model Viewer material adjustments are limited. For full material control, use THREE.js viewer.');
+            updatePreview();
+        });
+
+        document.getElementById('roughness').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('roughness-val').textContent = val.toFixed(2);
+            console.log('Roughness:', val, '(Note: Model Viewer uses glTF material properties)');
+            updatePreview();
+        });
+
+        document.getElementById('metalness').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('metalness-val').textContent = val.toFixed(2);
+            console.log('Metalness:', val, '(Note: Model Viewer uses glTF material properties)');
+            updatePreview();
+        });
+
+        document.getElementById('enable-post-processing').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                alert('⚠️ Post-processing effects like pencil-lines require THREE.js.\n\nModel Viewer does not support custom post-processing shaders.\n\nTo use pencil-lines effect:\n1. Use the THREE.js viewer (simple-test.html)\n2. Integrate the mayacoda/pencil-lines library\n3. Add PencilLinesPass to the EffectComposer');
+                e.target.checked = false;
+            }
         });
 
         // Performance Controls

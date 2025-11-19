@@ -905,6 +905,9 @@
     <!-- STL Loader (local, uses global THREE) -->
     <script src="libs/STLLoader-global.js"></script>
 
+    <!-- OrbitControls (local module with global wrapper) -->
+    <script type="module" src="libs/OrbitControls-global.js"></script>
+
     <!-- Import map for THREE modules -->
     <script type="importmap">
     {
@@ -1313,7 +1316,67 @@
         renderer.toneMappingExposure = 1.0;
         container.appendChild(renderer.domElement);
 
+        // Mouse interaction for mesh tumbling (camera stays fixed)
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let meshRotationVelocity = { x: 0, y: 0 };
+        const rotationDamping = 0.95;
 
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        renderer.domElement.addEventListener('mousemove', (e) => {
+            if (!isDragging || !meshGroup) return;
+
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+
+            // Rotate mesh around Y-axis (horizontal drag) and X-axis (vertical drag)
+            meshRotationVelocity.y = deltaX * 0.01;
+            meshRotationVelocity.x = deltaY * 0.01;
+
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        renderer.domElement.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        // Touch support for mobile
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                previousMousePosition = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
+                };
+            }
+        });
+
+        renderer.domElement.addEventListener('touchmove', (e) => {
+            if (!isDragging || !meshGroup || e.touches.length !== 1) return;
+
+            const deltaX = e.touches[0].clientX - previousMousePosition.x;
+            const deltaY = e.touches[0].clientY - previousMousePosition.y;
+
+            meshRotationVelocity.y = deltaX * 0.01;
+            meshRotationVelocity.x = deltaY * 0.01;
+
+            previousMousePosition = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY
+            };
+        });
+
+        renderer.domElement.addEventListener('touchend', () => {
+            isDragging = false;
+        });
 
         // Enhanced Studio Lighting Setup
         // Hemisphere light (sky + ground for natural ambient)
@@ -1364,9 +1427,22 @@
                 mixer.update(delta);
             }
 
-            if (meshGroup && rotating) {
-                // Rotate around world Y-axis (vertical)
-                meshGroup.rotation.y += rotateSpeed;
+            if (meshGroup) {
+                // Apply mesh rotation from user interaction
+                if (!isDragging) {
+                    // Apply damping when not dragging
+                    meshRotationVelocity.x *= rotationDamping;
+                    meshRotationVelocity.y *= rotationDamping;
+                }
+
+                // Apply rotation velocity to mesh
+                meshGroup.rotation.x += meshRotationVelocity.x;
+                meshGroup.rotation.y += meshRotationVelocity.y;
+
+                // Auto-rotation (only when not being manually rotated)
+                if (rotating && Math.abs(meshRotationVelocity.x) < 0.001 && Math.abs(meshRotationVelocity.y) < 0.001) {
+                    meshGroup.rotation.y += rotateSpeed;
+                }
             }
 
             renderer.render(scene, camera);

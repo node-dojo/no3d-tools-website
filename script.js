@@ -1634,6 +1634,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
   // Parse camera orbit if provided
   let initialCameraPosition = { x: 0, y: 2, z: 5 };
   let autoRotate = camera.autoRotate !== false; // Default to true, only false if explicitly set to false
+  const enableCameraControls = camera.cameraControls !== false; // Default to true, only false if explicitly set to false
 
   // Parse rotation speed from config format "0.3deg" (degrees per frame at 60fps)
   // Convert to radians per frame for THREE.js
@@ -1750,7 +1751,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';` : ''}
-        
+
         const container = document.getElementById('viewer-container');
         const loadingEl = container.querySelector('.loading');
         
@@ -1770,7 +1771,49 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
         renderer.toneMappingExposure = 1.0;
         container.innerHTML = '';
         container.appendChild(renderer.domElement);
-        
+
+        ${enableCameraControls ? `// Mouse interaction for mesh tumbling (camera stays fixed)
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let meshRotationVelocity = { x: 0, y: 0 };
+        const rotationDamping = 0.95;
+
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        renderer.domElement.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+            meshRotationVelocity.y = deltaX * 0.01;
+            meshRotationVelocity.x = deltaY * 0.01;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        renderer.domElement.addEventListener('mouseup', () => { isDragging = false; });
+        renderer.domElement.addEventListener('mouseleave', () => { isDragging = false; });
+
+        // Touch support
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        });
+
+        renderer.domElement.addEventListener('touchmove', (e) => {
+            if (!isDragging || e.touches.length !== 1) return;
+            const deltaX = e.touches[0].clientX - previousMousePosition.x;
+            const deltaY = e.touches[0].clientY - previousMousePosition.y;
+            meshRotationVelocity.y = deltaX * 0.01;
+            meshRotationVelocity.x = deltaY * 0.01;
+            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
+
+        renderer.domElement.addEventListener('touchend', () => { isDragging = false; });` : ''}
+
         // Lighting${lighting.hemisphere?.enabled !== false ? `
         const hemisphereLight = new THREE.HemisphereLight(
             ${lighting.hemisphere?.skyColor ? `0x${lighting.hemisphere.skyColor.replace('#', '')}` : '0xffffff'},
@@ -1941,7 +1984,20 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
                 // Animation loop
                 function animate() {
                     requestAnimationFrame(animate);
-                    ${autoRotate ? `meshGroup.rotation.y += ${rotationSpeed};` : ''}
+
+                    ${enableCameraControls ? `// Apply mesh rotation from user interaction
+                    if (!isDragging) {
+                        meshRotationVelocity.x *= rotationDamping;
+                        meshRotationVelocity.y *= rotationDamping;
+                    }
+                    meshGroup.rotation.x += meshRotationVelocity.x;
+                    meshGroup.rotation.y += meshRotationVelocity.y;
+
+                    // Auto-rotation (only when not manually rotating)
+                    ${autoRotate ? `if (Math.abs(meshRotationVelocity.x) < 0.001 && Math.abs(meshRotationVelocity.y) < 0.001) {
+                        meshGroup.rotation.y += ${rotationSpeed};
+                    }` : ''}` : `${autoRotate ? `meshGroup.rotation.y += ${rotationSpeed};` : ''}`}
+
                     ${enableSketch ? 'composer.render();' : 'renderer.render(scene, camera);'}
                 }
                 animate();
