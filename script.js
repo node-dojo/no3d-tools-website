@@ -1503,23 +1503,32 @@ function generate3DEmbedCode(modelUrl, modelName, config, fileFormat = 'glb') {
   
   // Background color
   let bgStyle = 'transparent';
+  let bgColorForThree = null; // For Three.js scene.background
   if (!embed.transparentBackground) {
     const bgColor = embed.backgroundColor || '#E8E8E8';
-    const bgOpacity = embed.backgroundOpacity !== undefined ? embed.backgroundOpacity : 1.0;
-    if (bgColor.startsWith('#')) {
-      const r = parseInt(bgColor.slice(1, 3), 16);
-      const g = parseInt(bgColor.slice(3, 5), 16);
-      const b = parseInt(bgColor.slice(5, 7), 16);
-      bgStyle = `rgba(${r}, ${g}, ${b}, ${bgOpacity})`;
-    } else {
-      bgStyle = bgColor;
+    // Skip if backgroundColor is explicitly "transparent"
+    if (bgColor && bgColor.toLowerCase() !== 'transparent') {
+      const bgOpacity = embed.backgroundOpacity !== undefined ? embed.backgroundOpacity : 1.0;
+      if (bgColor.startsWith('#')) {
+        const r = parseInt(bgColor.slice(1, 3), 16);
+        const g = parseInt(bgColor.slice(3, 5), 16);
+        const b = parseInt(bgColor.slice(5, 7), 16);
+        bgStyle = `rgba(${r}, ${g}, ${b}, ${bgOpacity})`;
+        bgColorForThree = `0x${bgColor.slice(1)}`; // Hex color for Three.js
+      } else {
+        bgStyle = bgColor;
+        // Only set bgColorForThree if it's a valid color format (hex, rgb, etc.)
+        if (bgColor.match(/^(0x|#|rgb)/i)) {
+          bgColorForThree = bgColor.startsWith('#') ? `0x${bgColor.slice(1)}` : bgColor;
+        }
+      }
     }
   }
   styleProps.push(`background-color: ${bgStyle}`);
   
   // Use Three.js for STL files, model-viewer for GLB/GLTF
   if (fileFormat === 'stl' || fileFormat === 'obj') {
-    return generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProps, bgStyle);
+    return generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProps, bgStyle, bgColorForThree);
   }
   
   // Build model-viewer attributes for GLB/GLTF
@@ -1612,7 +1621,7 @@ function generate3DEmbedCode(modelUrl, modelName, config, fileFormat = 'glb') {
 }
 
 // Generate Three.js embed for STL/OBJ files
-function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProps, bgStyle) {
+function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProps, bgStyle, bgColorForThree = null) {
   const viewer = config.viewer || {};
   const embed = config.embed || {};
   const camera = config.camera || {};
@@ -1728,7 +1737,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
         
         // Scene setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color('${bgStyle}');
+        ${bgColorForThree ? `scene.background = new THREE.Color(${bgColorForThree});` : '// Transparent background - renderer alpha handles this'}
         
         const camera = new THREE.PerspectiveCamera(${fov}, container.clientWidth / container.clientHeight, 0.1, 1000);
         camera.position.set(${initialCameraPosition.x}, ${initialCameraPosition.y}, ${initialCameraPosition.z});
