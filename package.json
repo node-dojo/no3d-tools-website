@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'No build step required'",
+    "build": "node scripts/update-commit-hash.js",
     "start": "vercel dev",
     "test-mobile": "node test-mobile-server.js",
-    "test-mobile:8000": "node test-mobile-server.js 8000"
+    "test-mobile:8000": "node test-mobile-server.js 8000",
+    "update-commit": "node scripts/update-commit-hash.js"
   },
   "dependencies": {
     "@polar-sh/checkout": "^0.1.14",

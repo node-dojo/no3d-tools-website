@@ -1265,6 +1265,13 @@ body {
   margin-left: var(--space-medium);
 }
 
+/* Ensure commit hash is visible even when footer-text is hidden on mobile */
+@media (max-width: 768px) {
+  .footer-text#footer-commit {
+    display: block !important;
+  }
+}
+
 .footer-logo {
   position: fixed;
   bottom: 0;

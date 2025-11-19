@@ -4435,15 +4435,29 @@ function updateFooterShortcut() {
 // Update footer commit hash from meta tag
 function updateFooterCommit() {
   const commitHashEl = document.getElementById('commit-hash');
-  if (!commitHashEl) return;
+  const footerCommitEl = document.getElementById('footer-commit');
+  
+  console.log('🔍 updateFooterCommit called');
+  console.log('  commitHashEl:', commitHashEl);
+  console.log('  footerCommitEl:', footerCommitEl);
+  
+  if (!commitHashEl) {
+    console.warn('⚠️ commit-hash element not found');
+    return;
+  }
   
   // Get commit hash from meta tag
   const metaTag = document.querySelector('meta[name="deployment-version"]');
+  console.log('  metaTag:', metaTag);
+  console.log('  metaTag.content:', metaTag ? metaTag.content : 'null');
+  
   if (metaTag && metaTag.content) {
     commitHashEl.textContent = metaTag.content;
+    console.log('✅ Commit hash set to:', metaTag.content);
   } else {
     // Fallback: try to get from git if available (for local dev)
     commitHashEl.textContent = 'dev';
+    console.log('⚠️ No meta tag found, using fallback: dev');
   }
 }
 
