@@ -2247,17 +2247,39 @@ async function loadProductCardAssets(productId) {
         for (const modelFile of model3dFiles) {
           // Generate embeds for GLB/GLTF (model-viewer) and STL/OBJ (Three.js)
           if (['glb', 'gltf', 'stl', 'obj'].includes(modelFile.format)) {
-            const embedHtml = generate3DEmbedCode(modelFile.url, modelFile.name, embedConfig, modelFile.format);
-            cardAssets.push({
-              type: 'html',
-              url: 'data:text/html;charset=utf-8,' + encodeURIComponent(embedHtml),
-              format: 'html',
-              name: `${modelFile.name} (3D Viewer)`,
-              isIcon: false,
-              isGenerated: true
-            });
-            console.log(`🎨 Generated 3D embed for: ${modelFile.name} (${modelFile.format})`);
-            processedModelFiles.push(modelFile);
+            // Fetch the model file and embed as base64 data URL to avoid CORS/sandbox issues
+            try {
+              const modelResponse = await fetch(modelFile.url);
+              if (!modelResponse.ok) {
+                throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
+              }
+              const modelBlob = await modelResponse.blob();
+              
+              // Convert blob to base64 data URL
+              const reader = new FileReader();
+              const modelDataUrl = await new Promise((resolve, reject) => {
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(modelBlob);
+              });
+              
+              // Generate embed with data URL instead of GitHub URL
+              // This avoids CORS and sandbox restrictions since everything is embedded
+              const embedHtml = generate3DEmbedCode(modelDataUrl, modelFile.name, embedConfig, modelFile.format);
+              cardAssets.push({
+                type: 'html',
+                url: 'data:text/html;charset=utf-8,' + encodeURIComponent(embedHtml),
+                format: 'html',
+                name: `${modelFile.name} (3D Viewer)`,
+                isIcon: false,
+                isGenerated: true
+              });
+              console.log(`🎨 Generated 3D embed for: ${modelFile.name} (${modelFile.format}) with embedded data URL`);
+              processedModelFiles.push(modelFile);
+            } catch (error) {
+              console.error(`❌ Failed to fetch model file for ${modelFile.name}:`, error);
+              // Continue without this model rather than breaking everything
+            }
           }
         }
         
