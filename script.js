@@ -4881,6 +4881,7 @@ async function initializeCarousel(productId) {
     const item = document.createElement('div');
     item.className = 'carousel-item';
     item.dataset.index = index;
+    item.style.position = 'relative'; // Needed for absolute positioning of loading indicator
 
     if (asset.type === 'image') {
       const img = document.createElement('img');
@@ -4907,11 +4908,35 @@ async function initializeCarousel(productId) {
       // Load HTML embed in iframe
       const iframe = document.createElement('iframe');
       
+      // Add loading indicator
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'model-viewer-placeholder';
+      loadingDiv.textContent = 'Loading 3D viewer...';
+      loadingDiv.style.position = 'absolute';
+      loadingDiv.style.top = '50%';
+      loadingDiv.style.left = '50%';
+      loadingDiv.style.transform = 'translate(-50%, -50%)';
+      loadingDiv.style.zIndex = '1';
+      item.appendChild(loadingDiv);
+      
       // Handle data URLs (generated embeds) vs regular URLs
+      let iframeSrc = null;
       if (asset.url.startsWith('data:text/html')) {
         // Extract HTML content from data URL
         const htmlContent = decodeURIComponent(asset.url.split(',')[1]);
-        iframe.srcdoc = htmlContent;
+        
+        // Use Blob URL for large HTML content (data URLs have size limits ~2MB)
+        // This is more reliable for large Three.js embed HTML
+        try {
+          const blob = new Blob([htmlContent], { type: 'text/html' });
+          iframeSrc = URL.createObjectURL(blob);
+          iframe.src = iframeSrc;
+          console.log(`📦 Created Blob URL for HTML embed: ${asset.name}`);
+        } catch (error) {
+          console.error(`❌ Failed to create Blob URL, falling back to srcdoc:`, error);
+          // Fallback to srcdoc if Blob creation fails
+          iframe.srcdoc = htmlContent;
+        }
       } else {
         iframe.src = asset.url;
       }
@@ -4920,14 +4945,43 @@ async function initializeCarousel(productId) {
       iframe.style.height = '100%';
       iframe.style.border = 'none';
       iframe.style.display = 'block';
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+      // More permissive sandbox to allow 3D model loading and external resources
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms allow-downloads allow-modals');
       iframe.setAttribute('loading', index === 0 ? 'eager' : 'lazy');
-      iframe.onerror = function() {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'model-viewer-placeholder';
-        errorDiv.textContent = `Failed to load HTML embed: ${asset.name}`;
-        item.appendChild(errorDiv);
+      
+      // Track if iframe loaded successfully
+      let loaded = false;
+      const loadTimeout = setTimeout(() => {
+        if (!loaded) {
+          console.error(`⚠️ Iframe load timeout for: ${asset.name}`);
+          loadingDiv.textContent = 'Failed to load 3D viewer';
+          loadingDiv.style.color = '#ff0000';
+          // Clean up Blob URL on timeout
+          if (iframeSrc) {
+            URL.revokeObjectURL(iframeSrc);
+          }
+        }
+      }, 15000); // 15 second timeout for 3D model loading
+      
+      iframe.onload = function() {
+        loaded = true;
+        clearTimeout(loadTimeout);
+        loadingDiv.remove();
+        console.log(`✅ Iframe loaded successfully: ${asset.name}`);
       };
+      
+      iframe.onerror = function() {
+        loaded = true;
+        clearTimeout(loadTimeout);
+        loadingDiv.textContent = `Failed to load HTML embed: ${asset.name}`;
+        loadingDiv.style.color = '#ff0000';
+        console.error(`❌ Iframe error for: ${asset.name}`);
+        // Clean up Blob URL on error
+        if (iframeSrc) {
+          URL.revokeObjectURL(iframeSrc);
+        }
+      };
+      
       item.appendChild(iframe);
     }
 
