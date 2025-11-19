@@ -1738,8 +1738,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
     <script type="module">
         import * as THREE from 'three';
         import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';${enableSketch ? `
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';${enableSketch ? `
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';` : ''}
@@ -1763,12 +1762,6 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
         renderer.toneMappingExposure = 1.0;
         container.innerHTML = '';
         container.appendChild(renderer.domElement);
-        
-        // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        ${camera.cameraControls === false ? 'controls.enabled = false;' : ''}
         
         // Lighting${lighting.hemisphere?.enabled !== false ? `
         const hemisphereLight = new THREE.HemisphereLight(
@@ -1857,16 +1850,14 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
                 meshGroup.add(mesh);
                 ${enableEdges ? 'if (edgesMesh) meshGroup.add(edgesMesh);' : ''}
 
-                // Center and scale model
+                // Center model at origin (matching utility viewer - no scaling)
                 const box = new THREE.Box3().setFromObject(meshGroup);
                 const center = box.getCenter(new THREE.Vector3());
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
-                const scale = 2 / maxDim;
 
-                meshGroup.position.sub(center);
-                meshGroup.scale.multiplyScalar(scale);
-                meshGroup.scale.multiply(new THREE.Vector3(${modelScale[0]}, ${modelScale[1]}, ${modelScale[2]}));
+                // Center to middle of mesh - move model so its center is at origin
+                meshGroup.position.set(-center.x, -center.y, -center.z);
 
                 ${enableShadows ? 'mesh.traverse((child) => { if (child.isMesh) child.castShadow = true; });' : ''}
 
@@ -1943,7 +1934,6 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
                 function animate() {
                     requestAnimationFrame(animate);
                     ${autoRotate ? `meshGroup.rotation.y += ${rotationSpeed};` : ''}
-                    controls.update();
                     ${enableSketch ? 'composer.render();' : 'renderer.render(scene, camera);'}
                 }
                 animate();
