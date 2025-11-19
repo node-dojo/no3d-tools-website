@@ -2167,9 +2167,15 @@ async function loadProductCardAssets(productId) {
           
           for (const item of data.contents) {
             if (item.type === 'file') {
+              // Skip preview-embed.html files - they can't be loaded in iframes due to X-Frame-Options
+              if (item.name.toLowerCase().includes('preview-embed')) {
+                console.log(`⏭️ Skipping preview file (can't be iframed): ${item.name}`);
+                continue;
+              }
+
               const ext = item.name.split('.').pop().toLowerCase();
               let mediaType = 'other';
-              
+
               if (supportedFormats.image.includes(ext)) {
                 mediaType = 'image';
               } else if (supportedFormats.video.includes(ext)) {
@@ -3054,11 +3060,21 @@ console.log('NO3D Tools website initialized');
 
 // ==================== CMD+K SEARCH FUNCTIONALITY ====================
 
+console.log('🔍 Initializing CMD+K search functionality...');
+
 const searchModal = document.getElementById('search-modal');
 const searchModalBackdrop = document.getElementById('search-modal-backdrop');
 const searchInput = document.getElementById('search-input');
 const searchResultsContainer = document.getElementById('search-results-container');
 const searchResultsEmpty = document.getElementById('search-results-empty');
+
+console.log('🔍 Search elements:', {
+  searchModal,
+  searchModalBackdrop,
+  searchInput,
+  searchResultsContainer,
+  searchResultsEmpty
+});
 
 let searchResults = [];
 let selectedResultIndex = -1;
