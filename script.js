@@ -2275,6 +2275,9 @@ async function loadProductCardAssets(productId) {
                 isGenerated: true
               });
               console.log(`🎨 Generated 3D embed for: ${modelFile.name} (${modelFile.format}) with embedded data URL`);
+              console.log(`   Model file size: ${(modelBlob.size / 1024).toFixed(2)} KB`);
+              console.log(`   Data URL length: ${modelDataUrl.length} characters`);
+              console.log(`   HTML embed length: ${embedHtml.length} characters`);
               processedModelFiles.push(modelFile);
             } catch (error) {
               console.error(`❌ Failed to fetch model file for ${modelFile.name}:`, error);
@@ -4997,8 +5000,11 @@ async function initializeCarousel(productId) {
           iframeSrc = URL.createObjectURL(blob);
           iframe.src = iframeSrc;
           console.log(`📦 Created Blob URL for HTML embed: ${asset.name}`);
+          console.log(`   HTML content size: ${(htmlContent.length / 1024).toFixed(2)} KB`);
+          console.log(`   Blob size: ${(blob.size / 1024).toFixed(2)} KB`);
         } catch (error) {
           console.error(`❌ Failed to create Blob URL, falling back to srcdoc:`, error);
+          console.error(`   Error details:`, error);
           // Fallback to srcdoc if Blob creation fails
           iframe.srcdoc = htmlContent;
         }
