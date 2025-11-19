@@ -2243,6 +2243,7 @@ async function loadProductCardAssets(productId) {
       
       // Generate embed for each 3D model
       if (embedConfig.enabled) {
+        const processedModelFiles = [];
         for (const modelFile of model3dFiles) {
           // Generate embeds for GLB/GLTF (model-viewer) and STL/OBJ (Three.js)
           if (['glb', 'gltf', 'stl', 'obj'].includes(modelFile.format)) {
@@ -2256,7 +2257,17 @@ async function loadProductCardAssets(productId) {
               isGenerated: true
             });
             console.log(`🎨 Generated 3D embed for: ${modelFile.name} (${modelFile.format})`);
+            processedModelFiles.push(modelFile);
           }
+        }
+        
+        // Remove original model3d items that were successfully converted to HTML embeds
+        // This prevents showing placeholders instead of the actual 3D viewer
+        if (processedModelFiles.length > 0) {
+          cardAssets = cardAssets.filter(asset => 
+            !(asset.type === 'model3d' && processedModelFiles.includes(asset))
+          );
+          console.log(`🗑️ Removed ${processedModelFiles.length} original model3d item(s) after generating HTML embeds`);
         }
       }
     }
