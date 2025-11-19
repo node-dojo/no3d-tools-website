@@ -2097,7 +2097,7 @@ async function loadProductCardAssets(productId) {
     return [];
   }
 
-  const cardAssets = [];
+  let cardAssets = [];
   const folderName = product.folderName || product.name;
   const cardAssetsFolder = `${folderName} card assets`;
   console.log(`📁 Looking for card assets folder: "${cardAssetsFolder}"`);
