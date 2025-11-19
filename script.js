@@ -3110,6 +3110,7 @@ function performSearch(query) {
 
   // Get all product IDs
   const allProducts = Object.keys(products);
+  console.log('🔍 Search - Query:', query, 'Products available:', allProducts.length, 'Product IDs:', allProducts);
 
   if (searchTerm === '') {
     // Show all products when search is empty
