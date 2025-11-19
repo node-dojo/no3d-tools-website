@@ -5121,33 +5121,8 @@ async function initializeCarousel(productId) {
     rightArrow.onclick = () => navigateCarousel('next');
   }
 
-  // Add touch/swipe support
-  let touchStartX = 0;
-  let touchEndX = 0;
-
-  track.addEventListener('touchstart', (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, { passive: true });
-
-  track.addEventListener('touchend', (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-  }, { passive: true });
-
-  function handleSwipe() {
-    const swipeThreshold = 50;
-    const diff = touchStartX - touchEndX;
-    
-    if (Math.abs(diff) > swipeThreshold) {
-      if (diff > 0) {
-        // Swipe left - next
-        navigateCarousel('next');
-      } else {
-        // Swipe right - prev
-        navigateCarousel('prev');
-      }
-    }
-  }
+  // Swipe interaction removed - navigation is now only via arrow buttons
+  // This provides better control and prevents accidental swipes on mobile
 }
 
 // Navigate carousel
