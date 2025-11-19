@@ -1448,12 +1448,18 @@ body {
   }
 
   .carousel-arrow {
-    padding: 0.25rem;
+    /* Increased padding for larger touch target on mobile (minimum 44x44px recommended) */
+    padding: 1rem;
+    min-width: 48px;
+    min-height: 48px;
+    /* Ensure arrows are always visible on mobile for better UX */
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
 
   .carousel-arrow img {
-    width: 10px;
-    height: 10px;
+    width: 16px;
+    height: 16px;
     object-fit: contain;
     aspect-ratio: 1 / 1;
   }
