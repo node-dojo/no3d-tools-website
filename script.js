@@ -2167,6 +2167,8 @@ async function load3DEmbedConfig(repoConfig, folderName, cardAssetsPath, folderD
   }
 
   // 3. Try to load product-specific override config
+  // DISABLED: Only using global config for all products
+  /*
   if (folderData && folderData.contents && Array.isArray(folderData.contents)) {
     const productConfigFile = folderData.contents.find(item =>
       item.type === 'file' &&
@@ -2189,8 +2191,9 @@ async function load3DEmbedConfig(repoConfig, folderName, cardAssetsPath, folderD
       }
     }
   }
+  */
 
-  console.log(`📋 Config hierarchy: Default → Global → Product-specific (${folderName})`);
+  console.log(`📋 Config hierarchy: Default → Global (product overrides disabled)`);
   return finalConfig;
 }
 
