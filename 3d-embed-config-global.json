@@ -20,7 +20,7 @@
   "camera": {
     "fieldOfView": "90deg",
     "exposure": "1.0",
-    "cameraControls": true,
+    "cameraControls": false,
     "autoRotate": true,
     "rotationSpeed": "0.3deg",
     "cameraOrbit": "0deg 75deg 0.9m",
