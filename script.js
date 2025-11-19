@@ -1633,7 +1633,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
 
   // Parse camera orbit if provided
   let initialCameraPosition = { x: 0, y: 2, z: 5 };
-  let autoRotate = camera.autoRotate || false;
+  let autoRotate = camera.autoRotate !== false; // Default to true, only false if explicitly set to false
 
   // Parse rotation speed from config format "0.3deg" (degrees per frame at 60fps)
   // Convert to radians per frame for THREE.js
@@ -1680,6 +1680,14 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
   const enableEdges = edges.enabled !== false;
   const edgeColor = edges.color || '#000000';
   const edgeThickness = edges.thickness !== undefined ? parseFloat(edges.thickness) : 2;
+
+  // Log config values being used for debugging
+  console.log(`🎨 3D Embed Config for ${modelName}:`,{
+    materialColor, metalness, roughness,
+    enableEdges, edgeColor, edgeThickness,
+    autoRotate, rotationSpeed: rotSpeedDeg,
+    modelFill, cameraDistance, fov
+  });
 
   // Sketch mode settings
   const sketchMode = display.sketchMode || {};
