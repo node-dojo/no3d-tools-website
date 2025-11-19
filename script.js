@@ -2004,9 +2004,9 @@ async function load3DEmbedConfig(repoConfig, folderName, cardAssetsPath, folderD
       aspectRatio: "1:1"
     },
     embed: {
-      backgroundColor: "#E8E8E8",
-      backgroundOpacity: 1.0,
-      transparentBackground: false,
+      backgroundColor: "transparent",
+      backgroundOpacity: 0,
+      transparentBackground: true,
       interactionMode: "full",
       enableAR: false,
       loadingStrategy: "auto",
@@ -2015,17 +2015,17 @@ async function load3DEmbedConfig(repoConfig, folderName, cardAssetsPath, folderD
     camera: {
       fieldOfView: "45deg",
       exposure: "1.0",
-      cameraControls: true,
-      autoRotate: false,
-      rotationSpeed: "1deg",
-      cameraOrbit: "0deg 75deg 1.5m",
-      cameraDistance: null,
-      modelFill: 1.0
+      cameraControls: false,
+      autoRotate: true,
+      rotationSpeed: "0.3deg",
+      cameraOrbit: "0deg 75deg 0.9m",
+      cameraDistance: 0.9,
+      modelFill: 0.55
     },
     performance: {
       renderQuality: "auto",
-      enableShadows: true,
-      shadowIntensity: "1.0",
+      enableShadows: false,
+      shadowIntensity: "0",
       enableToneMapping: true,
       toneMapping: "auto"
     },
@@ -2035,7 +2035,12 @@ async function load3DEmbedConfig(repoConfig, folderName, cardAssetsPath, folderD
     material: {
       metalness: 0.3,
       roughness: 0.4,
-      color: "#888888"
+      color: "#888888",
+      edges: {
+        enabled: false,
+        color: "#000000",
+        thickness: 2
+      }
     },
     lighting: {
       hemisphere: {
