@@ -1261,6 +1261,10 @@ body {
   letter-spacing: var(--letter-spacing-normal);
 }
 
+.footer-text#footer-commit {
+  margin-left: var(--space-medium);
+}
+
 .footer-logo {
   position: fixed;
   bottom: 0;

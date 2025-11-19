@@ -4430,11 +4430,30 @@ function updateFooterShortcut() {
   }
 }
 
-// Initialize footer shortcut on page load
+// Update footer commit hash from meta tag
+function updateFooterCommit() {
+  const commitHashEl = document.getElementById('commit-hash');
+  if (!commitHashEl) return;
+  
+  // Get commit hash from meta tag
+  const metaTag = document.querySelector('meta[name="deployment-version"]');
+  if (metaTag && metaTag.content) {
+    commitHashEl.textContent = metaTag.content;
+  } else {
+    // Fallback: try to get from git if available (for local dev)
+    commitHashEl.textContent = 'dev';
+  }
+}
+
+// Initialize footer shortcut and commit hash on page load
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', updateFooterShortcut);
+  document.addEventListener('DOMContentLoaded', () => {
+    updateFooterShortcut();
+    updateFooterCommit();
+  });
 } else {
   updateFooterShortcut();
+  updateFooterCommit();
 }
 
 // Initialize mobile search bar
