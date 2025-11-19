@@ -3083,7 +3083,9 @@ function closeSearchModal() {
 searchModalBackdrop.addEventListener('click', closeSearchModal);
 
 // Search input handler
+console.log('🔧 Attaching search input listener, searchInput element:', searchInput);
 searchInput.addEventListener('input', function(e) {
+  console.log('⌨️ Search input event fired, value:', e.target.value);
   performSearch(e.target.value);
 });
 
