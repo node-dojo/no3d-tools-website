@@ -1669,6 +1669,12 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
   const metalness = material.metalness !== undefined ? parseFloat(material.metalness) : 0.3;
   const roughness = material.roughness !== undefined ? parseFloat(material.roughness) : 0.4;
 
+  // Edge settings
+  const edges = material.edges || {};
+  const enableEdges = edges.enabled !== false;
+  const edgeColor = edges.color || '#000000';
+  const edgeThickness = edges.thickness !== undefined ? parseFloat(edges.thickness) : 2;
+
   // Sketch mode settings
   const sketchMode = display.sketchMode || {};
   const enableSketch = sketchMode.enabled || false;
@@ -1814,6 +1820,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
             modelUrl,
             (geometry) => {
                 let mesh;
+                let edgesMesh;
                 if ('${fileFormat}' === 'stl') {
                     const material = new THREE.MeshStandardMaterial({
                         color: 0x${materialColor.replace('#', '')},
@@ -1822,25 +1829,39 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
                     });
                     mesh = new THREE.Mesh(geometry, material);
                     mesh.rotation.x = -Math.PI / 2;
+                    ${enableEdges ? `
+                    // Create edges for technical drawing look
+                    const edgesGeometry = new THREE.EdgesGeometry(geometry, 30);
+                    const edgesMaterial = new THREE.LineBasicMaterial({
+                        color: 0x${edgeColor.replace('#', '')},
+                        linewidth: ${edgeThickness}
+                    });
+                    edgesMesh = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+                    edgesMesh.rotation.x = -Math.PI / 2;` : ''}
                 } else {
                     // OBJ loader returns a group
                     mesh = geometry;
                 }
 
+                // Create a group to hold both mesh and edges
+                const meshGroup = new THREE.Group();
+                meshGroup.add(mesh);
+                ${enableEdges ? 'if (edgesMesh) meshGroup.add(edgesMesh);' : ''}
+
                 // Center and scale model
-                const box = new THREE.Box3().setFromObject(mesh);
+                const box = new THREE.Box3().setFromObject(meshGroup);
                 const center = box.getCenter(new THREE.Vector3());
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
                 const scale = 2 / maxDim;
 
-                mesh.position.sub(center);
-                mesh.scale.multiplyScalar(scale);
-                mesh.scale.multiply(new THREE.Vector3(${modelScale[0]}, ${modelScale[1]}, ${modelScale[2]}));
+                meshGroup.position.sub(center);
+                meshGroup.scale.multiplyScalar(scale);
+                meshGroup.scale.multiply(new THREE.Vector3(${modelScale[0]}, ${modelScale[1]}, ${modelScale[2]}));
 
                 ${enableShadows ? 'mesh.traverse((child) => { if (child.isMesh) child.castShadow = true; });' : ''}
 
-                scene.add(mesh);
+                scene.add(meshGroup);
 
                 // Apply model fill and camera distance
                 ${cameraDistance !== null || modelFill !== 1.0 ? `
@@ -1904,7 +1925,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
                 // Animation loop
                 function animate() {
                     requestAnimationFrame(animate);
-                    ${autoRotate ? `mesh.rotation.y += ${rotationSpeed * 0.01};` : ''}
+                    ${autoRotate ? `meshGroup.rotation.y += ${rotationSpeed * 0.01};` : ''}
                     controls.update();
                     ${enableSketch ? 'composer.render();' : 'renderer.render(scene, camera);'}
                 }
