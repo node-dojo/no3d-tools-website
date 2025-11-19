@@ -470,11 +470,12 @@ body {
 /* Center Product Card - JSX Component Structure */
 .product-card {
   padding: 0;
+  padding-left: 30px; /* Space between sidebar and product card */
   margin-left: var(--sidebar-width);
   margin-right: 0;
   background-color: var(--color-stone-gray);
   overflow-x: hidden;
-  width: calc(100% - var(--sidebar-width));
+  width: calc(100% - var(--sidebar-width) - 30px); /* Account for left padding */
   max-width: none;
   box-sizing: border-box;
   flex: 1;
@@ -1291,9 +1292,10 @@ body {
   }
 
   .product-card {
+    padding-left: 30px; /* Space between sidebar and product card */
     margin-left: 120px;
     margin-right: 0;
-    width: calc(100% - 120px);
+    width: calc(100% - 120px - 30px); /* Account for left padding */
   }
 }
 
