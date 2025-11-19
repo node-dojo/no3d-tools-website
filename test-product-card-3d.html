@@ -161,9 +161,9 @@
             logEl.innerHTML = '';
         };
 
-        // Test 1: Load config from GitHub using hierarchical config system
+        // Test 1: Load config using hierarchical config system
         window.testLoadConfig = async function() {
-            log('🔍 Test 1: Loading config from GitHub...', 'info');
+            log('🔍 Test 1: Loading config hierarchy...', 'info');
 
             const config = {
                 owner: 'node-dojo',
@@ -171,46 +171,27 @@
                 branch: 'main'
             };
 
-            // Website config for global settings (separate from product library)
-            const websiteConfig = {
-                owner: 'node-dojo',
-                repo: 'no3d-tools-website',
-                branch: 'main'
-            };
-
             try {
-                // Default config
-                const defaultConfig = {
-                    enabled: true,
-                    viewer: { width: "100%", height: "100%", aspectRatio: "1:1" },
-                    embed: { backgroundColor: "transparent", transparentBackground: true },
-                    camera: { fieldOfView: "45deg", autoRotate: false, modelFill: 1.0 },
-                    material: { metalness: 0.3, roughness: 0.4, color: "#888888" },
-                    lighting: {
-                        hemisphere: { enabled: true, skyColor: "#ffffff", groundColor: "#444444", intensity: 0.6 },
-                        ambient: { enabled: true, color: "#404040", intensity: 0.2 },
-                        key: { enabled: true, color: "#ffffff", intensity: 0.8, position: { x: 5, y: 10, z: 7 } }
-                    },
-                    display: { sketchMode: { enabled: false } }
-                };
+                // Load global config from local file (this IS the default config)
+                log(`📡 Loading global config (default) from local file...`, 'info');
+                const globalConfigUrl = './3d-embed-config-global.json';
 
-                let finalConfig = JSON.parse(JSON.stringify(defaultConfig));
-
-                // Load global config from website repo
-                log(`📡 Loading global config from website repo...`, 'info');
-                const globalConfigUrl = `https://raw.githubusercontent.com/${websiteConfig.owner}/${websiteConfig.repo}/${websiteConfig.branch}/3d-embed-config-global.json`;
+                let finalConfig = {};
 
                 try {
                     const globalResponse = await fetch(globalConfigUrl);
                     if (globalResponse.ok) {
-                        const globalConfig = await globalResponse.json();
-                        finalConfig = deepMerge(finalConfig, globalConfig);
-                        log(`✅ Loaded global config`, 'success');
+                        finalConfig = await globalResponse.json();
+                        log(`✅ Loaded global config as base config`, 'success');
                     } else {
-                        log(`ℹ️ No global config found (${globalResponse.status})`, 'info');
+                        log(`❌ Global config not found locally (${globalResponse.status})`, 'error');
+                        log(`   Cannot continue without global config file`, 'error');
+                        return null;
                     }
                 } catch (error) {
-                    log(`ℹ️ No global config available: ${error.message}`, 'info');
+                    log(`❌ Failed to load global config: ${error.message}`, 'error');
+                    log(`   Cannot continue without global config file`, 'error');
+                    return null;
                 }
 
                 // Load product-specific config for Dojo Bolt Gen v05

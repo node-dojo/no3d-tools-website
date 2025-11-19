@@ -38,12 +38,12 @@
     "scale": "1 1 1"
   },
   "material": {
-    "metalness": 0.3,
-    "roughness": 0.4,
-    "color": "#f00000",
+    "metalness": 1,
+    "roughness": 0.66,
+    "color": "#e1ff00",
     "edges": {
       "enabled": true,
-      "color": "#000000",
+      "color": "#ffffff",
       "thickness": 2.1
     }
   },
