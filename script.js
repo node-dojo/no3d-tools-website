@@ -1634,7 +1634,12 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
   // Parse camera orbit if provided
   let initialCameraPosition = { x: 0, y: 2, z: 5 };
   let autoRotate = camera.autoRotate || false;
-  let rotationSpeed = parseFloat(camera.rotationSpeed) || 1.0;
+
+  // Parse rotation speed from config format "0.3deg" (degrees per frame at 60fps)
+  // Convert to radians per frame for THREE.js
+  const rotSpeedString = camera.rotationSpeed || '1deg';
+  const rotSpeedDeg = parseFloat(rotSpeedString.replace('deg', ''));
+  const rotationSpeed = (rotSpeedDeg / 60) * (Math.PI / 180); // deg/frame at 60fps -> radians/frame
   const modelFill = camera.modelFill !== undefined ? parseFloat(camera.modelFill) : 1.0;
   const cameraDistance = camera.cameraDistance !== undefined ? parseFloat(camera.cameraDistance) : null;
 
@@ -1657,8 +1662,9 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
   const scaleParts = (model.scale || '1 1 1').split(' ').map(s => parseFloat(s));
   const modelScale = scaleParts.length === 3 ? scaleParts : [1, 1, 1];
 
-  // Field of view
-  const fov = parseFloat(camera.fieldOfView) || 45;
+  // Field of view - parse from config "90deg" format
+  const fovString = camera.fieldOfView || '45deg';
+  const fov = parseFloat(fovString.replace('deg', ''));
 
   // Shadow settings
   const enableShadows = performance.enableShadows !== false;
@@ -1745,14 +1751,16 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
         const scene = new THREE.Scene();
         ${bgColorForThree ? `scene.background = new THREE.Color(${bgColorForThree});` : '// Transparent background - renderer alpha handles this'}
         
-        const camera = new THREE.PerspectiveCamera(${fov}, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(${fov}, container.clientWidth / container.clientHeight, 0.01, 100000);
         camera.position.set(${initialCameraPosition.x}, ${initialCameraPosition.y}, ${initialCameraPosition.z});
-        
+
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: ${embed.transparentBackground ? 'true' : 'false'} });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         ${enableShadows ? `renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;` : ''}
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
         container.innerHTML = '';
         container.appendChild(renderer.domElement);
         
@@ -1825,7 +1833,8 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
                     const material = new THREE.MeshStandardMaterial({
                         color: 0x${materialColor.replace('#', '')},
                         metalness: ${metalness},
-                        roughness: ${roughness}
+                        roughness: ${roughness},
+                        envMapIntensity: 1.0
                     });
                     mesh = new THREE.Mesh(geometry, material);
                     mesh.rotation.x = -Math.PI / 2;
@@ -1863,15 +1872,23 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
 
                 scene.add(meshGroup);
 
-                // Apply model fill and camera distance
-                ${cameraDistance !== null || modelFill !== 1.0 ? `
+                // Position camera to frame the model (matching utility viewer algorithm)
                 const fov = camera.fov * (Math.PI / 180);
                 let camDistance = Math.abs(maxDim / Math.sin(fov / 2));
+
+                // Apply model fill (how much of viewport model occupies)
                 ${modelFill !== 1.0 ? `camDistance *= ${modelFill};` : ''}
-                ${cameraDistance !== null ? `camDistance = ${cameraDistance};` : ''}
-                const currentDistance = camera.position.length();
-                const ratio = camDistance / currentDistance;
-                camera.position.multiplyScalar(ratio);` : ''}
+
+                // Apply distance multiplier
+                ${cameraDistance !== null ? `camDistance *= ${cameraDistance};` : ''}
+
+                // Position camera at (d*0.5, d*0.5, d) to match utility viewer
+                camera.position.set(
+                    camDistance * 0.5,
+                    camDistance * 0.5,
+                    camDistance
+                );
+                camera.lookAt(0, 0, 0);
                 ${enableSketch ? `
                 // Setup sketch effect composer
                 const composer = new EffectComposer(renderer);
@@ -1925,7 +1942,7 @@ function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProp
                 // Animation loop
                 function animate() {
                     requestAnimationFrame(animate);
-                    ${autoRotate ? `meshGroup.rotation.y += ${rotationSpeed * 0.01};` : ''}
+                    ${autoRotate ? `meshGroup.rotation.y += ${rotationSpeed};` : ''}
                     controls.update();
                     ${enableSketch ? 'composer.render();' : 'renderer.render(scene, camera);'}
                 }
