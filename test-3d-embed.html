@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Embed Generation Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e8e8e8;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .log {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success { color: #4ade80; }
+        .warning { color: #fbbf24; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        button {
+            padding: 10px 20px;
+            background: #4a4a4a;
+            color: #e8e8e8;
+            border: 1px solid #555;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5a5a5a; }
+    </style>
+</head>
+<body>
+    <h1>3D Embed Generation Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Configuration</h2>
+        <p>Testing product: <strong>Dojo Bolt Gen v05</strong></p>
+        <button onclick="testEmbedGeneration()">Test Embed Generation</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="log" class="log"></div>
+    </div>
+    
+    <script>
+        const logEl = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            const logEntry = document.createElement('div');
+            logEntry.className = className;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logEl.appendChild(logEntry);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            logEl.innerHTML = '';
+        }
+        
+        async function testEmbedGeneration() {
+            clearLog();
+            log('🧪 Starting 3D embed generation test...', 'info');
+            
+            const productId = 'Dojo Bolt Gen v05';
+            const folderName = productId;
+            const cardAssetsFolder = `${folderName} card assets`;
+            const cardAssetsPath = `${folderName}/${cardAssetsFolder}`;
+            
+            // Mock config (you'll need to adjust this based on your actual config)
+            const config = {
+                owner: 'node-dojo',
+                repo: 'no3d-tools-library',
+                branch: 'main',
+                useLocalAssets: false
+            };
+            
+            log(`📁 Checking card assets folder: ${cardAssetsPath}`, 'info');
+            
+            try {
+                // Test 1: Check if folder exists
+                const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(cardAssetsPath)}`;
+                log(`🔗 Fetching: ${apiUrl}`, 'info');
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    log(`❌ Folder error: ${data.error}`, 'error');
+                    return;
+                }
+                
+                if (!data.contents || !Array.isArray(data.contents)) {
+                    log(`❌ No contents found in folder`, 'error');
+                    return;
+                }
+                
+                log(`✅ Found ${data.contents.length} items in folder`, 'success');
+                
+                // Test 2: Find 3D model files
+                const model3dFiles = data.contents.filter(item => {
+                    if (item.type !== 'file') return false;
+                    const ext = item.name.split('.').pop().toLowerCase();
+                    return ['glb', 'gltf', 'stl', 'obj', 'usd', 'usdz'].includes(ext);
+                });
+                
+                log(`🎯 Found ${model3dFiles.length} 3D model file(s):`, 'info');
+                model3dFiles.forEach(file => {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    log(`   - ${file.name} (${ext})`, 'info');
+                });
+                
+                // Test 3: Load global config file (from website repository root)
+                log(`\n🌍 Testing global config file...`, 'info');
+                const websiteRepo = 'no3d-tools-website'; // Global config lives in website repo
+                const globalConfigUrl = `https://raw.githubusercontent.com/${config.owner}/${websiteRepo}/${config.branch}/3d-embed-config-global.json`;
+                log(`🔗 Loading global config from: ${globalConfigUrl}`, 'info');
+                
+                try {
+                    const globalConfigResponse = await fetch(globalConfigUrl);
+                    if (globalConfigResponse.ok) {
+                        const globalConfig = await globalConfigResponse.json();
+                        log(`✅ Global config loaded successfully`, 'success');
+                        log(`   Enabled: ${globalConfig.enabled}`, 'info');
+                        if (globalConfig.material) {
+                            log(`   Material: ${JSON.stringify(globalConfig.material, null, 2)}`, 'info');
+                        }
+                        if (globalConfig.lighting) {
+                            log(`   Lighting: ${Object.keys(globalConfig.lighting).join(', ')}`, 'info');
+                        }
+                    } else {
+                        log(`⚠️ Global config not found (HTTP ${globalConfigResponse.status}) - will use defaults`, 'warning');
+                    }
+                } catch (error) {
+                    log(`⚠️ Failed to load global config: ${error.message} - will use defaults`, 'warning');
+                }
+                
+                // Test 4: Find product-specific config file
+                const configFile = data.contents.find(item => 
+                    item.type === 'file' && 
+                    (item.name === '3d-embed-config.json' || item.name.toLowerCase() === '3d-embed-config.json')
+                );
+                
+                if (configFile) {
+                    log(`\n✅ Found product-specific config file: ${configFile.name}`, 'success');
+                    
+                    // Test 5: Load product config
+                    const configUrl = configFile.download_url || 
+                        `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${encodeURIComponent(configFile.name)}`;
+                    
+                    log(`🔗 Loading product config from: ${configUrl}`, 'info');
+                    const configResponse = await fetch(configUrl);
+                    
+                    if (configResponse.ok) {
+                        const embedConfig = await configResponse.json();
+                        log(`✅ Product config loaded successfully`, 'success');
+                        log(`   Enabled: ${embedConfig.enabled}`, 'info');
+                        log(`   Viewer: ${JSON.stringify(embedConfig.viewer, null, 2)}`, 'info');
+                        log(`\n📋 Config hierarchy: Default → Global → Product-specific`, 'info');
+                        log(`   Product config will override global config values`, 'info');
+                    } else {
+                        log(`❌ Failed to load product config: HTTP ${configResponse.status}`, 'error');
+                    }
+                } else {
+                    log(`\n⚠️ No product-specific config file found, will use global config or defaults`, 'warning');
+                }
+                
+                // Test 6: Check which files would generate embeds
+                const glbFiles = model3dFiles.filter(file => {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    return ext === 'glb' || ext === 'gltf';
+                });
+                
+                if (glbFiles.length > 0) {
+                    log(`✅ ${glbFiles.length} GLB/GLTF file(s) found - embeds will be generated`, 'success');
+                    glbFiles.forEach(file => {
+                        log(`   - ${file.name} → will generate embed`, 'success');
+                    });
+                } else {
+                    log(`⚠️ No GLB/GLTF files found - no embeds will be generated`, 'warning');
+                    log(`   Note: STL/OBJ files are detected but model-viewer only supports GLB/GLTF`, 'info');
+                    log(`   Convert STL to GLB using model-viewer-test.html tool`, 'info');
+                }
+                
+                log(`\n✅ Test complete!`, 'success');
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'error');
+                log(`   Stack: ${error.stack}`, 'error');
+            }
+        }
+        
+        // Auto-run test on load
+        window.addEventListener('load', () => {
+            setTimeout(testEmbedGeneration, 500);
+        });
+    </script>
+</body>
+</html>
+

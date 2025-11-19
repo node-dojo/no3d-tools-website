@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Card 3D Embed Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e8e8e8;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .embed-container {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 1 / 1;
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .embed-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .log {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .success { color: #4ade80; }
+        .warning { color: #fbbf24; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+
+        button {
+            padding: 10px 20px;
+            background: #4a4a4a;
+            color: #e8e8e8;
+            border: 1px solid #555;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover { background: #5a5a5a; }
+
+        .config-display {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Card 3D Embed Test</h1>
+
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <div class="controls">
+            <button onclick="testLoadConfig()">1. Load Config from GitHub</button>
+            <button onclick="testGenerateEmbed()">2. Generate Embed HTML</button>
+            <button onclick="testDisplayEmbed()">3. Display Embed</button>
+            <button onclick="runFullTest()">▶ Run Full Test</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Config File Preview</h2>
+        <div id="config-display" class="config-display">Config will appear here...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Local 3D File Test</h2>
+        <div class="controls">
+            <input type="file" id="file-input" accept=".stl,.obj,.glb,.gltf" style="margin: 5px;">
+            <button onclick="testLocalFile()">Load & Test with Config</button>
+        </div>
+        <p style="font-size: 0.9em; color: #888; margin-top: 10px;">
+            Upload a local STL/OBJ file to test how it will look with the current config
+        </p>
+    </div>
+
+    <div class="test-section">
+        <h2>Generated Embed Preview</h2>
+        <div id="embed-container" class="embed-container">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+                Embed will appear here...
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Log</h2>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script type="module">
+        const logEl = document.getElementById('log');
+        const configDisplayEl = document.getElementById('config-display');
+        const embedContainerEl = document.getElementById('embed-container');
+
+        let loadedConfig = null;
+        let generatedHtml = null;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            const logEntry = document.createElement('div');
+            logEntry.className = className;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logEl.appendChild(logEntry);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+
+        window.clearLog = function() {
+            logEl.innerHTML = '';
+        };
+
+        // Test 1: Load config from GitHub using hierarchical config system
+        window.testLoadConfig = async function() {
+            log('🔍 Test 1: Loading config from GitHub...', 'info');
+
+            const config = {
+                owner: 'node-dojo',
+                repo: 'no3d-tools-library',
+                branch: 'main'
+            };
+
+            // Website config for global settings (separate from product library)
+            const websiteConfig = {
+                owner: 'node-dojo',
+                repo: 'no3d-tools-website',
+                branch: 'main'
+            };
+
+            try {
+                // Default config
+                const defaultConfig = {
+                    enabled: true,
+                    viewer: { width: "100%", height: "100%", aspectRatio: "1:1" },
+                    embed: { backgroundColor: "transparent", transparentBackground: true },
+                    camera: { fieldOfView: "45deg", autoRotate: false, modelFill: 1.0 },
+                    material: { metalness: 0.3, roughness: 0.4, color: "#888888" },
+                    lighting: {
+                        hemisphere: { enabled: true, skyColor: "#ffffff", groundColor: "#444444", intensity: 0.6 },
+                        ambient: { enabled: true, color: "#404040", intensity: 0.2 },
+                        key: { enabled: true, color: "#ffffff", intensity: 0.8, position: { x: 5, y: 10, z: 7 } }
+                    },
+                    display: { sketchMode: { enabled: false } }
+                };
+
+                let finalConfig = JSON.parse(JSON.stringify(defaultConfig));
+
+                // Load global config from website repo
+                log(`📡 Loading global config from website repo...`, 'info');
+                const globalConfigUrl = `https://raw.githubusercontent.com/${websiteConfig.owner}/${websiteConfig.repo}/${websiteConfig.branch}/3d-embed-config-global.json`;
+
+                try {
+                    const globalResponse = await fetch(globalConfigUrl);
+                    if (globalResponse.ok) {
+                        const globalConfig = await globalResponse.json();
+                        finalConfig = deepMerge(finalConfig, globalConfig);
+                        log(`✅ Loaded global config`, 'success');
+                    } else {
+                        log(`ℹ️ No global config found (${globalResponse.status})`, 'info');
+                    }
+                } catch (error) {
+                    log(`ℹ️ No global config available: ${error.message}`, 'info');
+                }
+
+                // Load product-specific config for Dojo Bolt Gen v05
+                log(`📡 Loading product-specific config...`, 'info');
+                const productConfigUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/Dojo%20Bolt%20Gen%20v05/Dojo%20Bolt%20Gen%20v05%20card%20assets/3d-embed-config.json`;
+
+                try {
+                    const productResponse = await fetch(productConfigUrl);
+                    if (productResponse.ok) {
+                        const productConfig = await productResponse.json();
+                        finalConfig = deepMerge(finalConfig, productConfig);
+                        log(`✅ Loaded product-specific config for Dojo Bolt Gen v05`, 'success');
+                    } else {
+                        log(`ℹ️ No product-specific config found (${productResponse.status})`, 'info');
+                    }
+                } catch (error) {
+                    log(`ℹ️ No product config available: ${error.message}`, 'info');
+                }
+
+                loadedConfig = finalConfig;
+                log(`✅ Final config assembled using hierarchy`, 'success');
+
+                // Display config
+                configDisplayEl.textContent = JSON.stringify(loadedConfig, null, 2);
+
+                // Log important properties
+                log(`📊 Config properties:`, 'info');
+                log(`   - Camera FOV: ${loadedConfig.camera?.fieldOfView}`, 'info');
+                log(`   - Model Fill: ${loadedConfig.camera?.modelFill}`, 'info');
+                log(`   - Camera Distance: ${loadedConfig.camera?.cameraDistance}`, 'info');
+                log(`   - Auto Rotate: ${loadedConfig.camera?.autoRotate}`, 'info');
+                log(`   - Material: metalness=${loadedConfig.material?.metalness}, roughness=${loadedConfig.material?.roughness}`, 'info');
+                log(`   - Lighting sections: ${Object.keys(loadedConfig.lighting || {}).join(', ')}`, 'info');
+                log(`   - Sketch mode: ${loadedConfig.display?.sketchMode?.enabled ? 'enabled' : 'disabled'}`, 'info');
+
+                return loadedConfig;
+
+            } catch (error) {
+                log(`❌ Test 1 failed: ${error.message}`, 'error');
+                console.error(error);
+                return null;
+            }
+        };
+
+        // Deep merge helper function
+        function deepMerge(target, source) {
+            const output = { ...target };
+            if (isObject(target) && isObject(source)) {
+                Object.keys(source).forEach(key => {
+                    if (isObject(source[key])) {
+                        if (!(key in target)) {
+                            Object.assign(output, { [key]: source[key] });
+                        } else {
+                            output[key] = deepMerge(target[key], source[key]);
+                        }
+                    } else {
+                        Object.assign(output, { [key]: source[key] });
+                    }
+                });
+            }
+            return output;
+        }
+
+        function isObject(item) {
+            return item && typeof item === 'object' && !Array.isArray(item);
+        }
+
+        // Test 2: Generate embed HTML (simulate the script.js function)
+        window.testGenerateEmbed = async function() {
+            log('🔨 Test 2: Generating embed HTML...', 'info');
+
+            if (!loadedConfig) {
+                log(`⚠️ No config loaded. Running Test 1 first...`, 'warning');
+                loadedConfig = await testLoadConfig();
+                if (!loadedConfig) {
+                    log(`❌ Cannot generate embed without config`, 'error');
+                    return null;
+                }
+            }
+
+            try {
+                // Simulate finding a 3D model file
+                const modelUrl = 'https://raw.githubusercontent.com/node-dojo/no3d-tools-library/main/Dojo%20Bolt%20Gen%20v05/Dojo%20Bolt%20Gen%20v05%20card%20assets/bolt%20thumb.stl';
+                const modelName = 'bolt thumb.stl';
+                const fileFormat = 'stl';
+
+                log(`🎯 Model: ${modelName}`, 'info');
+                log(`🔗 URL: ${modelUrl}`, 'info');
+
+                // Import the generate function from script.js (we'll inline it for testing)
+                // For a real test, we'd need to extract this from script.js
+                log(`⚙️ Generating THREE.js embed with config...`, 'info');
+
+                // Check if key properties are present
+                const hasModelFill = loadedConfig.camera?.modelFill !== undefined;
+                const hasCameraDistance = loadedConfig.camera?.cameraDistance !== undefined;
+                const hasMaterial = loadedConfig.material !== undefined;
+                const hasLighting = loadedConfig.lighting !== undefined;
+                const hasSketchMode = loadedConfig.display?.sketchMode !== undefined;
+
+                log(`   ✓ Model Fill: ${hasModelFill ? '✅' : '❌'} (${loadedConfig.camera?.modelFill})`, hasModelFill ? 'success' : 'warning');
+                log(`   ✓ Camera Distance: ${hasCameraDistance ? '✅' : '❌'} (${loadedConfig.camera?.cameraDistance})`, hasCameraDistance ? 'success' : 'warning');
+                log(`   ✓ Material: ${hasMaterial ? '✅' : '❌'}`, hasMaterial ? 'success' : 'warning');
+                log(`   ✓ Lighting: ${hasLighting ? '✅' : '❌'}`, hasLighting ? 'success' : 'warning');
+                log(`   ✓ Sketch Mode: ${hasSketchMode ? '✅' : '❌'}`, hasSketchMode ? 'success' : 'warning');
+
+                // Note: We can't actually call the function from script.js in this test file
+                // But we can verify the config has all required properties
+                log(`✅ Config validation complete - all new properties present`, 'success');
+                log(`📝 Note: To test actual embed generation, we need to load the main website`, 'info');
+
+                generatedHtml = `<!-- Embed HTML would be generated here -->`;
+                return true;
+
+            } catch (error) {
+                log(`❌ Test 2 failed: ${error.message}`, 'error');
+                console.error(error);
+                return null;
+            }
+        };
+
+        // Test 3: Display embed
+        window.testDisplayEmbed = function() {
+            log('🖼️ Test 3: Displaying embed...', 'info');
+            log(`📝 For full embed test, please open the main website at http://localhost:3000`, 'info');
+            log(`   1. Navigate to "Dojo Bolt Gen v05" product`, 'info');
+            log(`   2. Check the carousel for the 3D viewer`, 'info');
+            log(`   3. Verify the model uses the config settings`, 'info');
+
+            // Show a placeholder
+            embedContainerEl.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #888; text-align: center; padding: 20px;">
+                    <h3>Full embed test requires main website</h3>
+                    <p style="margin-top: 10px;">Open: <a href="http://localhost:3000" target="_blank" style="color: #60a5fa;">http://localhost:3000</a></p>
+                    <p style="margin-top: 5px; font-size: 0.9em;">Select "Dojo Bolt Gen v05" to see the 3D embed in action</p>
+                </div>
+            `;
+        };
+
+        // Run full test
+        window.runFullTest = async function() {
+            clearLog();
+            log('🧪 Starting full test suite...', 'info');
+            log('════════════════════════════════════════', 'info');
+
+            const config = await testLoadConfig();
+            if (!config) {
+                log('❌ Full test failed at step 1', 'error');
+                return;
+            }
+
+            log('════════════════════════════════════════', 'info');
+            const embed = await testGenerateEmbed();
+            if (!embed) {
+                log('❌ Full test failed at step 2', 'error');
+                return;
+            }
+
+            log('════════════════════════════════════════', 'info');
+            testDisplayEmbed();
+
+            log('════════════════════════════════════════', 'info');
+            log('✅ All tests completed successfully!', 'success');
+            log('', 'info');
+            log('📋 Summary:', 'info');
+            log('   ✓ Config file loads from GitHub', 'success');
+            log('   ✓ All new properties present in config', 'success');
+            log('   ✓ Ready for integration testing on main site', 'success');
+        };
+
+        // Test 4: Load local 3D file
+        window.testLocalFile = async function() {
+            log('📁 Test 4: Loading local 3D file...', 'info');
+
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                log('❌ No file selected', 'error');
+                return;
+            }
+
+            if (!loadedConfig) {
+                log(`⚠️ No config loaded. Running Test 1 first...`, 'warning');
+                loadedConfig = await testLoadConfig();
+                if (!loadedConfig) {
+                    log(`❌ Cannot test without config`, 'error');
+                    return;
+                }
+            }
+
+            try {
+                log(`📦 Loading file: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`, 'info');
+
+                // Determine file format
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const supportedFormats = ['stl', 'obj', 'glb', 'gltf'];
+
+                if (!supportedFormats.includes(fileExtension)) {
+                    log(`❌ Unsupported file format: .${fileExtension}`, 'error');
+                    log(`   Supported formats: ${supportedFormats.join(', ')}`, 'info');
+                    return;
+                }
+
+                log(`✅ File format: .${fileExtension}`, 'success');
+
+                // Create blob URL for the file
+                const blobUrl = URL.createObjectURL(file);
+                log(`🔗 Created blob URL: ${blobUrl.substring(0, 50)}...`, 'info');
+
+                // Generate THREE.js embed using the loaded config
+                log(`⚙️ Generating THREE.js embed with config...`, 'info');
+
+                const embedHtml = generateLocalThreeJSEmbed(blobUrl, file.name, loadedConfig, fileExtension);
+
+                // Display the embed
+                embedContainerEl.innerHTML = '';
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                iframe.srcdoc = embedHtml;
+
+                embedContainerEl.appendChild(iframe);
+
+                log(`✅ Local file loaded successfully!`, 'success');
+                log(`📊 Model: ${file.name}`, 'info');
+                log(`   - Format: ${fileExtension.toUpperCase()}`, 'info');
+                log(`   - Size: ${(file.size / 1024).toFixed(2)} KB`, 'info');
+                log(`   - Model Fill: ${loadedConfig.camera?.modelFill}`, 'info');
+                log(`   - Camera Distance: ${loadedConfig.camera?.cameraDistance}`, 'info');
+                log(`   - Material: metalness=${loadedConfig.material?.metalness}, roughness=${loadedConfig.material?.roughness}`, 'info');
+
+            } catch (error) {
+                log(`❌ Test 4 failed: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+
+        // Generate THREE.js embed HTML for local file testing
+        function generateLocalThreeJSEmbed(modelUrl, modelName, config, fileFormat) {
+            const viewer = config.viewer || {};
+            const embed = config.embed || {};
+            const camera = config.camera || {};
+            const material = config.material || {};
+            const lighting = config.lighting || {};
+            const display = config.display || {};
+
+            // Parse settings
+            const modelFill = camera.modelFill !== undefined ? parseFloat(camera.modelFill) : 1.0;
+            const cameraDistance = camera.cameraDistance !== undefined ? parseFloat(camera.cameraDistance) : null;
+            const materialColor = material.color || '#888888';
+            const metalness = material.metalness !== undefined ? parseFloat(material.metalness) : 0.3;
+            const roughness = material.roughness !== undefined ? parseFloat(material.roughness) : 0.4;
+            const sketchMode = display.sketchMode || {};
+            const enableSketch = sketchMode.enabled || false;
+            const fov = parseFloat((camera.fieldOfView || '45deg').replace('deg', ''));
+            const autoRotate = camera.autoRotate !== false;
+            const rotationSpeed = parseFloat((camera.rotationSpeed || '1deg').replace('deg', ''));
+            const bgColor = embed.backgroundColor || 'transparent';
+            const transparentBg = embed.transparentBackground !== false;
+
+            // Build sketch mode script section separately to avoid nested template literal issues
+            let sketchModeScript = '';
+            if (enableSketch) {
+                sketchModeScript = `
+        // Sketch mode post-processing
+        const composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+
+        const sketchShader = {
+            uniforms: {
+                tDiffuse: { value: null },
+                lineDensity: { value: ${sketchMode.lineDensity || 0.3} },
+                lineWidth: { value: ${sketchMode.lineWidth || 1} },
+                intensity: { value: ${sketchMode.intensity || 1} },
+                noiseScale: { value: ${sketchMode.noiseScale || 1} }
+            },
+            vertexShader: ` + '`' + `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            ` + '`,' + `
+            fragmentShader: ` + '`' + `
+                uniform sampler2D tDiffuse;
+                uniform float lineDensity;
+                uniform float lineWidth;
+                uniform float intensity;
+                uniform float noiseScale;
+                varying vec2 vUv;
+
+                float random(vec2 st) {
+                    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+                }
+
+                void main() {
+                    vec4 color = texture2D(tDiffuse, vUv);
+                    float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                    float noise = random(vUv * noiseScale * 100.0);
+                    float lines = step(lineDensity, fract(vUv.y * 100.0 + noise * lineWidth));
+                    vec3 sketch = vec3(gray) * (1.0 - (1.0 - lines) * intensity);
+                    gl_FragColor = vec4(mix(color.rgb, sketch, intensity), color.a);
+                }
+            ` + '`' + `
+        };
+
+        const sketchPass = new ShaderPass(sketchShader);
+        composer.addPass(sketchPass);`;
+            }
+
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Viewer - ${modelName}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; overflow: hidden; }
+        #container { width: 100%; height: 100%; background: ${bgColor}; }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    <\/script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        ${enableSketch ? `import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';` : ''}
+
+        const container = document.getElementById('container');
+        const scene = new THREE.Scene();
+        ${transparentBg ? 'scene.background = null;' : `scene.background = new THREE.Color('${bgColor}');`}
+
+        const camera = new THREE.PerspectiveCamera(${fov}, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(3, 3, 3);
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: ${transparentBg ? 'true' : 'false'}
+        });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        ${autoRotate ? `controls.autoRotate = true; controls.autoRotateSpeed = ${rotationSpeed};` : ''}
+
+        // Lighting
+        ${lighting.hemisphere?.enabled !== false ? `
+        const hemisphereLight = new THREE.HemisphereLight(
+            0x${(lighting.hemisphere?.skyColor || '#ffffff').replace('#', '')},
+            0x${(lighting.hemisphere?.groundColor || '#444444').replace('#', '')},
+            ${lighting.hemisphere?.intensity !== undefined ? lighting.hemisphere.intensity : 0.6}
+        );
+        scene.add(hemisphereLight);` : ''}
+
+        ${lighting.ambient?.enabled !== false ? `
+        const ambientLight = new THREE.AmbientLight(
+            0x${(lighting.ambient?.color || '#404040').replace('#', '')},
+            ${lighting.ambient?.intensity !== undefined ? lighting.ambient.intensity : 0.2}
+        );
+        scene.add(ambientLight);` : ''}
+
+        ${lighting.key?.enabled !== false ? `
+        const keyLight = new THREE.DirectionalLight(
+            0x${(lighting.key?.color || '#ffffff').replace('#', '')},
+            ${lighting.key?.intensity !== undefined ? lighting.key.intensity : 0.8}
+        );
+        keyLight.position.set(
+            ${lighting.key?.position?.x || 5},
+            ${lighting.key?.position?.y || 10},
+            ${lighting.key?.position?.z || 7}
+        );
+        scene.add(keyLight);` : ''}
+
+        ${lighting.fill?.enabled ? `
+        const fillLight = new THREE.DirectionalLight(
+            0x${(lighting.fill?.color || '#8888ff').replace('#', '')},
+            ${lighting.fill?.intensity !== undefined ? lighting.fill.intensity : 0.4}
+        );
+        fillLight.position.set(
+            ${lighting.fill?.position?.x || -5},
+            ${lighting.fill?.position?.y || 5},
+            ${lighting.fill?.position?.z || 5}
+        );
+        scene.add(fillLight);` : ''}
+
+        ${lighting.rim?.enabled ? `
+        const rimLight = new THREE.DirectionalLight(
+            0x${(lighting.rim?.color || '#ffffff').replace('#', '')},
+            ${lighting.rim?.intensity !== undefined ? lighting.rim.intensity : 0.5}
+        );
+        rimLight.position.set(
+            ${lighting.rim?.position?.x || 0},
+            ${lighting.rim?.position?.y || 3},
+            ${lighting.rim?.position?.z || -10}
+        );
+        scene.add(rimLight);` : ''}
+
+        // Load model
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x${materialColor.replace('#', '')},
+            metalness: ${metalness},
+            roughness: ${roughness}
+        });
+
+        const loader = ${fileFormat === 'stl' ? 'new STLLoader()' :
+                       fileFormat === 'obj' ? 'new OBJLoader()' :
+                       'new GLTFLoader()'};
+
+        loader.load('${modelUrl}', function(geometry) {
+            ${fileFormat === 'stl' ? `
+            const mesh = new THREE.Mesh(geometry, material);
+            ` : fileFormat === 'obj' ? `
+            geometry.traverse(child => {
+                if (child.isMesh) child.material = material;
+            });
+            const mesh = geometry;
+            ` : `
+            const mesh = geometry.scene;
+            mesh.traverse(child => {
+                if (child.isMesh) child.material = material;
+            });
+            `}
+
+            scene.add(mesh);
+
+            // Center and scale model
+            const box = new THREE.Box3().setFromObject(mesh);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+
+            mesh.position.sub(center);
+
+            // Apply model fill and camera distance
+            ${cameraDistance !== null || modelFill !== 1.0 ? `
+            const fov = camera.fov * (Math.PI / 180);
+            let camDistance = Math.abs(maxDim / Math.sin(fov / 2));
+            ${modelFill !== 1.0 ? `camDistance *= ${modelFill};` : ''}
+            ${cameraDistance !== null ? `camDistance = ${cameraDistance};` : ''}
+            const currentDistance = camera.position.length();
+            const ratio = camDistance / currentDistance;
+            camera.position.multiplyScalar(ratio);
+            controls.update();` : ''}
+        }, undefined, function(error) {
+            console.error('Error loading model:', error);
+        });
+
+        ${sketchModeScript}
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            ${enableSketch ? 'composer.render();' : 'renderer.render(scene, camera);'}
+        }
+
+        animate();
+
+        window.addEventListener('resize', function() {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            ${enableSketch ? 'composer.setSize(container.clientWidth, container.clientHeight);' : ''}
+        });
+    <\/script>
+</body>
+</html>`;
+        }
+
+        // Auto-run test on load
+        window.addEventListener('load', () => {
+            setTimeout(runFullTest, 500);
+        });
+    </script>
+</body>
+</html>

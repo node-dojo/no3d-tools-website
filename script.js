@@ -1477,6 +1477,617 @@ function updateButtonVisibility(productId) {
   }
 }
 
+// Generate 3D embed HTML code from config
+function generate3DEmbedCode(modelUrl, modelName, config, fileFormat = 'glb') {
+  const viewer = config.viewer || {};
+  const embed = config.embed || {};
+  const camera = config.camera || {};
+  const performance = config.performance || {};
+  const model = config.model || {};
+  
+  // Build style properties
+  const unit = viewer.usePixels ? 'px' : '%';
+  const styleProps = [];
+  styleProps.push(`width: ${viewer.width || '100%'}`);
+  
+  if (viewer.maintainAspect && viewer.aspectRatio && viewer.aspectRatio !== 'custom') {
+    const [w, h] = viewer.aspectRatio.split(':').map(Number);
+    styleProps.push(`aspect-ratio: ${w} / ${h}`);
+  } else {
+    styleProps.push(`height: ${viewer.height || '100%'}`);
+  }
+  
+  if (viewer.maxWidth) {
+    styleProps.push(`max-width: ${viewer.maxWidth}`);
+  }
+  
+  // Background color
+  let bgStyle = 'transparent';
+  if (!embed.transparentBackground) {
+    const bgColor = embed.backgroundColor || '#E8E8E8';
+    const bgOpacity = embed.backgroundOpacity !== undefined ? embed.backgroundOpacity : 1.0;
+    if (bgColor.startsWith('#')) {
+      const r = parseInt(bgColor.slice(1, 3), 16);
+      const g = parseInt(bgColor.slice(3, 5), 16);
+      const b = parseInt(bgColor.slice(5, 7), 16);
+      bgStyle = `rgba(${r}, ${g}, ${b}, ${bgOpacity})`;
+    } else {
+      bgStyle = bgColor;
+    }
+  }
+  styleProps.push(`background-color: ${bgStyle}`);
+  
+  // Use Three.js for STL files, model-viewer for GLB/GLTF
+  if (fileFormat === 'stl' || fileFormat === 'obj') {
+    return generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProps, bgStyle);
+  }
+  
+  // Build model-viewer attributes for GLB/GLTF
+  let attributes = [];
+  attributes.push(`src="${modelUrl}"`);
+  attributes.push(`style="${styleProps.join('; ')}"`);
+  
+  if (camera.cameraControls !== false) {
+    attributes.push('camera-controls');
+  }
+  
+  if (camera.autoRotate) {
+    attributes.push('auto-rotate');
+    if (camera.rotationSpeed) {
+      attributes.push(`rotation-per-second="${camera.rotationSpeed}"`);
+    }
+  }
+  
+  if (camera.cameraOrbit) {
+    attributes.push(`camera-orbit="${camera.cameraOrbit}"`);
+  }
+  
+  if (embed.enableAR) {
+    attributes.push('ar');
+    attributes.push('ar-modes="webxr scene-viewer quick-look"');
+  }
+  
+  if (camera.fieldOfView) {
+    attributes.push(`field-of-view="${camera.fieldOfView}"`);
+  }
+  
+  if (camera.exposure) {
+    attributes.push(`exposure="${camera.exposure}"`);
+  }
+  
+  if (performance.enableShadows && performance.shadowIntensity) {
+    attributes.push(`shadow-intensity="${performance.shadowIntensity}"`);
+  } else if (performance.enableShadows === false) {
+    attributes.push('shadow-intensity="0"');
+  }
+  
+  if (performance.renderQuality && performance.renderQuality !== 'auto') {
+    attributes.push(`render-quality="${performance.renderQuality}"`);
+  }
+  
+  if (embed.loadingStrategy && embed.loadingStrategy !== 'auto') {
+    attributes.push(`loading="${embed.loadingStrategy}"`);
+  }
+  
+  if (embed.revealStrategy && embed.revealStrategy !== 'auto') {
+    attributes.push(`reveal="${embed.revealStrategy}"`);
+  }
+  
+  if (model.scale && model.scale !== '1 1 1') {
+    attributes.push(`scale="${model.scale}"`);
+  }
+  
+  // Build HTML for model-viewer
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model: ${modelName}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <model-viewer ${attributes.join('\n        ')}></model-viewer>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+</body>
+</html>`;
+  
+  return html;
+}
+
+// Generate Three.js embed for STL/OBJ files
+function generateThreeJSEmbed(modelUrl, modelName, config, fileFormat, styleProps, bgStyle) {
+  const viewer = config.viewer || {};
+  const embed = config.embed || {};
+  const camera = config.camera || {};
+  const performance = config.performance || {};
+  const model = config.model || {};
+  const material = config.material || {};
+  const lighting = config.lighting || {};
+  const display = config.display || {};
+
+  // Parse camera orbit if provided
+  let initialCameraPosition = { x: 0, y: 2, z: 5 };
+  let autoRotate = camera.autoRotate || false;
+  let rotationSpeed = parseFloat(camera.rotationSpeed) || 1.0;
+  const modelFill = camera.modelFill !== undefined ? parseFloat(camera.modelFill) : 1.0;
+  const cameraDistance = camera.cameraDistance !== undefined ? parseFloat(camera.cameraDistance) : null;
+
+  if (camera.cameraOrbit) {
+    // Parse "0deg 75deg 1.5m" format
+    const parts = camera.cameraOrbit.split(' ');
+    if (parts.length >= 3) {
+      const distance = parseFloat(parts[2].replace('m', ''));
+      const phi = (parseFloat(parts[1].replace('deg', '')) * Math.PI) / 180;
+      const theta = (parseFloat(parts[0].replace('deg', '')) * Math.PI) / 180;
+      initialCameraPosition = {
+        x: distance * Math.sin(phi) * Math.cos(theta),
+        y: distance * Math.cos(phi),
+        z: distance * Math.sin(phi) * Math.sin(theta)
+      };
+    }
+  }
+
+  // Parse model scale
+  const scaleParts = (model.scale || '1 1 1').split(' ').map(s => parseFloat(s));
+  const modelScale = scaleParts.length === 3 ? scaleParts : [1, 1, 1];
+
+  // Field of view
+  const fov = parseFloat(camera.fieldOfView) || 45;
+
+  // Shadow settings
+  const enableShadows = performance.enableShadows !== false;
+  const shadowIntensity = parseFloat(performance.shadowIntensity) || 1.0;
+
+  // Material settings
+  const materialColor = material.color || '#888888';
+  const metalness = material.metalness !== undefined ? parseFloat(material.metalness) : 0.3;
+  const roughness = material.roughness !== undefined ? parseFloat(material.roughness) : 0.4;
+
+  // Sketch mode settings
+  const sketchMode = display.sketchMode || {};
+  const enableSketch = sketchMode.enabled || false;
+  
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model: ${modelName}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: ${bgStyle};
+        }
+        #viewer-container {
+            width: 100%;
+            height: 100%;
+            ${styleProps.join(';\n            ')}
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewer-container">
+        <div class="loading">Loading 3D model...</div>
+    </div>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';${enableSketch ? `
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';` : ''}
+        
+        const container = document.getElementById('viewer-container');
+        const loadingEl = container.querySelector('.loading');
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('${bgStyle}');
+        
+        const camera = new THREE.PerspectiveCamera(${fov}, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(${initialCameraPosition.x}, ${initialCameraPosition.y}, ${initialCameraPosition.z});
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: ${embed.transparentBackground ? 'true' : 'false'} });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        ${enableShadows ? `renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;` : ''}
+        container.innerHTML = '';
+        container.appendChild(renderer.domElement);
+        
+        // Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        ${camera.cameraControls === false ? 'controls.enabled = false;' : ''}
+        
+        // Lighting${lighting.hemisphere?.enabled !== false ? `
+        const hemisphereLight = new THREE.HemisphereLight(
+            ${lighting.hemisphere?.skyColor ? `0x${lighting.hemisphere.skyColor.replace('#', '')}` : '0xffffff'},
+            ${lighting.hemisphere?.groundColor ? `0x${lighting.hemisphere.groundColor.replace('#', '')}` : '0x444444'},
+            ${lighting.hemisphere?.intensity !== undefined ? lighting.hemisphere.intensity : 0.6}
+        );
+        scene.add(hemisphereLight);` : ''}
+        ${lighting.ambient?.enabled !== false ? `
+        const ambientLight = new THREE.AmbientLight(
+            ${lighting.ambient?.color ? `0x${lighting.ambient.color.replace('#', '')}` : '0x404040'},
+            ${lighting.ambient?.intensity !== undefined ? lighting.ambient.intensity : 0.2}
+        );
+        scene.add(ambientLight);` : ''}
+        ${lighting.key?.enabled !== false ? `
+        const keyLight = new THREE.DirectionalLight(
+            ${lighting.key?.color ? `0x${lighting.key.color.replace('#', '')}` : '0xffffff'},
+            ${lighting.key?.intensity !== undefined ? lighting.key.intensity : 0.8}
+        );
+        keyLight.position.set(
+            ${lighting.key?.position?.x || 5},
+            ${lighting.key?.position?.y || 10},
+            ${lighting.key?.position?.z || 7}
+        );
+        ${enableShadows ? `keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 2048;
+        keyLight.shadow.mapSize.height = 2048;` : ''}
+        scene.add(keyLight);` : ''}
+        ${lighting.fill?.enabled ? `
+        const fillLight = new THREE.DirectionalLight(
+            ${lighting.fill?.color ? `0x${lighting.fill.color.replace('#', '')}` : '0x8888ff'},
+            ${lighting.fill?.intensity !== undefined ? lighting.fill.intensity : 0.4}
+        );
+        fillLight.position.set(
+            ${lighting.fill?.position?.x || -5},
+            ${lighting.fill?.position?.y || 5},
+            ${lighting.fill?.position?.z || 5}
+        );
+        scene.add(fillLight);` : ''}
+        ${lighting.rim?.enabled ? `
+        const rimLight = new THREE.DirectionalLight(
+            ${lighting.rim?.color ? `0x${lighting.rim.color.replace('#', '')}` : '0xffffff'},
+            ${lighting.rim?.intensity !== undefined ? lighting.rim.intensity : 0.5}
+        );
+        rimLight.position.set(
+            ${lighting.rim?.position?.x || 0},
+            ${lighting.rim?.position?.y || 3},
+            ${lighting.rim?.position?.z || -10}
+        );
+        scene.add(rimLight);` : ''}
+        
+        // Load model
+        const loader = '${fileFormat}' === 'stl' ? new STLLoader() : new OBJLoader();
+        const modelUrl = '${modelUrl}';
+        
+        loader.load(
+            modelUrl,
+            (geometry) => {
+                let mesh;
+                if ('${fileFormat}' === 'stl') {
+                    const material = new THREE.MeshStandardMaterial({
+                        color: 0x${materialColor.replace('#', '')},
+                        metalness: ${metalness},
+                        roughness: ${roughness}
+                    });
+                    mesh = new THREE.Mesh(geometry, material);
+                    mesh.rotation.x = -Math.PI / 2;
+                } else {
+                    // OBJ loader returns a group
+                    mesh = geometry;
+                }
+
+                // Center and scale model
+                const box = new THREE.Box3().setFromObject(mesh);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 2 / maxDim;
+
+                mesh.position.sub(center);
+                mesh.scale.multiplyScalar(scale);
+                mesh.scale.multiply(new THREE.Vector3(${modelScale[0]}, ${modelScale[1]}, ${modelScale[2]}));
+
+                ${enableShadows ? 'mesh.traverse((child) => { if (child.isMesh) child.castShadow = true; });' : ''}
+
+                scene.add(mesh);
+
+                // Apply model fill and camera distance
+                ${cameraDistance !== null || modelFill !== 1.0 ? `
+                const fov = camera.fov * (Math.PI / 180);
+                let camDistance = Math.abs(maxDim / Math.sin(fov / 2));
+                ${modelFill !== 1.0 ? `camDistance *= ${modelFill};` : ''}
+                ${cameraDistance !== null ? `camDistance = ${cameraDistance};` : ''}
+                const currentDistance = camera.position.length();
+                const ratio = camDistance / currentDistance;
+                camera.position.multiplyScalar(ratio);` : ''}
+                ${enableSketch ? `
+                // Setup sketch effect composer
+                const composer = new EffectComposer(renderer);
+                composer.addPass(new RenderPass(scene, camera));
+
+                // Sketch shader
+                const sketchShader = {
+                    uniforms: {
+                        tDiffuse: { value: null },
+                        lineDensity: { value: ${sketchMode.lineDensity || 0.3} },
+                        lineWidth: { value: ${sketchMode.lineWidth || 1} },
+                        intensity: { value: ${sketchMode.intensity || 1} },
+                        noiseScale: { value: ${sketchMode.noiseScale || 1} }
+                    },
+                    vertexShader: \`
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    \`,
+                    fragmentShader: \`
+                        uniform sampler2D tDiffuse;
+                        uniform float lineDensity;
+                        uniform float lineWidth;
+                        uniform float intensity;
+                        uniform float noiseScale;
+                        varying vec2 vUv;
+
+                        float random(vec2 st) {
+                            return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+                        }
+
+                        void main() {
+                            vec4 color = texture2D(tDiffuse, vUv);
+                            float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+
+                            // Add sketch lines
+                            float noise = random(vUv * noiseScale * 100.0);
+                            float lines = step(lineDensity, fract(vUv.y * 100.0 + noise * lineWidth));
+
+                            vec3 sketch = vec3(gray) * (1.0 - (1.0 - lines) * intensity);
+                            gl_FragColor = vec4(mix(color.rgb, sketch, intensity), color.a);
+                        }
+                    \`
+                };
+
+                const sketchPass = new ShaderPass(sketchShader);
+                composer.addPass(sketchPass);` : ''}
+
+                // Animation loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ${autoRotate ? `mesh.rotation.y += ${rotationSpeed * 0.01};` : ''}
+                    controls.update();
+                    ${enableSketch ? 'composer.render();' : 'renderer.render(scene, camera);'}
+                }
+                animate();
+            },
+            (progress) => {
+                if (progress.total > 0) {
+                    const percent = (progress.loaded / progress.total) * 100;
+                    if (loadingEl) loadingEl.textContent = \`Loading: \${Math.round(percent)}%\`;
+                }
+            },
+            (error) => {
+                console.error('Error loading model:', error);
+                if (loadingEl) loadingEl.textContent = 'Error loading model';
+            }
+        );
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);${enableSketch ? `
+            composer.setSize(container.clientWidth, container.clientHeight);` : ''}
+        });
+    </script>
+</body>
+</html>`;
+  
+  return html;
+}
+
+// Deep merge two objects
+function deepMerge(target, source) {
+  const output = { ...target };
+
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach(key => {
+      if (isObject(source[key])) {
+        if (!(key in target)) {
+          Object.assign(output, { [key]: source[key] });
+        } else {
+          output[key] = deepMerge(target[key], source[key]);
+        }
+      } else {
+        Object.assign(output, { [key]: source[key] });
+      }
+    });
+  }
+
+  return output;
+}
+
+function isObject(item) {
+  return item && typeof item === 'object' && !Array.isArray(item);
+}
+
+// Load 3D embed config with hierarchical override system
+// Priority: Product-specific config > Global config > Default config
+async function load3DEmbedConfig(repoConfig, folderName, cardAssetsPath, folderData) {
+  // 1. Start with default config
+  const defaultConfig = {
+    enabled: true,
+    viewer: {
+      width: "100%",
+      height: "100%",
+      maxWidth: "100%",
+      usePixels: false,
+      maintainAspect: true,
+      aspectRatio: "1:1"
+    },
+    embed: {
+      backgroundColor: "#E8E8E8",
+      backgroundOpacity: 1.0,
+      transparentBackground: false,
+      interactionMode: "full",
+      enableAR: false,
+      loadingStrategy: "auto",
+      revealStrategy: "auto"
+    },
+    camera: {
+      fieldOfView: "45deg",
+      exposure: "1.0",
+      cameraControls: true,
+      autoRotate: false,
+      rotationSpeed: "1deg",
+      cameraOrbit: "0deg 75deg 1.5m",
+      cameraDistance: null,
+      modelFill: 1.0
+    },
+    performance: {
+      renderQuality: "auto",
+      enableShadows: true,
+      shadowIntensity: "1.0",
+      enableToneMapping: true,
+      toneMapping: "auto"
+    },
+    model: {
+      scale: "1 1 1"
+    },
+    material: {
+      metalness: 0.3,
+      roughness: 0.4,
+      color: "#888888"
+    },
+    lighting: {
+      hemisphere: {
+        enabled: true,
+        skyColor: "#ffffff",
+        groundColor: "#444444",
+        intensity: 0.6
+      },
+      key: {
+        enabled: true,
+        color: "#ffffff",
+        intensity: 0.8,
+        position: { x: 5, y: 10, z: 7 }
+      },
+      fill: {
+        enabled: false,
+        color: "#8888ff",
+        intensity: 0.4,
+        position: { x: -5, y: 5, z: 5 }
+      },
+      rim: {
+        enabled: false,
+        color: "#ffffff",
+        intensity: 0.5,
+        position: { x: 0, y: 3, z: -10 }
+      },
+      ambient: {
+        enabled: true,
+        color: "#404040",
+        intensity: 0.2
+      }
+    },
+    display: {
+      sketchMode: {
+        enabled: false,
+        lineDensity: 0.3,
+        lineWidth: 1,
+        intensity: 1,
+        noiseScale: 1
+      }
+    }
+  };
+
+  let finalConfig = { ...defaultConfig };
+
+  // 2. Try to load global config from website repository root (not product library)
+  try {
+    // Global config lives in the website repo, not the product library repo
+    const websiteRepo = 'no3d-tools-website';
+    const globalConfigUrl = `https://raw.githubusercontent.com/${repoConfig.owner}/${websiteRepo}/${repoConfig.branch}/3d-embed-config-global.json`;
+    const globalConfigResponse = await fetch(globalConfigUrl);
+
+    if (globalConfigResponse.ok) {
+      const globalConfig = await globalConfigResponse.json();
+      finalConfig = deepMerge(finalConfig, globalConfig);
+      console.log('🌍 Loaded global 3D embed config from website repository root');
+    }
+  } catch (error) {
+    console.log('ℹ️ No global config found, using defaults');
+  }
+
+  // 3. Try to load product-specific override config
+  if (folderData && folderData.contents && Array.isArray(folderData.contents)) {
+    const productConfigFile = folderData.contents.find(item =>
+      item.type === 'file' &&
+      (item.name === '3d-embed-config.json' || item.name.toLowerCase() === '3d-embed-config.json')
+    );
+
+    if (productConfigFile) {
+      try {
+        const productConfigUrl = productConfigFile.download_url ||
+          `https://raw.githubusercontent.com/${repoConfig.owner}/${repoConfig.repo}/${repoConfig.branch}/${cardAssetsPath}/${encodeURIComponent(productConfigFile.name)}`;
+
+        const productConfigResponse = await fetch(productConfigUrl);
+        if (productConfigResponse.ok) {
+          const productConfig = await productConfigResponse.json();
+          finalConfig = deepMerge(finalConfig, productConfig);
+          console.log(`🎯 Loaded product-specific config override for ${folderName}`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Failed to load product config for ${folderName}:`, error);
+      }
+    }
+  }
+
+  console.log(`📋 Config hierarchy: Default → Global → Product-specific (${folderName})`);
+  return finalConfig;
+}
+
 // Load card assets for a product from GitHub
 async function loadProductCardAssets(productId) {
   console.log(`📦 loadProductCardAssets called for: ${productId}`);
@@ -1523,12 +2134,14 @@ async function loadProductCardAssets(productId) {
     // Load card assets folder contents
     // Card assets folder is a subfolder within the product folder
     const cardAssetsPath = `${folderName}/${cardAssetsFolder}`;
+    let folderData = null; // Store for later use in 3D embed generation
     try {
       const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(cardAssetsPath)}`;
       const response = await fetch(apiUrl);
       
       if (response.ok) {
         const data = await response.json();
+        folderData = data; // Store for later
         // Handle both error responses and successful responses
         if (data.error) {
           // Folder doesn't exist yet, that's okay
@@ -1538,7 +2151,9 @@ async function loadProductCardAssets(productId) {
           const supportedFormats = {
             image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
             video: ['mp4', 'webm', 'ogg', 'mov'],
-            model3d: ['usd', 'obj', 'stl']
+            model3d: ['glb', 'gltf', 'usd', 'obj', 'stl', 'usdz'],
+            html: ['html'],
+            config: ['json']
           };
           
           for (const item of data.contents) {
@@ -1552,6 +2167,8 @@ async function loadProductCardAssets(productId) {
                 mediaType = 'video';
               } else if (supportedFormats.model3d.includes(ext)) {
                 mediaType = 'model3d';
+              } else if (supportedFormats.html.includes(ext)) {
+                mediaType = 'html';
               }
               
               if (mediaType !== 'other') {
@@ -1613,6 +2230,35 @@ async function loadProductCardAssets(productId) {
     } else {
       cardAssets.unshift(iconPngItem);
       console.log(`🖼️ Added icon PNG at beginning (no GIF found)`);
+    }
+
+    // Check for 3D models and generate embeds if config exists
+    const model3dFiles = cardAssets.filter(asset => asset.type === 'model3d');
+    if (model3dFiles.length > 0) {
+      console.log(`🎯 Found ${model3dFiles.length} 3D model file(s), loading embed config...`);
+
+      // Load global config and product-specific override
+      const embedConfig = await load3DEmbedConfig(config, folderName, cardAssetsPath, folderData);
+      console.log('✅ Final merged config:', embedConfig);
+      
+      // Generate embed for each 3D model
+      if (embedConfig.enabled) {
+        for (const modelFile of model3dFiles) {
+          // Generate embeds for GLB/GLTF (model-viewer) and STL/OBJ (Three.js)
+          if (['glb', 'gltf', 'stl', 'obj'].includes(modelFile.format)) {
+            const embedHtml = generate3DEmbedCode(modelFile.url, modelFile.name, embedConfig, modelFile.format);
+            cardAssets.push({
+              type: 'html',
+              url: 'data:text/html;charset=utf-8,' + encodeURIComponent(embedHtml),
+              format: 'html',
+              name: `${modelFile.name} (3D Viewer)`,
+              isIcon: false,
+              isGenerated: true
+            });
+            console.log(`🎨 Generated 3D embed for: ${modelFile.name} (${modelFile.format})`);
+          }
+        }
+      }
     }
 
     console.log(`📊 Final carousel assets count: ${cardAssets.length}`);
@@ -4246,6 +4892,32 @@ async function initializeCarousel(productId) {
       placeholder.className = 'model-viewer-placeholder';
       placeholder.textContent = `3D Model: ${asset.name}`;
       item.appendChild(placeholder);
+    } else if (asset.type === 'html') {
+      // Load HTML embed in iframe
+      const iframe = document.createElement('iframe');
+      
+      // Handle data URLs (generated embeds) vs regular URLs
+      if (asset.url.startsWith('data:text/html')) {
+        // Extract HTML content from data URL
+        const htmlContent = decodeURIComponent(asset.url.split(',')[1]);
+        iframe.srcdoc = htmlContent;
+      } else {
+        iframe.src = asset.url;
+      }
+      
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.style.display = 'block';
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+      iframe.setAttribute('loading', index === 0 ? 'eager' : 'lazy');
+      iframe.onerror = function() {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'model-viewer-placeholder';
+        errorDiv.textContent = `Failed to load HTML embed: ${asset.name}`;
+        item.appendChild(errorDiv);
+      };
+      item.appendChild(iframe);
     }
 
     track.appendChild(item);

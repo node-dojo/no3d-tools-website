@@ -1,0 +1,3110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple 3D Viewer Test - NO3D TOOLS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* Full viewport 3D viewer */
+        #viewer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        /* Embed boundary preview overlay */
+        .embed-boundary-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 600px;
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            z-index: 500;
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+                0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .embed-boundary-overlay::before {
+            content: '800px × 600px (Embed Size)';
+            position: absolute;
+            top: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .embed-boundary-overlay.hidden {
+            display: none;
+        }
+
+        /* Sidebar controls panel */
+        .controls-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform: translateX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .controls-panel.collapsed {
+            transform: translateX(320px);
+        }
+
+        /* Toggle button */
+        .toggle-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .toggle-controls:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .toggle-controls::before {
+            content: '⚙';
+            font-size: 20px;
+            color: #fff;
+        }
+
+        /* Panel header */
+        .panel-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .panel-header p {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+        }
+
+        /* Control sections */
+        .control-section {
+            margin-bottom: 24px;
+        }
+
+        .control-section h3 {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 12px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: color 0.2s;
+        }
+
+        .control-section h3:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .control-section h3::after {
+            content: '▼';
+            font-size: 10px;
+            transition: transform 0.3s;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .control-section.collapsed h3::after {
+            transform: rotate(-90deg);
+        }
+
+        .control-section .section-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.2s;
+            max-height: 2000px;
+            opacity: 1;
+        }
+
+        .control-section.collapsed .section-content {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+        }
+
+        /* Control items */
+        .control-item {
+            margin-bottom: 16px;
+        }
+
+        .control-item label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-value {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Range sliders */
+        input[type="range"] {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            border-radius: 1px;
+            position: relative;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Color pickers */
+        input[type="color"] {
+            width: 100%;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        input[type="color"]:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Selects and inputs */
+        select, input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        select:hover, input[type="text"]:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Buttons */
+        button {
+            width: 100%;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Checkboxes */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #fff;
+        }
+
+        /* File input */
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        input[type="file"]::file-selector-button {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 11px;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Quick load grid */
+        .quick-load {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quick-load button {
+            padding: 8px;
+            font-size: 10px;
+        }
+
+        /* Status indicator */
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 11px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.ready {
+            background: #4caf50;
+        }
+
+        .status-indicator.loading {
+            background: #ffc107;
+        }
+
+        .status-indicator.error {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Scrollbar styling */
+        .controls-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .controls-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Preview Container */
+        .preview-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 2000;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-header h2 {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .preview-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            padding: 0;
+        }
+
+        .preview-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .preview-canvas-container {
+            width: 100%;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                repeating-conic-gradient(#1a1a1a 0% 25%, #0a0a0a 0% 50%)
+                50% / 20px 20px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            position: relative;
+            padding: 20px;
+        }
+
+        .preview-viewport {
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-dimensions {
+            position: absolute;
+            top: -24px;
+            left: 0;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .embed-code-container {
+            margin-top: 16px;
+        }
+
+        .embed-code-container label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .embed-code-container textarea {
+            width: 100%;
+            min-height: 120px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            resize: vertical;
+        }
+
+        .embed-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .embed-actions button {
+            flex: 1;
+        }
+
+        /* Split View */
+        .split-view-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 100;
+        }
+
+        .split-view-container.active {
+            display: flex;
+        }
+
+        .split-view-panel {
+            flex: 1;
+            position: relative;
+            border-right: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .split-view-panel:last-child {
+            border-right: none;
+        }
+
+        .split-view-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .split-view-panel canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .toggle-split-view {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .toggle-split-view:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .toggle-split-view.active {
+            background: rgba(100, 200, 255, 0.3);
+            border-color: rgba(100, 200, 255, 0.5);
+        }
+
+        .toggle-split-view::before {
+            content: '⇄';
+            font-size: 20px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Full viewport 3D viewer -->
+    <div id="viewer-container"></div>
+
+    <!-- Embed boundary preview overlay -->
+    <div class="embed-boundary-overlay" id="embed-boundary"></div>
+
+    <!-- Toggle button -->
+    <div class="toggle-controls" onclick="togglePanel()"></div>
+
+    <!-- Toggle split view button -->
+    <div class="toggle-split-view" id="toggle-split-view" onclick="toggleSplitView()" title="Toggle Split View Comparison"></div>
+
+        <!-- Split View Container -->
+        <div class="split-view-container" id="split-view-container">
+            <div class="split-view-panel" id="current-view-panel">
+                <div class="split-view-label">Current Settings</div>
+            </div>
+            <div class="split-view-panel" id="global-view-panel">
+                <div class="split-view-label">Global Config</div>
+                <div id="global-view-container"></div>
+            </div>
+        </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+        <span class="status-indicator loading" id="status"></span>
+        <span id="info">Initializing viewer...</span>
+    </div>
+
+    <!-- Sidebar controls panel -->
+    <div class="controls-panel" id="controls-panel">
+        <div class="panel-header">
+            <h1>3D Viewer</h1>
+            <p>STL / GLB / GLTF / 3MF / JSON Model Visualization</p>
+        </div>
+
+        <!-- File Selection -->
+        <div class="control-section">
+            <h3>Load Model</h3>
+            <div class="control-item">
+                <input type="file" id="file-input" accept=".stl,.glb,.gltf,.3mf,.json">
+            </div>
+            <div class="quick-load">
+                <button onclick="loadBolt()">Load Bolt.stl</button>
+            </div>
+        </div>
+
+        <!-- Material -->
+        <div class="control-section" data-section="material">
+            <h3 onclick="toggleSection(this)">Material</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <label>Color</label>
+                <input type="color" id="material-color" value="#888888">
+            </div>
+            <div class="control-item">
+                <label>Metalness <span class="control-value" id="metalness-val">0.3</span></label>
+                <input type="range" id="metalness" min="0" max="1" step="0.01" value="0.3">
+            </div>
+            <div class="control-item">
+                <label>Roughness <span class="control-value" id="roughness-val">0.4</span></label>
+                <input type="range" id="roughness" min="0" max="1" step="0.01" value="0.4">
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Show Edges</span>
+                    <input type="checkbox" id="show-edges" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <label>Edge Color</label>
+                <input type="color" id="edge-color" value="#000000">
+            </div>
+            <div class="control-item">
+                <label>Edge Thickness <span class="control-value"><span id="edge-thickness-val">2</span>px</span></label>
+                <input type="range" id="edge-thickness" min="0.1" max="50" step="0.5" value="2">
+            </div>
+            </div>
+        </div>
+
+        <!-- Lighting -->
+        <div class="control-section" data-section="lighting">
+            <h3 onclick="toggleSection(this)">Lighting</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <label>Hemisphere <span class="control-value" id="hemi-intensity-val">0.6</span></label>
+                <input type="range" id="hemi-intensity" min="0" max="2" step="0.1" value="0.6">
+            </div>
+            <div class="control-item">
+                <label>Key Light <span class="control-value" id="key-intensity-val">0.8</span></label>
+                <input type="range" id="key-intensity" min="0" max="2" step="0.1" value="0.8">
+            </div>
+            <div class="control-item">
+                <label>Fill Light <span class="control-value" id="fill-intensity-val">0.4</span></label>
+                <input type="range" id="fill-intensity" min="0" max="2" step="0.1" value="0.4">
+            </div>
+            <div class="control-item">
+                <label>Rim Light <span class="control-value" id="rim-intensity-val">0.5</span></label>
+                <input type="range" id="rim-intensity" min="0" max="2" step="0.1" value="0.5">
+            </div>
+            <div class="control-item">
+                <label>Ambient <span class="control-value" id="ambient-intensity-val">0.2</span></label>
+                <input type="range" id="ambient-intensity" min="0" max="2" step="0.1" value="0.2">
+            </div>
+            </div>
+        </div>
+
+        <!-- Background -->
+        <div class="control-section" data-section="background">
+            <h3 onclick="toggleSection(this)">Background</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <label>Mode</label>
+                <select id="bg-mode">
+                    <option value="transparent">Transparent</option>
+                    <option value="color">Solid Color</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Color</label>
+                <input type="color" id="bg-color" value="#E8E8E8" disabled>
+            </div>
+            </div>
+        </div>
+
+        <!-- Shader Presets -->
+        <div class="control-section" data-section="shader-presets">
+            <h3 onclick="toggleSection(this)">Shader Presets</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <label>Style</label>
+                <select id="shader-preset">
+                    <option value="pbr">PBR (Realistic)</option>
+                    <option value="toon">Toon/Cel Shaded</option>
+                    <option value="matcap">MatCap</option>
+                    <option value="clay">Clay Render</option>
+                    <option value="metal">Metallic</option>
+                    <option value="plastic">Plastic</option>
+                    <option value="glass">Glass</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Toon Steps <span class="control-value"><span id="toon-steps-val">4</span></span></label>
+                <input type="range" id="toon-steps" min="2" max="10" step="1" value="4" disabled>
+            </div>
+            <div class="control-item">
+                <button onclick="applyShaderPreset()">Apply Preset</button>
+            </div>
+            </div>
+        </div>
+
+        <!-- Display Settings -->
+        <div class="control-section" data-section="display-settings">
+            <h3 onclick="toggleSection(this)">Display Settings</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <label>
+                    <span>Show Embed Boundary</span>
+                    <input type="checkbox" id="show-embed-boundary" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Split View Comparison</span>
+                    <input type="checkbox" id="split-view-checkbox" onchange="toggleSplitView()">
+                </label>
+            </div>
+            </div>
+        </div>
+
+        <!-- Camera -->
+        <div class="control-section" data-section="camera">
+            <h3 onclick="toggleSection(this)">Camera</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <label>Model Origin</label>
+                <select id="model-origin">
+                    <option value="center">Center of Mesh</option>
+                    <option value="bottom">Bottom of Mesh</option>
+                </select>
+            </div>
+            <div class="control-item" style="display: flex; gap: 8px;">
+                <button onclick="centerOriginToCenter()" style="flex: 1;">Center Origin to Center</button>
+                <button onclick="centerOriginToBottom()" style="flex: 1;">Center Origin to Bottom</button>
+            </div>
+            <div class="control-item">
+                <button onclick="recenterModel()">Re-center Model</button>
+            </div>
+            <div class="control-item">
+                <label>Distance <span class="control-value"><span id="camera-distance-val">1.3</span>x</span></label>
+                <input type="range" id="camera-distance" min="0.5" max="3" step="0.1" value="1.3">
+            </div>
+            <div class="control-item">
+                <label>Model Fill <span class="control-value"><span id="model-fill-val">0.85</span></span></label>
+                <input type="range" id="model-fill" min="0.3" max="1.5" step="0.05" value="0.85">
+            </div>
+            <div class="control-item">
+                <label>FOV <span class="control-value"><span id="fov-val">45</span>°</span></label>
+                <input type="range" id="fov" min="20" max="90" step="5" value="45">
+            </div>
+            <div class="control-item">
+                <label>Rotate Speed <span class="control-value" id="rotate-speed-val">0.005</span></label>
+                <input type="range" id="rotate-speed" min="0.0001" max="0.01" step="0.0001" value="0.005">
+            </div>
+            </div>
+        </div>
+
+        <!-- Animation (GLB/GLTF) -->
+        <div class="control-section" id="animation-section" data-section="animation" style="display: none;">
+            <h3 onclick="toggleSection(this)">Animation</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <label>Animation Clip</label>
+                <select id="animation-clip">
+                    <option value="">No animations</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>
+                    <span>Loop Animation</span>
+                    <input type="checkbox" id="animation-loop" checked>
+                </label>
+            </div>
+            <div class="control-item">
+                <label>Speed <span class="control-value"><span id="animation-speed-val">1.0</span>x</span></label>
+                <input type="range" id="animation-speed" min="0.1" max="3" step="0.1" value="1.0">
+            </div>
+            <div class="control-item">
+                <button onclick="toggleAnimation()">Play/Pause</button>
+            </div>
+            </div>
+        </div>
+
+        <!-- Preview & Export -->
+        <div class="control-section" data-section="preview-export">
+            <h3 onclick="toggleSection(this)">Preview & Export</h3>
+            <div class="section-content">
+            <div class="control-item">
+                <button onclick="openPreview()">Preview & Export Config</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Container (Modal) -->
+    <div class="preview-container" id="preview-container">
+        <div class="preview-header">
+            <h2>Preview & Embed</h2>
+            <button class="preview-close" onclick="closePreview()">×</button>
+        </div>
+        <div class="preview-canvas-container" id="preview-canvas-container">
+            <!-- Preview canvas will be injected here -->
+        </div>
+        <div class="embed-code-container">
+            <label>3D Viewer Config (For Product Card Carousel)</label>
+            <textarea id="embed-code" readonly></textarea>
+            <div class="embed-actions">
+                <button onclick="copyConfig()">Copy Config</button>
+                <button onclick="downloadConfig()">Download Config JSON</button>
+                <button onclick="downloadGlobalConfig()" style="background: rgba(255, 100, 100, 0.2); border-color: rgba(255, 100, 100, 0.4);">Overwrite Global Config</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- THREE.js (local) -->
+    <script src="libs/three.min.js"></script>
+
+    <!-- STL Loader (local, uses global THREE) -->
+    <script src="libs/STLLoader-global.js"></script>
+
+    <!-- Import map for THREE modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"
+        }
+    }
+    </script>
+
+    <!-- GLTF Loader from CDN -->
+    <script type="module">
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
+        window.GLTFLoader = GLTFLoader;
+        window.gltfLoaderReady = true;
+        console.log('✅ GLTFLoader imported and ready');
+    </script>
+
+    <!-- 3MF Loader from CDN -->
+    <script type="module">
+        import { ThreeMFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/3MFLoader.js';
+        window.ThreeMFLoader = ThreeMFLoader;
+        window.threemfLoaderReady = true;
+        console.log('✅ ThreeMFLoader imported and ready');
+    </script>
+
+
+    <script>
+        console.log('🔄 Initializing viewer...');
+
+        const container = document.getElementById('viewer-container');
+        const statusEl = document.getElementById('status');
+        const infoEl = document.getElementById('info');
+
+        // Global config storage
+        let globalConfig = null;
+        let splitViewActive = false;
+        let globalScene = null;
+        let globalRenderer = null;
+        let globalCamera = null;
+        let globalMeshGroup = null;
+        let globalEdgesMesh = null;
+        let globalLights = {};
+
+        // Load global config file (from website repo, not library repo)
+        async function loadGlobalConfig() {
+            const configPaths = [
+                '../3d-embed-config-global.json',
+                '../../3d-embed-config-global.json',
+                'https://raw.githubusercontent.com/node-dojo/no3d-tools-website/main/3d-embed-config-global.json'
+            ];
+
+            for (const path of configPaths) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        globalConfig = await response.json();
+                        console.log('✅ Loaded global config from:', path);
+                        applyGlobalConfigToUI();
+                        return globalConfig;
+                    }
+                } catch (error) {
+                    console.log(`⚠️ Failed to load from ${path}, trying next...`);
+                    continue;
+                }
+            }
+
+            console.log('⚠️ Could not load global config, using defaults');
+            return null;
+        }
+
+        // Apply global config values to UI controls
+        function applyGlobalConfigToUI() {
+            if (!globalConfig) return;
+
+            // Material settings
+            if (globalConfig.material) {
+                if (globalConfig.material.color) {
+                    document.getElementById('material-color').value = globalConfig.material.color;
+                }
+                if (globalConfig.material.metalness !== undefined) {
+                    document.getElementById('metalness').value = globalConfig.material.metalness;
+                    document.getElementById('metalness-val').textContent = globalConfig.material.metalness;
+                }
+                if (globalConfig.material.roughness !== undefined) {
+                    document.getElementById('roughness').value = globalConfig.material.roughness;
+                    document.getElementById('roughness-val').textContent = globalConfig.material.roughness;
+                }
+                if (globalConfig.material.edges) {
+                    if (globalConfig.material.edges.enabled !== undefined) {
+                        document.getElementById('show-edges').checked = globalConfig.material.edges.enabled;
+                    }
+                    if (globalConfig.material.edges.color) {
+                        document.getElementById('edge-color').value = globalConfig.material.edges.color;
+                    }
+                    if (globalConfig.material.edges.thickness !== undefined) {
+                        document.getElementById('edge-thickness').value = globalConfig.material.edges.thickness;
+                        document.getElementById('edge-thickness-val').textContent = globalConfig.material.edges.thickness;
+                    }
+                }
+            }
+
+            // Lighting settings
+            if (globalConfig.lighting) {
+                if (globalConfig.lighting.hemisphere?.intensity !== undefined) {
+                    document.getElementById('hemi-intensity').value = globalConfig.lighting.hemisphere.intensity;
+                    document.getElementById('hemi-intensity-val').textContent = globalConfig.lighting.hemisphere.intensity;
+                }
+                if (globalConfig.lighting.key?.intensity !== undefined) {
+                    document.getElementById('key-intensity').value = globalConfig.lighting.key.intensity;
+                    document.getElementById('key-intensity-val').textContent = globalConfig.lighting.key.intensity;
+                }
+                if (globalConfig.lighting.fill?.intensity !== undefined) {
+                    document.getElementById('fill-intensity').value = globalConfig.lighting.fill.intensity;
+                    document.getElementById('fill-intensity-val').textContent = globalConfig.lighting.fill.intensity;
+                }
+                if (globalConfig.lighting.rim?.intensity !== undefined) {
+                    document.getElementById('rim-intensity').value = globalConfig.lighting.rim.intensity;
+                    document.getElementById('rim-intensity-val').textContent = globalConfig.lighting.rim.intensity;
+                }
+                if (globalConfig.lighting.ambient?.intensity !== undefined) {
+                    document.getElementById('ambient-intensity').value = globalConfig.lighting.ambient.intensity;
+                    document.getElementById('ambient-intensity-val').textContent = globalConfig.lighting.ambient.intensity;
+                }
+            }
+
+            // Camera settings
+            if (globalConfig.camera) {
+                if (globalConfig.camera.fieldOfView) {
+                    const fov = parseFloat(globalConfig.camera.fieldOfView.replace('deg', ''));
+                    if (!isNaN(fov)) {
+                        document.getElementById('fov').value = fov;
+                        document.getElementById('fov-val').textContent = fov;
+                    }
+                }
+                if (globalConfig.camera.cameraDistance !== undefined) {
+                    document.getElementById('camera-distance').value = globalConfig.camera.cameraDistance;
+                    document.getElementById('camera-distance-val').textContent = globalConfig.camera.cameraDistance;
+                }
+                if (globalConfig.camera.modelFill !== undefined) {
+                    document.getElementById('model-fill').value = globalConfig.camera.modelFill;
+                    document.getElementById('model-fill-val').textContent = globalConfig.camera.modelFill.toFixed(2);
+                }
+                if (globalConfig.camera.rotationSpeed) {
+                    const rotSpeed = parseFloat(globalConfig.camera.rotationSpeed.replace('deg', '')) / 60;
+                    if (!isNaN(rotSpeed)) {
+                        document.getElementById('rotate-speed').value = rotSpeed;
+                        document.getElementById('rotate-speed-val').textContent = rotSpeed;
+                    }
+                }
+            }
+
+            // Background settings
+            if (globalConfig.embed) {
+                if (globalConfig.embed.transparentBackground) {
+                    document.getElementById('bg-mode').value = 'transparent';
+                    document.getElementById('bg-color').disabled = true;
+                } else if (globalConfig.embed.backgroundColor) {
+                    document.getElementById('bg-mode').value = 'color';
+                    document.getElementById('bg-color').value = globalConfig.embed.backgroundColor;
+                    document.getElementById('bg-color').disabled = false;
+                }
+            }
+
+            // Apply to current scene
+            applyConfigToScene(scene, hemiLight, keyLight, fillLight, rimLight, ambient, currentMaterial, edgesMesh);
+        }
+
+        // Apply config to a scene (forces all values from global config)
+        function applyConfigToScene(targetScene, hemi, key, fill, rim, amb, material, edges) {
+            if (!globalConfig) return;
+
+            // Material - apply ALL global config values
+            if (material && globalConfig.material) {
+                if (globalConfig.material.color) {
+                    material.color.set(globalConfig.material.color);
+                }
+                if (globalConfig.material.metalness !== undefined) {
+                    material.metalness = globalConfig.material.metalness;
+                }
+                if (globalConfig.material.roughness !== undefined) {
+                    material.roughness = globalConfig.material.roughness;
+                }
+            }
+
+            // Edges - apply ALL global config values
+            if (edges && globalConfig.material?.edges) {
+                if (globalConfig.material.edges.enabled !== undefined) {
+                    edges.visible = globalConfig.material.edges.enabled;
+                }
+                if (globalConfig.material.edges.color) {
+                    edges.material.color.set(globalConfig.material.edges.color);
+                }
+                if (globalConfig.material.edges.thickness !== undefined) {
+                    edges.material.linewidth = globalConfig.material.edges.thickness;
+                }
+            }
+
+            // Lighting - apply ALL global config values
+            if (globalConfig.lighting) {
+                if (hemi && globalConfig.lighting.hemisphere?.intensity !== undefined) {
+                    hemi.intensity = globalConfig.lighting.hemisphere.intensity;
+                }
+                if (key && globalConfig.lighting.key?.intensity !== undefined) {
+                    key.intensity = globalConfig.lighting.key.intensity;
+                }
+                if (fill && globalConfig.lighting.fill?.intensity !== undefined) {
+                    fill.intensity = globalConfig.lighting.fill.intensity;
+                }
+                if (rim && globalConfig.lighting.rim?.intensity !== undefined) {
+                    rim.intensity = globalConfig.lighting.rim.intensity;
+                }
+                if (amb && globalConfig.lighting.ambient?.intensity !== undefined) {
+                    amb.intensity = globalConfig.lighting.ambient.intensity;
+                }
+            }
+
+            // Background
+            if (globalConfig.embed) {
+                if (globalConfig.embed.transparentBackground) {
+                    targetScene.background = null;
+                } else if (globalConfig.embed.backgroundColor) {
+                    targetScene.background = new THREE.Color(globalConfig.embed.backgroundColor);
+                }
+            }
+        }
+
+        // Re-apply global config to global view (call this to reset global view to config)
+        function resetGlobalViewToConfig() {
+            if (!globalScene || !globalConfig) return;
+
+            // Re-apply config to all materials in global scene
+            if (globalMeshGroup) {
+                globalMeshGroup.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        if (globalConfig.material) {
+                            if (globalConfig.material.color) {
+                                child.material.color.set(globalConfig.material.color);
+                            }
+                            if (globalConfig.material.metalness !== undefined) {
+                                child.material.metalness = globalConfig.material.metalness;
+                            }
+                            if (globalConfig.material.roughness !== undefined) {
+                                child.material.roughness = globalConfig.material.roughness;
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Re-apply edges config
+            if (globalEdgesMesh && globalConfig.material?.edges) {
+                if (globalConfig.material.edges.enabled !== undefined) {
+                    globalEdgesMesh.visible = globalConfig.material.edges.enabled;
+                }
+                if (globalConfig.material.edges.color) {
+                    globalEdgesMesh.material.color.set(globalConfig.material.edges.color);
+                }
+                if (globalConfig.material.edges.thickness !== undefined) {
+                    globalEdgesMesh.material.linewidth = globalConfig.material.edges.thickness;
+                }
+            }
+
+            // Re-apply lighting config
+            if (globalConfig.lighting) {
+                if (globalLights.hemi && globalConfig.lighting.hemisphere?.intensity !== undefined) {
+                    globalLights.hemi.intensity = globalConfig.lighting.hemisphere.intensity;
+                }
+                if (globalLights.key && globalConfig.lighting.key?.intensity !== undefined) {
+                    globalLights.key.intensity = globalConfig.lighting.key.intensity;
+                }
+                if (globalLights.fill && globalConfig.lighting.fill?.intensity !== undefined) {
+                    globalLights.fill.intensity = globalConfig.lighting.fill.intensity;
+                }
+                if (globalLights.rim && globalConfig.lighting.rim?.intensity !== undefined) {
+                    globalLights.rim.intensity = globalConfig.lighting.rim.intensity;
+                }
+                if (globalLights.ambient && globalConfig.lighting.ambient?.intensity !== undefined) {
+                    globalLights.ambient.intensity = globalConfig.lighting.ambient.intensity;
+                }
+            }
+
+            // Re-apply background
+            if (globalConfig.embed) {
+                if (globalConfig.embed.transparentBackground) {
+                    globalScene.background = null;
+                } else if (globalConfig.embed.backgroundColor) {
+                    globalScene.background = new THREE.Color(globalConfig.embed.backgroundColor);
+                }
+            }
+        }
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = null; // Transparent background
+
+        // Calculate aspect ratio from actual container dimensions (not fixed)
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 100000);
+        camera.position.set(0, 2, 5);
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true // Enable transparency
+        });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        container.appendChild(renderer.domElement);
+
+
+
+        // Enhanced Studio Lighting Setup
+        // Hemisphere light (sky + ground for natural ambient)
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+        scene.add(hemiLight);
+
+        // Key light (main light source)
+        const keyLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        keyLight.position.set(5, 10, 7);
+        keyLight.castShadow = true;
+        scene.add(keyLight);
+
+        // Fill light (softens shadows)
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+        fillLight.position.set(-5, 5, -5);
+        scene.add(fillLight);
+
+        // Rim light (edge definition)
+        const rimLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        rimLight.position.set(0, 5, -10);
+        scene.add(rimLight);
+
+        // Ambient light (overall scene brightness)
+        const ambient = new THREE.AmbientLight(0x404040, 0.2);
+        scene.add(ambient);
+
+        let mesh = null;
+        let meshGroup = null;  // Group for world-space rotation
+        let edgesMesh = null;  // Edges for technical drawing look
+        let rotating = true;
+        let rotateSpeed = 0.005;
+        let currentMaterial = null;
+
+        // Animation variables
+        let mixer = null;  // THREE.AnimationMixer
+        let currentAction = null;  // Current AnimationAction
+        let animations = [];  // Array of available animations
+        let clock = new THREE.Clock();  // Clock for animation timing
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+
+            // Update animation mixer if exists
+            if (mixer) {
+                mixer.update(delta);
+            }
+
+            if (meshGroup && rotating) {
+                // Rotate around world Y-axis (vertical)
+                meshGroup.rotation.y += rotateSpeed;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            // Update camera aspect ratio to match actual container dimensions
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        statusEl.textContent = '✅ Ready';
+        statusEl.className = 'status-indicator ready';
+        infoEl.textContent = 'Viewer ready. Load an STL, GLB, GLTF, 3MF, or THREE.js JSON file to view it.';
+        console.log('✅ Viewer initialized');
+
+        // Load global config on startup
+        loadGlobalConfig().then(() => {
+            if (globalConfig) {
+                console.log('✅ Global config loaded and applied to UI');
+            }
+        });
+
+        // Load STL function
+        function loadSTL(url, filename) {
+            statusEl.textContent = '⏳ Loading...';
+            statusEl.className = 'status-indicator loading';
+            infoEl.textContent = `Loading ${filename}...`;
+
+            console.log(`📁 Loading: ${filename}`);
+
+            const loader = new THREE.STLLoader();
+
+            loader.load(
+                url,
+                (geometry) => {
+                    console.log('✅ STL loaded:', {
+                        vertices: geometry.attributes.position.count
+                    });
+
+                    // Remove old mesh
+                    if (mesh) {
+                        scene.remove(mesh);
+                    }
+
+                    // Compute normals if not present
+                    if (!geometry.attributes.normal) {
+                        geometry.computeVertexNormals();
+                    }
+
+                    // Remove old mesh group if exists
+                    if (meshGroup) {
+                        scene.remove(meshGroup);
+                    }
+
+                    // Create PBR material (MeshStandardMaterial)
+                    const material = new THREE.MeshStandardMaterial({
+                        color: 0x888888,
+                        metalness: 0.3,
+                        roughness: 0.4,
+                        envMapIntensity: 1.0
+                    });
+                    currentMaterial = material;
+
+                    mesh = new THREE.Mesh(geometry, material);
+
+                    // Create edges geometry for technical drawing look
+                    const edgesGeometry = new THREE.EdgesGeometry(geometry, 30);
+                    const edgesMaterial = new THREE.LineBasicMaterial({
+                        color: 0x000000,
+                        linewidth: 2
+                    });
+                    edgesMesh = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+
+                    // Correct for Blender's Z-up coordinate system
+                    // Rotate -90 degrees around X axis to convert Z-up to Y-up
+                    mesh.rotation.x = -Math.PI / 2;
+                    edgesMesh.rotation.x = -Math.PI / 2;
+
+                    // Create a group to hold both mesh and edges
+                    meshGroup = new THREE.Group();
+                    meshGroup.add(mesh);
+                    meshGroup.add(edgesMesh);
+                    scene.add(meshGroup);
+
+                    // Center the model using shared function
+                    const { size } = centerModel(meshGroup);
+
+                    // Calculate optimal camera distance to fit object in view
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180); // Convert to radians
+                    let cameraDistance = Math.abs(maxDim / Math.sin(fov / 2));
+
+                    // Add some padding (user-adjustable via camera-distance control)
+                    const distanceMultiplier = parseFloat(document.getElementById('camera-distance').value);
+                    cameraDistance *= distanceMultiplier;
+
+                    // Position camera to view object optimally
+                    camera.position.set(
+                        cameraDistance * 0.5,
+                        cameraDistance * 0.5,
+                        cameraDistance
+                    );
+                    camera.lookAt(0, 0, 0);
+
+                    console.log('📐 Object centered and framed:', {
+                        size: `${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`,
+                        maxDim: maxDim.toFixed(2),
+                        cameraDistance: cameraDistance.toFixed(2)
+                    });
+
+                    statusEl.textContent = '✅ Loaded';
+                    statusEl.className = 'status-indicator ready';
+                    infoEl.textContent = `${filename} - ${geometry.attributes.position.count} vertices - Size: ${maxDim.toFixed(2)} units`;
+
+                    console.log('✅ Model displayed');
+
+                    // Update global view if split view is active
+                    if (splitViewActive) {
+                        updateGlobalView();
+                    }
+                },
+                (progress) => {
+                    if (progress.total > 0) {
+                        const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                        infoEl.textContent = `Loading ${filename}... ${percent}%`;
+                    }
+                },
+                (error) => {
+                    console.error('❌ Load error:', error);
+                    statusEl.textContent = '❌ Error';
+                    statusEl.className = 'status-indicator error';
+                    infoEl.textContent = `Error loading ${filename}: ${error.message}`;
+                }
+            );
+        }
+
+        // Load GLB/GLTF function
+        function loadGLTF(url, filename) {
+            if (!window.GLTFLoader) {
+                console.error('❌ GLTFLoader not loaded yet');
+                alert('GLTFLoader is still loading. Please try again in a moment.');
+                return;
+            }
+
+            statusEl.textContent = '⏳ Loading...';
+            statusEl.className = 'status-indicator loading';
+            infoEl.textContent = `Loading ${filename}...`;
+
+            console.log(`📁 Loading GLTF/GLB: ${filename}`);
+
+            const loader = new window.GLTFLoader();
+
+            loader.load(
+                url,
+                (gltf) => {
+                    console.log('✅ GLTF loaded:', gltf);
+
+                    // Remove old mesh group if exists
+                    if (meshGroup) {
+                        scene.remove(meshGroup);
+                    }
+
+                    // Create group for the GLTF scene
+                    meshGroup = new THREE.Group();
+
+                    // Add the entire GLTF scene
+                    const model = gltf.scene;
+
+                    // Apply Blender orientation correction to the entire model
+                    model.rotation.x = -Math.PI / 2;
+
+                    meshGroup.add(model);
+                    scene.add(meshGroup);
+
+                    // Center the model using shared function
+                    const { size } = centerModel(meshGroup);
+
+                    // Extract first material for controls (if available)
+                    let materialFound = false;
+                    model.traverse((child) => {
+                        if (child.isMesh && !materialFound) {
+                            currentMaterial = child.material;
+                            materialFound = true;
+
+                            // Update UI controls to match the material
+                            if (currentMaterial.color) {
+                                const color = '#' + currentMaterial.color.getHexString();
+                                document.getElementById('material-color').value = color;
+                            }
+                            if (currentMaterial.metalness !== undefined) {
+                                document.getElementById('metalness').value = currentMaterial.metalness;
+                                document.getElementById('metalness-val').textContent = currentMaterial.metalness;
+                            }
+                            if (currentMaterial.roughness !== undefined) {
+                                document.getElementById('roughness').value = currentMaterial.roughness;
+                                document.getElementById('roughness-val').textContent = currentMaterial.roughness;
+                            }
+                        }
+                    });
+
+                    // Note: Edges are not created for GLTF models by default
+                    // as they may have multiple meshes with different geometries
+                    edgesMesh = null;
+                    mesh = null;
+
+                    // Calculate optimal camera distance
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraDistance = Math.abs(maxDim / Math.sin(fov / 2));
+
+                    const distanceMultiplier = parseFloat(document.getElementById('camera-distance').value);
+                    cameraDistance *= distanceMultiplier;
+
+                    camera.position.set(
+                        cameraDistance * 0.5,
+                        cameraDistance * 0.5,
+                        cameraDistance
+                    );
+                    camera.lookAt(0, 0, 0);
+
+                    console.log('📐 GLTF centered and framed:', {
+                        size: `${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`,
+                        maxDim: maxDim.toFixed(2),
+                        cameraDistance: cameraDistance.toFixed(2)
+                    });
+
+                    // Setup animations if available
+                    setupAnimations(gltf);
+
+                    statusEl.textContent = '✅ Loaded';
+                    statusEl.className = 'status-indicator ready';
+                    infoEl.textContent = `${filename} - GLTF model - Size: ${maxDim.toFixed(2)} units`;
+
+                    console.log('✅ GLTF model displayed');
+
+                    // Update global view if split view is active
+                    if (splitViewActive) {
+                        updateGlobalView();
+                    }
+                },
+                (progress) => {
+                    if (progress.total > 0) {
+                        const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                        infoEl.textContent = `Loading ${filename}... ${percent}%`;
+                    }
+                },
+                (error) => {
+                    console.error('❌ GLTF load error:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        filename: filename,
+                        url: url
+                    });
+                    statusEl.textContent = '❌ Error';
+                    statusEl.className = 'status-indicator error';
+                    infoEl.textContent = `Error loading ${filename}: ${error.message || 'Unknown error'}`;
+                    alert(`Failed to load GLB/GLTF file.\n\nError: ${error.message || 'Unknown error'}\n\nCheck browser console (F12) for details.`);
+                }
+            );
+        }
+
+        // Load 3MF function
+        function load3MF(url, filename) {
+            if (!window.ThreeMFLoader) {
+                console.error('❌ ThreeMFLoader not loaded yet');
+                alert('ThreeMFLoader is still loading. Please try again in a moment.');
+                return;
+            }
+
+            statusEl.textContent = '⏳ Loading...';
+            statusEl.className = 'status-indicator loading';
+            infoEl.textContent = `Loading ${filename}...`;
+
+            console.log(`📁 Loading 3MF: ${filename}`);
+
+            const loader = new window.ThreeMFLoader();
+
+            loader.load(
+                url,
+                (object) => {
+                    console.log('✅ 3MF loaded:', object);
+
+                    // Remove old mesh group if exists
+                    if (meshGroup) {
+                        scene.remove(meshGroup);
+                    }
+
+                    // Create group for the 3MF object
+                    meshGroup = new THREE.Group();
+
+                    // 3MFLoader returns a Group or Object3D
+                    const model = object;
+
+                    meshGroup.add(model);
+                    scene.add(meshGroup);
+
+                    // Center the model using shared function
+                    const { size } = centerModel(meshGroup);
+
+                    // Extract first material for controls (if available)
+                    let materialFound = false;
+                    model.traverse((child) => {
+                        if (child.isMesh && !materialFound) {
+                            currentMaterial = child.material;
+                            materialFound = true;
+
+                            // Update UI controls to match the material
+                            if (currentMaterial.color) {
+                                const color = '#' + currentMaterial.color.getHexString();
+                                document.getElementById('material-color').value = color;
+                            }
+                            if (currentMaterial.metalness !== undefined) {
+                                document.getElementById('metalness').value = currentMaterial.metalness;
+                                document.getElementById('metalness-val').textContent = currentMaterial.metalness;
+                            }
+                            if (currentMaterial.roughness !== undefined) {
+                                document.getElementById('roughness').value = currentMaterial.roughness;
+                                document.getElementById('roughness-val').textContent = currentMaterial.roughness;
+                            }
+                        }
+                    });
+
+                    // Note: Edges are not created for 3MF models by default
+                    // as they may have multiple meshes with different geometries
+                    edgesMesh = null;
+                    mesh = null;
+
+                    // Calculate optimal camera distance
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraDistance = Math.abs(maxDim / Math.sin(fov / 2));
+
+                    const distanceMultiplier = parseFloat(document.getElementById('camera-distance').value);
+                    cameraDistance *= distanceMultiplier;
+
+                    camera.position.set(
+                        cameraDistance * 0.5,
+                        cameraDistance * 0.5,
+                        cameraDistance
+                    );
+                    camera.lookAt(0, 0, 0);
+
+                    console.log('📐 3MF centered and framed:', {
+                        size: `${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`,
+                        maxDim: maxDim.toFixed(2),
+                        cameraDistance: cameraDistance.toFixed(2)
+                    });
+
+                    statusEl.textContent = '✅ Loaded';
+                    statusEl.className = 'status-indicator ready';
+                    infoEl.textContent = `${filename} - 3MF model - Size: ${maxDim.toFixed(2)} units`;
+
+                    console.log('✅ 3MF model displayed');
+
+                    // Update global view if split view is active
+                    if (splitViewActive) {
+                        updateGlobalView();
+                    }
+                },
+                (progress) => {
+                    if (progress.total > 0) {
+                        const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                        infoEl.textContent = `Loading ${filename}... ${percent}%`;
+                    }
+                },
+                (error) => {
+                    console.error('❌ 3MF load error:', error);
+                    statusEl.textContent = '❌ Error';
+                    statusEl.className = 'status-indicator error';
+                    infoEl.textContent = `Error loading ${filename}: ${error.message}`;
+                }
+            );
+        }
+
+        // Load THREE.js JSON function
+        function loadJSON(url, filename) {
+            statusEl.textContent = '⏳ Loading...';
+            statusEl.className = 'status-indicator loading';
+            infoEl.textContent = `Loading ${filename}...`;
+
+            console.log(`📁 Loading THREE.js JSON: ${filename}`);
+
+            const loader = new THREE.ObjectLoader();
+
+            loader.load(
+                url,
+                (object) => {
+                    console.log('✅ THREE.js JSON loaded:', object);
+
+                    // Remove old mesh group if exists
+                    if (meshGroup) {
+                        scene.remove(meshGroup);
+                    }
+
+                    // Create group for the JSON object
+                    meshGroup = new THREE.Group();
+
+                    meshGroup.add(object);
+                    scene.add(meshGroup);
+
+                    // Center the model using shared function
+                    const { size } = centerModel(meshGroup);
+
+                    // Extract first material for controls (if available)
+                    let materialFound = false;
+                    object.traverse((child) => {
+                        if (child.isMesh && !materialFound) {
+                            currentMaterial = child.material;
+                            materialFound = true;
+
+                            // Update UI controls to match the material
+                            if (currentMaterial.color) {
+                                const color = '#' + currentMaterial.color.getHexString();
+                                document.getElementById('material-color').value = color;
+                            }
+                            if (currentMaterial.metalness !== undefined) {
+                                document.getElementById('metalness').value = currentMaterial.metalness;
+                                document.getElementById('metalness-val').textContent = currentMaterial.metalness;
+                            }
+                            if (currentMaterial.roughness !== undefined) {
+                                document.getElementById('roughness').value = currentMaterial.roughness;
+                                document.getElementById('roughness-val').textContent = currentMaterial.roughness;
+                            }
+                        }
+                    });
+
+                    // Note: Edges are not created for JSON models by default
+                    edgesMesh = null;
+                    mesh = null;
+
+                    // Calculate optimal camera distance
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraDistance = Math.abs(maxDim / Math.sin(fov / 2));
+
+                    const distanceMultiplier = parseFloat(document.getElementById('camera-distance').value);
+                    cameraDistance *= distanceMultiplier;
+
+                    camera.position.set(
+                        cameraDistance * 0.5,
+                        cameraDistance * 0.5,
+                        cameraDistance
+                    );
+                    camera.lookAt(0, 0, 0);
+
+                    console.log('📐 JSON centered and framed:', {
+                        size: `${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`,
+                        maxDim: maxDim.toFixed(2),
+                        cameraDistance: cameraDistance.toFixed(2)
+                    });
+
+                    statusEl.textContent = '✅ Loaded';
+                    statusEl.className = 'status-indicator ready';
+                    infoEl.textContent = `${filename} - THREE.js JSON - Size: ${maxDim.toFixed(2)} units`;
+
+                    console.log('✅ THREE.js JSON model displayed');
+
+                    // Update global view if split view is active
+                    if (splitViewActive) {
+                        updateGlobalView();
+                    }
+                },
+                (progress) => {
+                    if (progress.total > 0) {
+                        const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                        infoEl.textContent = `Loading ${filename}... ${percent}%`;
+                    }
+                },
+                (error) => {
+                    console.error('❌ THREE.js JSON load error:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        filename: filename,
+                        url: url
+                    });
+                    statusEl.textContent = '❌ Error';
+                    statusEl.className = 'status-indicator error';
+                    infoEl.textContent = `Error loading ${filename}: ${error.message || 'Unknown error'}`;
+                    alert(`Failed to load THREE.js JSON file.\n\nError: ${error.message || 'Unknown error'}\n\nMake sure the file is a valid THREE.js JSON export.\n\nCheck browser console (F12) for details.`);
+                }
+            );
+        }
+
+        // Unified model loader
+        function loadModel(url, filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+
+            // Track the model URL for embed code generation
+            // Only set if it's not a blob URL (blob URLs are temporary and won't work in embeds)
+            if (!url.startsWith('blob:')) {
+                currentModelURL = url;
+                console.log('📍 Model URL set for embed:', url);
+            } else {
+                currentModelURL = null;
+                console.log('⚠️ Model loaded from file - embed code requires a permanent URL');
+            }
+
+            if (ext === 'stl') {
+                loadSTL(url, filename);
+            } else if (ext === 'glb' || ext === 'gltf') {
+                loadGLTF(url, filename);
+            } else if (ext === '3mf') {
+                load3MF(url, filename);
+            } else if (ext === 'json') {
+                loadJSON(url, filename);
+            } else {
+                console.error('❌ Unsupported file format:', ext);
+                alert(`Unsupported file format: .${ext}\nSupported: .stl, .glb, .gltf, .3mf, .json`);
+            }
+        }
+
+        // Shared centering function
+        function centerModel(model) {
+            const originMode = document.getElementById('model-origin').value;
+
+            // Temporarily add to scene if not already there to ensure world matrix is updated
+            const wasInScene = model.parent !== null;
+            if (!wasInScene) {
+                scene.add(model);
+            }
+
+            // Update world matrices
+            model.updateMatrixWorld(true);
+
+            // Calculate bounding box in world coordinates
+            const box = new THREE.Box3().setFromObject(model);
+            const center = new THREE.Vector3();
+            const size = new THREE.Vector3();
+            box.getCenter(center);
+            box.getSize(size);
+
+            console.log('📦 Bounding box:', {
+                center: `(${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)})`,
+                size: `${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`,
+                min: `(${box.min.x.toFixed(2)}, ${box.min.y.toFixed(2)}, ${box.min.z.toFixed(2)})`,
+                max: `(${box.max.x.toFixed(2)}, ${box.max.y.toFixed(2)}, ${box.max.z.toFixed(2)})`
+            });
+
+            // Calculate offset to center the model at world origin
+            // This ensures the model rotates around its center (or bottom)
+            let offsetX, offsetY, offsetZ;
+
+            if (originMode === 'center') {
+                // Center to middle of mesh - move model so its center is at origin
+                offsetX = -center.x;
+                offsetY = -center.y;
+                offsetZ = -center.z;
+                console.log(`📍 Centering to middle: offset (${offsetX.toFixed(2)}, ${offsetY.toFixed(2)}, ${offsetZ.toFixed(2)})`);
+            } else if (originMode === 'bottom') {
+                // Center X and Z, but align bottom to Y=0 (ground plane)
+                offsetX = -center.x;
+                offsetY = -box.min.y;  // Move so bottom is at Y=0
+                offsetZ = -center.z;
+                console.log(`📍 Centering to bottom: offset (${offsetX.toFixed(2)}, ${offsetY.toFixed(2)}, ${offsetZ.toFixed(2)})`);
+            }
+
+            // Apply the offset to the model's position
+            model.position.set(offsetX, offsetY, offsetZ);
+
+            // Remove from scene if we temporarily added it
+            if (!wasInScene) {
+                scene.remove(model);
+            }
+
+            return { box, center, size };
+        }
+
+        // Re-center currently loaded model
+        window.recenterModel = function() {
+            if (!meshGroup || meshGroup.children.length === 0) {
+                alert('Please load a model first');
+                return;
+            }
+
+            // Re-center the entire meshGroup (not just first child)
+            const { size } = centerModel(meshGroup);
+
+            // Recalculate camera position
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            let cameraDistance = Math.abs(maxDim / Math.sin(fov / 2));
+
+            // Apply model fill (how much of the frame the model fills)
+            // Lower values = model fills more of frame (camera closer)
+            // Higher values = model fills less of frame (camera further)
+            const modelFill = parseFloat(document.getElementById('model-fill').value);
+            cameraDistance *= modelFill;
+
+            // Apply additional distance multiplier
+            const distanceMultiplier = parseFloat(document.getElementById('camera-distance').value);
+            cameraDistance *= distanceMultiplier;
+
+            camera.position.set(
+                cameraDistance * 0.5,
+                cameraDistance * 0.5,
+                cameraDistance
+            );
+            camera.lookAt(0, 0, 0);
+
+            const originMode = document.getElementById('model-origin').value;
+            const modeName = originMode === 'center' ? 'center' : 'bottom';
+            console.log(`✅ Model re-centered to ${modeName}`);
+        };
+
+        // Center origin to center of mesh
+        window.centerOriginToCenter = function() {
+            if (!meshGroup || meshGroup.children.length === 0) {
+                alert('Please load a model first');
+                return;
+            }
+
+            // Set dropdown to center
+            document.getElementById('model-origin').value = 'center';
+
+            // Re-center the model
+            recenterModel();
+            console.log('✅ Origin set to center of mesh');
+        };
+
+        // Center origin to bottom of mesh
+        window.centerOriginToBottom = function() {
+            if (!meshGroup || meshGroup.children.length === 0) {
+                alert('Please load a model first');
+                return;
+            }
+
+            // Set dropdown to bottom
+            document.getElementById('model-origin').value = 'bottom';
+
+            // Re-center the model
+            recenterModel();
+            console.log('✅ Origin set to bottom of mesh');
+        };
+
+        // Animation setup function
+        function setupAnimations(gltf) {
+            // Clear previous animations
+            if (mixer) {
+                mixer.stopAllAction();
+                mixer = null;
+            }
+            currentAction = null;
+            animations = gltf.animations || [];
+
+            const animationSection = document.getElementById('animation-section');
+            const animationClipSelect = document.getElementById('animation-clip');
+
+            if (animations.length === 0) {
+                // No animations, hide the section
+                animationSection.style.display = 'none';
+                animationClipSelect.innerHTML = '<option value="">No animations</option>';
+                console.log('ℹ️ No animations found in GLTF');
+                return;
+            }
+
+            // Show animation section
+            animationSection.style.display = 'block';
+
+            // Create animation mixer
+            mixer = new THREE.AnimationMixer(gltf.scene);
+
+            // Populate animation dropdown
+            animationClipSelect.innerHTML = '<option value="">Select animation...</option>';
+            animations.forEach((clip, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = clip.name || `Animation ${index + 1}`;
+                animationClipSelect.appendChild(option);
+            });
+
+            console.log(`✅ Found ${animations.length} animation(s):`, animations.map(a => a.name || 'Unnamed'));
+
+            // Auto-play first animation if available
+            if (animations.length > 0) {
+                animationClipSelect.value = '0';
+                playAnimation(0);
+            }
+        }
+
+        // Play specific animation by index
+        function playAnimation(index) {
+            if (!mixer || !animations[index]) return;
+
+            // Stop current action if exists
+            if (currentAction) {
+                currentAction.stop();
+            }
+
+            // Create and play new action
+            const clip = animations[index];
+            currentAction = mixer.clipAction(clip);
+
+            // Apply settings
+            const loop = document.getElementById('animation-loop').checked;
+            const speed = parseFloat(document.getElementById('animation-speed').value);
+
+            currentAction.loop = loop ? THREE.LoopRepeat : THREE.LoopOnce;
+            currentAction.timeScale = speed;
+            currentAction.play();
+
+            console.log(`▶️ Playing animation: ${clip.name || 'Unnamed'} (loop: ${loop}, speed: ${speed}x)`);
+        }
+
+        // Toggle animation play/pause
+        window.toggleAnimation = function() {
+            if (!currentAction) {
+                alert('No animation loaded. Load a GLB/GLTF file with animations first.');
+                return;
+            }
+
+            if (currentAction.paused) {
+                currentAction.paused = false;
+                console.log('▶️ Animation resumed');
+            } else {
+                currentAction.paused = true;
+                console.log('⏸️ Animation paused');
+            }
+        };
+
+        // File input handler
+        document.getElementById('file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Check for Alembic files (common mistake)
+            if (file.name.toLowerCase().endsWith('.abc')) {
+                alert('⚠️ Alembic (.abc) files are not supported.\n\nPlease convert to GLB/GLTF in Blender:\n1. Import .abc file\n2. Export as glTF 2.0 (.glb)');
+                return;
+            }
+
+            // For GLB/GLTF files, check if they're valid
+            if (file.name.toLowerCase().match(/\.(glb|gltf)$/)) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const arrayBuffer = event.target.result;
+                    const bytes = new Uint8Array(arrayBuffer);
+
+                    // Check for Alembic magic number "Ogawa"
+                    const header = String.fromCharCode(...bytes.slice(0, 10));
+                    if (header.includes('Ogawa') || header.includes('Alembic')) {
+                        alert('⚠️ This file appears to be an Alembic cache file, not a GLB.\n\nThe file has a .glb extension but contains Alembic data.\n\nPlease re-export from Blender using the standard glTF 2.0 exporter:\n• File → Export → glTF 2.0 (.glb)\n• NOT a custom Alembic-based exporter');
+                        statusEl.textContent = '❌ Error';
+                        statusEl.className = 'status-indicator error';
+                        infoEl.textContent = 'Invalid GLB: File contains Alembic data';
+                        return;
+                    }
+
+                    // Check for valid GLB magic number (0x46546C67 = "glTF")
+                    const magic = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+                    if (magic !== 0x46546C67) {
+                        console.warn('⚠️ GLB magic number mismatch. Expected 0x46546C67, got:', magic.toString(16));
+                        alert(`⚠️ This may not be a valid GLB file.\n\nFile format check failed.\n\nTry re-exporting from Blender using:\n• File → Export → glTF 2.0 (.glb)\n• Make sure to use the OFFICIAL Blender glTF exporter, not custom addons`);
+                    }
+
+                    // File seems valid or we'll try anyway, proceed with loading
+                    const url = URL.createObjectURL(file);
+                    loadModel(url, file.name);
+                };
+
+                // Read first 100 bytes to check format
+                reader.readAsArrayBuffer(file.slice(0, 100));
+            } else {
+                // Non-GLB files, load directly
+                const url = URL.createObjectURL(file);
+                loadModel(url, file.name);
+            }
+        });
+
+        // Load bolt.stl
+        window.loadBolt = async function() {
+            const filename = 'bolt.stl';
+            // Try multiple possible paths
+            const possiblePaths = [
+                'test-assets/bolt.stl',
+                '../test-assets/bolt.stl',
+                'bolt.stl'
+            ];
+
+            for (const url of possiblePaths) {
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const objectUrl = URL.createObjectURL(blob);
+                        loadModel(objectUrl, filename);
+                        return;
+                    }
+                } catch (error) {
+                    // Try next path
+                    continue;
+                }
+            }
+
+            // If all paths failed, show error
+            console.error('❌ Failed to load bolt.stl from any path');
+            statusEl.textContent = '❌ Error';
+            statusEl.className = 'status-indicator error';
+            infoEl.textContent = `Failed to load ${filename}. Please use the file input to load it manually.`;
+        };
+
+        // ========== VISUAL CONTROLS ==========
+
+        // Helper function to apply material property to all meshes
+        function applyToAllMeshes(callback) {
+            if (meshGroup) {
+                meshGroup.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        callback(child.material);
+                    }
+                });
+            } else if (currentMaterial) {
+                callback(currentMaterial);
+            }
+        }
+
+        // Material Controls - only affect current view, not global view
+        document.getElementById('material-color').addEventListener('input', (e) => {
+            applyToAllMeshes((material) => {
+                if (material.color) {
+                    material.color.set(e.target.value);
+                }
+            });
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('edge-color').addEventListener('input', (e) => {
+            if (edgesMesh) {
+                edgesMesh.material.color.set(e.target.value);
+            }
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('edge-thickness').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('edge-thickness-val').textContent = val;
+            if (edgesMesh) {
+                edgesMesh.material.linewidth = val;
+            }
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('metalness').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('metalness-val').textContent = val;
+            applyToAllMeshes((material) => {
+                if (material.metalness !== undefined) {
+                    material.metalness = val;
+                }
+            });
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('roughness').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('roughness-val').textContent = val;
+            applyToAllMeshes((material) => {
+                if (material.roughness !== undefined) {
+                    material.roughness = val;
+                }
+            });
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('show-edges').addEventListener('change', (e) => {
+            if (edgesMesh) {
+                edgesMesh.visible = e.target.checked;
+            }
+            // Global view should stay fixed to global config, don't update it
+        });
+
+        // Lighting Controls - only affect current view, not global view
+        document.getElementById('hemi-intensity').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('hemi-intensity-val').textContent = val;
+            hemiLight.intensity = val;
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('key-intensity').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('key-intensity-val').textContent = val;
+            keyLight.intensity = val;
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('fill-intensity').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('fill-intensity-val').textContent = val;
+            fillLight.intensity = val;
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('rim-intensity').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('rim-intensity-val').textContent = val;
+            rimLight.intensity = val;
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('ambient-intensity').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('ambient-intensity-val').textContent = val;
+            ambient.intensity = val;
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('bg-mode').addEventListener('change', (e) => {
+            const colorInput = document.getElementById('bg-color');
+            if (e.target.value === 'transparent') {
+                scene.background = null;
+                colorInput.disabled = true;
+            } else {
+                scene.background = new THREE.Color(colorInput.value);
+                colorInput.disabled = false;
+            }
+            // Global view stays fixed to global config - don't update it
+        });
+
+        document.getElementById('bg-color').addEventListener('input', (e) => {
+            if (document.getElementById('bg-mode').value === 'color') {
+                scene.background.set(e.target.value);
+            }
+            // Global view stays fixed to global config - don't update it
+        });
+
+        // Shader Preset System
+        const shaderPresets = {
+            pbr: { metalness: 0.3, roughness: 0.4, color: 0x888888, name: 'PBR Realistic' },
+            toon: { metalness: 0.0, roughness: 1.0, color: 0xffffff, name: 'Toon/Cel Shaded' },
+            matcap: { metalness: 0.0, roughness: 0.5, color: 0xcccccc, name: 'MatCap Style' },
+            clay: { metalness: 0.0, roughness: 0.9, color: 0xe0e0e0, name: 'Clay Render' },
+            metal: { metalness: 1.0, roughness: 0.2, color: 0xffffff, name: 'Metallic' },
+            plastic: { metalness: 0.0, roughness: 0.3, color: 0xff6b35, name: 'Plastic' },
+            glass: { metalness: 0.0, roughness: 0.05, color: 0xccffff, name: 'Glass' }
+        };
+
+        window.applyShaderPreset = function() {
+            const presetName = document.getElementById('shader-preset').value;
+            const preset = shaderPresets[presetName];
+
+            if (!currentMaterial && !meshGroup) {
+                alert('Please load a model first');
+                return;
+            }
+
+            // Apply preset values to all materials
+            applyToAllMeshes((material) => {
+                if (material.metalness !== undefined) material.metalness = preset.metalness;
+                if (material.roughness !== undefined) material.roughness = preset.roughness;
+                if (material.color) material.color.setHex(preset.color);
+            });
+
+            // Update UI controls
+            document.getElementById('metalness').value = preset.metalness;
+            document.getElementById('metalness-val').textContent = preset.metalness;
+            document.getElementById('roughness').value = preset.roughness;
+            document.getElementById('roughness-val').textContent = preset.roughness;
+            document.getElementById('material-color').value = '#' + preset.color.toString(16).padStart(6, '0');
+
+            // Special handling for toon shader
+            if (presetName === 'toon') {
+                // Enable toon steps control
+                document.getElementById('toon-steps').disabled = false;
+                applyToonShader();
+            } else {
+                document.getElementById('toon-steps').disabled = true;
+            }
+
+            console.log('✅ Applied shader preset:', preset.name);
+        };
+
+        function applyToonShader() {
+            const steps = parseInt(document.getElementById('toon-steps').value);
+
+            // Apply toon shader to all materials
+            applyToAllMeshes((material) => {
+                material.onBeforeCompile = (shader) => {
+                    shader.fragmentShader = shader.fragmentShader.replace(
+                        '#include <dithering_fragment>',
+                        `
+                        #include <dithering_fragment>
+
+                        // Toon shading quantization
+                        float toonSteps = ${steps}.0;
+                        vec3 toonColor = floor(gl_FragColor.rgb * toonSteps) / toonSteps;
+                        gl_FragColor.rgb = toonColor;
+                        `
+                    );
+                };
+                material.needsUpdate = true;
+            });
+        }
+
+        document.getElementById('shader-preset').addEventListener('change', () => {
+            const preset = document.getElementById('shader-preset').value;
+            document.getElementById('toon-steps').disabled = (preset !== 'toon');
+        });
+
+        document.getElementById('toon-steps').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('toon-steps-val').textContent = val;
+            if (document.getElementById('shader-preset').value === 'toon' && currentMaterial) {
+                applyToonShader();
+            }
+        });
+
+        // Display Settings Controls
+        document.getElementById('show-embed-boundary').addEventListener('change', (e) => {
+            const overlay = document.getElementById('embed-boundary');
+            if (e.target.checked) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        });
+
+        // Split View Functions
+        function initGlobalView() {
+            if (globalRenderer) return; // Already initialized
+
+            const globalContainer = document.getElementById('global-view-container');
+            globalScene = new THREE.Scene();
+            globalScene.background = null;
+
+            // Calculate aspect ratio from actual container dimensions
+            globalCamera = new THREE.PerspectiveCamera(45, globalContainer.clientWidth / globalContainer.clientHeight, 0.01, 100000);
+            globalCamera.position.set(0, 2, 5);
+
+            globalRenderer = new THREE.WebGLRenderer({
+                antialias: true,
+                alpha: true
+            });
+            globalRenderer.setSize(globalContainer.clientWidth, globalContainer.clientHeight);
+            globalRenderer.shadowMap.enabled = true;
+            globalRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            globalRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+            globalRenderer.toneMappingExposure = 1.0;
+            globalContainer.appendChild(globalRenderer.domElement);
+
+            // Setup lighting for global view
+            globalLights.hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            globalScene.add(globalLights.hemi);
+
+            globalLights.key = new THREE.DirectionalLight(0xffffff, 0.8);
+            globalLights.key.position.set(5, 10, 7);
+            globalScene.add(globalLights.key);
+
+            globalLights.fill = new THREE.DirectionalLight(0xffffff, 0.4);
+            globalLights.fill.position.set(-5, 5, -5);
+            globalScene.add(globalLights.fill);
+
+            globalLights.rim = new THREE.DirectionalLight(0xffffff, 0.5);
+            globalLights.rim.position.set(0, 5, -10);
+            globalScene.add(globalLights.rim);
+
+            globalLights.ambient = new THREE.AmbientLight(0x404040, 0.2);
+            globalScene.add(globalLights.ambient);
+
+            // Animation loop for global view
+            function animateGlobal() {
+                requestAnimationFrame(animateGlobal);
+
+                if (globalMeshGroup && rotating) {
+                    globalMeshGroup.rotation.y += rotateSpeed;
+                }
+
+                if (globalRenderer && globalScene && globalCamera) {
+                    globalRenderer.render(globalScene, globalCamera);
+                }
+            }
+            animateGlobal();
+
+            // Update global view when model is loaded
+            if (meshGroup) {
+                updateGlobalView();
+            }
+        }
+
+        function updateGlobalView() {
+            if (!globalScene || !meshGroup) return;
+
+            // Clear existing model
+            if (globalMeshGroup) {
+                globalScene.remove(globalMeshGroup);
+            }
+            if (globalEdgesMesh) {
+                globalScene.remove(globalEdgesMesh);
+            }
+
+            // Clone the current model (deep clone to avoid material reference sharing)
+            globalMeshGroup = meshGroup.clone(true);
+            
+            // Clone materials to avoid reference sharing between views
+            globalMeshGroup.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    // Clone the material so changes to current view don't affect global view
+                    if (child.material.isMaterial) {
+                        child.material = child.material.clone();
+                    }
+                }
+                if (child.isLineSegments && child.material) {
+                    // Clone edge material too
+                    if (child.material.isMaterial) {
+                        child.material = child.material.clone();
+                    }
+                }
+            });
+            
+            globalScene.add(globalMeshGroup);
+
+            // Find edges mesh in clone
+            globalEdgesMesh = null;
+            globalMeshGroup.traverse((child) => {
+                if (child.isLineSegments) {
+                    globalEdgesMesh = child;
+                }
+            });
+
+            // Apply global config to the cloned scene (this will set all values from config)
+            let globalMaterial = null;
+            globalMeshGroup.traverse((child) => {
+                if (child.isMesh && !globalMaterial) {
+                    globalMaterial = child.material;
+                }
+            });
+
+            // Force apply global config to global view
+            applyConfigToScene(
+                globalScene,
+                globalLights.hemi,
+                globalLights.key,
+                globalLights.fill,
+                globalLights.rim,
+                globalLights.ambient,
+                globalMaterial,
+                globalEdgesMesh
+            );
+
+            // Also call reset function to ensure everything is set correctly
+            resetGlobalViewToConfig();
+
+            // Position camera same as main camera
+            if (globalCamera && camera) {
+                globalCamera.position.copy(camera.position);
+                globalCamera.rotation.copy(camera.rotation);
+                globalCamera.fov = camera.fov;
+                globalCamera.updateProjectionMatrix();
+            }
+        }
+
+        window.toggleSplitView = function() {
+            splitViewActive = !splitViewActive;
+            const splitContainer = document.getElementById('split-view-container');
+            const toggleBtn = document.getElementById('toggle-split-view');
+            const checkbox = document.getElementById('split-view-checkbox');
+            const currentPanel = document.getElementById('current-view-panel');
+
+            if (splitViewActive) {
+                if (!meshGroup) {
+                    alert('Please load a model first to use split view comparison');
+                    splitViewActive = false;
+                    if (checkbox) checkbox.checked = false;
+                    return;
+                }
+
+                splitContainer.classList.add('active');
+                toggleBtn.classList.add('active');
+                if (checkbox) checkbox.checked = true;
+
+                // Move main renderer to current view panel
+                if (!currentPanel.contains(renderer.domElement)) {
+                    currentPanel.appendChild(renderer.domElement);
+                }
+
+                // Initialize global view if not done
+                initGlobalView();
+
+                // Update global view with current model and apply global config
+                updateGlobalView();
+
+                // Resize renderers for split view
+                const panelWidth = window.innerWidth / 2;
+                const panelHeight = window.innerHeight;
+
+                renderer.setSize(panelWidth, panelHeight);
+                if (globalRenderer) {
+                    globalRenderer.setSize(panelWidth, panelHeight);
+                }
+
+                // Hide main viewer container
+                container.style.display = 'none';
+            } else {
+                splitContainer.classList.remove('active');
+                toggleBtn.classList.remove('active');
+                if (checkbox) checkbox.checked = false;
+
+                // Move renderer back to main container
+                if (!container.contains(renderer.domElement)) {
+                    container.appendChild(renderer.domElement);
+                }
+
+                // Restore main viewer
+                container.style.display = 'block';
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+        };
+
+        // Update split view when window resizes
+        window.addEventListener('resize', () => {
+            if (splitViewActive) {
+                const panelWidth = window.innerWidth / 2;
+                const panelHeight = window.innerHeight;
+                renderer.setSize(panelWidth, panelHeight);
+                camera.aspect = panelWidth / panelHeight;
+                camera.updateProjectionMatrix();
+                if (globalRenderer) {
+                    globalRenderer.setSize(panelWidth, panelHeight);
+                    if (globalCamera) {
+                        globalCamera.aspect = panelWidth / panelHeight;
+                        globalCamera.updateProjectionMatrix();
+                    }
+                }
+            } else {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+        });
+
+
+
+        // Camera Controls
+        document.getElementById('camera-distance').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('camera-distance-val').textContent = val;
+            // Recenter model to apply new distance
+            if (meshGroup && meshGroup.children.length > 0) {
+                recenterModel();
+                // Sync camera to global view if split view is active
+                if (splitViewActive && globalCamera) {
+                    globalCamera.position.copy(camera.position);
+                    globalCamera.rotation.copy(camera.rotation);
+                    globalCamera.fov = camera.fov;
+                    globalCamera.updateProjectionMatrix();
+                }
+            }
+        });
+
+        document.getElementById('model-fill').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('model-fill-val').textContent = val.toFixed(2);
+            // Recenter model to apply new fill amount
+            if (meshGroup && meshGroup.children.length > 0) {
+                recenterModel();
+                // Sync camera to global view if split view is active
+                if (splitViewActive && globalCamera) {
+                    globalCamera.position.copy(camera.position);
+                    globalCamera.rotation.copy(camera.rotation);
+                    globalCamera.fov = camera.fov;
+                    globalCamera.updateProjectionMatrix();
+                }
+            }
+        });
+
+        document.getElementById('fov').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('fov-val').textContent = val;
+            camera.fov = val;
+            camera.updateProjectionMatrix();
+            // Sync camera to global view if split view is active
+            if (splitViewActive && globalCamera) {
+                globalCamera.fov = val;
+                globalCamera.updateProjectionMatrix();
+            }
+        });
+
+        document.getElementById('rotate-speed').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('rotate-speed-val').textContent = val;
+            rotateSpeed = val;
+        });
+
+        // Animation Controls
+        document.getElementById('animation-clip').addEventListener('change', (e) => {
+            const index = parseInt(e.target.value);
+            if (!isNaN(index) && index >= 0) {
+                playAnimation(index);
+            }
+        });
+
+        document.getElementById('animation-loop').addEventListener('change', (e) => {
+            if (currentAction) {
+                currentAction.loop = e.target.checked ? THREE.LoopRepeat : THREE.LoopOnce;
+                console.log(`🔁 Loop ${e.target.checked ? 'enabled' : 'disabled'}`);
+            }
+        });
+
+        document.getElementById('animation-speed').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('animation-speed-val').textContent = val;
+            if (currentAction) {
+                currentAction.timeScale = val;
+                console.log(`⚡ Animation speed: ${val}x`);
+            }
+        });
+
+        // ========== UI CONTROLS ==========
+
+        // Toggle panel visibility
+        window.togglePanel = function() {
+            const panel = document.getElementById('controls-panel');
+            panel.classList.toggle('collapsed');
+        };
+
+        // Toggle section collapse/expand
+        window.toggleSection = function(headerElement) {
+            const section = headerElement.closest('.control-section');
+            if (!section) return;
+            
+            section.classList.toggle('collapsed');
+            
+            // Save state to localStorage
+            const sectionName = section.dataset.section;
+            if (sectionName) {
+                const isCollapsed = section.classList.contains('collapsed');
+                localStorage.setItem(`section-${sectionName}-collapsed`, isCollapsed);
+            }
+        };
+
+        // Restore collapsed state from localStorage on page load
+        function restoreSectionStates() {
+            const sections = document.querySelectorAll('.control-section[data-section]');
+            sections.forEach(section => {
+                const sectionName = section.dataset.section;
+                if (sectionName) {
+                    const isCollapsed = localStorage.getItem(`section-${sectionName}-collapsed`) === 'true';
+                    if (isCollapsed) {
+                        section.classList.add('collapsed');
+                    }
+                }
+            });
+        }
+
+        // Run immediately if DOM is ready, otherwise wait for DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restoreSectionStates);
+        } else {
+            restoreSectionStates();
+        }
+
+        // ========== PREVIEW & EMBED ==========
+
+        let previewRenderer = null;
+        let previewScene = null;
+        let previewCamera = null;
+        let currentModelURL = null;
+
+        // Open preview modal
+        window.openPreview = function() {
+            if (!meshGroup || meshGroup.children.length === 0) {
+                alert('Please load a model first');
+                return;
+            }
+
+            const previewContainer = document.getElementById('preview-container');
+            previewContainer.classList.add('active');
+
+            // Initialize preview renderer if not done yet
+            if (!previewRenderer) {
+                initPreviewRenderer();
+            }
+
+            // Update preview with current scene
+            updatePreviewScene();
+
+            // Generate embed code
+            generateEmbedCode();
+        };
+
+        // Close preview modal
+        window.closePreview = function() {
+            const previewContainer = document.getElementById('preview-container');
+            previewContainer.classList.remove('active');
+        };
+
+        // Initialize preview renderer
+        function initPreviewRenderer() {
+            const container = document.getElementById('preview-canvas-container');
+
+            // Create viewport wrapper with dimensions display
+            const viewport = document.createElement('div');
+            viewport.className = 'preview-viewport';
+
+            // Create dimensions label
+            const dimensionsLabel = document.createElement('div');
+            dimensionsLabel.className = 'preview-dimensions';
+            viewport.appendChild(dimensionsLabel);
+
+            // Calculate embed dimensions (800x600 default for preview)
+            const embedWidth = 800;
+            const embedHeight = 600;
+
+            // Update dimensions label
+            dimensionsLabel.textContent = `${embedWidth}px × ${embedHeight}px`;
+
+            // Set viewport size
+            viewport.style.width = embedWidth + 'px';
+            viewport.style.height = embedHeight + 'px';
+
+            previewScene = new THREE.Scene();
+            previewCamera = new THREE.PerspectiveCamera(45, embedWidth / embedHeight, 0.01, 100000);
+
+            previewRenderer = new THREE.WebGLRenderer({
+                antialias: true,
+                alpha: true
+            });
+            previewRenderer.setSize(embedWidth, embedHeight);
+            previewRenderer.shadowMap.enabled = true;
+            previewRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+            viewport.appendChild(previewRenderer.domElement);
+            container.appendChild(viewport);
+
+            // Setup lighting for preview
+            const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            previewScene.add(hemi);
+
+            const key = new THREE.DirectionalLight(0xffffff, 0.8);
+            key.position.set(5, 10, 7);
+            previewScene.add(key);
+
+            const fill = new THREE.DirectionalLight(0xffffff, 0.4);
+            fill.position.set(-5, 5, -5);
+            previewScene.add(fill);
+
+
+            // Animation loop for preview
+            function animatePreview() {
+                requestAnimationFrame(animatePreview);
+
+                if (previewScene.children.length > 3) { // More than just lights
+                    const model = previewScene.children[3]; // First non-light object
+                    if (model && rotating) {
+                        model.rotation.y += rotateSpeed;
+                    }
+                }
+
+                previewRenderer.render(previewScene, previewCamera);
+            }
+            animatePreview();
+
+            console.log('✅ Preview renderer initialized');
+        }
+
+        // Update preview scene with current model
+        function updatePreviewScene() {
+            if (!previewScene) return;
+
+            // Clear existing model
+            while (previewScene.children.length > 3) {
+                previewScene.remove(previewScene.children[3]);
+            }
+
+            // Clone the current model
+            const modelClone = meshGroup.clone();
+            previewScene.add(modelClone);
+
+            // Position camera to frame the model
+            const box = new THREE.Box3().setFromObject(modelClone);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = previewCamera.fov * (Math.PI / 180);
+            let cameraDistance = Math.abs(maxDim / Math.sin(fov / 2));
+
+            // Apply model fill
+            const modelFill = parseFloat(document.getElementById('model-fill').value);
+            cameraDistance *= modelFill;
+
+            // Apply distance multiplier
+            cameraDistance *= parseFloat(document.getElementById('camera-distance').value);
+
+            previewCamera.position.set(
+                cameraDistance * 0.5,
+                cameraDistance * 0.5,
+                cameraDistance
+            );
+            previewCamera.lookAt(0, 0, 0);
+
+            // Copy background setting
+            const bgMode = document.getElementById('bg-mode').value;
+            if (bgMode === 'color') {
+                previewScene.background = new THREE.Color(document.getElementById('bg-color').value);
+            } else {
+                previewScene.background = null;
+            }
+        }
+
+        // Generate config JSON for product card carousel
+        function generateEmbedCode() {
+            const bgMode = document.getElementById('bg-mode').value;
+            const bgColor = document.getElementById('bg-color').value;
+            const fov = document.getElementById('fov').value;
+            const rotateSpeed = document.getElementById('rotate-speed').value;
+            const cameraDistance = document.getElementById('camera-distance').value;
+            const modelFill = document.getElementById('model-fill').value;
+
+            // Material settings
+            const metalness = document.getElementById('metalness').value;
+            const roughness = document.getElementById('roughness').value;
+            const materialColor = document.getElementById('material-color').value;
+
+            // Toon outline settings
+            const showEdges = document.getElementById('show-edges').checked;
+            const edgeColor = document.getElementById('edge-color').value;
+            const edgeThickness = document.getElementById('edge-thickness').value;
+
+            // Lighting settings
+            const hemiIntensity = document.getElementById('hemi-intensity').value;
+            const keyIntensity = document.getElementById('key-intensity').value;
+            const fillIntensity = document.getElementById('fill-intensity').value;
+            const rimIntensity = document.getElementById('rim-intensity').value;
+            const ambientIntensity = document.getElementById('ambient-intensity').value;
+
+            // Build the config object matching the expected structure
+            const config = {
+                enabled: true,
+                viewer: {
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "100%",
+                    usePixels: false,
+                    maintainAspect: true,
+                    aspectRatio: "1:1"
+                },
+                embed: {
+                    backgroundColor: bgMode === 'color' ? bgColor : 'transparent',
+                    backgroundOpacity: bgMode === 'color' ? 1.0 : 0.0,
+                    transparentBackground: bgMode === 'transparent',
+                    interactionMode: "full",
+                    enableAR: false,
+                    loadingStrategy: "auto",
+                    revealStrategy: "auto"
+                },
+                camera: {
+                    fieldOfView: `${fov}deg`,
+                    exposure: "1.0",
+                    cameraControls: true,
+                    autoRotate: parseFloat(rotateSpeed) > 0,
+                    rotationSpeed: `${Math.abs(parseFloat(rotateSpeed) * 60)}deg`,
+                    cameraOrbit: `0deg 75deg ${cameraDistance}m`,
+                    cameraDistance: parseFloat(cameraDistance),
+                    modelFill: parseFloat(modelFill)
+                },
+                performance: {
+                    renderQuality: "auto",
+                    enableShadows: false,
+                    shadowIntensity: "0",
+                    enableToneMapping: true,
+                    toneMapping: "auto"
+                },
+                model: {
+                    scale: "1 1 1"
+                },
+                material: {
+                    metalness: parseFloat(metalness),
+                    roughness: parseFloat(roughness),
+                    color: materialColor,
+                    edges: {
+                        enabled: showEdges,
+                        color: edgeColor,
+                        thickness: parseFloat(edgeThickness)
+                    }
+                },
+                lighting: {
+                    hemisphere: {
+                        enabled: true,
+                        skyColor: "#ffffff",
+                        groundColor: "#444444",
+                        intensity: parseFloat(hemiIntensity)
+                    },
+                    key: {
+                        enabled: true,
+                        color: "#ffffff",
+                        intensity: parseFloat(keyIntensity),
+                        position: { x: 5, y: 10, z: 7 }
+                    },
+                    fill: {
+                        enabled: true,
+                        color: "#8888ff",
+                        intensity: parseFloat(fillIntensity),
+                        position: { x: -5, y: 5, z: 5 }
+                    },
+                    rim: {
+                        enabled: true,
+                        color: "#ffffff",
+                        intensity: parseFloat(rimIntensity),
+                        position: { x: 0, y: 3, z: -10 }
+                    },
+                    ambient: {
+                        enabled: true,
+                        color: "#404040",
+                        intensity: parseFloat(ambientIntensity)
+                    }
+                }
+            };
+
+            // Add model URL if available
+            if (currentModelURL) {
+                config.model.url = currentModelURL;
+            }
+
+            // Convert to formatted JSON
+            const configJSON = JSON.stringify(config, null, 2);
+            document.getElementById('embed-code').value = configJSON;
+        }
+
+        // Copy config to clipboard
+        window.copyConfig = function() {
+            const config = document.getElementById('embed-code');
+            config.select();
+            document.execCommand('copy');
+            alert('Config JSON copied to clipboard!');
+        };
+
+        // Download config as JSON file
+        window.downloadConfig = function() {
+            const configJSON = document.getElementById('embed-code').value;
+            const blob = new Blob([configJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '3d-embed-config.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // Generate and save global config file
+        window.downloadGlobalConfig = async function() {
+            if (!confirm('This will generate a new global config file based on your current settings.\n\nThis will replace:\nno3d-tools-website/3d-embed-config-global.json\n\nContinue?')) {
+                return;
+            }
+
+            const bgMode = document.getElementById('bg-mode').value;
+            const bgColor = document.getElementById('bg-color').value;
+            const fov = document.getElementById('fov').value;
+            const rotateSpeed = document.getElementById('rotate-speed').value;
+            const cameraDistance = document.getElementById('camera-distance').value;
+            const modelFill = document.getElementById('model-fill').value;
+
+            // Material settings
+            const metalness = document.getElementById('metalness').value;
+            const roughness = document.getElementById('roughness').value;
+            const materialColor = document.getElementById('material-color').value;
+
+            // Toon outline settings
+            const showEdges = document.getElementById('show-edges').checked;
+            const edgeColor = document.getElementById('edge-color').value;
+            const edgeThickness = document.getElementById('edge-thickness').value;
+
+            // Lighting settings
+            const hemiIntensity = document.getElementById('hemi-intensity').value;
+            const keyIntensity = document.getElementById('key-intensity').value;
+            const fillIntensity = document.getElementById('fill-intensity').value;
+            const rimIntensity = document.getElementById('rim-intensity').value;
+            const ambientIntensity = document.getElementById('ambient-intensity').value;
+
+            // Build the global config object (same structure as the existing global config)
+            const newGlobalConfig = {
+                enabled: true,
+                viewer: {
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "100%",
+                    usePixels: false,
+                    maintainAspect: true,
+                    aspectRatio: "1:1"
+                },
+                embed: {
+                    backgroundColor: bgMode === 'color' ? bgColor : 'transparent',
+                    backgroundOpacity: bgMode === 'color' ? 1.0 : 0.0,
+                    transparentBackground: bgMode === 'transparent',
+                    interactionMode: "full",
+                    enableAR: false,
+                    loadingStrategy: "auto",
+                    revealStrategy: "auto"
+                },
+                camera: {
+                    fieldOfView: `${fov}deg`,
+                    exposure: "1.0",
+                    cameraControls: true,
+                    autoRotate: parseFloat(rotateSpeed) > 0,
+                    rotationSpeed: `${Math.abs(parseFloat(rotateSpeed) * 60)}deg`,
+                    cameraOrbit: `0deg 75deg ${cameraDistance}m`,
+                    cameraDistance: parseFloat(cameraDistance),
+                    modelFill: parseFloat(modelFill)
+                },
+                performance: {
+                    renderQuality: "auto",
+                    enableShadows: false,
+                    shadowIntensity: "0",
+                    enableToneMapping: true,
+                    toneMapping: "auto"
+                },
+                model: {
+                    scale: "1 1 1"
+                },
+                material: {
+                    metalness: parseFloat(metalness),
+                    roughness: parseFloat(roughness),
+                    color: materialColor,
+                    edges: {
+                        enabled: showEdges,
+                        color: edgeColor,
+                        thickness: parseFloat(edgeThickness)
+                    }
+                },
+                lighting: {
+                    hemisphere: {
+                        enabled: true,
+                        skyColor: "#ffffff",
+                        groundColor: "#444444",
+                        intensity: parseFloat(hemiIntensity)
+                    },
+                    key: {
+                        enabled: true,
+                        color: "#ffffff",
+                        intensity: parseFloat(keyIntensity),
+                        position: {
+                            x: 5,
+                            y: 10,
+                            z: 7
+                        }
+                    },
+                    fill: {
+                        enabled: true,
+                        color: "#8888ff",
+                        intensity: parseFloat(fillIntensity),
+                        position: {
+                            x: -5,
+                            y: 5,
+                            z: 5
+                        }
+                    },
+                    rim: {
+                        enabled: true,
+                        color: "#ffffff",
+                        intensity: parseFloat(rimIntensity),
+                        position: {
+                            x: 0,
+                            y: 3,
+                            z: -10
+                        }
+                    },
+                    ambient: {
+                        enabled: true,
+                        color: "#404040",
+                        intensity: parseFloat(ambientIntensity)
+                    }
+                }
+            };
+
+            // Convert to formatted JSON
+            const configJSON = JSON.stringify(newGlobalConfig, null, 2);
+            
+            // Try to save via API first (if available), otherwise download
+            try {
+                // Try to save via API endpoint
+                const response = await fetch('/api/save-global-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: configJSON,
+                        path: '3d-embed-config-global.json',
+                        message: 'Update global 3D embed config from utility'
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('✅ Global config saved successfully!\n\n' +
+                          'The file has been updated in the repository.\n' +
+                          'New settings will apply to all products.');
+                    
+                    // Reload the global config to reflect changes
+                    loadGlobalConfig().then(() => {
+                        if (globalConfig) {
+                            applyGlobalConfigToUI();
+                            console.log('✅ Global config reloaded with new settings');
+                            // Update global view if split view is active
+                            if (splitViewActive) {
+                                updateGlobalView();
+                            }
+                        }
+                    });
+                    return;
+                } else {
+                    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.warn('API save failed, falling back to download:', error);
+                    // Fall through to download
+                }
+            } catch (error) {
+                console.log('API endpoint not available, downloading file instead:', error);
+                // Fall through to download
+            }
+
+            // Fallback: Download the file for manual replacement
+            const blob = new Blob([configJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '3d-embed-config-global.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show instructions
+            alert('Global config file downloaded!\n\n' +
+                  'To apply it:\n' +
+                  '1. Replace the file at: no3d-tools-website/3d-embed-config-global.json\n' +
+                  '2. Commit and push to GitHub\n' +
+                  '3. The new settings will apply to all products');
+        };
+
+        console.log('✅ Page ready');
+    </script>
+</body>
+</html>
