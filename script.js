@@ -3158,17 +3158,24 @@ function performSearch(query) {
 }
 
 function renderSearchResults() {
+  console.log('🎨 renderSearchResults called, results count:', searchResults.length);
+  console.log('   searchResultsContainer:', searchResultsContainer);
+  console.log('   searchResultsEmpty:', searchResultsEmpty);
+
   searchResultsContainer.innerHTML = '';
 
   if (searchResults.length === 0) {
+    console.log('   ❌ No results, showing empty state');
     searchResultsEmpty.style.display = 'flex';
     return;
   }
 
+  console.log('   ✅ Rendering', searchResults.length, 'results');
   searchResultsEmpty.style.display = 'none';
 
   searchResults.forEach((productId, index) => {
     const product = products[productId];
+    console.log('   📦 Rendering result', index, ':', product?.name || 'undefined product');
     const resultItem = document.createElement('div');
     resultItem.className = 'search-result-item';
     if (index === selectedResultIndex) {
