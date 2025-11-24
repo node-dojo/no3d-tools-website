@@ -1347,36 +1347,34 @@ body {
     box-sizing: border-box;
   }
 
-  /* Container for title and price/button */
+  /* Container using grid for precise layout control */
   .product-header-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto; /* Title takes remaining space, price takes needed space */
+    grid-template-rows: auto auto; /* Two rows: title/price, then button */
     gap: var(--space-small);
+    align-items: baseline;
+    width: 100%;
     margin-bottom: var(--space-medium);
   }
 
   .product-title {
     font-size: 28px;
     text-align: left;
-    padding-right: var(--space-small);
     margin: 0;
-    flex: 1 1 0; /* Grow from 0 basis, allows wrapping */
-    min-width: 0; /* Enable text wrapping */
+    grid-column: 1; /* First column */
+    grid-row: 1; /* First row */
     word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
-  /* Price wrapper stays on same line as title, then button wraps to full width below */
+  /* Price wrapper in second column, first row only */
   .product-price-wrapper {
+    grid-column: 2; /* Second column */
+    grid-row: 1; /* First row only - button will be on row 2 */
     display: flex;
-    flex-wrap: wrap;
     align-items: baseline;
-    flex-shrink: 0; /* Don't shrink price wrapper */
-    flex-basis: 100%; /* Take full width to allow button to span properly */
-    justify-content: flex-end; /* Align price to the right */
-    gap: var(--space-small);
+    justify-content: flex-end;
   }
 
   .product-price {
@@ -1384,7 +1382,6 @@ body {
     padding-right: 0;
     margin: 0;
     white-space: nowrap;
-    flex-shrink: 0;
   }
 
   /* Tabs - fill width on mobile */
@@ -1416,15 +1413,15 @@ body {
     min-width: 0; /* Allow text to shrink if needed */
   }
 
-  /* Buy button - full width on its own line below title and price */
+  /* Buy button - spans full grid width on row 2 */
   .download-button,
   .buy-now-button {
-    flex-basis: 100%; /* Force button to take full width and wrap to new line */
+    grid-column: 1 / -1; /* Span all columns (both 1 and 2) */
+    grid-row: 2; /* Second row */
     width: 100%;
     max-width: none;
     margin-right: 0;
     margin-left: 0;
-    margin-top: var(--space-small); /* Add spacing above button */
     height: 48px; /* Increased height for mobile touch */
     min-height: 48px;
     display: flex;
