@@ -1368,13 +1368,14 @@ body {
     word-wrap: break-word;
   }
 
-  /* Price wrapper stays on same line as title, then button wraps below */
+  /* Price wrapper stays on same line as title, then button wraps to full width below */
   .product-price-wrapper {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     flex-shrink: 0; /* Don't shrink price wrapper */
-    flex-basis: auto; /* Take only needed space */
+    flex-basis: 100%; /* Take full width to allow button to span properly */
+    justify-content: flex-end; /* Align price to the right */
     gap: var(--space-small);
   }
 
