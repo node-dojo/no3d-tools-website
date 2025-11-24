@@ -3362,8 +3362,12 @@ function openMobileMenu() {
   if (hamburgerButton) {
     hamburgerButton.classList.add('active');
   }
-  // Prevent body scroll when menu is open
-  document.body.classList.add('menu-open');
+  // Prevent body scroll when menu is open - save scroll position
+  const scrollY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.width = '100%';
+  document.body.dataset.scrollY = scrollY;
 }
 
 // Close sidebar menu
@@ -3377,8 +3381,13 @@ function closeMobileMenu() {
   if (hamburgerButton) {
     hamburgerButton.classList.remove('active');
   }
-  // Restore body scroll
-  document.body.classList.remove('menu-open');
+  // Restore body scroll - restore scroll position
+  const scrollY = document.body.dataset.scrollY;
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, parseInt(scrollY || '0'));
+  delete document.body.dataset.scrollY;
 }
 
 // Toggle sidebar menu

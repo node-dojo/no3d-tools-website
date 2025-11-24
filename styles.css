@@ -75,13 +75,6 @@ body {
   max-width: 100vw;
 }
 
-/* Prevent body scroll when mobile menu is open */
-body.menu-open {
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-}
-
 /* Main Container */
 .site-container {
   display: flex;
@@ -1373,9 +1366,10 @@ body.menu-open {
     flex-shrink: 0;
   }
 
-  /* Container for title and price on same line */
+  /* Container for title and price - wrap on mobile */
   .product-header-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
     width: 100%;
@@ -1412,24 +1406,37 @@ body.menu-open {
     min-width: 0; /* Allow text to shrink if needed */
   }
 
-  /* Buy button - centered and taller for mobile touch */
+  /* Price wrapper on mobile - price text only, button wraps to next line */
+  .product-price-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-small);
+    width: 100%;
+    order: 1; /* Keep price on same line as title */
+  }
+
+  /* Price text stays on first line with title */
+  .product-price {
+    order: 0;
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  /* Buy button - wraps to new line, full width, taller for mobile touch */
   .download-button,
   .buy-now-button {
+    order: 2;
+    flex-basis: 100%; /* Force button to new line */
     width: 100%;
-    max-width: none; /* Remove max-width to fill full width on mobile */
+    max-width: none;
     margin-right: 0;
-    margin-left: 0; /* Remove auto margins to fill width */
+    margin-left: 0;
     height: 48px; /* Increased height for mobile touch */
     min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  /* Ensure price wrapper doesn't constrain button width on mobile */
-  .product-price-wrapper {
-    align-items: stretch; /* Allow button to fill full width */
-    width: 100%;
   }
 
   .product-right-section {
@@ -1438,17 +1445,19 @@ body.menu-open {
     padding: 0; /* Remove padding so tabs can fill full width */
   }
 
-  /* Product description and changelog - full width with padding */
+  /* Product description and changelog - full width with padding and bottom margin */
   .product-description {
     width: 100%;
     max-width: 100%;
     padding: 0 var(--space-medium);
+    margin-bottom: var(--space-large);
   }
 
   .changelog-section {
     width: 100%;
     max-width: 100%;
     padding: 0 var(--space-medium);
+    margin-bottom: var(--space-large);
   }
 
   .product-image-carousel {
@@ -2433,7 +2442,7 @@ body.menu-open {
 
   /* Adjust site container to account for mobile search bar and icon grid */
   .site-container {
-    padding-bottom: 160px; /* Space for mobile search bar (60px) + icon grid (80px) + buffer (20px) */
+    padding-bottom: 200px; /* Space for mobile search bar (60px) + icon grid (80px) + generous buffer (60px) */
   }
 
   /* Hide footer search hint on mobile since we have the search bar */
