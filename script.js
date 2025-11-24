@@ -3362,8 +3362,12 @@ function openMobileMenu() {
   if (hamburgerButton) {
     hamburgerButton.classList.add('active');
   }
-  // Prevent body scroll when menu is open
-  document.body.style.overflow = 'hidden';
+  // Prevent body scroll when menu is open - save scroll position
+  const scrollY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.width = '100%';
+  document.body.dataset.scrollY = scrollY;
 }
 
 // Close sidebar menu
@@ -3377,8 +3381,13 @@ function closeMobileMenu() {
   if (hamburgerButton) {
     hamburgerButton.classList.remove('active');
   }
-  // Restore body scroll
-  document.body.style.overflow = '';
+  // Restore body scroll - restore scroll position
+  const scrollY = document.body.dataset.scrollY;
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, parseInt(scrollY || '0'));
+  delete document.body.dataset.scrollY;
 }
 
 // Toggle sidebar menu
@@ -5209,9 +5218,15 @@ function navigateCarousel(direction) {
   if (carouselItems.length === 0) return;
 
   if (direction === 'prev') {
-    carouselCurrentIndex = Math.max(0, carouselCurrentIndex - 1);
+    // Loop to last image if at first image
+    carouselCurrentIndex = carouselCurrentIndex === 0
+      ? carouselItems.length - 1
+      : carouselCurrentIndex - 1;
   } else if (direction === 'next') {
-    carouselCurrentIndex = Math.min(carouselItems.length - 1, carouselCurrentIndex + 1);
+    // Loop to first image if at last image
+    carouselCurrentIndex = carouselCurrentIndex === carouselItems.length - 1
+      ? 0
+      : carouselCurrentIndex + 1;
   }
 
   updateCarouselPosition();
@@ -5236,8 +5251,9 @@ function updateCarouselArrows() {
   const leftArrow = document.getElementById('carousel-arrow-left');
   const rightArrow = document.getElementById('carousel-arrow-right');
 
+  // With infinite loop, both arrows are always visible when there are multiple images
   if (leftArrow) {
-    if (carouselCurrentIndex > 0 && carouselItems.length > 1) {
+    if (carouselItems.length > 1) {
       leftArrow.classList.add('visible');
     } else {
       leftArrow.classList.remove('visible');
@@ -5245,7 +5261,7 @@ function updateCarouselArrows() {
   }
 
   if (rightArrow) {
-    if (carouselCurrentIndex < carouselItems.length - 1 && carouselItems.length > 1) {
+    if (carouselItems.length > 1) {
       rightArrow.classList.add('visible');
     } else {
       rightArrow.classList.remove('visible');

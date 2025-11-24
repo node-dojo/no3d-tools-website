@@ -105,7 +105,7 @@ body {
   padding: var(--space-small) var(--space-medium);
   background-color: var(--color-stone-gray);
   border: none; /* Removed border */
-  z-index: 200;
+  z-index: 250; /* Above sidebar (200) to ensure header always visible */
   height: 40px;
 }
 
@@ -912,19 +912,19 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 10;
+  z-index: 100; /* High enough to be above carousel content */
   padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
+  opacity: 0; /* Hidden by default - JavaScript controls visibility */
   transition: opacity 0.2s ease;
-  pointer-events: none;
+  pointer-events: none; /* Not clickable by default - JavaScript enables when needed */
 }
 
 .carousel-arrow.visible {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: auto; /* Clickable when JavaScript adds .visible class */
 }
 
 .carousel-arrow:hover {
@@ -1337,9 +1337,8 @@ body {
     width: 100%;
     height: auto;
     margin-bottom: 20px;
-    margin-top: 0; /* No top margin - start immediately */
-    padding-top: 0; /* Explicitly remove top padding */
-    padding: 0 var(--space-medium) 0; /* No top padding - aligns with header bottom */
+    margin-top: 0;
+    padding: var(--space-large) var(--space-medium) 0; /* Add top breathing room (23px) */
   }
 
   .product-details {
@@ -1349,32 +1348,39 @@ body {
     box-sizing: border-box;
   }
 
+  /* Container using grid for precise layout control */
+  .product-header-row {
+    display: grid;
+    grid-template-columns: 1fr auto; /* Title takes remaining space, price takes needed space */
+    grid-template-rows: auto auto; /* Two rows: title/price, then button */
+    gap: var(--space-small);
+    align-items: baseline;
+    width: 100%;
+    margin-bottom: var(--space-medium);
+  }
+
   .product-title {
-    font-size: 28px; /* Slightly smaller on mobile */
+    font-size: 28px;
     text-align: left;
-    padding-right: 0;
     margin: 0;
-    width: auto;
-    flex: 1;
+    grid-column: 1; /* First column */
+    grid-row: 1; /* First row */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Price wrapper uses display: contents to make children direct grid items */
+  .product-price-wrapper {
+    display: contents; /* Makes price and button direct children of grid */
   }
 
   .product-price {
-    text-align: right; /* Right-justify price on mobile */
+    grid-column: 2; /* Second column */
+    grid-row: 1; /* First row - same as title */
+    text-align: right;
     padding-right: 0;
     margin: 0;
-    margin-left: auto; /* Push to right edge */
-    width: auto;
-    flex-shrink: 0;
-  }
-
-  /* Container for title and price on same line */
-  .product-header-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    width: 100%;
-    gap: var(--space-small);
-    margin-bottom: var(--space-medium);
+    white-space: nowrap;
   }
 
   /* Tabs - fill width on mobile */
@@ -1406,13 +1412,15 @@ body {
     min-width: 0; /* Allow text to shrink if needed */
   }
 
-  /* Buy button - centered and taller for mobile touch */
+  /* Buy button - spans full grid width on row 2 */
   .download-button,
   .buy-now-button {
+    grid-column: 1 / -1; /* Span all columns (both 1 and 2) */
+    grid-row: 2; /* Second row */
     width: 100%;
-    max-width: none; /* Remove max-width to fill full width on mobile */
+    max-width: none;
     margin-right: 0;
-    margin-left: 0; /* Remove auto margins to fill width */
+    margin-left: 0;
     height: 48px; /* Increased height for mobile touch */
     min-height: 48px;
     display: flex;
@@ -1423,20 +1431,23 @@ body {
   .product-right-section {
     width: 100%;
     height: auto;
-    padding: 0; /* Remove padding so tabs can fill full width */
+    padding: 0; /* Remove side padding so tabs can fill full width */
+    padding-bottom: 180px; /* Large bottom padding to clear toolbar */
   }
 
-  /* Product description and changelog - full width with padding */
+  /* Product description and changelog - full width with padding and extra bottom margin */
   .product-description {
     width: 100%;
     max-width: 100%;
     padding: 0 var(--space-medium);
+    margin-bottom: 60px; /* Extra bottom margin for long content */
   }
 
   .changelog-section {
     width: 100%;
     max-width: 100%;
     padding: 0 var(--space-medium);
+    margin-bottom: 60px; /* Extra bottom margin for long content */
   }
 
   .product-image-carousel {
@@ -1444,8 +1455,8 @@ body {
   }
 
   .product-image-container {
-    margin-top: 0; /* No top margin on mobile - start immediately */
-    padding-top: 0; /* Explicitly remove top padding */
+    margin-top: 0;
+    padding-top: 0;
     justify-content: flex-start; /* Align to top instead of center */
   }
 
@@ -1454,7 +1465,12 @@ body {
     padding: 1rem;
     min-width: 48px;
     min-height: 48px;
-    /* Ensure arrows are always visible on mobile for better UX */
+    /* Improved z-index to ensure arrows are above carousel content */
+    z-index: 100;
+  }
+
+  /* On mobile, make visible arrows more prominent */
+  .carousel-arrow.visible {
     opacity: 1 !important;
     pointer-events: auto !important;
   }
@@ -1543,14 +1559,18 @@ body {
   /* Sidebar becomes hamburger dropdown menu */
   .sidebar {
     width: 280px; /* Wider on mobile for better touch targets */
-    height: calc(100vh - 40px);
+    height: calc(100vh - 40px); /* Full height minus header */
+    max-height: calc(100vh - 180px); /* Leave space for bottom toolbar */
     transform: translateX(-100%); /* Hidden by default */
-    top: 0px; /* Align exactly with header bottom */
+    top: 40px; /* Below header - exactly at header bottom */
     left: 0;
-    margin: 0; /* Ensure no margin creates gap */
-    padding-top: 0; /* Remove top padding to align edge perfectly */
+    margin: 0;
+    padding-top: var(--space-small);
+    padding-bottom: 150px; /* Space for bottom toolbar */
     z-index: 200;
     box-shadow: var(--shadow-strong);
+    position: fixed;
+    overflow-y: auto; /* Enable scrolling within sidebar */
   }
 
   .sidebar.open {
@@ -2419,9 +2439,10 @@ body {
     display: block;
   }
 
-  /* Adjust site container to account for mobile search bar */
+  /* Adjust site container to account for mobile search bar and icon grid */
   .site-container {
-    padding-bottom: 70px; /* Space for mobile search bar */
+    padding-bottom: 250px; /* Generous space to ensure content never overlapped by bottom toolbar */
+    min-height: 100vh; /* Ensure page is tall enough to scroll */
   }
 
   /* Hide footer search hint on mobile since we have the search bar */
