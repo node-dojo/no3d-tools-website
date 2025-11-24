@@ -917,18 +917,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
+  opacity: 0.6; /* Always visible but subtle */
   transition: opacity 0.2s ease;
-  pointer-events: none;
+  pointer-events: auto; /* Always clickable */
 }
 
 .carousel-arrow.visible {
   opacity: 1;
-  pointer-events: auto;
 }
 
 .carousel-arrow:hover {
-  opacity: 0.8;
+  opacity: 1; /* Full opacity on hover */
 }
 
 .carousel-arrow-left {
@@ -1348,11 +1347,11 @@ body {
     box-sizing: border-box;
   }
 
-  /* Container for title and price/button */
+  /* Container for title and price/button - title and price on same line, button wraps */
   .product-header-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline; /* Align title and price on same baseline */
+    align-items: baseline;
     justify-content: space-between;
     width: 100%;
     gap: var(--space-small);
@@ -1364,19 +1363,15 @@ body {
     text-align: left;
     padding-right: 0;
     margin: 0;
-    flex: 1 1 auto; /* Grow but allow wrapping */
-    min-width: 0; /* Enable text wrapping */
+    flex: 1 1 auto;
+    min-width: 0;
     word-wrap: break-word;
-    max-width: calc(100% - 150px); /* Reserve space for price */
+    /* No max-width - let it grow and wrap naturally */
   }
 
-  /* Price wrapper displays inline with title on first line */
+  /* Price wrapper contains price and button, wraps as needed */
   .product-price-wrapper {
-    display: flex;
-    flex-direction: column; /* Stack price and button vertically */
-    align-items: flex-end; /* Right-align contents */
-    flex-shrink: 0;
-    gap: var(--space-small);
+    display: contents; /* Remove wrapper from layout, children become direct flex items */
   }
 
   .product-price {
@@ -1385,6 +1380,7 @@ body {
     margin: 0;
     white-space: nowrap;
     flex-shrink: 0;
+    /* Price stays on same line as title */
   }
 
   /* Tabs - fill width on mobile */
@@ -1416,13 +1412,15 @@ body {
     min-width: 0; /* Allow text to shrink if needed */
   }
 
-  /* Buy button - full width in column below price */
+  /* Buy button - full width on its own line below title and price */
   .download-button,
   .buy-now-button {
+    flex-basis: 100%; /* Force button to take full width and wrap to new line */
     width: 100%;
     max-width: none;
     margin-right: 0;
     margin-left: 0;
+    margin-top: var(--space-small); /* Add spacing above button */
     height: 48px; /* Increased height for mobile touch */
     min-height: 48px;
     display: flex;
