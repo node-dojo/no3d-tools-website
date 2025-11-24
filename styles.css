@@ -105,7 +105,7 @@ body {
   padding: var(--space-small) var(--space-medium);
   background-color: var(--color-stone-gray);
   border: none; /* Removed border */
-  z-index: 200;
+  z-index: 250; /* Above sidebar (200) to ensure header always visible */
   height: 40px;
 }
 
@@ -1348,33 +1348,35 @@ body {
     box-sizing: border-box;
   }
 
-  .product-title {
-    font-size: 28px; /* Slightly smaller on mobile */
-    text-align: left;
-    padding-right: 0;
-    margin: 0;
-    width: auto;
-    flex: 1;
-  }
-
-  .product-price {
-    text-align: right; /* Right-justify price on mobile */
-    padding-right: 0;
-    margin: 0;
-    margin-left: auto; /* Push to right edge */
-    width: auto;
-    flex-shrink: 0;
-  }
-
-  /* Container for title and price - wrap on mobile */
+  /* Container for title and price/button - no wrap, title and price stay on same line */
   .product-header-row {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    flex-wrap: wrap; /* Allow button to wrap to new line */
+    align-items: flex-start; /* Align to top when title wraps */
     justify-content: space-between;
     width: 100%;
     gap: var(--space-small);
     margin-bottom: var(--space-medium);
+  }
+
+  .product-title {
+    font-size: 28px; /* Slightly smaller on mobile */
+    text-align: left;
+    padding-right: var(--space-small);
+    margin: 0;
+    flex: 1 1 auto; /* Allow to grow and wrap text */
+    min-width: 0; /* Allow text wrapping */
+    word-wrap: break-word;
+    order: 1; /* Title first */
+  }
+
+  .product-price {
+    text-align: right;
+    padding-right: 0;
+    margin: 0;
+    flex-shrink: 0; /* Don't shrink */
+    white-space: nowrap; /* Keep price on one line */
+    order: 2; /* Price second, stays on same line as title */
   }
 
   /* Tabs - fill width on mobile */
@@ -1406,37 +1408,31 @@ body {
     min-width: 0; /* Allow text to shrink if needed */
   }
 
-  /* Price wrapper on mobile - price text only, button wraps to next line */
+  /* Price wrapper wraps button to next line */
   .product-price-wrapper {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-small);
-    width: 100%;
-    order: 1; /* Keep price on same line as title */
-  }
-
-  /* Price text stays on first line with title */
-  .product-price {
-    order: 0;
-    width: auto;
-    flex-shrink: 0;
+    align-items: flex-start;
+    gap: 0; /* No gap - we'll add spacing with order */
+    flex-shrink: 0; /* Don't shrink the price wrapper */
+    order: 3; /* Price wrapper comes after title (1) */
   }
 
   /* Buy button - wraps to new line, full width, taller for mobile touch */
   .download-button,
   .buy-now-button {
-    order: 2;
-    flex-basis: 100%; /* Force button to new line */
+    flex-basis: 100%; /* Force button to wrap to new line */
     width: 100%;
     max-width: none;
     margin-right: 0;
     margin-left: 0;
+    margin-top: var(--space-small); /* Add gap above button */
     height: 48px; /* Increased height for mobile touch */
     min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
+    order: 2; /* Button after price text */
   }
 
   .product-right-section {
@@ -1566,12 +1562,13 @@ body {
     width: 280px; /* Wider on mobile for better touch targets */
     height: calc(100vh - 40px);
     transform: translateX(-100%); /* Hidden by default */
-    top: 0px; /* Align exactly with header bottom */
+    top: 40px; /* Below header - exactly at header bottom */
     left: 0;
-    margin: 0; /* Ensure no margin creates gap */
-    padding-top: 0; /* Remove top padding to align edge perfectly */
+    margin: 0;
+    padding-top: var(--space-small);
     z-index: 200;
     box-shadow: var(--shadow-strong);
+    position: fixed; /* Explicitly set to ensure it's not affected by body fixed positioning */
   }
 
   .sidebar.open {
@@ -2442,7 +2439,8 @@ body {
 
   /* Adjust site container to account for mobile search bar and icon grid */
   .site-container {
-    padding-bottom: 200px; /* Space for mobile search bar (60px) + icon grid (80px) + generous buffer (60px) */
+    padding-bottom: 250px; /* Generous space to ensure content never overlapped by bottom toolbar */
+    min-height: 100vh; /* Ensure page is tall enough to scroll */
   }
 
   /* Hide footer search hint on mobile since we have the search bar */
