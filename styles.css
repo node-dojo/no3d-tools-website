@@ -912,7 +912,7 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 10;
+  z-index: 100; /* High enough to be above carousel content */
   padding: 0.5rem;
   display: flex;
   align-items: center;
@@ -1465,7 +1465,12 @@ body {
     padding: 1rem;
     min-width: 48px;
     min-height: 48px;
-    /* Ensure arrows are always visible on mobile for better UX */
+    /* Improved z-index to ensure arrows are above carousel content */
+    z-index: 100;
+  }
+
+  /* On mobile, make visible arrows more prominent */
+  .carousel-arrow.visible {
     opacity: 1 !important;
     pointer-events: auto !important;
   }

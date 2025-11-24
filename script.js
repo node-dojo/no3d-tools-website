@@ -5218,9 +5218,15 @@ function navigateCarousel(direction) {
   if (carouselItems.length === 0) return;
 
   if (direction === 'prev') {
-    carouselCurrentIndex = Math.max(0, carouselCurrentIndex - 1);
+    // Loop to last image if at first image
+    carouselCurrentIndex = carouselCurrentIndex === 0
+      ? carouselItems.length - 1
+      : carouselCurrentIndex - 1;
   } else if (direction === 'next') {
-    carouselCurrentIndex = Math.min(carouselItems.length - 1, carouselCurrentIndex + 1);
+    // Loop to first image if at last image
+    carouselCurrentIndex = carouselCurrentIndex === carouselItems.length - 1
+      ? 0
+      : carouselCurrentIndex + 1;
   }
 
   updateCarouselPosition();
@@ -5245,8 +5251,9 @@ function updateCarouselArrows() {
   const leftArrow = document.getElementById('carousel-arrow-left');
   const rightArrow = document.getElementById('carousel-arrow-right');
 
+  // With infinite loop, both arrows are always visible when there are multiple images
   if (leftArrow) {
-    if (carouselCurrentIndex > 0 && carouselItems.length > 1) {
+    if (carouselItems.length > 1) {
       leftArrow.classList.add('visible');
     } else {
       leftArrow.classList.remove('visible');
@@ -5254,7 +5261,7 @@ function updateCarouselArrows() {
   }
 
   if (rightArrow) {
-    if (carouselCurrentIndex < carouselItems.length - 1 && carouselItems.length > 1) {
+    if (carouselItems.length > 1) {
       rightArrow.classList.add('visible');
     } else {
       rightArrow.classList.remove('visible');
