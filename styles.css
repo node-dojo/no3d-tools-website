@@ -1348,11 +1348,11 @@ body {
     box-sizing: border-box;
   }
 
-  /* Container for title and price/button - no wrap, title and price stay on same line */
+  /* Container for title and price/button */
   .product-header-row {
     display: flex;
-    flex-wrap: wrap; /* Allow button to wrap to new line */
-    align-items: flex-start; /* Align to top when title wraps */
+    flex-wrap: wrap;
+    align-items: baseline; /* Align title and price on same baseline */
     justify-content: space-between;
     width: 100%;
     gap: var(--space-small);
@@ -1360,23 +1360,31 @@ body {
   }
 
   .product-title {
-    font-size: 28px; /* Slightly smaller on mobile */
+    font-size: 28px;
     text-align: left;
-    padding-right: var(--space-small);
+    padding-right: 0;
     margin: 0;
-    flex: 1 1 auto; /* Allow to grow and wrap text */
-    min-width: 0; /* Allow text wrapping */
+    flex: 1 1 auto; /* Grow but allow wrapping */
+    min-width: 0; /* Enable text wrapping */
     word-wrap: break-word;
-    order: 1; /* Title first */
+    max-width: calc(100% - 150px); /* Reserve space for price */
+  }
+
+  /* Price wrapper displays inline with title on first line */
+  .product-price-wrapper {
+    display: flex;
+    flex-direction: column; /* Stack price and button vertically */
+    align-items: flex-end; /* Right-align contents */
+    flex-shrink: 0;
+    gap: var(--space-small);
   }
 
   .product-price {
     text-align: right;
     padding-right: 0;
     margin: 0;
-    flex-shrink: 0; /* Don't shrink */
-    white-space: nowrap; /* Keep price on one line */
-    order: 2; /* Price second, stays on same line as title */
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   /* Tabs - fill width on mobile */
@@ -1408,52 +1416,40 @@ body {
     min-width: 0; /* Allow text to shrink if needed */
   }
 
-  /* Price wrapper wraps button to next line */
-  .product-price-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 0; /* No gap - we'll add spacing with order */
-    flex-shrink: 0; /* Don't shrink the price wrapper */
-    order: 3; /* Price wrapper comes after title (1) */
-  }
-
-  /* Buy button - wraps to new line, full width, taller for mobile touch */
+  /* Buy button - full width in column below price */
   .download-button,
   .buy-now-button {
-    flex-basis: 100%; /* Force button to wrap to new line */
     width: 100%;
     max-width: none;
     margin-right: 0;
     margin-left: 0;
-    margin-top: var(--space-small); /* Add gap above button */
     height: 48px; /* Increased height for mobile touch */
     min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    order: 2; /* Button after price text */
   }
 
   .product-right-section {
     width: 100%;
     height: auto;
-    padding: 0; /* Remove padding so tabs can fill full width */
+    padding: 0; /* Remove side padding so tabs can fill full width */
+    padding-bottom: 180px; /* Large bottom padding to clear toolbar */
   }
 
-  /* Product description and changelog - full width with padding and bottom margin */
+  /* Product description and changelog - full width with padding and extra bottom margin */
   .product-description {
     width: 100%;
     max-width: 100%;
     padding: 0 var(--space-medium);
-    margin-bottom: var(--space-large);
+    margin-bottom: 60px; /* Extra bottom margin for long content */
   }
 
   .changelog-section {
     width: 100%;
     max-width: 100%;
     padding: 0 var(--space-medium);
-    margin-bottom: var(--space-large);
+    margin-bottom: 60px; /* Extra bottom margin for long content */
   }
 
   .product-image-carousel {
@@ -1560,15 +1556,18 @@ body {
   /* Sidebar becomes hamburger dropdown menu */
   .sidebar {
     width: 280px; /* Wider on mobile for better touch targets */
-    height: calc(100vh - 40px);
+    height: calc(100vh - 40px); /* Full height minus header */
+    max-height: calc(100vh - 180px); /* Leave space for bottom toolbar */
     transform: translateX(-100%); /* Hidden by default */
     top: 40px; /* Below header - exactly at header bottom */
     left: 0;
     margin: 0;
     padding-top: var(--space-small);
+    padding-bottom: 150px; /* Space for bottom toolbar */
     z-index: 200;
     box-shadow: var(--shadow-strong);
-    position: fixed; /* Explicitly set to ensure it's not affected by body fixed positioning */
+    position: fixed;
+    overflow-y: auto; /* Enable scrolling within sidebar */
   }
 
   .sidebar.open {
