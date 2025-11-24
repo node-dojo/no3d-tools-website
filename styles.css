@@ -706,6 +706,62 @@ body {
   margin-right: 0.5rem;
 }
 
+/* Version Summary Section */
+.version-summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.version-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.version-summary-icon {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.version-summary-icon.expanded .version-summary-arrow {
+  transform: rotate(0deg);
+}
+
+.version-summary-icon.collapsed .version-summary-arrow {
+  transform: rotate(-90deg);
+}
+
+.version-summary-arrow {
+  font-size: 8px;
+  color: var(--color-void-black);
+  transition: transform var(--transition-fast);
+}
+
+.version-summary-title {
+  font-family: var(--font-visitor);
+  font-size: var(--font-size-h3);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
+  color: var(--color-void-black);
+  line-height: 1.0;
+}
+
+.version-summary-content {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  font-weight: var(--font-mono-weight);
+  line-height: 1.05;
+  color: var(--color-void-black);
+  letter-spacing: -0.08px;
+}
+
 /* Markdown Documentation Styles */
 .product-description {
   font-family: var(--font-mono);

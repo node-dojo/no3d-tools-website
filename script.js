@@ -1376,6 +1376,12 @@ function initializeEventListeners() {
       const changelogIcon = e.target.closest('.changelog-icon');
       toggleChangelogIcon(changelogIcon);
     }
+
+    // Version summary icon expansion/collapse
+    if (e.target.closest('.version-summary-icon')) {
+      const versionSummaryIcon = e.target.closest('.version-summary-icon');
+      toggleVersionSummaryIcon(versionSummaryIcon);
+    }
   });
 
   // Tab navigation
@@ -2482,6 +2488,16 @@ async function updateProductDisplay(productId) {
   // Update changelog
   updateChangelog(product.changelog);
 
+  // Update version summary
+  updateVersionSummary(product);
+
+  // Set initial tab state: Description tab is default
+  // Show version summary, hide changelog
+  const changelogSection = document.querySelector('.changelog-section');
+  const versionSummarySection = document.querySelector('.version-summary-section');
+  if (changelogSection) changelogSection.style.display = 'none';
+  if (versionSummarySection) versionSummarySection.style.display = 'flex';
+
   // Update download button
   downloadButton.textContent = 'DOWNLOAD';
 }
@@ -2581,6 +2597,78 @@ function updateChangelog(changelogItems) {
   if (changelogTitle) changelogTitle.textContent = 'CHANGELOG';
 }
 
+// Update version summary with latest version and date
+function updateVersionSummary(product) {
+  const versionSummaryInfo = document.querySelector('#version-summary-info');
+  const versionSummaryTitle = document.querySelector('#version-summary-title');
+  if (!versionSummaryInfo) return;
+
+  // Clear any existing content
+  versionSummaryInfo.innerHTML = '';
+
+  // Helper function to escape HTML
+  function escapeHtml(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  // Helper function to format date
+  function formatDate(dateString) {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  // Extract version and date from the most recent changelog entry
+  let version = '';
+  let lastUpdated = '';
+
+  if (product.changelog && product.changelog.length > 0) {
+    const latestEntry = product.changelog[0];
+    version = latestEntry.version || '';
+    lastUpdated = latestEntry.date || '';
+  }
+
+  // If no changelog data, try to extract version from product name
+  if (!version && product.name) {
+    const versionMatch = product.name.match(/[vV](\d+\.?\d*)/);
+    if (versionMatch) {
+      version = versionMatch[1];
+    }
+  }
+
+  // Try metafields for export_date if no changelog date
+  if (!lastUpdated && product.metafields) {
+    const exportDateField = product.metafields.find(
+      field => field.namespace === 'no3d_tools' && field.key === 'export_date'
+    );
+    if (exportDateField) {
+      lastUpdated = exportDateField.value;
+    }
+  }
+
+  // Build version summary display
+  if (version || lastUpdated) {
+    const parts = [];
+    if (version) {
+      // Remove "v" or "V" prefix if already present
+      const cleanVersion = version.replace(/^[vV]/, '');
+      parts.push(`Version: ${escapeHtml(cleanVersion)}`);
+    }
+    if (lastUpdated) {
+      parts.push(`Last Updated: ${formatDate(lastUpdated)}`);
+    }
+    versionSummaryInfo.textContent = parts.join(' • ');
+  }
+
+  // Update title
+  if (versionSummaryTitle) versionSummaryTitle.textContent = 'VERSION';
+}
+
 // Update active states for sidebar and icon grid
 function updateActiveStates(productId) {
   // Update sidebar active state
@@ -2625,7 +2713,7 @@ function toggleTabIcon(tabIcon, tabName) {
 // Toggle changelog icon expansion/collapse
 function toggleChangelogIcon(changelogIcon) {
   const changelogContent = changelogIcon.closest('.changelog-section').querySelector('.changelog-content');
-  
+
   if (changelogIcon.classList.contains('expanded')) {
     changelogIcon.classList.remove('expanded');
     changelogIcon.classList.add('collapsed');
@@ -2637,19 +2725,34 @@ function toggleChangelogIcon(changelogIcon) {
   }
 }
 
+// Toggle version summary icon expansion/collapse
+function toggleVersionSummaryIcon(versionSummaryIcon) {
+  const versionSummaryContent = versionSummaryIcon.closest('.version-summary-section').querySelector('.version-summary-content');
+
+  if (versionSummaryIcon.classList.contains('expanded')) {
+    versionSummaryIcon.classList.remove('expanded');
+    versionSummaryIcon.classList.add('collapsed');
+    versionSummaryContent.style.display = 'none';
+  } else {
+    versionSummaryIcon.classList.remove('collapsed');
+    versionSummaryIcon.classList.add('expanded');
+    versionSummaryContent.style.display = 'block';
+  }
+}
+
 // Load markdown documentation for current product
 async function loadProductDocs(productId) {
   const productDescription = document.getElementById('product-description');
 
   if (!productId) {
-    productDescription.innerHTML = '<p>Select a product to view documentation.</p>';
+    productDescription.innerHTML = '';
     return;
   }
 
   try {
     const product = products[productId];
     if (!product) {
-      productDescription.innerHTML = '<p>Product not found.</p>';
+      productDescription.innerHTML = '';
       return;
     }
 
@@ -2732,12 +2835,8 @@ async function loadProductDocs(productId) {
     response = await fetch(docsUrl);
 
     if (!response.ok) {
-      // Fallback to original description
-      if (product && product.description) {
-        productDescription.innerHTML = `<p>${product.description}</p>`;
-      } else {
-        productDescription.innerHTML = '<p>No documentation available for this product.</p>';
-      }
+      // Show blank content when docs are not available
+      productDescription.innerHTML = '';
       return;
     }
 
@@ -2859,13 +2958,8 @@ async function loadProductDocs(productId) {
 
   } catch (error) {
     console.error('Error loading documentation:', error);
-    // Fallback to original description
-    const product = products[productId];
-    if (product && product.description) {
-      productDescription.innerHTML = `<p>${product.description}</p>`;
-    } else {
-      productDescription.innerHTML = '<p>Error loading documentation.</p>';
-    }
+    // Show blank content when there's an error loading docs
+    productDescription.innerHTML = '';
   }
 }
 
@@ -3019,12 +3113,14 @@ async function switchTab(tabName) {
   // Update content based on tab
   const productDescription = document.getElementById('product-description');
   const changelogSection = document.querySelector('.changelog-section');
+  const versionSummarySection = document.querySelector('.version-summary-section');
 
   switch(tabName) {
     case 'description':
-      // Show product description and changelog from JSON
+      // Show product description and version summary, hide changelog
       productDescription.style.display = 'block';
-      changelogSection.style.display = 'flex';
+      changelogSection.style.display = 'none';
+      if (versionSummarySection) versionSummarySection.style.display = 'flex';
       // Restore original description content if it was replaced by docs
       if (originalDescriptionContent) {
         productDescription.innerHTML = originalDescriptionContent;
@@ -3035,7 +3131,7 @@ async function switchTab(tabName) {
         const currentProductId = productCard?.dataset?.productId || currentProduct;
         const product = products[currentProductId];
         if (product && product.description) {
-          const descriptionHTML = product.description.split('\n').map(paragraph => 
+          const descriptionHTML = product.description.split('\n').map(paragraph =>
             paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
           ).join('');
           productDescription.innerHTML = descriptionHTML;
@@ -3044,9 +3140,10 @@ async function switchTab(tabName) {
       }
       break;
     case 'docs':
-      // Hide description and changelog, load markdown documentation
+      // Show changelog, hide version summary, load markdown documentation
       productDescription.style.display = 'block';
-      changelogSection.style.display = 'none';
+      changelogSection.style.display = 'flex';
+      if (versionSummarySection) versionSummarySection.style.display = 'none';
       // Load markdown documentation
       const productCard = document.querySelector('.product-left-section')?.closest('.product-card') ||
                           document.querySelector('.product-left-section')?.parentElement;
