@@ -917,17 +917,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.6; /* Always visible but subtle */
+  opacity: 0; /* Hidden by default - JavaScript controls visibility */
   transition: opacity 0.2s ease;
-  pointer-events: auto; /* Always clickable */
+  pointer-events: none; /* Not clickable by default - JavaScript enables when needed */
 }
 
 .carousel-arrow.visible {
   opacity: 1;
+  pointer-events: auto; /* Clickable when JavaScript adds .visible class */
 }
 
 .carousel-arrow:hover {
-  opacity: 1; /* Full opacity on hover */
+  opacity: 0.8;
 }
 
 .carousel-arrow-left {
@@ -1368,16 +1369,14 @@ body {
     overflow-wrap: break-word;
   }
 
-  /* Price wrapper in second column, first row only */
+  /* Price wrapper uses display: contents to make children direct grid items */
   .product-price-wrapper {
-    grid-column: 2; /* Second column */
-    grid-row: 1; /* First row only - button will be on row 2 */
-    display: flex;
-    align-items: baseline;
-    justify-content: flex-end;
+    display: contents; /* Makes price and button direct children of grid */
   }
 
   .product-price {
+    grid-column: 2; /* Second column */
+    grid-row: 1; /* First row - same as title */
     text-align: right;
     padding-right: 0;
     margin: 0;
