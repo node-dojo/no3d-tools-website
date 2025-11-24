@@ -75,6 +75,13 @@ body {
   max-width: 100vw;
 }
 
+/* Prevent body scroll when mobile menu is open */
+body.menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
 /* Main Container */
 .site-container {
   display: flex;
@@ -1337,9 +1344,8 @@ body {
     width: 100%;
     height: auto;
     margin-bottom: 20px;
-    margin-top: 0; /* No top margin - start immediately */
-    padding-top: 0; /* Explicitly remove top padding */
-    padding: 0 var(--space-medium) 0; /* No top padding - aligns with header bottom */
+    margin-top: 0;
+    padding: var(--space-large) var(--space-medium) 0; /* Add top breathing room (23px) */
   }
 
   .product-details {
@@ -1420,6 +1426,12 @@ body {
     justify-content: center;
   }
 
+  /* Ensure price wrapper doesn't constrain button width on mobile */
+  .product-price-wrapper {
+    align-items: stretch; /* Allow button to fill full width */
+    width: 100%;
+  }
+
   .product-right-section {
     width: 100%;
     height: auto;
@@ -1444,8 +1456,8 @@ body {
   }
 
   .product-image-container {
-    margin-top: 0; /* No top margin on mobile - start immediately */
-    padding-top: 0; /* Explicitly remove top padding */
+    margin-top: 0;
+    padding-top: 0;
     justify-content: flex-start; /* Align to top instead of center */
   }
 
@@ -2419,9 +2431,9 @@ body {
     display: block;
   }
 
-  /* Adjust site container to account for mobile search bar */
+  /* Adjust site container to account for mobile search bar and icon grid */
   .site-container {
-    padding-bottom: 70px; /* Space for mobile search bar */
+    padding-bottom: 160px; /* Space for mobile search bar (60px) + icon grid (80px) + buffer (20px) */
   }
 
   /* Hide footer search hint on mobile since we have the search bar */

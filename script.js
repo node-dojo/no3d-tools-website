@@ -3363,7 +3363,7 @@ function openMobileMenu() {
     hamburgerButton.classList.add('active');
   }
   // Prevent body scroll when menu is open
-  document.body.style.overflow = 'hidden';
+  document.body.classList.add('menu-open');
 }
 
 // Close sidebar menu
@@ -3378,7 +3378,7 @@ function closeMobileMenu() {
     hamburgerButton.classList.remove('active');
   }
   // Restore body scroll
-  document.body.style.overflow = '';
+  document.body.classList.remove('menu-open');
 }
 
 // Toggle sidebar menu
