@@ -1616,8 +1616,34 @@ h2 {
     margin-top: 0; /* Ensure no top margin */
     /* Use dynamic viewport height on mobile for keyboard responsiveness */
     min-height: 100dvh;
+    max-height: 100dvh; /* Constrain to viewport height */
+    overflow-y: auto; /* Allow vertical scrolling when content exceeds viewport */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
     /* Prevent unwanted scrolling when keyboard appears */
     overscroll-behavior: contain;
+    scroll-behavior: smooth; /* Smooth scrolling */
+    
+    /* Design system compatible scrollbar styling */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--color-void-black) transparent; /* Firefox */
+  }
+
+  /* Webkit scrollbar styling for mobile site container */
+  .site-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .site-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .site-container::-webkit-scrollbar-thumb {
+    background-color: var(--color-void-black);
+    border-radius: 3px;
+  }
+
+  .site-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-lello);
   }
   
   /* Ensure header doesn't add extra spacing */
@@ -1689,6 +1715,30 @@ h2 {
     box-shadow: var(--shadow-strong);
     background-color: var(--color-stone-gray) !important; /* Opaque background - override #sidebar */
     overflow-y: auto; /* Allow scrolling if content exceeds viewport */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    scroll-behavior: smooth; /* Smooth scrolling */
+    
+    /* Design system compatible scrollbar styling */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--color-void-black) transparent; /* Firefox */
+  }
+
+  /* Webkit scrollbar styling for mobile sidebar */
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--color-void-black);
+    border-radius: 3px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-lello);
   }
 
   /* Override #sidebar styles for mobile to ensure opacity */
@@ -1725,6 +1775,32 @@ h2 {
     width: 100%;
     height: auto !important; /* Hug content */
     min-height: 0 !important; /* Remove minimum height constraint */
+    max-height: calc(100dvh - 40px); /* Constrain to viewport minus header */
+    overflow-y: auto; /* Allow scrolling when content exceeds viewport */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    scroll-behavior: smooth; /* Smooth scrolling */
+    
+    /* Design system compatible scrollbar styling */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--color-void-black) transparent; /* Firefox */
+  }
+
+  /* Webkit scrollbar styling for mobile product card */
+  .product-card::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .product-card::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .product-card::-webkit-scrollbar-thumb {
+    background-color: var(--color-void-black);
+    border-radius: 3px;
+  }
+
+  .product-card::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-lello);
   }
 
   /* Mobile sidebar - multi-touch optimized navigation */
