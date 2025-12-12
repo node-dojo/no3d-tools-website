@@ -1684,9 +1684,17 @@ h2 {
     top: 40px; /* Align exactly with header bottom (40px header height on mobile) */
     left: 0;
     margin: 0; /* Ensure no margin creates gap */
-    padding-top: 0; /* Remove top padding to align edge perfectly */
+    padding: var(--space-small); /* Add padding for content */
     z-index: 200;
     box-shadow: var(--shadow-strong);
+    background-color: var(--color-stone-gray) !important; /* Opaque background - override #sidebar */
+    overflow-y: auto; /* Allow scrolling if content exceeds viewport */
+  }
+
+  /* Override #sidebar styles for mobile to ensure opacity */
+  #sidebar {
+    background-color: var(--color-stone-gray) !important;
+    background: var(--color-stone-gray) !important;
   }
 
   .sidebar.open {
@@ -1719,19 +1727,112 @@ h2 {
     min-height: 0 !important; /* Remove minimum height constraint */
   }
 
+  /* Mobile sidebar - multi-touch optimized navigation */
+  .sidebar-content {
+    gap: 0; /* Remove gap, use item heights for spacing */
+  }
+
+  /* Product type headers - 44px minimum touch target */
+  .type-header {
+    padding: 0 var(--space-medium);
+    min-height: 44px; /* Standard multi-touch target size */
+    height: 44px;
+    display: flex;
+    align-items: center;
+    background-color: var(--color-stone-gray); /* Opaque */
+  }
+
+  /* Product group headers - 44px minimum touch target */
+  .group-header {
+    padding: 0 var(--space-medium);
+    min-height: 44px; /* Standard multi-touch target size */
+    height: 44px;
+    display: flex;
+    align-items: center;
+    background-color: var(--color-stone-gray); /* Opaque */
+  }
+
+  /* Category headers - 44px minimum touch target */
+  .category-header {
+    padding: 0 var(--space-medium);
+    min-height: 44px; /* Standard multi-touch target size */
+    height: 44px;
+    display: flex;
+    align-items: center;
+    background-color: var(--color-stone-gray); /* Opaque */
+  }
+
+  /* Product items - 44px minimum touch target */
   .product-item {
-    padding: 0 var(--space-medium); /* Remove vertical padding to let height control spacing */
-    height: 44px; /* Fixed height for consistent spacing */
+    padding: 0 var(--space-medium);
+    min-height: 44px; /* Standard multi-touch target size */
+    height: 44px;
     display: flex;
     align-items: center; /* Center text vertically */
+    background-color: var(--color-stone-gray); /* Opaque base */
+  }
+
+  .product-item.active {
+    background-color: var(--color-lello) !important; /* Opaque active state */
+  }
+
+  .product-item:hover,
+  .product-item:active {
+    background-color: rgba(240, 255, 0, 0.25); /* More visible hover/active state on mobile */
+  }
+
+  /* Type and group headers hover states for mobile */
+  .type-header:hover,
+  .type-header:active {
+    background-color: rgba(240, 255, 0, 0.15) !important;
+  }
+
+  .group-header:hover,
+  .group-header:active {
+    background-color: rgba(240, 255, 0, 0.15) !important;
+  }
+
+  .category-header:hover,
+  .category-header:active {
+    background-color: rgba(240, 255, 0, 0.15) !important;
   }
 
   .product-name {
-    font-size: 12px; /* Slightly larger for readability */
+    font-size: 13px; /* Slightly larger for mobile readability */
+    line-height: 1.2; /* Better line height for touch */
   }
 
   .category-name {
-    font-size: 13px; /* Slightly larger for readability */
+    font-size: 14px; /* Slightly larger for mobile readability */
+    line-height: 1.2; /* Better line height for touch */
+  }
+
+  /* Product groups container spacing */
+  .product-groups-container {
+    gap: 0; /* Remove gap, use item heights */
+  }
+
+  /* Group product list spacing */
+  .group-product-list {
+    gap: 0; /* Remove gap, use item heights */
+  }
+
+  /* Carrot icon sizing for mobile - ensure it's visible and properly sized */
+  .carrot {
+    font-size: 14px; /* Larger for mobile visibility */
+    min-width: 24px; /* Ensure adequate touch area */
+    text-align: center;
+  }
+
+  /* Ensure proper spacing in nested containers */
+  .product-groups-container {
+    margin-left: var(--space-medium);
+    padding-left: var(--space-small);
+  }
+
+  .group-product-list {
+    margin-left: var(--space-medium);
+    padding-left: var(--space-small);
   }
 
   /* Footer */
