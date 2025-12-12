@@ -409,7 +409,12 @@ body {
   transition: all var(--transition-fast);
   border-radius: 2px;
   background-color: transparent;
-  height: 22px;
+  min-height: 22px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-bottom: 0;
 }
 
 .product-item:hover {
@@ -429,10 +434,15 @@ body {
   letter-spacing: var(--letter-spacing-normal);
   text-transform: uppercase;
   color: var(--color-dark-gray);
-  line-height: 9px;
+  line-height: 1.4;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .product-item.active .product-name {
@@ -481,6 +491,49 @@ body {
   display: flex;
 }
 
+/* Tools Filter Container (Desktop Only) */
+.tools-filter-container {
+  display: none; /* Hidden on mobile */
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-small);
+  padding: var(--space-tiny) 0;
+}
+
+.tools-filter-toggle {
+  padding: 4px 8px;
+  font-family: var(--font-visitor);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
+  color: var(--color-dark-gray);
+  background-color: transparent;
+  border: 1px solid var(--color-dark-gray);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tools-filter-toggle:hover {
+  background-color: rgba(240, 255, 0, 0.15);
+  border-color: var(--color-lello);
+}
+
+.tools-filter-toggle.active {
+  background-color: var(--color-lello);
+  color: var(--color-void-black);
+  border-color: var(--color-lello);
+}
+
+/* Show filters on desktop only */
+@media (min-width: 769px) {
+  .tools-filter-container {
+    display: flex;
+  }
+}
+
 .product-group {
   display: flex;
   flex-direction: column;
@@ -513,14 +566,24 @@ body {
 .group-product-list {
   display: none;
   flex-direction: column;
-  gap: 11px;
+  gap: 7px;
   margin-left: var(--space-medium);
   padding-left: var(--space-small);
   line-height: 12px;
+  align-items: stretch;
+  width: 100%;
 }
 
 .product-group.expanded .group-product-list {
   display: flex;
+}
+
+/* Show product list directly in groups container (for tools flat list) */
+.product-type.expanded .product-groups-container > .group-product-list {
+  display: flex;
+  margin-left: 0; /* Remove extra margin since groups-container already has margin */
+  padding-left: 0; /* Remove extra padding since groups-container already has padding */
+  gap: 7px; /* Ensure consistent gap between items */
 }
 
 .coming-soon-message {

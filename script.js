@@ -188,6 +188,7 @@ let currentProduct = 'dojo-mesh-repair';
 let productDataByType = {};
 let activeProductType = 'tools';
 let expandedProductGroups = new Set();
+let activeToolFilters = new Set(['all']); // Default to 'all' filter
 
 // DOM elements
 const productTitle = document.getElementById('product-title');
@@ -623,33 +624,6 @@ function renderSidebar() {
     const typeProducts = productDataByType[type.key] || {};
     const hasProducts = Object.keys(typeProducts).length > 0;
     
-    // Organize products by groups
-    const productsByGroup = {};
-    const ungroupedProducts = [];
-    
-    // Track which products have been assigned to groups
-    const productsInGroups = new Set();
-    
-    Object.keys(typeProducts).forEach(productId => {
-      const product = typeProducts[productId];
-      if (product.groups && product.groups.length > 0) {
-        product.groups.forEach(group => {
-          if (!productsByGroup[group]) {
-            productsByGroup[group] = [];
-          }
-          productsByGroup[group].push({ id: productId, ...product });
-          productsInGroups.add(productId);
-        });
-      }
-    });
-    
-    // Add ungrouped products (those not in any group)
-    Object.keys(typeProducts).forEach(productId => {
-      if (!productsInGroups.has(productId)) {
-        ungroupedProducts.push({ id: productId, ...typeProducts[productId] });
-      }
-    });
-    
     // Create Product Type container
     const productTypeDiv = document.createElement('div');
     productTypeDiv.className = 'product-type';
@@ -677,69 +651,175 @@ function renderSidebar() {
       comingSoonDiv.textContent = 'coming soon!';
       groupsContainer.appendChild(comingSoonDiv);
     } else {
-      // Render product groups
-      Object.keys(productsByGroup).sort().forEach(groupName => {
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'product-group';
-      groupDiv.dataset.group = groupName.toLowerCase().replace(/\s+/g, '-');
-      if (expandedProductGroups.has(groupName)) {
-        groupDiv.classList.add('expanded');
-      }
-      
-      // Group header
-      const groupHeader = document.createElement('div');
-      groupHeader.className = 'group-header';
-      groupDiv.dataset.groupName = groupName; // Store original group name
-      groupHeader.innerHTML = `
-        <span class="carrot ${expandedProductGroups.has(groupName) ? 'expanded' : 'collapsed'}">${expandedProductGroups.has(groupName) ? '▼' : '▶'}</span>
-        <span class="category-name">${groupName.toUpperCase()}</span>
-      `;
-      
-      // Product list
-      const productList = document.createElement('div');
-      productList.className = 'group-product-list';
-      
-      productsByGroup[groupName].forEach(product => {
-        const productItem = document.createElement('div');
-        productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
-        productItem.dataset.product = product.id;
-        productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
-        productList.appendChild(productItem);
-      });
-      
-      groupDiv.appendChild(groupHeader);
-      groupDiv.appendChild(productList);
-      groupsContainer.appendChild(groupDiv);
-    });
-    
-    // Render ungrouped products (if any)
-    if (ungroupedProducts.length > 0) {
-      const ungroupedDiv = document.createElement('div');
-      ungroupedDiv.className = 'product-group';
-      ungroupedDiv.dataset.group = 'ungrouped';
-      ungroupedDiv.dataset.groupName = 'OTHER'; // Store group name for toggle functionality
-      
-      const groupHeader = document.createElement('div');
-      groupHeader.className = 'group-header';
-      groupHeader.innerHTML = `
-        <span class="carrot collapsed">▶</span>
-        <span class="category-name">OTHER</span>
-      `;
-      
-      const productList = document.createElement('div');
-      productList.className = 'group-product-list';
-      
-      ungroupedProducts.forEach(product => {
-        const productItem = document.createElement('div');
-        productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
-        productItem.dataset.product = product.id;
-        productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
-        productList.appendChild(productItem);
-      });
-      
-      ungroupedDiv.appendChild(groupHeader);
-      ungroupedDiv.appendChild(productList);
-      groupsContainer.appendChild(ungroupedDiv);
+      // Special handling for tools: flat list, no groups
+      if (type.key === 'tools') {
+        // Collect all unique groups from tools products
+        const allGroups = new Set();
+        Object.keys(typeProducts).forEach(productId => {
+          const product = typeProducts[productId];
+          if (product.groups && product.groups.length > 0) {
+            product.groups.forEach(group => allGroups.add(group));
+          }
+        });
+        const sortedGroups = Array.from(allGroups).sort();
+        
+        // Add filter toggles (desktop only) - insert after type header
+        if (sortedGroups.length > 0) {
+          const filterContainer = document.createElement('div');
+          filterContainer.className = 'tools-filter-container';
+          
+          // "All" filter toggle
+          const allFilter = document.createElement('button');
+          allFilter.className = `tools-filter-toggle ${activeToolFilters.has('all') ? 'active' : ''}`;
+          allFilter.dataset.filter = 'all';
+          allFilter.textContent = 'ALL';
+          filterContainer.appendChild(allFilter);
+          
+          // Category filter toggles
+          sortedGroups.forEach(group => {
+            const filterToggle = document.createElement('button');
+            filterToggle.className = `tools-filter-toggle ${activeToolFilters.has(group) ? 'active' : ''}`;
+            filterToggle.dataset.filter = group;
+            filterToggle.textContent = group.toUpperCase();
+            filterContainer.appendChild(filterToggle);
+          });
+          
+          groupsContainer.appendChild(filterContainer);
+        }
+        
+        // Collect all products into a single flat list
+        const allProducts = [];
+        Object.keys(typeProducts).forEach(productId => {
+          allProducts.push({ id: productId, ...typeProducts[productId] });
+        });
+        
+        // Filter products based on active filters
+        const filteredProducts = allProducts.filter(product => {
+          // If "all" is active, show all products
+          if (activeToolFilters.has('all')) {
+            return true;
+          }
+          // Otherwise, show products that match at least one active filter
+          if (product.groups && product.groups.length > 0) {
+            return product.groups.some(group => activeToolFilters.has(group));
+          }
+          // Products without groups are hidden when specific filters are active
+          return false;
+        });
+        
+        // Sort products by name
+        filteredProducts.sort((a, b) => {
+          const nameA = (a.name || '').toUpperCase();
+          const nameB = (b.name || '').toUpperCase();
+          return nameA.localeCompare(nameB);
+        });
+        
+        // Create a single product list container
+        const productList = document.createElement('div');
+        productList.className = 'group-product-list';
+        
+        filteredProducts.forEach(product => {
+          const productItem = document.createElement('div');
+          productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
+          productItem.dataset.product = product.id;
+          productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
+          productList.appendChild(productItem);
+        });
+        
+        groupsContainer.appendChild(productList);
+      } else {
+        // For other product types, use the original grouped structure
+        // Organize products by groups
+        const productsByGroup = {};
+        const ungroupedProducts = [];
+        
+        // Track which products have been assigned to groups
+        const productsInGroups = new Set();
+        
+        Object.keys(typeProducts).forEach(productId => {
+          const product = typeProducts[productId];
+          if (product.groups && product.groups.length > 0) {
+            product.groups.forEach(group => {
+              if (!productsByGroup[group]) {
+                productsByGroup[group] = [];
+              }
+              productsByGroup[group].push({ id: productId, ...product });
+              productsInGroups.add(productId);
+            });
+          }
+        });
+        
+        // Add ungrouped products (those not in any group)
+        Object.keys(typeProducts).forEach(productId => {
+          if (!productsInGroups.has(productId)) {
+            ungroupedProducts.push({ id: productId, ...typeProducts[productId] });
+          }
+        });
+        
+        // Render product groups
+        Object.keys(productsByGroup).sort().forEach(groupName => {
+          const groupDiv = document.createElement('div');
+          groupDiv.className = 'product-group';
+          groupDiv.dataset.group = groupName.toLowerCase().replace(/\s+/g, '-');
+          if (expandedProductGroups.has(groupName)) {
+            groupDiv.classList.add('expanded');
+          }
+          
+          // Group header
+          const groupHeader = document.createElement('div');
+          groupHeader.className = 'group-header';
+          groupDiv.dataset.groupName = groupName; // Store original group name
+          groupHeader.innerHTML = `
+            <span class="carrot ${expandedProductGroups.has(groupName) ? 'expanded' : 'collapsed'}">${expandedProductGroups.has(groupName) ? '▼' : '▶'}</span>
+            <span class="category-name">${groupName.toUpperCase()}</span>
+          `;
+          
+          // Product list
+          const productList = document.createElement('div');
+          productList.className = 'group-product-list';
+          
+          productsByGroup[groupName].forEach(product => {
+            const productItem = document.createElement('div');
+            productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
+            productItem.dataset.product = product.id;
+            productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
+            productList.appendChild(productItem);
+          });
+          
+          groupDiv.appendChild(groupHeader);
+          groupDiv.appendChild(productList);
+          groupsContainer.appendChild(groupDiv);
+        });
+        
+        // Render ungrouped products (if any)
+        if (ungroupedProducts.length > 0) {
+          const ungroupedDiv = document.createElement('div');
+          ungroupedDiv.className = 'product-group';
+          ungroupedDiv.dataset.group = 'ungrouped';
+          ungroupedDiv.dataset.groupName = 'OTHER'; // Store group name for toggle functionality
+          
+          const groupHeader = document.createElement('div');
+          groupHeader.className = 'group-header';
+          groupHeader.innerHTML = `
+            <span class="carrot collapsed">▶</span>
+            <span class="category-name">OTHER</span>
+          `;
+          
+          const productList = document.createElement('div');
+          productList.className = 'group-product-list';
+          
+          ungroupedProducts.forEach(product => {
+            const productItem = document.createElement('div');
+            productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
+            productItem.dataset.product = product.id;
+            productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
+            productList.appendChild(productItem);
+          });
+          
+          ungroupedDiv.appendChild(groupHeader);
+          ungroupedDiv.appendChild(productList);
+          groupsContainer.appendChild(ungroupedDiv);
+        }
       }
     }
     
@@ -1129,6 +1209,45 @@ function updateHeaderLogo(typeKey) {
   }
 }
 
+// Handle Tools Filter Toggle
+function handleToolsFilterToggle(filterValue) {
+  if (filterValue === 'all') {
+    // Toggle "all" - if activating, clear other filters; if deactivating, activate it
+    if (activeToolFilters.has('all')) {
+      // If "all" is active and clicked, do nothing (can't deactivate "all" if it's the only one)
+      if (activeToolFilters.size === 1) {
+        return; // Keep "all" active if it's the only filter
+      }
+      activeToolFilters.delete('all');
+    } else {
+      // Activate "all" and clear other filters
+      activeToolFilters.clear();
+      activeToolFilters.add('all');
+    }
+  } else {
+    // Toggle category filter
+    if (activeToolFilters.has(filterValue)) {
+      // Deactivate this filter
+      activeToolFilters.delete(filterValue);
+      // If no category filters left, activate "all"
+      const hasCategoryFilters = Array.from(activeToolFilters).some(f => f !== 'all');
+      if (!hasCategoryFilters) {
+        activeToolFilters.clear();
+        activeToolFilters.add('all');
+      }
+    } else {
+      // Activate this filter and deactivate "all" (can't have both)
+      activeToolFilters.delete('all');
+      activeToolFilters.add(filterValue);
+      // Multiple category filters can be active simultaneously (OR logic)
+    }
+  }
+  
+  // Re-render sidebar to update filters and product list
+  renderSidebar();
+  updateIconGrid();
+}
+
 // Initialize Sidebar Event Listeners
 function initializeSidebarEventListeners() {
   // Product Type toggle (accordion - only one expanded)
@@ -1139,6 +1258,15 @@ function initializeSidebarEventListeners() {
       if (productType) {
         const typeKey = productType.dataset.type;
         handleProductTypeToggle(typeKey);
+      }
+    }
+    
+    // Tools filter toggle
+    if (e.target.closest('.tools-filter-toggle')) {
+      const filterToggle = e.target.closest('.tools-filter-toggle');
+      const filterValue = filterToggle.dataset.filter;
+      if (filterValue) {
+        handleToolsFilterToggle(filterValue);
       }
     }
     
