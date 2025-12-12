@@ -229,6 +229,9 @@ function stopPriceRefresh() {
 // Expose refresh function globally for manual refresh
 window.refreshPolarPrices = refreshPricesFromPolar;
 
+// Initialize dev customer ID on page load if needed
+initializeDevCustomerId();
+
 document.addEventListener('DOMContentLoaded', async function() {
   try {
     await loadProductsFromJSON();
@@ -1433,7 +1436,7 @@ async function selectProduct(productId) {
 }
 
 // Update button visibility based on subscriber status
-function updateButtonVisibility(productId) {
+async function updateButtonVisibility(productId) {
   const buyNowBtn = document.getElementById('buy-now-button');
 
   // Check sessionStorage for purchase info
@@ -1463,17 +1466,58 @@ function updateButtonVisibility(productId) {
     }
   }
 
+  // Check for active subscription (works with or without customer ID if dev toggle is enabled)
+  let customerId = sessionStorage.getItem('polar_customer_id') || 
+                   new URLSearchParams(window.location.search).get('customer_id');
+  
+  // If dev mode is enabled but no customer ID, use dev customer ID
+  if (!customerId && getDevMemberToggle()) {
+    customerId = getDevCustomerId();
+    if (customerId) {
+      sessionStorage.setItem('polar_customer_id', customerId);
+    }
+  }
+  
+  try {
+    hasActiveSubscription = await checkSubscriptionStatus(customerId);
+  } catch (error) {
+    console.error('Error checking subscription status:', error);
+    // On error, assume no subscription to be safe
+    hasActiveSubscription = false;
+  }
+
   // Check localStorage for persistent purchase records (optional future enhancement)
   // For now, we only use sessionStorage
 
   if (ownsProduct || hasActiveSubscription) {
     // Customer owns this product or has active subscription - show DOWNLOAD button
-    if (downloadButton) downloadButton.style.display = '';
-    if (buyNowBtn) buyNowBtn.style.display = 'none';
+    if (downloadButton) {
+      downloadButton.style.display = '';
+      downloadButton.textContent = 'DOWNLOAD';
+    }
+    if (buyNowBtn) {
+      // Hide Buy Now button for subscribers/owners
+      buyNowBtn.style.display = 'none';
+    }
+    // Hide price for members
+    if (productPrice) {
+      productPrice.style.display = 'none';
+    }
   } else {
     // Customer doesn't own product - show BUY NOW button
-    if (downloadButton) downloadButton.style.display = 'none';
-    if (buyNowBtn) buyNowBtn.style.display = '';
+    if (downloadButton) {
+      downloadButton.style.display = 'none';
+    }
+    if (buyNowBtn) {
+      buyNowBtn.style.display = '';
+      buyNowBtn.textContent = 'BUY NOW';
+      // Ensure Buy Now button has the correct handler
+      buyNowBtn.onclick = handleBuyNow;
+    }
+    // Show price for non-members
+    if (productPrice) {
+      productPrice.style.display = '';
+    }
   }
 }
 
@@ -2244,83 +2288,99 @@ async function loadProductCardAssets(productId) {
     // Card assets folder is a subfolder within the product folder
     const cardAssetsPath = `${folderName}/${cardAssetsFolder}`;
     let folderData = null; // Store for later use in 3D embed generation
-    try {
-      const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(cardAssetsPath)}`;
-      const response = await fetch(apiUrl);
+    
+    // Skip API call if using local assets or in local development
+    const skipApiCall = config.useLocalAssets || 
+                        window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1';
+    
+    if (!skipApiCall) {
+      try {
+        const apiUrl = `/api/get-github-contents?owner=${encodeURIComponent(config.owner)}&repo=${encodeURIComponent(config.repo)}&branch=${encodeURIComponent(config.branch)}&path=${encodeURIComponent(cardAssetsPath)}`;
+        const response = await fetch(apiUrl);
       
-      if (response.ok) {
-        const data = await response.json();
-        folderData = data; // Store for later
-        // Handle both error responses and successful responses
-        if (data.error) {
-          // Folder doesn't exist yet, that's okay
-          console.log(`ℹ️ Card assets folder doesn't exist yet for ${folderName} (this is normal if folder hasn't been pushed to GitHub)`);
-        } else if (data.contents && Array.isArray(data.contents)) {
-          console.log(`📁 Found ${data.contents.length} items in card assets folder for ${folderName}`);
-          const supportedFormats = {
-            image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
-            video: ['mp4', 'webm', 'ogg', 'mov'],
-            model3d: ['glb', 'gltf', 'usd', 'obj', 'stl', 'usdz'],
-            html: ['html'],
-            config: ['json']
-          };
-          
-          for (const item of data.contents) {
-            if (item.type === 'file') {
-              // Skip preview-embed.html files - they can't be loaded in iframes due to X-Frame-Options
-              if (item.name.toLowerCase().includes('preview-embed')) {
-                console.log(`⏭️ Skipping preview file (can't be iframed): ${item.name}`);
-                continue;
-              }
+        if (response.ok) {
+          const data = await response.json();
+          folderData = data; // Store for later
+          // Handle both error responses and successful responses
+          if (data.error) {
+            // Folder doesn't exist yet, that's okay
+            console.log(`ℹ️ Card assets folder doesn't exist yet for ${folderName} (this is normal if folder hasn't been pushed to GitHub)`);
+          } else if (data.contents && Array.isArray(data.contents)) {
+            console.log(`📁 Found ${data.contents.length} items in card assets folder for ${folderName}`);
+            const supportedFormats = {
+              image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
+              video: ['mp4', 'webm', 'ogg', 'mov'],
+              model3d: ['glb', 'gltf', 'usd', 'obj', 'stl', 'usdz'],
+              html: ['html'],
+              config: ['json']
+            };
+            
+            for (const item of data.contents) {
+              if (item.type === 'file') {
+                // Skip preview-embed.html files - they can't be loaded in iframes due to X-Frame-Options
+                if (item.name.toLowerCase().includes('preview-embed')) {
+                  console.log(`⏭️ Skipping preview file (can't be iframed): ${item.name}`);
+                  continue;
+                }
 
-              const ext = item.name.split('.').pop().toLowerCase();
-              let mediaType = 'other';
+                const ext = item.name.split('.').pop().toLowerCase();
+                let mediaType = 'other';
 
-              if (supportedFormats.image.includes(ext)) {
-                mediaType = 'image';
-              } else if (supportedFormats.video.includes(ext)) {
-                mediaType = 'video';
-              } else if (supportedFormats.model3d.includes(ext)) {
-                mediaType = 'model3d';
-              } else if (supportedFormats.html.includes(ext)) {
-                mediaType = 'html';
-              }
-              
-              if (mediaType !== 'other') {
-                // Use download_url from GitHub API if available (properly encoded)
-                // Otherwise construct URL manually
-                let fileUrl;
-                if (item.download_url) {
-                  // GitHub API provides properly encoded download_url
-                  fileUrl = item.download_url;
-                } else {
-                  // Fallback: construct URL manually with proper encoding
-                  const encodedFileName = encodeURIComponent(item.name);
-                  if (config.useLocalAssets) {
-                    // For local assets, card assets would need to be synced to website repo
-                    // For now, fall back to GitHub raw URL since card assets aren't synced yet
-                    // TODO: Update sync script to copy card assets to website repo
-                    fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${encodedFileName}`;
-                  } else {
-                    fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${encodedFileName}`;
-                  }
+                if (supportedFormats.image.includes(ext)) {
+                  mediaType = 'image';
+                } else if (supportedFormats.video.includes(ext)) {
+                  mediaType = 'video';
+                } else if (supportedFormats.model3d.includes(ext)) {
+                  mediaType = 'model3d';
+                } else if (supportedFormats.html.includes(ext)) {
+                  mediaType = 'html';
                 }
                 
-                cardAssets.push({
-                  type: mediaType,
-                  url: fileUrl,
-                  format: ext,
-                  name: item.name,
-                  isIcon: false
-                });
-                console.log(`📦 Added card asset: ${item.name} (${mediaType}) - URL: ${fileUrl}`);
+                if (mediaType !== 'other') {
+                  // Use download_url from GitHub API if available (properly encoded)
+                  // Otherwise construct URL manually
+                  let fileUrl;
+                  if (item.download_url) {
+                    // GitHub API provides properly encoded download_url
+                    fileUrl = item.download_url;
+                  } else {
+                    // Fallback: construct URL manually with proper encoding
+                    const encodedFileName = encodeURIComponent(item.name);
+                    if (config.useLocalAssets) {
+                      // For local assets, card assets would need to be synced to website repo
+                      // For now, fall back to GitHub raw URL since card assets aren't synced yet
+                      // TODO: Update sync script to copy card assets to website repo
+                      fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${encodedFileName}`;
+                    } else {
+                      fileUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${cardAssetsPath}/${encodedFileName}`;
+                    }
+                  }
+                  
+                  cardAssets.push({
+                    type: mediaType,
+                    url: fileUrl,
+                    format: ext,
+                    name: item.name,
+                    isIcon: false
+                  });
+                  console.log(`📦 Added card asset: ${item.name} (${mediaType}) - URL: ${fileUrl}`);
+                }
               }
             }
           }
         }
+      } catch (error) {
+        // Only log if it's not a 404 (which is expected when folder doesn't exist)
+        if (error.message && !error.message.includes('404')) {
+          console.log(`Card assets folder doesn't exist yet for ${folderName}:`, error);
+        } else {
+          console.log(`ℹ️ Card assets folder doesn't exist yet for ${folderName} (this is normal if folder hasn't been pushed to GitHub)`);
+        }
       }
-    } catch (error) {
-      console.log(`Card assets folder doesn't exist yet for ${folderName}:`, error);
+    } else {
+      console.log(`ℹ️ Skipping GitHub API call for card assets (local development or useLocalAssets=true)`);
+      console.log(`   Product: ${folderName}, Card assets folder: ${cardAssetsFolder}`);
     }
 
     // Add static PNG icon at the end (if GIF was found) or at the beginning (if no GIF)
@@ -3176,24 +3236,37 @@ console.log('🔍 Search elements:', {
   searchResultsEmpty
 });
 
+// Verify all search elements exist
+if (!searchModal || !searchModalBackdrop || !searchInput || !searchResultsContainer || !searchResultsEmpty) {
+  console.error('❌ Search elements not found! Some search functionality may not work.');
+}
+
 let searchResults = [];
 let selectedResultIndex = -1;
+let previousSearchResults = []; // Track previous results for animation
+let searchResultElements = new Map(); // Cache of rendered elements by productId
 
 // Open search modal with CMD+K or Ctrl+K
 document.addEventListener('keydown', function(e) {
   // CMD+K (Mac) or Ctrl+K (Windows/Linux)
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault();
-    openSearchModal();
+    if (searchModal) {
+      openSearchModal();
+    }
   }
 
   // ESC to close modal
-  if (e.key === 'Escape' && searchModal.classList.contains('active')) {
+  if (e.key === 'Escape' && searchModal && searchModal.classList.contains('active')) {
     closeSearchModal();
   }
 });
 
 function openSearchModal() {
+  if (!searchModal || !searchModalBackdrop || !searchInput) {
+    console.error('Cannot open search modal: required elements missing');
+    return;
+  }
   searchModal.classList.add('active');
   searchModalBackdrop.classList.add('active');
   searchInput.value = '';
@@ -3202,41 +3275,125 @@ function openSearchModal() {
 }
 
 function closeSearchModal() {
+  if (!searchModal || !searchModalBackdrop) {
+    return;
+  }
   searchModal.classList.remove('active');
   searchModalBackdrop.classList.remove('active');
   selectedResultIndex = -1;
 }
 
 // Close modal when clicking backdrop
-searchModalBackdrop.addEventListener('click', closeSearchModal);
+if (searchModalBackdrop) {
+  searchModalBackdrop.addEventListener('click', closeSearchModal);
+}
 
 // Search input handler
-console.log('🔧 Attaching search input listener, searchInput element:', searchInput);
-searchInput.addEventListener('input', function(e) {
-  console.log('⌨️ Search input event fired, value:', e.target.value);
-  performSearch(e.target.value);
-});
+if (searchInput) {
+  console.log('🔧 Attaching search input listener, searchInput element:', searchInput);
+  searchInput.addEventListener('input', function(e) {
+    console.log('⌨️ Search input event fired, value:', e.target.value);
+    performSearch(e.target.value);
+  });
 
-// Keyboard navigation in search results
-searchInput.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    selectedResultIndex = Math.min(selectedResultIndex + 1, searchResults.length - 1);
-    updateSearchSelection();
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
-    updateSearchSelection();
-  } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
-    e.preventDefault();
-    const productId = searchResults[selectedResultIndex];
-    (async () => { await selectProduct(productId); })();
-    closeSearchModal();
+  // Keyboard navigation in search results
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedResultIndex = Math.min(selectedResultIndex + 1, searchResults.length - 1);
+      updateSearchSelection();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+      updateSearchSelection();
+    } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
+      e.preventDefault();
+      const productId = searchResults[selectedResultIndex];
+      if (productId) {
+        (async () => { await selectProduct(productId); })();
+        closeSearchModal();
+      }
+    }
+  });
+}
+
+// Fuzzy search scoring function
+function fuzzyMatchScore(pattern, text) {
+  if (!pattern || !text) return 0;
+  
+  pattern = pattern.toLowerCase();
+  text = text.toLowerCase();
+  
+  // Exact match gets highest score
+  if (text === pattern) return 1000;
+  
+  // Starts with pattern gets very high score
+  if (text.startsWith(pattern)) return 800;
+  
+  // Contains pattern as substring gets high score
+  if (text.includes(pattern)) return 600;
+  
+  // Fuzzy match: check if all pattern characters appear in order
+  let patternIndex = 0;
+  let consecutiveMatches = 0;
+  let maxConsecutive = 0;
+  let firstMatchIndex = -1;
+  let totalMatches = 0;
+  
+  for (let i = 0; i < text.length && patternIndex < pattern.length; i++) {
+    if (text[i] === pattern[patternIndex]) {
+      if (firstMatchIndex === -1) firstMatchIndex = i;
+      consecutiveMatches++;
+      maxConsecutive = Math.max(maxConsecutive, consecutiveMatches);
+      totalMatches++;
+      patternIndex++;
+    } else {
+      consecutiveMatches = 0;
+    }
   }
-});
+  
+  // If not all characters matched, return 0
+  if (patternIndex < pattern.length) return 0;
+  
+  // Calculate score based on:
+  // - How many characters matched (totalMatches)
+  // - Longest consecutive match (maxConsecutive)
+  // - Position of first match (earlier is better)
+  // - How close together matches are (text.length - lastMatchIndex)
+  const score = 100 + 
+    (totalMatches * 10) + 
+    (maxConsecutive * 20) + 
+    (firstMatchIndex === 0 ? 50 : Math.max(0, 50 - firstMatchIndex * 2));
+  
+  return score;
+}
+
+// Get all searchable text for a product
+function getProductSearchText(product) {
+  const texts = [];
+  
+  if (product.name) texts.push(product.name);
+  if (product.description) texts.push(product.description);
+  if (product.productType) texts.push(product.productType);
+  
+  if (product.changelog && Array.isArray(product.changelog)) {
+    product.changelog.forEach(item => {
+      if (item) texts.push(item);
+    });
+  }
+  
+  if (product.groups && Array.isArray(product.groups)) {
+    product.groups.forEach(group => {
+      if (group) texts.push(group);
+    });
+  }
+  
+  return texts.join(' ');
+}
 
 function performSearch(query) {
-  const searchTerm = query.toLowerCase().trim();
+  // Handle undefined/null queries gracefully
+  const searchTerm = (query || '').trim();
 
   // Get all product IDs
   const allProducts = Object.keys(products);
@@ -3246,39 +3403,45 @@ function performSearch(query) {
     // Show all products when search is empty
     searchResults = allProducts;
   } else {
-    // Filter products by name, description, changelog, and all text content
-    searchResults = allProducts.filter(productId => {
-      const product = products[productId];
-      const name = product.name.toLowerCase();
-      const desc = product.description.toLowerCase();
-
-      // Search in name and description
-      if (name.includes(searchTerm) || desc.includes(searchTerm)) {
-        return true;
-      }
-
-      // Search in changelog items
-      if (product.changelog && Array.isArray(product.changelog)) {
-        const changelogMatch = product.changelog.some(item =>
-          item.toLowerCase().includes(searchTerm)
-        );
-        if (changelogMatch) return true;
-      }
-
-      // Search in product type and groups
-      if (product.productType && product.productType.toLowerCase().includes(searchTerm)) {
-        return true;
-      }
-
-      if (product.groups && Array.isArray(product.groups)) {
-        const groupMatch = product.groups.some(group =>
-          group.toLowerCase().includes(searchTerm)
-        );
-        if (groupMatch) return true;
-      }
-
-      return false;
-    });
+    // Score and filter products using fuzzy search
+    const scoredResults = allProducts
+      .map(productId => {
+        const product = products[productId];
+        
+        // Skip if product data is missing
+        if (!product) {
+          return { productId, score: 0 };
+        }
+        
+        // Get all searchable text
+        const searchText = getProductSearchText(product);
+        
+        // Calculate fuzzy match score
+        let maxScore = 0;
+        
+        // Score name separately (highest weight)
+        if (product.name) {
+          const nameScore = fuzzyMatchScore(searchTerm, product.name);
+          maxScore = Math.max(maxScore, nameScore * 1.5); // Name gets 1.5x weight
+        }
+        
+        // Score full search text
+        const textScore = fuzzyMatchScore(searchTerm, searchText);
+        maxScore = Math.max(maxScore, textScore);
+        
+        // Also check individual fields for better matching
+        if (product.description) {
+          const descScore = fuzzyMatchScore(searchTerm, product.description);
+          maxScore = Math.max(maxScore, descScore * 0.8); // Description gets 0.8x weight
+        }
+        
+        return { productId, score: maxScore };
+      })
+      .filter(result => result.score > 0) // Only include products with matches
+      .sort((a, b) => b.score - a.score) // Sort by score descending
+      .map(result => result.productId); // Extract just the product IDs
+    
+    searchResults = scoredResults;
   }
 
   selectedResultIndex = searchResults.length > 0 ? 0 : -1;
@@ -3290,43 +3453,119 @@ function renderSearchResults() {
   console.log('   searchResultsContainer:', searchResultsContainer);
   console.log('   searchResultsEmpty:', searchResultsEmpty);
 
-  searchResultsContainer.innerHTML = '';
+  if (!searchResultsContainer || !searchResultsEmpty) {
+    console.error('Cannot render search results: container elements missing');
+    return;
+  }
 
   if (searchResults.length === 0) {
     console.log('   ❌ No results, showing empty state');
+    searchResultsContainer.innerHTML = '';
     searchResultsEmpty.style.display = 'flex';
+    searchResultElements.clear();
+    previousSearchResults = [];
     return;
   }
 
   console.log('   ✅ Rendering', searchResults.length, 'results');
   searchResultsEmpty.style.display = 'none';
 
-  searchResults.forEach((productId, index) => {
+  // Create a document fragment for efficient DOM manipulation
+  const fragment = document.createDocumentFragment();
+  const newElements = new Map();
+  const existingElements = new Set();
+
+  // First pass: reuse existing elements or create new ones
+  searchResults.forEach((productId, newIndex) => {
     const product = products[productId];
-    console.log('   📦 Rendering result', index, ':', product?.name || 'undefined product');
-    const resultItem = document.createElement('div');
-    resultItem.className = 'search-result-item';
-    if (index === selectedResultIndex) {
-      resultItem.classList.add('selected');
+    
+    // Skip if product data is missing
+    if (!product) {
+      console.warn('   ⚠️ Product data missing for ID:', productId);
+      return;
     }
 
-    resultItem.innerHTML = `
-      <div class="search-result-content">
-        <div class="search-result-title">${product.name}</div>
-        <div class="search-result-price">${product.price}</div>
-      </div>
-    `;
+    let resultItem = searchResultElements.get(productId);
+    const wasExisting = !!resultItem;
+    const oldIndex = previousSearchResults.indexOf(productId);
 
-    resultItem.addEventListener('click', async () => {
-      await selectProduct(productId);
-      closeSearchModal();
-    });
+    // Create new element if it doesn't exist
+    if (!resultItem) {
+      resultItem = document.createElement('div');
+      resultItem.className = 'search-result-item';
+      resultItem.innerHTML = `
+        <div class="search-result-content">
+          <div class="search-result-title">${product.name || 'Unknown Product'}</div>
+          <div class="search-result-price">${product.price || 'N/A'}</div>
+        </div>
+      `;
 
-    searchResultsContainer.appendChild(resultItem);
+      resultItem.addEventListener('click', async () => {
+        await selectProduct(productId);
+        closeSearchModal();
+      });
+      
+      // Stagger animation for new items
+      resultItem.style.animationDelay = `${Math.min(newIndex * 0.03, 0.3)}s`;
+    } else {
+      // Element exists, remove it from current position
+      if (resultItem.parentNode) {
+        resultItem.parentNode.removeChild(resultItem);
+      }
+      // Reset animation state
+      resultItem.style.opacity = '';
+      resultItem.style.transform = '';
+      resultItem.style.animationDelay = '';
+      resultItem.classList.remove('animating');
+    }
+
+    // Update selection state
+    if (newIndex === selectedResultIndex) {
+      resultItem.classList.add('selected');
+    } else {
+      resultItem.classList.remove('selected');
+    }
+
+    // If item moved position, add animation class
+    if (wasExisting && oldIndex !== -1 && oldIndex !== newIndex) {
+      resultItem.classList.add('animating');
+    }
+
+    newElements.set(productId, resultItem);
+    existingElements.add(productId);
+    fragment.appendChild(resultItem);
   });
+
+  // Remove elements that are no longer in results
+  searchResultElements.forEach((element, productId) => {
+    if (!existingElements.has(productId)) {
+      // Fade out removed items
+      element.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(-10px)';
+      setTimeout(() => {
+        if (element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      }, 200);
+    }
+  });
+
+  // Append fragment to container
+  searchResultsContainer.appendChild(fragment);
+
+  // Update caches
+  searchResultElements = newElements;
+  previousSearchResults = [...searchResults];
+
+  // Trigger reflow to ensure animations work
+  searchResultsContainer.offsetHeight;
 }
 
 function updateSearchSelection() {
+  if (!searchResultsContainer) {
+    return;
+  }
   const resultItems = searchResultsContainer.querySelectorAll('.search-result-item');
   resultItems.forEach((item, index) => {
     if (index === selectedResultIndex) {
@@ -4544,6 +4783,480 @@ window.cart = cart;
 
 console.log('Shopping cart functionality loaded');
 
+// Initialize Member CTA Button
+// Dev toggle for member/non-member viewing (stored in localStorage)
+// DISABLED: Always return false to ensure non-member view
+function getDevMemberToggle() {
+  // Ensure dev mode is disabled
+  if (localStorage.getItem('dev_member_toggle') === 'true') {
+    setDevMemberToggle(false);
+  }
+  return false; // Always return false - dev mode is hidden and disabled
+}
+
+function setDevMemberToggle(enabled) {
+  localStorage.setItem('dev_member_toggle', enabled ? 'true' : 'false');
+  
+  // When enabling dev mode, set a dev customer ID if one doesn't exist
+  if (enabled) {
+    const devCustomerId = localStorage.getItem('dev_customer_id');
+    if (!devCustomerId) {
+      // Generate a dev customer ID (prefixed with 'dev_' to make it clear)
+      const newDevCustomerId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('dev_customer_id', newDevCustomerId);
+      // Also set it in sessionStorage so it's available immediately
+      sessionStorage.setItem('polar_customer_id', newDevCustomerId);
+    } else {
+      // Use existing dev customer ID
+      sessionStorage.setItem('polar_customer_id', devCustomerId);
+    }
+  } else {
+    // When disabling dev mode, remove dev customer ID from sessionStorage
+    // but keep it in localStorage in case they toggle back on
+    const devCustomerId = localStorage.getItem('dev_customer_id');
+    if (devCustomerId && sessionStorage.getItem('polar_customer_id') === devCustomerId) {
+      sessionStorage.removeItem('polar_customer_id');
+      // If there's a real customer ID in URL params, it will be picked up by the account menu
+      // No need to set it here - let the account menu handle it naturally
+    }
+  }
+}
+
+// Get dev customer ID if dev mode is enabled
+function getDevCustomerId() {
+  if (getDevMemberToggle()) {
+    let devCustomerId = localStorage.getItem('dev_customer_id');
+    if (!devCustomerId) {
+      // Generate a dev customer ID if one doesn't exist
+      devCustomerId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('dev_customer_id', devCustomerId);
+    }
+    return devCustomerId;
+  }
+  return null;
+}
+
+// Initialize dev mode - ensure it's disabled for production (non-member view)
+// Disable dev mode on page load to ensure non-member view
+if (typeof window !== 'undefined') {
+  // Ensure dev mode is disabled when page loads
+  if (localStorage.getItem('dev_member_toggle') === 'true') {
+    setDevMemberToggle(false);
+    // Clear dev customer ID from sessionStorage
+    const devCustomerId = localStorage.getItem('dev_customer_id');
+    if (devCustomerId && sessionStorage.getItem('polar_customer_id') === devCustomerId) {
+      sessionStorage.removeItem('polar_customer_id');
+    }
+  }
+}
+
+// Initialize dev customer ID on page load if dev mode is enabled (legacy - now always disabled)
+function initializeDevCustomerId() {
+  if (getDevMemberToggle()) {
+    const devCustomerId = getDevCustomerId();
+    if (devCustomerId) {
+      // Only set in sessionStorage if there's no existing customer ID
+      const existingCustomerId = sessionStorage.getItem('polar_customer_id') || 
+                                 new URLSearchParams(window.location.search).get('customer_id');
+      if (!existingCustomerId || existingCustomerId.startsWith('dev_')) {
+        sessionStorage.setItem('polar_customer_id', devCustomerId);
+      }
+    }
+  }
+}
+
+// Check subscription status for a customer
+async function checkSubscriptionStatus(customerId) {
+  // DEV MODE: Check dev toggle first (works even without customerId)
+  const devToggleEnabled = getDevMemberToggle();
+  if (devToggleEnabled) {
+    console.log('[DEV MODE] Member toggle enabled - simulating active subscription');
+    return true; // Simulate active subscription
+  }
+  
+  // If no customer ID and dev toggle is off, return false
+  if (!customerId) {
+    return false;
+  }
+  
+  try {
+    const response = await fetch(`/api/v1/user/entitlements?customer_id=${customerId}`);
+    if (response.ok) {
+      const data = await response.json();
+      // Check if subscription is active (not expired)
+      if (data.entitlements && data.entitlements.expires_at) {
+        const expiresAt = new Date(data.entitlements.expires_at);
+        return expiresAt > new Date();
+      }
+      // If no expiration date, assume active subscription
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking subscription status:', error);
+    // On error, assume subscriber if customer_id exists
+    return true;
+  }
+}
+
+// Update member CTA visibility based on subscription status
+async function updateMemberCTAVisibility() {
+  const memberCTAButton = document.getElementById('member-cta-button');
+  const mobileMemberCTAButton = document.getElementById('mobile-member-cta-button');
+  
+  let customerId = sessionStorage.getItem('polar_customer_id') || 
+                   new URLSearchParams(window.location.search).get('customer_id');
+  
+  // If dev mode is enabled but no customer ID, use dev customer ID
+  if (!customerId && getDevMemberToggle()) {
+    customerId = getDevCustomerId();
+    if (customerId) {
+      sessionStorage.setItem('polar_customer_id', customerId);
+    }
+  }
+  
+  try {
+    // Check subscription status (works with or without customer ID if dev toggle is enabled)
+    const hasActiveSubscription = await checkSubscriptionStatus(customerId);
+    if (hasActiveSubscription) {
+      // Hide member CTA buttons for active subscribers
+      if (memberCTAButton) {
+        memberCTAButton.style.display = 'none';
+      }
+      if (mobileMemberCTAButton) {
+        mobileMemberCTAButton.style.display = 'none';
+      }
+      // Add class to adjust grid spacing
+      document.body.classList.add('cta-hidden');
+    } else {
+      // Show CTA buttons for non-subscribers
+      if (memberCTAButton) memberCTAButton.style.display = '';
+      if (mobileMemberCTAButton) mobileMemberCTAButton.style.display = '';
+      // Remove class to show normal spacing
+      document.body.classList.remove('cta-hidden');
+    }
+  } catch (error) {
+    console.error('Error checking subscription status for member CTA:', error);
+    // On error, show CTA buttons
+    if (memberCTAButton) memberCTAButton.style.display = '';
+    if (mobileMemberCTAButton) mobileMemberCTAButton.style.display = '';
+    // Remove class to show normal spacing
+    document.body.classList.remove('cta-hidden');
+  }
+}
+
+async function initializeMemberCTA() {
+  const memberCTAButton = document.getElementById('member-cta-button');
+  const mobileMemberCTAButton = document.getElementById('mobile-member-cta-button');
+
+  // Check for active subscription and hide CTA if subscriber
+  let customerId = sessionStorage.getItem('polar_customer_id') || 
+                   new URLSearchParams(window.location.search).get('customer_id');
+  
+  // If dev mode is enabled but no customer ID, use dev customer ID
+  if (!customerId && getDevMemberToggle()) {
+    customerId = getDevCustomerId();
+    if (customerId) {
+      sessionStorage.setItem('polar_customer_id', customerId);
+    }
+  }
+  
+  if (customerId) {
+    try {
+      const hasActiveSubscription = await checkSubscriptionStatus(customerId);
+      if (hasActiveSubscription) {
+        // Hide member CTA buttons for active subscribers
+        if (memberCTAButton) {
+          memberCTAButton.style.display = 'none';
+        }
+        if (mobileMemberCTAButton) {
+          mobileMemberCTAButton.style.display = 'none';
+        }
+        console.log('Member CTA hidden for active subscriber');
+        return; // Exit early, don't set up checkout URL
+      }
+    } catch (error) {
+      console.error('Error checking subscription status for member CTA:', error);
+      // Continue to show CTA if check fails
+    }
+  }
+
+  let checkoutUrl = null;
+
+  try {
+    // Try to load subscription config from the config directory
+    const response = await fetch('/config/subscription-config.json');
+    if (response.ok) {
+      const config = await response.json();
+      if (config.checkoutUrl) {
+        checkoutUrl = config.checkoutUrl;
+        console.log('Member CTA button initialized with subscription checkout URL');
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load subscription config, using fallback URL:', error);
+  }
+
+  // Fallback to hardcoded URL from config file
+  if (!checkoutUrl) {
+    checkoutUrl = 'https://buy.polar.sh/polar_cl_QUdol23jKpCxZ4XPamECHD3sCeIRFRyaBce9n3rx5nW';
+    console.log('Member CTA button initialized with fallback URL');
+  }
+
+  // Set URL for desktop button
+  if (memberCTAButton) {
+    memberCTAButton.href = checkoutUrl;
+  }
+
+  // Set URL for mobile button
+  if (mobileMemberCTAButton) {
+    mobileMemberCTAButton.href = checkoutUrl;
+  }
+}
+
+// Initialize member CTA when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeMemberCTA);
+} else {
+  initializeMemberCTA();
+}
+
+// Account menu initialization
+let accountMenuInitialized = false;
+
+function initializeAccountMenu() {
+  const accountMenuButton = document.getElementById('account-menu-button');
+  const accountMenuDropdown = document.getElementById('account-menu-dropdown');
+  const accountMenuLink = document.getElementById('account-menu-link');
+  
+  if (!accountMenuButton || !accountMenuDropdown) {
+    return; // Elements not found, skip initialization
+  }
+
+  // Toggle dropdown on button click
+  accountMenuButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isActive = accountMenuDropdown.classList.contains('active');
+    
+    if (isActive) {
+      closeAccountMenu();
+    } else {
+      openAccountMenu();
+    }
+  });
+
+  // Update account link with customer_id if available
+  if (accountMenuLink) {
+    const customerId = sessionStorage.getItem('polar_customer_id') || 
+                       new URLSearchParams(window.location.search).get('customer_id');
+    if (customerId) {
+      const url = new URL(accountMenuLink.href, window.location.origin);
+      url.searchParams.set('customer_id', customerId);
+      accountMenuLink.href = url.toString();
+    }
+    
+    // Close dropdown when clicking account link
+    accountMenuLink.addEventListener('click', () => {
+      closeAccountMenu();
+    });
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!accountMenuDropdown.contains(e.target) && 
+        !accountMenuButton.contains(e.target)) {
+      closeAccountMenu();
+    }
+  });
+
+  // Close dropdown on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && accountMenuDropdown.classList.contains('active')) {
+      closeAccountMenu();
+    }
+  });
+
+  accountMenuInitialized = true;
+}
+
+// Open account menu and load account info
+async function openAccountMenu() {
+  const accountMenuDropdown = document.getElementById('account-menu-dropdown');
+  const accountMenuContent = document.getElementById('account-menu-content');
+  
+  if (!accountMenuDropdown || !accountMenuContent) return;
+
+  accountMenuDropdown.classList.add('active');
+  
+  // Check for customer_id (including dev customer ID if dev mode is enabled)
+  const devToggleEnabled = getDevMemberToggle();
+  let customerId = sessionStorage.getItem('polar_customer_id') || 
+                   new URLSearchParams(window.location.search).get('customer_id');
+  
+  // If dev mode is enabled but no customer ID, use dev customer ID
+  if (!customerId && devToggleEnabled) {
+    customerId = getDevCustomerId();
+    if (customerId) {
+      sessionStorage.setItem('polar_customer_id', customerId);
+    }
+  }
+  
+  if (!customerId) {
+    // No customer ID - show login prompt
+    accountMenuContent.innerHTML = `
+      <div class="account-menu-info-item">
+        <div class="account-menu-info-label">Status</div>
+        <div class="account-menu-info-value">Not signed in</div>
+      </div>
+      <div class="account-menu-info-item" style="margin-top: var(--space-medium);">
+        <a href="subscribe.html" class="account-menu-link" style="display: block; text-align: center;">Sign In / Subscribe</a>
+      </div>
+    `;
+    return;
+  }
+
+  // Show loading state
+  accountMenuContent.innerHTML = '<div class="account-menu-loading">Loading account info...</div>';
+
+  // Check if this is a dev customer ID
+  const isDevCustomerId = customerId && customerId.startsWith('dev_');
+  
+  try {
+    let data;
+    let user, entitlements;
+    
+    if (isDevCustomerId && devToggleEnabled) {
+      // Use mock data for dev mode
+      const futureDate = new Date();
+      futureDate.setMonth(futureDate.getMonth() + 1); // 1 month from now
+      
+      data = {
+        user: {
+          id: customerId,
+          email: 'dev@example.com',
+          subscription_tier: 'pro_monthly'
+        },
+        entitlements: {
+          libraries: ['all'],
+          features: [],
+          expires_at: futureDate.toISOString()
+        }
+      };
+      user = data.user;
+      entitlements = data.entitlements;
+    } else {
+      // Fetch subscription data from API
+      const response = await fetch(`/api/v1/user/entitlements?customer_id=${customerId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription data');
+      }
+      
+      data = await response.json();
+      user = data.user;
+      entitlements = data.entitlements;
+    }
+    
+    // Check if subscription is active
+    const isActive = entitlements.expires_at && 
+                     new Date(entitlements.expires_at) > new Date();
+    
+    const statusClass = isActive ? 'active' : 'expired';
+    const statusText = isActive ? 'Active' : 'Expired';
+    
+    // Check dev toggle state
+    const effectiveIsActive = devToggleEnabled || isActive;
+    const effectiveStatusClass = effectiveIsActive ? 'active' : 'expired';
+    const effectiveStatusText = devToggleEnabled ? 'Active (DEV)' : (isActive ? 'Active' : 'Expired');
+      
+      // Build account info HTML
+      accountMenuContent.innerHTML = `
+        <div class="account-menu-info-item">
+          <div class="account-menu-info-label">Status</div>
+          <span class="account-menu-status-badge ${effectiveStatusClass}">${effectiveStatusText}</span>
+        </div>
+        <div class="account-menu-info-item">
+          <div class="account-menu-info-label">Email</div>
+          <div class="account-menu-info-value">${user.email || 'N/A'}</div>
+        </div>
+        <div class="account-menu-info-item">
+          <div class="account-menu-info-label">Plan</div>
+          <div class="account-menu-info-value">${user.subscription_tier ? user.subscription_tier.replace('_', ' ').toUpperCase() : 'N/A'}</div>
+        </div>
+        ${entitlements.expires_at ? `
+        <div class="account-menu-info-item">
+          <div class="account-menu-info-label">Renews</div>
+          <div class="account-menu-info-value">${new Date(entitlements.expires_at).toLocaleDateString()}</div>
+        </div>
+        ` : ''}
+      `;
+      
+      // Update member CTA visibility based on subscription status
+      if (effectiveIsActive) {
+        updateMemberCTAVisibility();
+      }
+  } catch (error) {
+    console.error('Error loading account info:', error);
+    const devToggleEnabled = getDevMemberToggle();
+    accountMenuContent.innerHTML = `
+      <div class="account-menu-info-item">
+        <div class="account-menu-info-label">Error</div>
+        <div class="account-menu-info-value" style="color: var(--color-dark-gray);">Failed to load account info</div>
+      </div>
+    `;
+  }
+}
+
+// Helper function to get current product ID
+function getCurrentProductId() {
+  // Try to get from product card dataset first
+  const productCard = document.querySelector('.product-card-container');
+  if (productCard && productCard.dataset && productCard.dataset.productId) {
+    return productCard.dataset.productId;
+  }
+  // Fall back to global currentProduct variable
+  return typeof currentProduct !== 'undefined' ? currentProduct : null;
+}
+
+// Toggle dev member mode
+function toggleDevMemberMode(enabled) {
+  setDevMemberToggle(enabled);
+  console.log(`[DEV MODE] Member toggle ${enabled ? 'enabled' : 'disabled'}`);
+  
+  // Update UI immediately
+  updateMemberCTAVisibility();
+  
+  // Update button visibility if on a product page
+  const currentProductId = getCurrentProductId();
+  if (currentProductId) {
+    updateButtonVisibility(currentProductId);
+  }
+  
+  // Reload account menu to show updated status
+  const accountMenuDropdown = document.getElementById('account-menu-dropdown');
+  if (accountMenuDropdown && accountMenuDropdown.classList.contains('active')) {
+    openAccountMenu();
+  }
+}
+
+// Make toggle function globally accessible
+window.toggleDevMemberMode = toggleDevMemberMode;
+
+// Close account menu
+function closeAccountMenu() {
+  const accountMenuDropdown = document.getElementById('account-menu-dropdown');
+  if (accountMenuDropdown) {
+    accountMenuDropdown.classList.remove('active');
+  }
+}
+
+// Initialize account menu when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeAccountMenu);
+} else {
+  initializeAccountMenu();
+}
+
 // OS Detection for Footer Keyboard Shortcut
 function updateFooterShortcut() {
   const footerText = document.getElementById('footer-text');
@@ -4616,13 +5329,15 @@ function initializeMobileSearch() {
     // Handle typing in mobile search - live predictive search
     mobileSearchInput.addEventListener('input', () => {
       // Open modal if not already open
-      if (!searchModal.classList.contains('active')) {
+      if (searchModal && !searchModal.classList.contains('active')) {
         openSearchModal();
       }
 
       // Sync with main search input and trigger search
-      searchInput.value = mobileSearchInput.value;
-      performSearch();
+      if (searchInput) {
+        searchInput.value = mobileSearchInput.value;
+      }
+      performSearch(mobileSearchInput.value);
     });
 
     // Handle button click
@@ -4630,8 +5345,10 @@ function initializeMobileSearch() {
       openSearchModal();
       // Pre-fill with mobile input value if exists
       if (mobileSearchInput.value) {
-        searchInput.value = mobileSearchInput.value;
-        performSearch();
+        if (searchInput) {
+          searchInput.value = mobileSearchInput.value;
+        }
+        performSearch(mobileSearchInput.value);
       } else {
         // Focus the mobile input if empty
         mobileSearchInput.focus();
@@ -4661,20 +5378,24 @@ function initializeMobileSearch() {
     });
 
     // Sync mobile search when modal search input changes
-    searchInput.addEventListener('input', () => {
-      if (searchModal.classList.contains('active')) {
-        mobileSearchInput.value = searchInput.value;
-      }
-    });
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        if (searchModal && searchModal.classList.contains('active')) {
+          mobileSearchInput.value = searchInput.value;
+        }
+      });
+    }
 
     // Clear mobile search when modal closes
-    searchModalBackdrop.addEventListener('click', () => {
-      mobileSearchInput.value = '';
-    });
+    if (searchModalBackdrop) {
+      searchModalBackdrop.addEventListener('click', () => {
+        mobileSearchInput.value = '';
+      });
+    }
 
     // Also clear when ESC is pressed
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && searchModal.classList.contains('active')) {
+      if (e.key === 'Escape' && searchModal && searchModal.classList.contains('active')) {
         mobileSearchInput.value = '';
       }
     });
@@ -5251,4 +5972,156 @@ function updateCarouselArrows() {
       rightArrow.classList.remove('visible');
     }
   }
+}
+
+// ============================================================================
+// LANDING POP-UP MODAL
+// ============================================================================
+
+const LANDING_POPUP_STORAGE_KEY = 'no3d-tools-landing-popup-dismissed';
+
+// Landing pop-up UI elements
+const landingPopupModal = document.getElementById('landing-popup-modal');
+const landingPopupBackdrop = document.getElementById('landing-popup-backdrop');
+const landingPopupSubscribeButton = document.getElementById('landing-popup-subscribe-button');
+const landingPopupBrowseButton = document.getElementById('landing-popup-browse-button');
+
+// Check if pop-up should be shown
+function shouldShowLandingPopup() {
+  // Allow forcing pop-up to show via query parameter (useful for testing)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('showPopup') === 'true') {
+    // Clear the dismissal flag if forcing show
+    localStorage.removeItem(LANDING_POPUP_STORAGE_KEY);
+    return true;
+  }
+  
+  // Check localStorage to see if user has dismissed the pop-up
+  const dismissed = localStorage.getItem(LANDING_POPUP_STORAGE_KEY);
+  if (dismissed) {
+    // Check if it was dismissed more than 30 days ago (optional: show again after 30 days)
+    const dismissedDate = new Date(dismissed);
+    const daysSinceDismissed = (Date.now() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
+    // For now, if dismissed, don't show again (can change to show after 30 days if needed)
+    return false;
+  }
+  return true;
+}
+
+// Function to clear pop-up cache (useful for testing)
+function clearLandingPopupCache() {
+  localStorage.removeItem(LANDING_POPUP_STORAGE_KEY);
+  console.log('✅ Landing pop-up cache cleared. Refresh the page to see the pop-up.');
+}
+
+// Function to manually show pop-up (useful for testing)
+function showLandingPopupNow() {
+  clearLandingPopupCache();
+  showLandingPopup();
+  console.log('✅ Landing pop-up shown.');
+}
+
+// Expose functions to window for easy console access
+window.clearLandingPopupCache = clearLandingPopupCache;
+window.showLandingPopupNow = showLandingPopupNow;
+
+// Show landing pop-up
+function showLandingPopup() {
+  if (!landingPopupModal || !landingPopupBackdrop) {
+    console.warn('Landing pop-up elements not found');
+    return;
+  }
+  
+  landingPopupModal.classList.add('active');
+  landingPopupBackdrop.classList.add('active');
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+// Hide landing pop-up
+function hideLandingPopup() {
+  if (!landingPopupModal || !landingPopupBackdrop) {
+    return;
+  }
+  
+  landingPopupModal.classList.remove('active');
+  landingPopupBackdrop.classList.remove('active');
+  document.body.style.overflow = ''; // Restore scrolling
+}
+
+// Handle subscribe button click - redirects to node library subscription checkout
+async function handleLandingPopupSubscribe() {
+  try {
+    // Load subscription config to get checkout URL (node library subscription page)
+    const response = await fetch('/config/subscription-config.json');
+    if (response.ok) {
+      const config = await response.json();
+      if (config.checkoutUrl) {
+        // Store dismissal preference
+        localStorage.setItem(LANDING_POPUP_STORAGE_KEY, new Date().toISOString());
+        hideLandingPopup();
+        // Redirect to subscription checkout (Polar checkout for node library subscription)
+        window.location.href = config.checkoutUrl;
+        return;
+      }
+    }
+    
+    // If config not available, log error and show message
+    console.error('Subscription checkout URL not found in config');
+    alert('Subscription page is not configured. Please contact support.');
+  } catch (error) {
+    console.error('Error loading subscription config:', error);
+    alert('Unable to load subscription page. Please try again later.');
+  }
+}
+
+// Handle browse button click
+function handleLandingPopupBrowse() {
+  // Store dismissal preference
+  localStorage.setItem(LANDING_POPUP_STORAGE_KEY, new Date().toISOString());
+  hideLandingPopup();
+  // User continues browsing - pop-up is dismissed
+}
+
+// Initialize landing pop-up
+function initializeLandingPopup() {
+  if (!landingPopupModal || !landingPopupBackdrop) {
+    console.warn('Landing pop-up elements not found in DOM');
+    return;
+  }
+
+  // Check if pop-up should be shown
+  if (!shouldShowLandingPopup()) {
+    console.log('Landing pop-up already dismissed, not showing');
+    return;
+  }
+
+  // Set up event listeners
+  if (landingPopupSubscribeButton) {
+    landingPopupSubscribeButton.addEventListener('click', handleLandingPopupSubscribe);
+  }
+
+  if (landingPopupBrowseButton) {
+    landingPopupBrowseButton.addEventListener('click', handleLandingPopupBrowse);
+  }
+
+  // Close on backdrop click
+  if (landingPopupBackdrop) {
+    landingPopupBackdrop.addEventListener('click', (e) => {
+      if (e.target === landingPopupBackdrop) {
+        handleLandingPopupBrowse(); // Treat backdrop click as "continue browsing"
+      }
+    });
+  }
+
+  // Show pop-up after a short delay for better UX
+  setTimeout(() => {
+    showLandingPopup();
+  }, 500);
+}
+
+// Initialize landing pop-up when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeLandingPopup);
+} else {
+  initializeLandingPopup();
 }
