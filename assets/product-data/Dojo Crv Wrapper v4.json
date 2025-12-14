@@ -13,10 +13,10 @@
   "status": "active",
   "variants": [
     {
-      "price": "5.55",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-CRV-WRAPPER-V4",
       "inventory_policy": "continue",
-      "inventory_management": "shopify"
+      "inventory_management": "polar"
     }
   ],
   "metafields": [
@@ -35,13 +35,19 @@
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-11-15",
+      "value": "2025-12-13",
       "type": "date"
     },
     {
       "namespace": "no3d_tools",
       "key": "source_file",
-      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "value": "NO3D TOOLS workbench_29NOV2025.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "All Catalogs",
       "type": "single_line_text_field"
     },
     {
@@ -54,29 +60,47 @@
       "namespace": "no3d_tools",
       "key": "thumbnail",
       "value": "icon_Dojo Crv Wrapper v4.png",
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693708/no3d-tools/dojo-crv-wrapper-v4/icon_Dojo-Crv-Wrapper-v4.png"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_download_url",
+      "value": "https://polar.sh/the-well-tarot/products/dojo-crv-wrapper-v4",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_size_bytes",
+      "value": "297519",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "download_count",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "commercial",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "compatibility",
+      "value": "Blender 5.0+",
       "type": "single_line_text_field"
     }
   ],
-  "polar": {
-    "product_id": "5d70352c-a1fa-4f2f-8729-6eec35126387",
-    "benefit_id": "240ba58f-05af-424c-ab03-84068d3f35b3",
-    "file_id": "3e3e3667-a125-4221-a6ea-353aefde9e7d",
-    "last_synced": "2025-11-20T00:26:57.662Z"
-  },
-  "changelog": [
-    {
-      "version": "",
-      "date": "2025-11-17",
-      "changes": [
-        "Minor bug fixes"
-      ]
-    },
-    {
-      "version": "V4",
-      "date": "2025-11-17",
-      "changes": [
-        ""
-      ]
-    }
-  ]
+  "hosted_media": {
+    "icon_Dojo Crv Wrapper v4.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693708/no3d-tools/dojo-crv-wrapper-v4/icon_Dojo-Crv-Wrapper-v4.png"
+  }
 }

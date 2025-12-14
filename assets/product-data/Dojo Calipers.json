@@ -13,10 +13,10 @@
   "status": "active",
   "variants": [
     {
-      "price": "5.55",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-CALIPERS",
       "inventory_policy": "continue",
-      "inventory_management": "shopify"
+      "inventory_management": "polar"
     }
   ],
   "metafields": [
@@ -35,13 +35,13 @@
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-11-15",
+      "value": "2025-12-13",
       "type": "date"
     },
     {
       "namespace": "no3d_tools",
       "key": "source_file",
-      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "value": "NO3D TOOLS workbench_29NOV2025.blend",
       "type": "single_line_text_field"
     },
     {
@@ -65,43 +65,49 @@
     {
       "namespace": "no3d_tools",
       "key": "custom_mm",
-      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"MM\", address=0x6000218dd200>",
+      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"MM\", address=0x600004b387b0>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_m3",
-      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"M3\", address=0x6000218dd2b0>",
+      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"M3\", address=0x600004b38860>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_hops",
-      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"hops\", address=0x6000218dd360>",
+      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"hops\", address=0x600004b38910>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_bc",
-      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"bc\", address=0x6000218dd410>",
+      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"bc\", address=0x600004b389c0>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_v3d",
-      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"v3d\", address=0x6000218dd4c0>",
+      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"v3d\", address=0x600004b38a70>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_sanctus_decal_settings",
-      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"sanctus_decal_settings\", address=0x6000218dd570>",
+      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"sanctus_decal_settings\", address=0x600004b38b20>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_baking_queue",
-      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"baking_queue\", address=0x6000218dd620>",
+      "value": "<bpy id prop: owner=\"OBDojo Calipers\", name=\"baking_queue\", address=0x600004b38bd0>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "All Catalogs",
       "type": "single_line_text_field"
     },
     {
@@ -114,29 +120,47 @@
       "namespace": "no3d_tools",
       "key": "thumbnail",
       "value": "icon_Dojo Calipers.png",
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693706/no3d-tools/dojo-calipers/icon_Dojo-Calipers.png"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_download_url",
+      "value": "https://polar.sh/the-well-tarot/products/dojo-calipers",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_size_bytes",
+      "value": "791238",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "download_count",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "commercial",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "compatibility",
+      "value": "Blender 5.0+",
       "type": "single_line_text_field"
     }
   ],
-  "polar": {
-    "product_id": "2092d69f-a243-468c-b1ca-48f7cea19e68",
-    "benefit_id": "ce9c0014-de05-4571-9ff0-a481ae32e9c5",
-    "file_id": "2dea6584-2241-4aaa-9426-d728e9f82535",
-    "last_synced": "2025-11-20T00:26:53.839Z"
-  },
-  "changelog": [
-    {
-      "version": "",
-      "date": "2025-11-17",
-      "changes": [
-        "Minor bug fixes"
-      ]
-    },
-    {
-      "version": "V1",
-      "date": "2025-11-17",
-      "changes": [
-        ""
-      ]
-    }
-  ]
+  "hosted_media": {
+    "icon_Dojo Calipers.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693706/no3d-tools/dojo-calipers/icon_Dojo-Calipers.png"
+  }
 }

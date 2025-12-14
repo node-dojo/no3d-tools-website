@@ -5,15 +5,19 @@
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
   "tags": [
-    "Super Primitive"
+    "Super Primitive",
+    "blender",
+    "addon",
+    "3d",
+    "asset"
   ],
   "status": "active",
   "variants": [
     {
-      "price": "5.55",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-KNOB",
       "inventory_policy": "continue",
-      "inventory_management": "shopify"
+      "inventory_management": "polar"
     }
   ],
   "metafields": [
@@ -32,13 +36,19 @@
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-11-15",
+      "value": "2025-12-13",
       "type": "date"
     },
     {
       "namespace": "no3d_tools",
       "key": "source_file",
-      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "value": "NO3D TOOLS workbench_29NOV2025.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "All Catalogs",
       "type": "single_line_text_field"
     },
     {
@@ -51,29 +61,47 @@
       "namespace": "no3d_tools",
       "key": "thumbnail",
       "value": "icon_Dojo Knob.png",
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693710/no3d-tools/dojo-knob/icon_Dojo-Knob.png"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_download_url",
+      "value": "https://polar.sh/the-well-tarot/products/dojo-knob",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_size_bytes",
+      "value": "133192",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "download_count",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "commercial",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "compatibility",
+      "value": "Blender 5.0+",
       "type": "single_line_text_field"
     }
   ],
-  "polar": {
-    "product_id": "c17384fb-dee6-4d86-891c-ed02bbb2e5d7",
-    "benefit_id": "e18e545e-0d86-4922-b693-72b915ca3800",
-    "file_id": "3e3a79d5-44ab-4b02-8c05-a8865e4ab03c",
-    "last_synced": "2025-11-20T00:27:03.990Z"
-  },
-  "changelog": [
-    {
-      "version": "",
-      "date": "2025-11-17",
-      "changes": [
-        "Minor bug fixes"
-      ]
-    },
-    {
-      "version": "V1",
-      "date": "2025-11-17",
-      "changes": [
-        ""
-      ]
-    }
-  ]
+  "hosted_media": {
+    "icon_Dojo Knob.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693710/no3d-tools/dojo-knob/icon_Dojo-Knob.png"
+  }
 }

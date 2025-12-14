@@ -1,21 +1,22 @@
 {
   "title": "Dojo Bolt Gen v05",
   "handle": "dojo-bolt-gen-v05",
-  "description": "Drag and drop this node utility into your scene to generate infinite possible 3D printable fasteners.\n\nmultiple bolt configs:\n- Split to Print\n- T-bolts\n- etc etc",
+  "description": "Blender asset: Dojo Bolt Gen v05",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
   "tags": [
-    "Node Group",
-    "3D printing",
-    "Hardware"
+    "blender",
+    "addon",
+    "3d",
+    "asset"
   ],
   "status": "active",
   "variants": [
     {
-      "price": "6.66",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-BOLT-GEN-V05",
       "inventory_policy": "continue",
-      "inventory_management": "shopify"
+      "inventory_management": "polar"
     }
   ],
   "metafields": [
@@ -34,13 +35,19 @@
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-11-15",
+      "value": "2025-12-13",
       "type": "date"
     },
     {
       "namespace": "no3d_tools",
       "key": "source_file",
-      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "value": "NO3D TOOLS workbench_29NOV2025.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "All Catalogs",
       "type": "single_line_text_field"
     },
     {
@@ -53,50 +60,53 @@
       "namespace": "no3d_tools",
       "key": "thumbnail",
       "value": "icon_Dojo Bolt Gen v05.png",
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693462/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_download_url",
+      "value": "https://polar.sh/the-well-tarot/products/dojo-bolt-gen-v05",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_size_bytes",
+      "value": "716726",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "download_count",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "commercial",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "compatibility",
+      "value": "Blender 5.0+",
       "type": "single_line_text_field"
     }
   ],
-  "polar": {
-    "product_id": "2fbe03f5-f6bc-4d53-a309-1b9aa7fa010c",
-    "benefit_id": "a412bf9d-de25-49e3-8e13-ad0f0f4ac43a",
-    "file_id": "382ad745-e0c4-495e-b971-e8fae7bf5d9a",
-    "last_synced": "2025-11-20T00:26:43.983Z"
-  },
-  "changelog": [
-    {
-      "version": "",
-      "date": "2025-11-19",
-      "changes": [
-        "docs update"
-      ]
-    },
-    {
-      "version": "",
-      "date": "2025-11-19",
-      "changes": [
-        "Minor bug fixes"
-      ]
-    },
-    {
-      "version": "",
-      "date": "2025-11-17",
-      "changes": [
-        "Minor bug fixes"
-      ]
-    },
-    {
-      "version": "Alpha",
-      "date": "2025-11-12",
-      "changes": [
-        "first version launched"
-      ]
-    },
-    {
-      "version": ".10",
-      "date": "2025-11-15",
-      "changes": [
-        "updated gizmo behavior"
-      ]
-    }
-  ]
+  "hosted_media": {
+    "bolt gen demo 6.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693460/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo-6.gif",
+    "icon_Dojo Bolt Gen v05.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693462/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png",
+    "bolt gen mod panel.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693662/no3d-tools/dojo-bolt-gen-v05/bolt-gen-mod-panel.png",
+    "bolt gen demo 3.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693667/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo-3.mov",
+    "bolt gen demo2.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693675/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo2.mov",
+    "bolt gen demo 5.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693680/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo-5.mov",
+    "bolt gen demo.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693685/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo.mov"
+  }
 }

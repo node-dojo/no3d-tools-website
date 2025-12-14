@@ -13,10 +13,10 @@
   "status": "active",
   "variants": [
     {
-      "price": "5.55",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-DOJO-GLUEFINITY-GRID-OBJ",
       "inventory_policy": "continue",
-      "inventory_management": "shopify"
+      "inventory_management": "polar"
     }
   ],
   "metafields": [
@@ -35,13 +35,13 @@
     {
       "namespace": "no3d_tools",
       "key": "export_date",
-      "value": "2025-11-15",
+      "value": "2025-12-13",
       "type": "date"
     },
     {
       "namespace": "no3d_tools",
       "key": "source_file",
-      "value": "NO3D TOOLS workbench_23oct2025.blend",
+      "value": "NO3D TOOLS workbench_29NOV2025.blend",
       "type": "single_line_text_field"
     },
     {
@@ -65,31 +65,37 @@
     {
       "namespace": "no3d_tools",
       "key": "custom_m3",
-      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"M3\", address=0x6000218de3e0>",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"M3\", address=0x600004b5fca0>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_mm",
-      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"MM\", address=0x6000218de490>",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"MM\", address=0x600004b5fd50>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_hops",
-      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"hops\", address=0x6000218de540>",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"hops\", address=0x600004b5fe00>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_v3d",
-      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"v3d\", address=0x6000218de5f0>",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"v3d\", address=0x600004b5feb0>",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "custom_sanctus_decal_settings",
-      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"sanctus_decal_settings\", address=0x6000218de6a0>",
+      "value": "<bpy id prop: owner=\"OBDojo Gluefinity Grid_obj\", name=\"sanctus_decal_settings\", address=0x600004b5ff60>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "All Catalogs",
       "type": "single_line_text_field"
     },
     {
@@ -102,29 +108,47 @@
       "namespace": "no3d_tools",
       "key": "thumbnail",
       "value": "icon_Dojo Gluefinity Grid_obj.png",
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693713/no3d-tools/dojo-gluefinity-grid_obj/icon_Dojo-Gluefinity-Grid_obj.png"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_download_url",
+      "value": "https://polar.sh/the-well-tarot/products/dojo-gluefinity-grid-obj",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_size_bytes",
+      "value": "946586",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "download_count",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "commercial",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "compatibility",
+      "value": "Blender 5.0+",
       "type": "single_line_text_field"
     }
   ],
-  "polar": {
-    "product_id": "b3c265a8-272d-41b7-930d-529538b41f8a",
-    "benefit_id": "dced23a1-303a-46d8-984e-b06b5b2392a2",
-    "file_id": "713a57ea-db7c-4de8-8e2c-6bc950a3ce15",
-    "last_synced": "2025-11-20T00:27:00.886Z"
-  },
-  "changelog": [
-    {
-      "version": "",
-      "date": "2025-11-17",
-      "changes": [
-        "Minor bug fixes"
-      ]
-    },
-    {
-      "version": "V1",
-      "date": "2025-11-17",
-      "changes": [
-        ""
-      ]
-    }
-  ]
+  "hosted_media": {
+    "icon_Dojo Gluefinity Grid_obj.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693713/no3d-tools/dojo-gluefinity-grid_obj/icon_Dojo-Gluefinity-Grid_obj.png"
+  }
 }
