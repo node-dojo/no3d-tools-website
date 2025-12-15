@@ -15,7 +15,11 @@ if (typeof marked !== 'undefined') {
 
 // Multi-Library Configuration - Maps sections to GitHub repositories
 // Each section loads ALL products from its corresponding GitHub repo
-const LIBRARY_CONFIG = {
+// Loaded dynamically from config/library-config.js (generated from config/libraries.config.json)
+let LIBRARY_CONFIG = null;
+
+// Fallback configuration (used if dynamic load fails)
+const FALLBACK_LIBRARY_CONFIG = {
   tools: {
     owner: 'node-dojo',
     repo: 'no3d-tools-library',
@@ -48,6 +52,52 @@ const LIBRARY_CONFIG = {
   }
 };
 
+/**
+ * Load library configuration dynamically
+ * Tries to load from config/library-config.js, falls back to FALLBACK_LIBRARY_CONFIG
+ */
+async function loadLibraryConfig() {
+  // Check if already loaded via script tag
+  if (typeof window !== 'undefined' && window.LIBRARY_CONFIG) {
+    LIBRARY_CONFIG = window.LIBRARY_CONFIG;
+    console.log('📚 Library config loaded from window.LIBRARY_CONFIG');
+    return LIBRARY_CONFIG;
+  }
+
+  try {
+    // Try to load as ES module
+    const configModule = await import('/config/library-config.js');
+    if (configModule.LIBRARY_CONFIG) {
+      LIBRARY_CONFIG = configModule.LIBRARY_CONFIG;
+      console.log('📚 Library config loaded from ES module');
+      return LIBRARY_CONFIG;
+    }
+  } catch (error) {
+    console.warn('⚠️ Could not load library config as ES module:', error.message);
+  }
+
+  try {
+    // Try to fetch as JSON (if generated as JSON instead of JS)
+    const response = await fetch('/config/library-config.json');
+    if (response.ok) {
+      const config = await response.json();
+      LIBRARY_CONFIG = config;
+      console.log('📚 Library config loaded from JSON');
+      return LIBRARY_CONFIG;
+    }
+  } catch (error) {
+    console.warn('⚠️ Could not load library config as JSON:', error.message);
+  }
+
+  // Fallback to hardcoded config
+  console.warn('⚠️ Using fallback library configuration. Run: node scripts/generate-library-config.js');
+  LIBRARY_CONFIG = FALLBACK_LIBRARY_CONFIG;
+  return LIBRARY_CONFIG;
+}
+
+// Initialize library config (will be awaited before use)
+let libraryConfigPromise = loadLibraryConfig();
+
 // GitHub Repository Configuration (kept for reference, but using local assets now)
 const REPO_CONFIG = {
   owner: 'node-dojo',
@@ -66,6 +116,26 @@ function getProductImageUrl(imageFileName) {
 // Generate local asset URL for product icon
 function getProductIconUrl(productName) {
   return getProductImageUrl(`icon_${productName}.png`);
+}
+
+// Resolve media URL - checks hosted_media first, then falls back to provided URL
+// This ensures Cloudinary URLs are used when available for fast loading
+function resolveMediaUrl(jsonData, fileName, fallbackUrl) {
+  // First check hosted_media mapping
+  if (jsonData && jsonData.hosted_media && jsonData.hosted_media[fileName]) {
+    return jsonData.hosted_media[fileName];
+  }
+  
+  // Check metafields for hosted_url
+  if (jsonData && jsonData.metafields) {
+    const field = jsonData.metafields.find(f => f.value === fileName);
+    if (field && field.hosted_url) {
+      return field.hosted_url;
+    }
+  }
+  
+  // Fallback to provided URL (could be GitHub URL, local URL, or null)
+  return fallbackUrl || null;
 }
 
 // Check if Polar products are loaded
@@ -404,17 +474,26 @@ async function loadProductsFromJSON() {
         // Product folder name matches the JSON filename (without .json extension)
         const productFolderName = fileName.replace('.json', '');
         let thumbnail = null;
+        
+        // Determine thumbnail filename
+        let thumbnailFileName = `icon_${productFolderName}.png`;
         if (jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
-            // If thumbnail is specified, use local asset
-            thumbnail = getProductImageUrl(thumbnailField.value);
+            thumbnailFileName = thumbnailField.value || thumbnailFileName;
+            // Check metafield hosted_url first
+            if (thumbnailField.hosted_url) {
+              thumbnail = thumbnailField.hosted_url;
+            }
           }
         }
-
-        // Default to local icon if no thumbnail specified
+        
+        // Use helper function to resolve media URL (checks hosted_media, then local)
         if (!thumbnail) {
-          thumbnail = getProductIconUrl(productFolderName);
+          const fallbackUrl = jsonData.metafields?.find(f => f.key === 'thumbnail')
+            ? getProductImageUrl(thumbnailFileName)
+            : getProductIconUrl(productFolderName);
+          thumbnail = resolveMediaUrl(jsonData, thumbnailFileName, fallbackUrl);
         }
         
         // Get price from Polar if available, otherwise use JSON variant price
@@ -496,16 +575,85 @@ async function loadProductsFromJSON() {
         // For local JSON files, the folder name is the filename without .json extension
         const folderName = fileName.replace('.json', '');
         
+        // Try to load description from desc_*.md file
+        // Supports both new format (desc_ProductName.md) and legacy format (ProductName_desc.md)
+        let description = jsonData.description || generateDescription(jsonData.title);
+        try {
+          const descBasePath = `/assets/product-docs/${folderName}`;
+          const descPatterns = [
+            // New format: desc_ProductName.md
+            `desc_${folderName}.md`,
+            `desc_${folderName.toLowerCase().replace(/\s+/g, ' ')}.md`,
+            `desc_${folderName.toLowerCase().replace(/\s+/g, '-')}.md`,
+            `desc_${folderName.toLowerCase().replace(/\s+/g, '_')}.md`,
+            // Legacy format: ProductName_desc.md
+            `${folderName}_desc.md`,
+            `${folderName.toLowerCase().replace(/\s+/g, ' ')}_desc.md`,
+            `${folderName.toLowerCase().replace(/\s+/g, '-')}_desc.md`,
+            `${folderName.toLowerCase().replace(/\s+/g, '_')}_desc.md`,
+          ];
+          
+          // Try to find desc_*.md file
+          let descUrl = null;
+          for (const pattern of descPatterns) {
+            // URL encode the path components to handle spaces and special characters
+            // Split path, encode each part except empty strings (for leading/trailing slashes)
+            const pathParts = descBasePath.split('/').filter(part => part.length > 0);
+            const encodedPathParts = pathParts.map(part => encodeURIComponent(part));
+            const encodedBasePath = '/' + encodedPathParts.join('/');
+            const encodedPattern = encodeURIComponent(pattern);
+            const testUrl = `${encodedBasePath}/${encodedPattern}`;
+            try {
+              const testResponse = await fetch(testUrl, { method: 'HEAD' });
+              if (testResponse.ok) {
+                descUrl = testUrl;
+                console.log(`✅ Found description file: ${testUrl}`);
+                break;
+              }
+            } catch (e) {
+              // Try GET if HEAD fails
+              try {
+                const testResponse = await fetch(testUrl);
+                if (testResponse.ok) {
+                  descUrl = testUrl;
+                  console.log(`✅ Found description file (GET): ${testUrl}`);
+                  break;
+                }
+              } catch (e2) {
+                // Continue to next pattern
+                console.debug(`⚠️ Failed to load ${testUrl}: ${e2.message}`);
+              }
+            }
+          }
+          
+          // If found, load the description
+          if (descUrl) {
+            const descResponse = await fetch(descUrl);
+            if (descResponse.ok) {
+              description = await descResponse.text();
+              console.log(`✅ Loaded description from ${descUrl} (${description.length} chars)`);
+            } else {
+              console.warn(`⚠️ Failed to load description content from ${descUrl}: ${descResponse.status}`);
+            }
+          } else {
+            console.debug(`⚠️ No description file found for ${folderName}, using JSON description`);
+          }
+        } catch (error) {
+          // If loading desc_*.md fails, fall back to JSON description
+          console.debug(`Could not load desc_*.md for ${folderName}, using JSON description:`, error);
+        }
+        
         products[productId] = {
           name: jsonData.title.toUpperCase(),
           price: price,
-          description: jsonData.description || generateDescription(jsonData.title),
+          description: description,
           changelog: changelog, // Array of {version, date, changes[]} objects
-          image3d: thumbnail, // Use local assets
-          icon: thumbnail, // Use local assets
+          image3d: thumbnail, // Use hosted or local assets
+          icon: thumbnail, // Use hosted or local assets
           productType: jsonData.productType || 'tools',
           groups: productGroups,
           handle: jsonData.handle || productId,
+          jsonData: jsonData, // Store JSON data for hosted_media access
           polarProductId: jsonData.polar?.product_id || null, // Store Polar product ID for price updates
           folderName: folderName, // Store folder name for docs filename construction
           metafields: jsonData.metafields || [], // Include metafields for thumbnail access
@@ -832,7 +980,9 @@ function renderSidebar() {
 // Load products from GitHub API for a specific library
 // Loads ALL directories from the repo (no prefix filtering)
 async function loadProductsFromGitHubLibrary(libraryKey) {
-  const config = LIBRARY_CONFIG[libraryKey];
+  // Ensure library config is loaded
+  const libraryConfig = await libraryConfigPromise;
+  const config = libraryConfig[libraryKey];
   if (!config) {
     console.error(`No library config found for: ${libraryKey}`);
     return {};
@@ -924,31 +1074,83 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
         // Create product ID from handle or title
         const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-        // Find thumbnail/icon image - check common patterns
+        // Find thumbnail/icon image - prioritize hosted URLs
         let thumbnail = null;
         
-        // Try common icon/thumbnail filename patterns
-        const possibleIconNames = [
-          `icon_${dir.name}.png`,
-          `thumbnail_${dir.name}.png`,
-          `preview_${dir.name}.png`,
-          `${dir.name}.png`,
-          'icon.png',
-          'thumbnail.png',
-          'preview.png'
-        ];
-
-        const iconFile = dirContents.find(item => 
-          item.type === 'file' && possibleIconNames.includes(item.name)
-        );
-
-        if (iconFile) {
-          thumbnail = iconFile.download_url;
-        } else if (jsonData.metafields) {
+        // Determine thumbnail filename
+        let thumbnailFileName = `icon_${dir.name}.png`;
+        if (jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
-            // Construct GitHub raw URL for thumbnail
-            thumbnail = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${dir.name}/${thumbnailField.value}`;
+            thumbnailFileName = thumbnailField.value || thumbnailFileName;
+            // Check metafield hosted_url first
+            if (thumbnailField.hosted_url) {
+              thumbnail = thumbnailField.hosted_url;
+            }
+          }
+        }
+        
+        // Use helper function to resolve media URL (checks hosted_media, then local)
+        if (!thumbnail) {
+          // Build fallback URL - try GitHub files first, then local
+          let fallbackUrl = null;
+          
+          // Try common icon/thumbnail filename patterns from GitHub
+          const possibleIconNames = [
+            `icon_${dir.name}.png`,
+            `thumbnail_${dir.name}.png`,
+            `preview_${dir.name}.png`,
+            `${dir.name}.png`,
+            'icon.png',
+            'thumbnail.png',
+            'preview.png'
+          ];
+
+          const iconFile = dirContents.find(item => 
+            item.type === 'file' && possibleIconNames.includes(item.name)
+          );
+
+          if (iconFile) {
+            fallbackUrl = iconFile.download_url;
+          } else if (jsonData.metafields) {
+            const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
+            if (thumbnailField) {
+              fallbackUrl = getProductImageUrl(thumbnailField.value);
+            }
+          }
+          
+          if (!fallbackUrl) {
+            fallbackUrl = getProductIconUrl(dir.name);
+          }
+          
+          thumbnail = resolveMediaUrl(jsonData, thumbnailFileName, fallbackUrl);
+        }
+        
+        // If still no thumbnail, try GitHub files as final fallback
+        if (!thumbnail) {
+          // Try common icon/thumbnail filename patterns
+          const possibleIconNames = [
+            `icon_${dir.name}.png`,
+            `thumbnail_${dir.name}.png`,
+            `preview_${dir.name}.png`,
+            `${dir.name}.png`,
+            'icon.png',
+            'thumbnail.png',
+            'preview.png'
+          ];
+
+          const iconFile = dirContents.find(item => 
+            item.type === 'file' && possibleIconNames.includes(item.name)
+          );
+
+          if (iconFile) {
+            thumbnail = iconFile.download_url;
+          } else if (jsonData.metafields) {
+            const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
+            if (thumbnailField) {
+              // Construct GitHub raw URL for thumbnail
+              thumbnail = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${dir.name}/${thumbnailField.value}`;
+            }
           }
         }
 
@@ -1072,7 +1274,8 @@ async function handleProductTypeToggle(typeKey) {
       updateHeaderLogo(activeProductType);
       
       // Load products from GitHub if needed for this library
-      const config = LIBRARY_CONFIG[typeKey];
+      const libraryConfig = await libraryConfigPromise;
+      const config = libraryConfig[typeKey];
       if (config && !config.useLocalAssets) {
         console.log(`🔄 Loading products from GitHub for ${typeKey} section...`);
         console.log(`   Repo: ${config.owner}/${config.repo}`);
@@ -2383,33 +2586,47 @@ async function loadProductCardAssets(productId) {
   const cardAssetsFolder = `${folderName} card assets`;
   console.log(`📁 Looking for card assets folder: "${cardAssetsFolder}"`);
   const library = product.library || 'no3d-tools-library';
-  const config = LIBRARY_CONFIG[product.productType] || LIBRARY_CONFIG.tools;
+  const libraryConfig = await libraryConfigPromise;
+  const config = libraryConfig[product.productType] || libraryConfig.tools;
   console.log(`⚙️ Using config: owner=${config.owner}, repo=${config.repo}, branch=${config.branch}`);
   
   try {
-    // Check for icon GIF first
+    // Check for icon GIF first - check hosted_media if available
     const iconGifName = `icon_${folderName}.gif`;
     const iconGifPath = `${folderName}/${iconGifName}`;
     
-    // Try to fetch icon GIF
-    try {
-      const gifUrl = config.useLocalAssets 
-        ? getProductImageUrl(iconGifName)
-        : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconGifPath}`;
-      
-      // Test if file exists by trying to fetch it
-      const testResponse = await fetch(gifUrl, { method: 'HEAD' });
-      if (testResponse.ok) {
-        cardAssets.push({
-          type: 'image',
-          url: gifUrl,
-          format: 'gif',
-          name: iconGifName,
-          isIcon: true
-        });
+    // Try to get hosted URL first (if product has jsonData reference)
+    let gifUrl = null;
+    if (product.jsonData && product.jsonData.hosted_media && product.jsonData.hosted_media[iconGifName]) {
+      gifUrl = product.jsonData.hosted_media[iconGifName];
+      cardAssets.push({
+        type: 'image',
+        url: gifUrl,
+        format: 'gif',
+        name: iconGifName,
+        isIcon: true
+      });
+    } else {
+      // Fallback to local or GitHub URL
+      try {
+        gifUrl = config.useLocalAssets 
+          ? getProductImageUrl(iconGifName)
+          : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconGifPath}`;
+        
+        // Test if file exists by trying to fetch it
+        const testResponse = await fetch(gifUrl, { method: 'HEAD' });
+        if (testResponse.ok) {
+          cardAssets.push({
+            type: 'image',
+            url: gifUrl,
+            format: 'gif',
+            name: iconGifName,
+            isIcon: true
+          });
+        }
+      } catch (e) {
+        // GIF doesn't exist, that's okay
       }
-    } catch (e) {
-      // GIF doesn't exist, that's okay
     }
 
     // Load card assets folder contents
@@ -2514,9 +2731,16 @@ async function loadProductCardAssets(productId) {
     // Add static PNG icon at the end (if GIF was found) or at the beginning (if no GIF)
     const iconPngName = `icon_${folderName}.png`;
     const iconPngPath = `${folderName}/${iconPngName}`;
-    const iconPngUrl = config.useLocalAssets
-      ? getProductIconUrl(folderName)
-      : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconPngPath}`;
+    
+    // Check hosted_media first, then fallback to local/GitHub
+    let iconPngUrl = null;
+    if (product.jsonData && product.jsonData.hosted_media && product.jsonData.hosted_media[iconPngName]) {
+      iconPngUrl = product.jsonData.hosted_media[iconPngName];
+    } else {
+      iconPngUrl = config.useLocalAssets
+        ? getProductIconUrl(folderName)
+        : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconPngPath}`;
+    }
     
     const iconPngItem = {
       type: 'image',
@@ -2606,7 +2830,8 @@ async function loadProductCardAssets(productId) {
     console.error(`Error loading card assets for ${productId}:`, error);
     // Fallback to just the icon
     const folderName = product.folderName || product.name;
-    const config = LIBRARY_CONFIG[product.productType] || LIBRARY_CONFIG.tools;
+    const libraryConfig = await libraryConfigPromise;
+    const config = libraryConfig[product.productType] || libraryConfig.tools;
     const iconPngUrl = config.useLocalAssets
       ? getProductIconUrl(folderName)
       : product.icon;
@@ -2647,9 +2872,26 @@ async function updateProductDisplay(productId) {
   // Update product information
   productTitle.textContent = product.name;
   productPrice.textContent = `PRICE: ${product.price}`;
-  const descriptionHTML = product.description.split('\n').map(paragraph => 
-    paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
-  ).join('');
+  
+  // Convert description to HTML (supports both markdown and plain text)
+  let descriptionHTML = '';
+  if (product.description) {
+    // Check if description looks like markdown (contains markdown syntax)
+    const hasMarkdownSyntax = /[#*_`\[\]()]/.test(product.description) || 
+                              product.description.includes('\n\n') ||
+                              product.description.trim().startsWith('#');
+    
+    if (hasMarkdownSyntax && typeof marked !== 'undefined') {
+      // Convert markdown to HTML
+      descriptionHTML = marked.parse(product.description);
+    } else {
+      // Plain text: split by newlines and wrap in paragraphs
+      descriptionHTML = product.description.split('\n').map(paragraph => 
+        paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
+      ).join('');
+    }
+  }
+  
   productDescription.innerHTML = descriptionHTML;
   // Store original description for tab switching
   originalDescriptionContent = descriptionHTML;
@@ -2930,56 +3172,50 @@ async function loadProductDocs(productId) {
     }
 
     const markdownContent = await response.text();
-    // docsBasePath already defined above
-
-    // Transform image URLs in markdown to use /assets/
+    // Markdown files now contain Cloudinary URLs directly (processed by sync script)
+    // No path transformation needed - marked.js will render Cloudinary URLs as-is
+    
+    // Convert video markdown references to HTML5 video tags (if they're still relative paths)
+    // Pattern: ![alt](video.mp4) - only if not already a Cloudinary URL
     let transformedMarkdown = markdownContent.replace(
-      /!\[(.*?)\]\(((?!http|https|\/assets).*?)\)/g,
-      (match, alt, imgPath) => {
-        // Handle paths relative to markdown file or docs-assets folder
-        const cleanPath = imgPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
-        const assetPath = cleanPath.startsWith('docs-assets/') 
-          ? `${docsBasePath}/${cleanPath}`
-          : `${docsBasePath}/${cleanPath}`;
-        return `![${alt}](${assetPath})`;
-      }
-    );
-
-    // Convert local video references to HTML5 video tags
-    // Pattern: ![alt](video.mp4) or ![alt](docs-assets/video.mp4)
-    transformedMarkdown = transformedMarkdown.replace(
       /!\[([^\]]*)\]\(([^)]+\.(mp4|webm|ogg|mov))\)/gi,
       (match, alt, videoPath) => {
-        const cleanPath = videoPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
-        // URL encode the path components to handle spaces and special characters
+        // Skip if already a Cloudinary URL
+        if (videoPath.startsWith('http://') || videoPath.startsWith('https://')) {
+          const videoType = videoPath.split('.').pop().toLowerCase();
+          const mimeType = videoType === 'mov' ? 'video/quicktime' : `video/${videoType}`;
+          return `<div class="video-wrapper"><video controls preload="metadata"><source src="${videoPath}" type="${mimeType}">Your browser does not support the video tag.</video></div>`;
+        }
+        // If still relative, try to resolve (fallback for legacy content)
+        const cleanPath = videoPath.replace(/^\.\//, '');
         const pathParts = cleanPath.split('/');
         const encodedParts = pathParts.map(part => encodeURIComponent(part));
         const encodedPath = encodedParts.join('/');
-        const fullVideoPath = cleanPath.startsWith('docs-assets/') 
-          ? `${docsBasePath}/${encodedPath}`
-          : `${docsBasePath}/${encodedPath}`;
+        const fullVideoPath = `${docsBasePath}/${encodedPath}`;
         const videoType = videoPath.split('.').pop().toLowerCase();
         const mimeType = videoType === 'mov' ? 'video/quicktime' : `video/${videoType}`;
         return `<div class="video-wrapper"><video controls preload="metadata"><source src="${fullVideoPath}" type="${mimeType}">Your browser does not support the video tag.</video></div>`;
       }
     );
 
-    // Also handle existing HTML video tags with relative paths
-    // Pattern: <video controls src="video.mp4"> or <video src="video.mp4" controls>
+    // Handle existing HTML video tags (Cloudinary URLs or relative paths)
     transformedMarkdown = transformedMarkdown.replace(
       /<video\s+([^>]*?)src=["']([^"']+\.(mp4|webm|ogg|mov))["']([^>]*?)>/gi,
       (match, beforeSrc, videoPath, ext, afterSrc) => {
-        const cleanPath = videoPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
-        // URL encode the path components to handle spaces and special characters
+        // If already Cloudinary URL, wrap in video-wrapper div
+        if (videoPath.startsWith('http://') || videoPath.startsWith('https://')) {
+          const attrs = (beforeSrc + ' ' + afterSrc).trim().replace(/\s+/g, ' ');
+          const hasPreload = attrs.includes('preload');
+          const finalAttrs = hasPreload ? attrs : attrs + ' preload="metadata"';
+          return `<div class="video-wrapper"><video ${finalAttrs} src="${videoPath}"></video></div>`;
+        }
+        // Fallback for relative paths (legacy content)
+        const cleanPath = videoPath.replace(/^\.\//, '');
         const pathParts = cleanPath.split('/');
         const encodedParts = pathParts.map(part => encodeURIComponent(part));
         const encodedPath = encodedParts.join('/');
-        const fullVideoPath = cleanPath.startsWith('docs-assets/') 
-          ? `${docsBasePath}/${encodedPath}`
-          : `${docsBasePath}/${encodedPath}`;
-        // Preserve all attributes and update src with encoded path
+        const fullVideoPath = `${docsBasePath}/${encodedPath}`;
         const attrs = (beforeSrc + ' ' + afterSrc).trim().replace(/\s+/g, ' ');
-        // Ensure preload is set for better loading
         const hasPreload = attrs.includes('preload');
         const finalAttrs = hasPreload ? attrs : attrs + ' preload="metadata"';
         return `<div class="video-wrapper"><video ${finalAttrs} src="${fullVideoPath}"></video></div>`;
@@ -2987,14 +3223,21 @@ async function loadProductDocs(productId) {
     );
 
     // Convert 3D object references to Three.js viewer
-    // Pattern: ![3D](model.obj) or [3D: model.obj] or ![3D](docs-assets/model.obj)
+    // Pattern: ![3D](model.obj) or [3D: model.obj]
     transformedMarkdown = transformedMarkdown.replace(
       /(?:!\[([^\]]*)\]\(|\[3D:\s*)([^)]+\.(obj|stl))\)?/gi,
       (match, alt, modelPath) => {
-        const cleanPath = modelPath.replace(/^\.\//, '').replace(/^docs-assets\//, 'docs-assets/');
-        const fullModelPath = cleanPath.startsWith('docs-assets/') 
-          ? `${docsBasePath}/${cleanPath}`
-          : `${docsBasePath}/${cleanPath}`;
+        // If Cloudinary URL, use directly
+        if (modelPath.startsWith('http://') || modelPath.startsWith('https://')) {
+          const modelId = `model-${Math.random().toString(36).substr(2, 9)}`;
+          const fileExt = modelPath.split('.').pop().toLowerCase();
+          return `<div class="model-viewer-container" id="${modelId}" data-model-path="${modelPath}" data-model-type="${fileExt}">
+            <div style="color: #666; text-align: center;">Loading 3D model...</div>
+          </div>`;
+        }
+        // Fallback for relative paths
+        const cleanPath = modelPath.replace(/^\.\//, '');
+        const fullModelPath = `${docsBasePath}/${cleanPath}`;
         const modelId = `model-${Math.random().toString(36).substr(2, 9)}`;
         const fileExt = modelPath.split('.').pop().toLowerCase();
         return `<div class="model-viewer-container" id="${modelId}" data-model-path="${fullModelPath}" data-model-type="${fileExt}">
@@ -3223,9 +3466,20 @@ async function switchTab(tabName) {
         const currentProductId = productCard?.dataset?.productId || currentProduct;
         const product = products[currentProductId];
         if (product && product.description) {
-          const descriptionHTML = product.description.split('\n').map(paragraph => 
-            paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
-          ).join('');
+          // Convert description to HTML (supports both markdown and plain text)
+          let descriptionHTML = '';
+          const hasMarkdownSyntax = /[#*_`\[\]()]/.test(product.description) || 
+                                    product.description.includes('\n\n') ||
+                                    product.description.trim().startsWith('#');
+          
+          if (hasMarkdownSyntax && typeof marked !== 'undefined') {
+            descriptionHTML = marked.parse(product.description);
+          } else {
+            descriptionHTML = product.description.split('\n').map(paragraph => 
+              paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
+            ).join('');
+          }
+          
           productDescription.innerHTML = descriptionHTML;
           originalDescriptionContent = descriptionHTML;
         }
@@ -5899,6 +6153,14 @@ async function initializeCarousel(productId) {
   console.log(`🔄 Loading carousel assets for product: ${productId}`);
   carouselItems = await loadProductCardAssets(productId);
   console.log(`✅ Loaded ${carouselItems.length} carousel items:`, carouselItems.map(item => item.name));
+  
+  if (carouselItems.length === 0) {
+    console.warn(`⚠️ No carousel items loaded for product: ${productId}`);
+  } else if (carouselItems.length === 1) {
+    console.info(`ℹ️ Only 1 carousel item loaded (no navigation needed): ${carouselItems[0].name}`);
+  } else {
+    console.info(`ℹ️ ${carouselItems.length} carousel items loaded - arrows should be visible`);
+  }
   carouselCurrentIndex = 0;
 
   // Clear existing items
@@ -6036,6 +6298,20 @@ async function initializeCarousel(productId) {
 
   console.log(`🎠 All carousel items created. Track now has ${track.children.length} children`);
   
+  // Log detailed carousel state
+  console.log(`📊 Carousel State Summary:`, {
+    totalItems: carouselItems.length,
+    domChildren: track.children.length,
+    currentIndex: carouselCurrentIndex,
+    items: carouselItems.map((item, idx) => ({
+      index: idx,
+      name: item.name,
+      type: item.type,
+      format: item.format,
+      isIcon: item.isIcon
+    }))
+  });
+  
   // Set initial position
   updateCarouselPosition();
   updateCarouselArrows();
@@ -6085,22 +6361,85 @@ function updateCarouselArrows() {
   const leftArrow = document.getElementById('carousel-arrow-left');
   const rightArrow = document.getElementById('carousel-arrow-right');
 
+  const hasMultipleItems = carouselItems.length > 1;
+  const canGoLeft = carouselCurrentIndex > 0;
+  const canGoRight = carouselCurrentIndex < carouselItems.length - 1;
+
+  console.log(`🎯 Arrow visibility check:`, {
+    itemsCount: carouselItems.length,
+    currentIndex: carouselCurrentIndex,
+    hasMultipleItems,
+    canGoLeft,
+    canGoRight
+  });
+
   if (leftArrow) {
-    if (carouselCurrentIndex > 0 && carouselItems.length > 1) {
+    if (canGoLeft && hasMultipleItems) {
       leftArrow.classList.add('visible');
+      console.log(`✅ Left arrow: VISIBLE`);
     } else {
       leftArrow.classList.remove('visible');
+      console.log(`❌ Left arrow: HIDDEN (canGoLeft: ${canGoLeft}, hasMultipleItems: ${hasMultipleItems})`);
     }
+  } else {
+    console.warn('⚠️ Left arrow element not found');
   }
 
   if (rightArrow) {
-    if (carouselCurrentIndex < carouselItems.length - 1 && carouselItems.length > 1) {
+    if (canGoRight && hasMultipleItems) {
       rightArrow.classList.add('visible');
+      console.log(`✅ Right arrow: VISIBLE`);
     } else {
       rightArrow.classList.remove('visible');
+      console.log(`❌ Right arrow: HIDDEN (canGoRight: ${canGoRight}, hasMultipleItems: ${hasMultipleItems})`);
     }
+  } else {
+    console.warn('⚠️ Right arrow element not found');
   }
 }
+
+// Debug function to check carousel state (can be called from console)
+window.debugCarousel = function() {
+  const track = document.getElementById('carousel-track');
+  const leftArrow = document.getElementById('carousel-arrow-left');
+  const rightArrow = document.getElementById('carousel-arrow-right');
+  
+  console.log('🔍 Carousel Debug Info:');
+  console.log('  Track element:', track ? 'FOUND' : 'NOT FOUND');
+  console.log('  Track children count:', track ? track.children.length : 0);
+  console.log('  Left arrow:', leftArrow ? 'FOUND' : 'NOT FOUND');
+  console.log('  Right arrow:', rightArrow ? 'FOUND' : 'NOT FOUND');
+  console.log('  Left arrow visible:', leftArrow ? leftArrow.classList.contains('visible') : false);
+  console.log('  Right arrow visible:', rightArrow ? rightArrow.classList.contains('visible') : false);
+  console.log('  carouselItems.length:', carouselItems.length);
+  console.log('  carouselCurrentIndex:', carouselCurrentIndex);
+  console.log('  carouselItems:', carouselItems);
+  
+  if (track) {
+    console.log('  DOM Items in track:');
+    Array.from(track.children).forEach((child, idx) => {
+      const img = child.querySelector('img');
+      const video = child.querySelector('video');
+      const iframe = child.querySelector('iframe');
+      console.log(`    [${idx}]`, {
+        className: child.className,
+        hasImg: !!img,
+        imgSrc: img ? img.src : null,
+        hasVideo: !!video,
+        hasIframe: !!iframe
+      });
+    });
+  }
+  
+  return {
+    track,
+    leftArrow,
+    rightArrow,
+    carouselItems,
+    carouselCurrentIndex,
+    trackChildrenCount: track ? track.children.length : 0
+  };
+};
 
 // ============================================================================
 // LANDING POP-UP MODAL
