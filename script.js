@@ -2876,17 +2876,61 @@ async function updateProductDisplay(productId) {
   // Convert description to HTML (supports both markdown and plain text)
   let descriptionHTML = '';
   if (product.description) {
+    let processedDescription = product.description;
+    
+    // Replace image references with Cloudinary URLs from hosted_media
+    if (product.jsonData && product.jsonData.hosted_media) {
+      const hostedMedia = product.jsonData.hosted_media;
+      
+      // Pattern to match markdown image syntax: ![alt](path) or ![alt](<path>)
+      processedDescription = processedDescription.replace(
+        /!\[([^\]]*)\]\(<?([^>)]+)>?\)/g,
+        (match, altText, imagePath) => {
+          // Extract filename from path (handle relative paths, paths with spaces, etc.)
+          // Remove leading ./ or ../, remove folder paths, decode URL encoding
+          let cleanPath = imagePath.trim();
+          cleanPath = cleanPath.replace(/^\.\//, ''); // Remove ./
+          cleanPath = cleanPath.replace(/^\.\.\//, ''); // Remove ../
+          cleanPath = decodeURIComponent(cleanPath); // Decode URL encoding like %20
+          
+          // Extract just the filename (last part after /)
+          const filename = cleanPath.split('/').pop();
+          
+          // Try to find matching Cloudinary URL in hosted_media
+          // Check exact filename match first
+          if (hostedMedia[filename]) {
+            console.log(`✅ Replaced image: ${imagePath} → ${hostedMedia[filename]}`);
+            return `![${altText}](${hostedMedia[filename]})`;
+          }
+          
+          // Try case-insensitive match
+          const lowerFilename = filename.toLowerCase();
+          for (const [key, url] of Object.entries(hostedMedia)) {
+            if (key.toLowerCase() === lowerFilename) {
+              console.log(`✅ Replaced image (case-insensitive): ${imagePath} → ${url}`);
+              return `![${altText}](${url})`;
+            }
+          }
+          
+          // No match found, return original
+          console.debug(`⚠️ No Cloudinary URL found for image: ${imagePath} (extracted filename: ${filename})`);
+          console.debug(`   Available keys: ${Object.keys(hostedMedia).join(', ')}`);
+          return match;
+        }
+      );
+    }
+    
     // Check if description looks like markdown (contains markdown syntax)
-    const hasMarkdownSyntax = /[#*_`\[\]()]/.test(product.description) || 
-                              product.description.includes('\n\n') ||
-                              product.description.trim().startsWith('#');
+    const hasMarkdownSyntax = /[#*_`\[\]()]/.test(processedDescription) || 
+                              processedDescription.includes('\n\n') ||
+                              processedDescription.trim().startsWith('#');
     
     if (hasMarkdownSyntax && typeof marked !== 'undefined') {
       // Convert markdown to HTML
-      descriptionHTML = marked.parse(product.description);
+      descriptionHTML = marked.parse(processedDescription);
     } else {
       // Plain text: split by newlines and wrap in paragraphs
-      descriptionHTML = product.description.split('\n').map(paragraph => 
+      descriptionHTML = processedDescription.split('\n').map(paragraph => 
         paragraph.trim() ? `<p>${paragraph}</p>` : '<p>&nbsp;</p>'
       ).join('');
     }
