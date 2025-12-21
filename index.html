@@ -93,11 +93,33 @@
                 <img src="assets/NO3D TOOLS.png" alt="NO3D TOOLS" class="logo" id="header-logo">
             </div>
             <div class="header-icons">
+                <button class="header-icon theme-toggle-button" id="theme-toggle-button" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon" id="theme-toggle-icon"></i>
+                </button>
+                <a href="#" class="member-cta-button" id="member-cta-button">
+                    <img src="assets/blender_bit_icon.png" alt="Blender" class="member-cta-icon">
+                    <span class="member-cta-text">BECOME A MEMBER / GET ALL TOOLS, TUTORIALS, ASSETS</span>
+                </a>
                 <div class="cart-icon-wrapper" id="cart-icon-wrapper">
                     <img src="assets/cart icon.png" alt="Shopping Cart" class="cart-icon-image" id="cart-icon">
                     <span class="cart-badge" id="cart-badge">0</span>
                 </div>
-                <i class="fas fa-ellipsis-v header-icon"></i>
+                <div class="account-menu-wrapper" id="account-menu-wrapper">
+                    <button class="header-icon account-menu-button" id="account-menu-button" aria-label="Account menu">
+                        <img src="assets/account-icon.png" alt="Account" class="account-icon-image">
+                    </button>
+                    <div class="account-menu-dropdown" id="account-menu-dropdown">
+                        <div class="account-menu-header">
+                            <div class="account-menu-title">Account</div>
+                        </div>
+                        <div class="account-menu-content" id="account-menu-content">
+                            <div class="account-menu-loading">Loading account info...</div>
+                        </div>
+                        <div class="account-menu-footer">
+                            <a href="account.html" class="account-menu-link" id="account-menu-link">Go to Account Page</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -218,6 +240,14 @@
         </aside>
     </div>
 
+    <!-- Mobile Footer CTA (above search bar, mobile only) -->
+    <div class="mobile-footer-cta" id="mobile-footer-cta">
+        <a href="#" class="mobile-member-cta-button" id="mobile-member-cta-button">
+            <img src="assets/blender_bit_icon.png" alt="Blender" class="mobile-member-cta-icon">
+            <span class="mobile-member-cta-text">BECOME A MEMBER / GET ALL TOOLS, TUTORIALS, ASSETS</span>
+        </a>
+    </div>
+
     <!-- Mobile Search Bar (bottom of screen, mobile only) -->
     <div class="mobile-search-bar" id="mobile-search-bar">
         <input type="text" class="mobile-search-input" id="mobile-search-input" placeholder="SEARCH TOOLS..." aria-label="Search tools">
@@ -309,6 +339,127 @@
                 </div>
                 <div class="checkout-error" id="checkout-error" style="display: none;">
                     <span class="checkout-error-text">Unable to load checkout modal. Redirecting to checkout page...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Christmas Gift Card Popup Modal -->
+    <div class="christmas-popup-backdrop" id="christmas-popup-backdrop"></div>
+    <div class="christmas-popup-modal" id="christmas-popup-modal">
+        <div class="christmas-popup-container">
+            <div class="christmas-popup-content">
+                <!-- Close Button -->
+                <button class="christmas-popup-close" id="christmas-popup-close" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <!-- Header -->
+                <div class="christmas-popup-header">
+                    <h2 class="christmas-popup-title">MERRY CHRISTMAS</h2>
+                    <p class="christmas-popup-subtitle">Give the (last minute) gift of raw geometry power</p>
+                </div>
+                
+                <!-- Gift Card Options -->
+                <div class="christmas-popup-cards">
+                    <div class="christmas-card-option" data-product-handle="christmas-gift-card-33">
+                        <div class="christmas-card-value">3</div>
+                        <div class="christmas-card-label">MONTHS MEMBERSHIP</div>
+                        <button class="christmas-card-button" data-product-handle="christmas-gift-card-33">
+                            PURCHASE
+                        </button>
+                    </div>
+                    
+                    <div class="christmas-card-option christmas-card-popular" data-product-handle="christmas-gift-card-55">
+                        <div class="christmas-card-badge">MOST POPULAR</div>
+                        <div class="christmas-card-value">$111</div>
+                        <div class="christmas-card-label">GIFT CARD</div>
+                        <button class="christmas-card-button" data-product-handle="christmas-gift-card-55">
+                            PURCHASE
+                        </button>
+                    </div>
+                    
+                    <div class="christmas-card-option" data-product-handle="christmas-gift-card-77">
+                        <div class="christmas-card-value">$222</div>
+                        <div class="christmas-card-label">GIFT CARD</div>
+                        <button class="christmas-card-button" data-product-handle="christmas-gift-card-77">
+                            PURCHASE
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="christmas-popup-footer">
+                    <button class="christmas-popup-dismiss" id="christmas-popup-dismiss">
+                        CONTINUE BROWSING
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Landing Pop-up Modal -->
+    <div class="landing-popup-backdrop" id="landing-popup-backdrop"></div>
+    <div class="landing-popup-modal" id="landing-popup-modal">
+        <div class="landing-popup-container">
+            <div class="landing-popup-content">
+                <!-- Main Content -->
+                <div class="landing-popup-body">
+                    <h2 class="landing-popup-title">WELCOME TO<br>NO3D TOOLS</h2>
+                    <h3 class="landing-popup-subheader">There are 2 ways to shop!</h3>
+                    
+                    <!-- Two Column Shopping Options -->
+                    <div class="landing-popup-shopping-options">
+                        <!-- Individual Purchase Column -->
+                        <div class="landing-popup-option-column">
+                            <h4 class="landing-popup-option-header">Get each asset you want individually</h4>
+                            <ul class="landing-popup-option-benefits">
+                                <li class="landing-popup-option-benefit">
+                                    <span class="landing-popup-benefit-icon">✓</span>
+                                    <span class="landing-popup-benefit-text">Purchase only what you need</span>
+                                </li>
+                                <li class="landing-popup-option-benefit">
+                                    <span class="landing-popup-benefit-icon">✓</span>
+                                    <span class="landing-popup-benefit-text">Own assets forever</span>
+                                </li>
+                                <li class="landing-popup-option-benefit">
+                                    <span class="landing-popup-benefit-icon">✓</span>
+                                    <span class="landing-popup-benefit-text">No recurring fees</span>
+                                </li>
+                            </ul>
+                            <p class="landing-popup-option-price">Average cost of individual assets = <span class="landing-popup-price-value landing-popup-price-grey">$7.77</span></p>
+                        </div>
+                        
+                        <!-- Subscription Column -->
+                        <div class="landing-popup-option-column">
+                            <h4 class="landing-popup-option-header">Join Now to get unlimited access to all assets, tutorials, tools and updates</h4>
+                            <ul class="landing-popup-option-benefits">
+                                <li class="landing-popup-option-benefit">
+                                    <span class="landing-popup-benefit-icon">✓</span>
+                                    <span class="landing-popup-benefit-text">Full library access</span>
+                                </li>
+                                <li class="landing-popup-option-benefit">
+                                    <span class="landing-popup-benefit-icon">✓</span>
+                                    <span class="landing-popup-benefit-text">All tutorials included</span>
+                                </li>
+                                <li class="landing-popup-option-benefit">
+                                    <span class="landing-popup-benefit-icon">✓</span>
+                                    <span class="landing-popup-benefit-text">Regular updates and new products</span>
+                                </li>
+                            </ul>
+                            <p class="landing-popup-option-price">Average cost of assets as a member = <span class="landing-popup-price-value landing-popup-price-green">$1.77</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="landing-popup-actions">
+                    <button class="landing-popup-button landing-popup-button-primary" id="landing-popup-subscribe-button">
+                        JOIN NOW
+                    </button>
+                    <button class="landing-popup-button landing-popup-button-secondary" id="landing-popup-browse-button">
+                        CONTINUE BROWSING
+                    </button>
                 </div>
             </div>
         </div>

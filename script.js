@@ -1402,14 +1402,24 @@ function updateHeaderLogo(typeKey) {
   if (!headerLogo) return;
   
   const typeDef = productTypeDefinitions[typeKey];
+  let logoPath;
+  let logoAlt;
+  
   if (typeDef && typeDef.logo) {
-    headerLogo.src = typeDef.logo;
-    headerLogo.alt = typeDef.label;
+    logoPath = typeDef.logo;
+    logoAlt = typeDef.label;
   } else {
     // Fallback to tools logo if type not found
-    headerLogo.src = productTypeDefinitions.tools.logo;
-    headerLogo.alt = productTypeDefinitions.tools.label;
+    logoPath = productTypeDefinitions.tools.logo;
+    logoAlt = productTypeDefinitions.tools.label;
   }
+  
+  // Apply theme-appropriate version of the logo
+  const currentTheme = getTheme();
+  const themedLogoPath = getThemedLogoPath(logoPath, currentTheme);
+  
+  headerLogo.src = themedLogoPath;
+  headerLogo.alt = logoAlt;
 }
 
 // Handle Tools Filter Toggle
@@ -6635,4 +6645,354 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeLandingPopup);
 } else {
   initializeLandingPopup();
+}
+
+/* ============================================================================
+   CHRISTMAS GIFT CARD POPUP - PETRI UI DESIGN
+   ============================================================================ */
+
+// Get Christmas popup elements
+const christmasPopupModal = document.getElementById('christmas-popup-modal');
+const christmasPopupBackdrop = document.getElementById('christmas-popup-backdrop');
+const christmasPopupClose = document.getElementById('christmas-popup-close');
+const christmasPopupDismiss = document.getElementById('christmas-popup-dismiss');
+const christmasCardButtons = document.querySelectorAll('.christmas-card-button');
+
+// Check if Christmas popup should be shown
+function shouldShowChristmasPopup() {
+  // Check if user has already dismissed it
+  const dismissed = sessionStorage.getItem('christmas_popup_dismissed');
+  if (dismissed) {
+    return false;
+  }
+  
+  // Check if it's Christmas season (December)
+  const now = new Date();
+  const month = now.getMonth(); // 0-11, where 11 = December
+  return month === 11; // Only show in December
+}
+
+// Show Christmas popup
+function showChristmasPopup() {
+  if (!christmasPopupModal || !christmasPopupBackdrop) {
+    console.warn('Christmas popup elements not found');
+    return;
+  }
+  
+  christmasPopupModal.classList.add('active');
+  christmasPopupBackdrop.classList.add('active');
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+// Hide Christmas popup
+function hideChristmasPopup() {
+  if (!christmasPopupModal || !christmasPopupBackdrop) {
+    return;
+  }
+  
+  christmasPopupModal.classList.remove('active');
+  christmasPopupBackdrop.classList.remove('active');
+  document.body.style.overflow = ''; // Restore scrolling
+}
+
+// Handle Christmas popup purchase
+async function handleChristmasPurchase(productHandle) {
+  console.log('Christmas gift card purchase:', productHandle);
+  
+  // Get Polar product data
+  const polarProduct = getPolarProductData(productHandle);
+  
+  if (!polarProduct || !polarProduct.productId) {
+    console.error('Polar product data not found for:', productHandle);
+    alert(`Gift card "${productHandle}" is not available for checkout. Please try again later.`);
+    return;
+  }
+  
+  // Hide popup
+  hideChristmasPopup();
+  
+  // Open checkout
+  try {
+    await openCheckoutModal([polarProduct.productId]);
+  } catch (error) {
+    console.error('Failed to open checkout:', error);
+    alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+  }
+}
+
+// Handle dismiss
+function handleChristmasDismiss() {
+  // Mark as dismissed in sessionStorage
+  sessionStorage.setItem('christmas_popup_dismissed', 'true');
+  hideChristmasPopup();
+}
+
+// Initialize Christmas popup
+function initializeChristmasPopup() {
+  if (!christmasPopupModal || !christmasPopupBackdrop) {
+    console.warn('Christmas popup elements not found in DOM');
+    return;
+  }
+  
+  // Check if popup should be shown
+  if (!shouldShowChristmasPopup()) {
+    console.log('Christmas popup not shown (already dismissed or not December)');
+    return;
+  }
+  
+  // Set up event listeners
+  if (christmasPopupClose) {
+    christmasPopupClose.addEventListener('click', handleChristmasDismiss);
+  }
+  
+  if (christmasPopupDismiss) {
+    christmasPopupDismiss.addEventListener('click', handleChristmasDismiss);
+  }
+  
+  // Close on backdrop click
+  if (christmasPopupBackdrop) {
+    christmasPopupBackdrop.addEventListener('click', (e) => {
+      if (e.target === christmasPopupBackdrop) {
+        handleChristmasDismiss();
+      }
+    });
+  }
+  
+  // Set up purchase buttons
+  christmasCardButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const productHandle = button.getAttribute('data-product-handle');
+      if (productHandle) {
+        handleChristmasPurchase(productHandle);
+      }
+    });
+  });
+  
+  // Show popup after a delay (after landing popup if it shows)
+  setTimeout(() => {
+    // Only show if landing popup is not active
+    if (!landingPopupModal || !landingPopupModal.classList.contains('active')) {
+      showChristmasPopup();
+    } else {
+      // Wait for landing popup to close, then show Christmas popup
+      const checkLandingPopup = setInterval(() => {
+        if (!landingPopupModal || !landingPopupModal.classList.contains('active')) {
+          clearInterval(checkLandingPopup);
+          showChristmasPopup();
+        }
+      }, 500);
+      
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        clearInterval(checkLandingPopup);
+      }, 30000);
+    }
+  }, 1000);
+}
+
+// Expose function to manually show Christmas popup (for testing)
+window.showChristmasPopupNow = function() {
+  sessionStorage.removeItem('christmas_popup_dismissed');
+  showChristmasPopup();
+};
+
+// Initialize Christmas popup when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeChristmasPopup);
+} else {
+  initializeChristmasPopup();
+}
+
+/* ============================================================================
+   THEME TOGGLE FUNCTIONALITY
+   Dark Mode Theme Switching
+   ============================================================================ */
+
+// Theme management functions
+function getTheme() {
+  // Check localStorage first, then system preference
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark' || savedTheme === 'light') {
+    return savedTheme;
+  }
+  
+  // Check system preference
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  
+  return 'light';
+}
+
+function setTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    root.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+  }
+  updateThemeIcon(theme);
+}
+
+function toggleTheme() {
+  const currentTheme = getTheme();
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
+}
+
+// Helper function to convert icon path to theme-appropriate version
+function getThemedIconPath(iconPath, theme) {
+  if (!iconPath) return iconPath;
+  
+  // Map of icon names to their dark mode equivalents
+  const iconMap = {
+    'account-icon.png': 'account-icon-dark.png',
+    'account-icon-dark.png': 'account-icon.png',
+    'cart icon.png': 'cart icon-dark.png',
+    'cart icon-dark.png': 'cart icon.png',
+    'stone logo.png': 'stone logo-dark.png',
+    'stone logo-dark.png': 'stone logo.png'
+  };
+  
+  // Extract filename from path
+  const filename = iconPath.split('/').pop();
+  
+  if (theme === 'dark') {
+    // Convert to dark version
+    const darkFilename = iconMap[filename] || filename.replace('.png', '-dark.png');
+    return iconPath.replace(filename, darkFilename);
+  } else {
+    // Convert to light version
+    const lightFilename = iconMap[filename] || filename.replace('-dark.png', '.png');
+    return iconPath.replace(filename, lightFilename);
+  }
+}
+
+// Helper function to convert logo path to theme-appropriate version
+function getThemedLogoPath(logoPath, theme) {
+  if (!logoPath) return logoPath;
+  
+  // Map of logo names to their dark mode equivalents
+  const logoMap = {
+    'NO3D TOOLS.png': 'NO3D TOOLS-dark.png',
+    'NO3D DOJO.png': 'NO3D DOJO-dark.png',
+    'NO3D PRINTS.png': 'NO3D PRINTS-dark.png',
+    'NO3D CODE.png': 'NO3D CODE-dark.png',
+    'NO3D NOT3S.png': 'NO3D NOT3S-dark.png',
+    'NO3D TOOLS-dark.png': 'NO3D TOOLS.png',
+    'NO3D DOJO-dark.png': 'NO3D DOJO.png',
+    'NO3D PRINTS-dark.png': 'NO3D PRINTS.png',
+    'NO3D CODE-dark.png': 'NO3D CODE.png',
+    'NO3D NOT3S-dark.png': 'NO3D NOT3S.png'
+  };
+  
+  // Extract filename from path
+  const filename = logoPath.split('/').pop();
+  
+  if (theme === 'dark') {
+    // Convert to dark version
+    const darkFilename = logoMap[filename] || filename.replace('.png', '-dark.png');
+    return logoPath.replace(filename, darkFilename);
+  } else {
+    // Convert to light version
+    const lightFilename = logoMap[filename] || filename.replace('-dark.png', '.png');
+    return logoPath.replace(filename, lightFilename);
+  }
+}
+
+function updateThemeIcon(theme) {
+  const themeIcon = document.getElementById('theme-toggle-icon');
+  if (themeIcon) {
+    if (theme === 'dark') {
+      themeIcon.classList.remove('fa-moon');
+      themeIcon.classList.add('fa-sun');
+    } else {
+      themeIcon.classList.remove('fa-sun');
+      themeIcon.classList.add('fa-moon');
+    }
+  }
+  
+  // Update header logo based on current theme and existing logo
+  const headerLogo = document.getElementById('header-logo');
+  if (headerLogo && headerLogo.src) {
+    // Get current logo path (extract from src, handling both relative and absolute paths)
+    const currentSrc = headerLogo.src;
+    const logoPath = currentSrc.includes('assets/') 
+      ? currentSrc.substring(currentSrc.indexOf('assets/'))
+      : headerLogo.getAttribute('src') || 'assets/NO3D TOOLS.png';
+    
+    // Convert to theme-appropriate version
+    const themedLogoPath = getThemedLogoPath(logoPath, theme);
+    headerLogo.src = themedLogoPath;
+  }
+  
+  // Update account icon
+  const accountIcon = document.querySelector('.account-icon-image');
+  if (accountIcon && accountIcon.src) {
+    const currentSrc = accountIcon.src;
+    const iconPath = currentSrc.includes('assets/') 
+      ? currentSrc.substring(currentSrc.indexOf('assets/'))
+      : accountIcon.getAttribute('src') || 'assets/account-icon.png';
+    
+    const themedIconPath = getThemedIconPath(iconPath, theme);
+    accountIcon.src = themedIconPath;
+  }
+  
+  // Update cart icon
+  const cartIcon = document.getElementById('cart-icon');
+  if (cartIcon && cartIcon.src) {
+    const currentSrc = cartIcon.src;
+    const iconPath = currentSrc.includes('assets/') 
+      ? currentSrc.substring(currentSrc.indexOf('assets/'))
+      : cartIcon.getAttribute('src') || 'assets/cart icon.png';
+    
+    const themedIconPath = getThemedIconPath(iconPath, theme);
+    cartIcon.src = themedIconPath;
+  }
+  
+  // Update footer logo (stone logo)
+  const footerLogo = document.querySelector('.footer-logo');
+  if (footerLogo && footerLogo.src) {
+    const currentSrc = footerLogo.src;
+    const iconPath = currentSrc.includes('assets/') 
+      ? currentSrc.substring(currentSrc.indexOf('assets/'))
+      : footerLogo.getAttribute('src') || 'assets/stone logo.png';
+    
+    const themedIconPath = getThemedIconPath(iconPath, theme);
+    footerLogo.src = themedIconPath;
+  }
+}
+
+function initializeThemeToggle() {
+  // Set initial theme
+  const theme = getTheme();
+  setTheme(theme);
+  
+  // Add click handler to toggle button
+  const themeToggleButton = document.getElementById('theme-toggle-button');
+  if (themeToggleButton) {
+    themeToggleButton.addEventListener('click', toggleTheme);
+  }
+  
+  // Listen for system theme changes (if no manual preference is set)
+  if (window.matchMedia) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', (e) => {
+      // Only update if user hasn't manually set a preference
+      const savedTheme = localStorage.getItem('theme');
+      if (!savedTheme) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    });
+  }
+}
+
+// Initialize theme toggle when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeThemeToggle);
+} else {
+  initializeThemeToggle();
 }
