@@ -34,3 +34,7 @@ npm-debug.log*
 tmp/
 .vercel
 .env*.local
+
+# Redundant product folders (legacy structure)
+# Product data is now in assets/ directories, media is on Cloudinary
+Dojo*/

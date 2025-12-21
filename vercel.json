@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "devCommand": null,
+  "devCommand": "vercel dev --listen 3001 --yes",
   "installCommand": "npm install",
   "framework": null,
   "outputDirectory": ".",

@@ -4,17 +4,22 @@
   "description": "NO3D Tools website",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
     "build": "node scripts/update-commit-hash.js",
-    "start": "vercel dev",
+    "start": "vercel dev --listen 3001 --yes",
     "test-mobile": "node test-mobile-server.js",
     "test-mobile:8000": "node test-mobile-server.js 8000",
-    "update-commit": "node scripts/update-commit-hash.js"
+    "update-commit": "node scripts/update-commit-hash.js",
+    "fix-vercel": "node scripts/fix-vercel-settings.js",
+    "fix-vercel:doppler": "doppler run -- node scripts/fix-vercel-settings.js",
+    "fix-vercel:cli": "./scripts/fix-vercel-settings-cli.sh"
   },
   "dependencies": {
     "@polar-sh/checkout": "^0.1.14",
     "@polar-sh/sdk": "^0.40.3",
     "@vercel/analytics": "^1.3.1",
     "vercel": "^48.8.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.33.0"
   }
 }

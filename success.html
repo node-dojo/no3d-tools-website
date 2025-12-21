@@ -1,73 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Purchase Successful - NO3D Tools</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    .success-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: var(--space-large);
-      text-align: center;
-    }
-    .success-icon {
-      font-size: 64px;
-      margin-bottom: var(--space-large);
-    }
-    .success-title {
-      font-family: var(--font-visitor);
-      font-size: var(--font-size-h1);
-      color: var(--color-void-black);
-      margin-bottom: var(--space-medium);
-      text-transform: uppercase;
-    }
-    .success-message {
-      font-family: var(--font-mono);
-      font-size: var(--font-size-base);
-      color: var(--color-dark-gray);
-      max-width: 600px;
-      line-height: 1.6;
-      margin-bottom: var(--space-large);
-    }
-    .success-button {
-      background-color: var(--color-lello);
-      color: var(--color-void-black);
-      padding: var(--space-small) var(--space-large);
-      font-family: var(--font-visitor);
-      font-size: var(--font-size-h3);
-      text-transform: uppercase;
-      text-decoration: none;
-      border: 1px solid var(--color-void-black);
-      transition: all var(--transition-normal);
-      display: inline-block;
-    }
-    .success-button:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lello-glow);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Successful - NO3D Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .success-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: #4caf50;
+            margin-bottom: 1rem;
+        }
+        .success-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .success-message {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        .button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .button-primary {
+            background: #667eea;
+            color: white;
+        }
+        .button-primary:hover {
+            background: #5568d3;
+        }
+        .button-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .button-secondary:hover {
+            background: #e0e0e0;
+        }
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .instructions ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        .instructions li {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
-  <div class="success-container">
-    <div class="success-icon">✓</div>
-    <h1 class="success-title">Purchase Successful!</h1>
-    <p class="success-message">
-      Thank you for your purchase! You should receive a confirmation email shortly with download links for your products.
-      <br><br>
-      Your support helps us continue creating amazing tools for the 3D community.
-    </p>
-    <a href="/" class="success-button">Back to Tools</a>
-  </div>
+    <header>
+        <nav>
+            <a href="index.html">NO3D Tools</a>
+            <a href="subscribe.html">Subscribe</a>
+            <a href="account.html">Account</a>
+        </nav>
+    </header>
 
-  <script>
-    // Clear cart after successful purchase
-    localStorage.removeItem('no3d_tools_cart');
-    console.log('Cart cleared after successful purchase');
-  </script>
+    <main>
+        <div class="success-container">
+            <div class="success-icon">✓</div>
+            <h1 class="success-title">Welcome to NO3D Tools!</h1>
+            <p class="success-message">
+                Your subscription is now active. You have full access to the entire NO3D Tools library, 
+                including all current products and future additions while your subscription remains active.
+            </p>
+
+            <div class="action-buttons">
+                <a href="account.html" class="button button-primary">Go to My Account</a>
+                <a href="index.html" class="button button-secondary">Browse Products</a>
+            </div>
+
+            <div class="instructions">
+                <h3>Next Steps</h3>
+                <ol>
+                    <li><strong>Access Your Account:</strong> Visit your account page to download the library and manage your subscription.</li>
+                    <li><strong>Download the Library:</strong> Click "Download Library" on your account page to get all products as a ZIP file.</li>
+                    <li><strong>Stay Updated:</strong> You'll be notified when new products are added. Simply re-download to get the updated library.</li>
+                    <li><strong>Manage Subscription:</strong> You can manage your subscription, update payment methods, and view billing history from your account page.</li>
+                </ol>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1rem; background: #e3f2fd; border-radius: 8px;">
+                <p style="margin: 0; color: #1976d2;">
+                    <strong>Need Help?</strong> If you have any questions, please contact our support team. 
+                    We're here to help you get the most out of your subscription.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 NO3D Tools. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Clear any cart data from localStorage if present
+        if (typeof Storage !== 'undefined') {
+            localStorage.removeItem('cart');
+        }
+
+        // Check if coming from Polar checkout
+        const urlParams = new URLSearchParams(window.location.search);
+        const checkoutSessionId = urlParams.get('checkout_session_id');
+        
+        if (checkoutSessionId) {
+            console.log('Checkout session ID:', checkoutSessionId);
+            // Could store this for tracking if needed
+        }
+    </script>
 </body>
 </html>
