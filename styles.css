@@ -3578,7 +3578,6 @@ h2 {
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
   width: 90%;
-  max-width: 700px;
   z-index: 10005;
   opacity: 0;
   visibility: hidden;
@@ -3587,7 +3586,7 @@ h2 {
 }
 
 #christmas-popup-modal {
-  width: 325px;
+  width: 750px;
 }
 
 .christmas-popup-modal.active {
@@ -3811,8 +3810,8 @@ h2 {
 /* Responsive Styles */
 @media (max-width: 768px) {
   .christmas-popup-modal {
-    width: 95%;
-    max-width: none;
+    width: calc(100vw - 60px);
+    max-width: calc(100vw - 60px);
   }
 
   .christmas-popup-content {
@@ -4169,7 +4168,11 @@ h2 {
 /* Dark Mode Header */
 :root[data-theme="dark"] .site-header {
   background-color: var(--bg-dark-primary);
-  border-bottom: 1px solid var(--border-dark-primary);
+  border-bottom: none;
+  border-bottom-width: 0px;
+  border-bottom-color: rgba(0, 0, 0, 0);
+  border-bottom-style: none;
+  border-image: none;
 }
 
 :root[data-theme="dark"] .hamburger-menu-button {
