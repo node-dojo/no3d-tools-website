@@ -1,0 +1,72 @@
+{
+  "title": "Christmas Gift Card $33",
+  "handle": "christmas-gift-card-33",
+  "description": "Give the (last minute) gift of raw geometry power! This $33 gift card can be used to purchase any product from our collection. Perfect for the creative professional in your life.",
+  "vendor": "The Well Tarot",
+  "product_type": "Gift Card",
+  "tags": [
+    "gift-card",
+    "christmas",
+    "holiday",
+    "digital"
+  ],
+  "status": "active",
+  "variants": [
+    {
+      "price": "33.00",
+      "sku": "NO3D-TOOLS-GIFT-CARD-33",
+      "inventory_policy": "continue",
+      "inventory_management": "polar"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "GIFT_CARD",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "gift_card_value",
+      "value": "33",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-12-19",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "Gift Cards",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_Dojo Christmas Gift Card $33.png",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "gift-card",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "gift-card",
+      "type": "single_line_text_field"
+    }
+  ],
+  "polar": {
+    "product_id": "c36ce649-f55f-4901-a8a0-339ca41deb27",
+    "benefit_id": "afdb3065-cda4-4b87-8ca3-31ee61bab557",
+    "file_id": "0999a705-bb8b-43ab-8428-6049baca2a20",
+    "last_synced": "2025-12-21T22:33:29.696Z"
+  }
+}
