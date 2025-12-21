@@ -1418,9 +1418,23 @@ function updateHeaderLogo(typeKey) {
   const currentTheme = getTheme();
   const themedLogoPath = getThemedLogoPath(logoPath, currentTheme);
   
-  headerLogo.src = themedLogoPath;
-  headerLogo.setAttribute('src', themedLogoPath);
+  // Ensure path starts with / for absolute path from root
+  const finalLogoPath = themedLogoPath.startsWith('/') ? themedLogoPath : '/' + themedLogoPath;
+  
+  headerLogo.src = finalLogoPath;
+  headerLogo.setAttribute('src', finalLogoPath);
   headerLogo.alt = logoAlt;
+  
+  // Add error handler to debug loading issues
+  headerLogo.onerror = function() {
+    console.error(`Failed to load header logo: ${finalLogoPath}`);
+    // Try fallback to default tools logo
+    const fallbackPath = currentTheme === 'dark' 
+      ? '/assets/NO3D TOOLS-dark.png'
+      : '/assets/NO3D TOOLS.png';
+    this.src = fallbackPath;
+    this.setAttribute('src', fallbackPath);
+  };
 }
 
 // Handle Tools Filter Toggle
@@ -3645,6 +3659,19 @@ window.addEventListener('resize', function() {
 // Error handling for missing images
 document.addEventListener('error', function(e) {
   if (e.target.tagName === 'IMG') {
+    // Skip header assets - they have their own error handling
+    const id = e.target.id;
+    const className = e.target.className || '';
+    if (id === 'header-logo' || 
+        id === 'cart-icon' || 
+        className.includes('account-icon-image') ||
+        className.includes('member-cta-icon') ||
+        className.includes('footer-logo')) {
+      console.warn(`Failed to load header asset: ${e.target.src}`);
+      // Don't set fallback for header assets - let them handle it themselves
+      return;
+    }
+    
     console.warn(`Failed to load image: ${e.target.src}`);
     
     // Fallback for icon images (carousel handles its own fallbacks)
@@ -6944,8 +6971,22 @@ function updateThemeIcon(theme) {
     
     // Convert to theme-appropriate version
     const themedLogoPath = getThemedLogoPath(logoPath, theme);
-    headerLogo.src = themedLogoPath;
-    headerLogo.setAttribute('src', themedLogoPath);
+    // Ensure path starts with / for absolute path from root
+    const finalLogoPath = themedLogoPath.startsWith('/') ? themedLogoPath : '/' + themedLogoPath;
+    
+    headerLogo.src = finalLogoPath;
+    headerLogo.setAttribute('src', finalLogoPath);
+    
+    // Add error handler to debug loading issues
+    headerLogo.onerror = function() {
+      console.error(`Failed to load header logo: ${finalLogoPath}`);
+      // Try fallback to default tools logo
+      const fallbackPath = theme === 'dark' 
+        ? '/assets/NO3D TOOLS-dark.png'
+        : '/assets/NO3D TOOLS.png';
+      this.src = fallbackPath;
+      this.setAttribute('src', fallbackPath);
+    };
   }
   
   // Update account icon
@@ -6965,8 +7006,9 @@ function updateThemeIcon(theme) {
     }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
-    accountIcon.src = themedIconPath;
-    accountIcon.setAttribute('src', themedIconPath);
+    const finalIconPath = themedIconPath.startsWith('/') ? themedIconPath : '/' + themedIconPath;
+    accountIcon.src = finalIconPath;
+    accountIcon.setAttribute('src', finalIconPath);
   }
   
   // Update cart icon
@@ -6986,8 +7028,9 @@ function updateThemeIcon(theme) {
     }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
-    cartIcon.src = themedIconPath;
-    cartIcon.setAttribute('src', themedIconPath);
+    const finalIconPath = themedIconPath.startsWith('/') ? themedIconPath : '/' + themedIconPath;
+    cartIcon.src = finalIconPath;
+    cartIcon.setAttribute('src', finalIconPath);
   }
   
   // Update footer logo (stone logo)
@@ -7007,8 +7050,9 @@ function updateThemeIcon(theme) {
     }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
-    footerLogo.src = themedIconPath;
-    footerLogo.setAttribute('src', themedIconPath);
+    const finalIconPath = themedIconPath.startsWith('/') ? themedIconPath : '/' + themedIconPath;
+    footerLogo.src = finalIconPath;
+    footerLogo.setAttribute('src', finalIconPath);
   }
 }
 
