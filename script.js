@@ -1419,6 +1419,7 @@ function updateHeaderLogo(typeKey) {
   const themedLogoPath = getThemedLogoPath(logoPath, currentTheme);
   
   headerLogo.src = themedLogoPath;
+  headerLogo.setAttribute('src', themedLogoPath);
   headerLogo.alt = logoAlt;
 }
 
@@ -6811,17 +6812,13 @@ if (document.readyState === 'loading') {
 
 // Theme management functions
 function getTheme() {
-  // Check localStorage first, then system preference
+  // Check localStorage first
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark' || savedTheme === 'light') {
     return savedTheme;
   }
   
-  // Check system preference
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  
+  // Default to light mode
   return 'light';
 }
 
@@ -6844,10 +6841,14 @@ function toggleTheme() {
 }
 
 // Helper function to convert icon path to theme-appropriate version
+// Light mode: uses black/transparent PNGs (regular files without -dark suffix)
+// Dark mode: uses white/transparent PNGs (files with -dark suffix)
 function getThemedIconPath(iconPath, theme) {
   if (!iconPath) return iconPath;
   
   // Map of icon names to their dark mode equivalents
+  // Regular files (without -dark) are black/transparent for light mode
+  // -dark files are white/transparent for dark mode
   const iconMap = {
     'account-icon.png': 'account-icon-dark.png',
     'account-icon-dark.png': 'account-icon.png',
@@ -6861,21 +6862,25 @@ function getThemedIconPath(iconPath, theme) {
   const filename = iconPath.split('/').pop();
   
   if (theme === 'dark') {
-    // Convert to dark version
+    // Dark mode: use white/transparent assets (files with -dark suffix)
     const darkFilename = iconMap[filename] || filename.replace('.png', '-dark.png');
     return iconPath.replace(filename, darkFilename);
   } else {
-    // Convert to light version
+    // Light mode: use black/transparent assets (regular files without -dark suffix)
     const lightFilename = iconMap[filename] || filename.replace('-dark.png', '.png');
     return iconPath.replace(filename, lightFilename);
   }
 }
 
 // Helper function to convert logo path to theme-appropriate version
+// Light mode: uses black/transparent PNGs (regular files without -dark suffix)
+// Dark mode: uses white/transparent PNGs (files with -dark suffix)
 function getThemedLogoPath(logoPath, theme) {
   if (!logoPath) return logoPath;
   
   // Map of logo names to their dark mode equivalents
+  // Regular files (without -dark) are black/transparent for light mode
+  // -dark files are white/transparent for dark mode
   const logoMap = {
     'NO3D TOOLS.png': 'NO3D TOOLS-dark.png',
     'NO3D DOJO.png': 'NO3D DOJO-dark.png',
@@ -6893,16 +6898,19 @@ function getThemedLogoPath(logoPath, theme) {
   const filename = logoPath.split('/').pop();
   
   if (theme === 'dark') {
-    // Convert to dark version
+    // Dark mode: use white/transparent assets (files with -dark suffix)
     const darkFilename = logoMap[filename] || filename.replace('.png', '-dark.png');
     return logoPath.replace(filename, darkFilename);
   } else {
-    // Convert to light version
+    // Light mode: use black/transparent assets (regular files without -dark suffix)
     const lightFilename = logoMap[filename] || filename.replace('-dark.png', '.png');
     return logoPath.replace(filename, lightFilename);
   }
 }
 
+// Updates all theme-related UI elements (icons, logos) based on current theme
+// Light mode: uses black/transparent PNGs (regular files without -dark suffix)
+// Dark mode: uses white/transparent PNGs (files with -dark suffix)
 function updateThemeIcon(theme) {
   const themeIcon = document.getElementById('theme-toggle-icon');
   if (themeIcon) {
@@ -6917,52 +6925,90 @@ function updateThemeIcon(theme) {
   
   // Update header logo based on current theme and existing logo
   const headerLogo = document.getElementById('header-logo');
-  if (headerLogo && headerLogo.src) {
-    // Get current logo path (extract from src, handling both relative and absolute paths)
-    const currentSrc = headerLogo.src;
-    const logoPath = currentSrc.includes('assets/') 
-      ? currentSrc.substring(currentSrc.indexOf('assets/'))
-      : headerLogo.getAttribute('src') || 'assets/NO3D TOOLS.png';
+  if (headerLogo) {
+    // Prefer getAttribute('src') to get the original relative path
+    let logoPath = headerLogo.getAttribute('src');
+    
+    // If no attribute, try to extract from resolved src (full URL)
+    if (!logoPath && headerLogo.src) {
+      const currentSrc = headerLogo.src;
+      logoPath = currentSrc.includes('assets/') 
+        ? currentSrc.substring(currentSrc.indexOf('assets/'))
+        : 'assets/NO3D TOOLS.png';
+    }
+    
+    // Fallback to default if still no path
+    if (!logoPath) {
+      logoPath = 'assets/NO3D TOOLS.png';
+    }
     
     // Convert to theme-appropriate version
     const themedLogoPath = getThemedLogoPath(logoPath, theme);
     headerLogo.src = themedLogoPath;
+    headerLogo.setAttribute('src', themedLogoPath);
   }
   
   // Update account icon
   const accountIcon = document.querySelector('.account-icon-image');
-  if (accountIcon && accountIcon.src) {
-    const currentSrc = accountIcon.src;
-    const iconPath = currentSrc.includes('assets/') 
-      ? currentSrc.substring(currentSrc.indexOf('assets/'))
-      : accountIcon.getAttribute('src') || 'assets/account-icon.png';
+  if (accountIcon) {
+    let iconPath = accountIcon.getAttribute('src');
+    
+    if (!iconPath && accountIcon.src) {
+      const currentSrc = accountIcon.src;
+      iconPath = currentSrc.includes('assets/') 
+        ? currentSrc.substring(currentSrc.indexOf('assets/'))
+        : 'assets/account-icon.png';
+    }
+    
+    if (!iconPath) {
+      iconPath = 'assets/account-icon.png';
+    }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
     accountIcon.src = themedIconPath;
+    accountIcon.setAttribute('src', themedIconPath);
   }
   
   // Update cart icon
   const cartIcon = document.getElementById('cart-icon');
-  if (cartIcon && cartIcon.src) {
-    const currentSrc = cartIcon.src;
-    const iconPath = currentSrc.includes('assets/') 
-      ? currentSrc.substring(currentSrc.indexOf('assets/'))
-      : cartIcon.getAttribute('src') || 'assets/cart icon.png';
+  if (cartIcon) {
+    let iconPath = cartIcon.getAttribute('src');
+    
+    if (!iconPath && cartIcon.src) {
+      const currentSrc = cartIcon.src;
+      iconPath = currentSrc.includes('assets/') 
+        ? currentSrc.substring(currentSrc.indexOf('assets/'))
+        : 'assets/cart icon.png';
+    }
+    
+    if (!iconPath) {
+      iconPath = 'assets/cart icon.png';
+    }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
     cartIcon.src = themedIconPath;
+    cartIcon.setAttribute('src', themedIconPath);
   }
   
   // Update footer logo (stone logo)
   const footerLogo = document.querySelector('.footer-logo');
-  if (footerLogo && footerLogo.src) {
-    const currentSrc = footerLogo.src;
-    const iconPath = currentSrc.includes('assets/') 
-      ? currentSrc.substring(currentSrc.indexOf('assets/'))
-      : footerLogo.getAttribute('src') || 'assets/stone logo.png';
+  if (footerLogo) {
+    let iconPath = footerLogo.getAttribute('src');
+    
+    if (!iconPath && footerLogo.src) {
+      const currentSrc = footerLogo.src;
+      iconPath = currentSrc.includes('assets/') 
+        ? currentSrc.substring(currentSrc.indexOf('assets/'))
+        : 'assets/stone logo.png';
+    }
+    
+    if (!iconPath) {
+      iconPath = 'assets/stone logo.png';
+    }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
     footerLogo.src = themedIconPath;
+    footerLogo.setAttribute('src', themedIconPath);
   }
 }
 
@@ -6977,17 +7023,7 @@ function initializeThemeToggle() {
     themeToggleButton.addEventListener('click', toggleTheme);
   }
   
-  // Listen for system theme changes (if no manual preference is set)
-  if (window.matchMedia) {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', (e) => {
-      // Only update if user hasn't manually set a preference
-      const savedTheme = localStorage.getItem('theme');
-      if (!savedTheme) {
-        setTheme(e.matches ? 'dark' : 'light');
-      }
-    });
-  }
+  // System theme changes are ignored - default is always light mode
 }
 
 // Initialize theme toggle when DOM is ready
