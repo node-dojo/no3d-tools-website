@@ -13,7 +13,38 @@
   },
   "headers": [
     {
-      "source": "/assets/product-docs/(.*).mp4",
+      "source": "/assets/product-images/(.*)\\.(png|jpg|jpeg|gif|webp|svg)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/product-data/(.*)\\.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)\\.(png|jpg|jpeg|gif|webp|svg|ico)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/product-docs/(.*)\\.mp4",
       "headers": [
         {
           "key": "Content-Type",
@@ -30,7 +61,7 @@
       ]
     },
     {
-      "source": "/assets/product-docs/(.*).webm",
+      "source": "/assets/product-docs/(.*)\\.webm",
       "headers": [
         {
           "key": "Content-Type",
@@ -39,11 +70,15 @@
         {
           "key": "Accept-Ranges",
           "value": "bytes"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     },
     {
-      "source": "/assets/product-docs/(.*).mov",
+      "source": "/assets/product-docs/(.*)\\.mov",
       "headers": [
         {
           "key": "Content-Type",
@@ -52,11 +87,15 @@
         {
           "key": "Accept-Ranges",
           "value": "bytes"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     },
     {
-      "source": "/assets/product-docs/(.*).ogg",
+      "source": "/assets/product-docs/(.*)\\.ogg",
       "headers": [
         {
           "key": "Content-Type",
@@ -65,6 +104,10 @@
         {
           "key": "Accept-Ranges",
           "value": "bytes"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
