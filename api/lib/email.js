@@ -11,7 +11,8 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email configuration
-const FROM_EMAIL = 'NO3D Tools <noreply@no3dtools.com>';
+// Use environment variable for from email, fallback to Resend's test domain for development
+const FROM_EMAIL = process.env.FROM_EMAIL || 'NO3D Tools <onboarding@resend.dev>';
 const SITE_URL = process.env.SITE_URL || 'https://no3dtools.com';
 
 /**
