@@ -4569,6 +4569,13 @@ function getPolarProductData(productSlug) {
   return polarProduct || null;
 }
 
+// Select a product and immediately trigger buy flow (used by banner buttons)
+async function selectProductAndBuy(productName) {
+  console.log('selectProductAndBuy called with:', productName);
+  currentProduct = productName;
+  await handleBuyNow();
+}
+
 // Open embedded checkout modal for current product
 async function handleBuyNow() {
   if (!currentProduct) {

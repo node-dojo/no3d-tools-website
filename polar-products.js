@@ -78,10 +78,9 @@ const POLAR_PRODUCTS = {
   },
   // Christmas Gift Cards & Membership Gifts
   '3-month-membership-gift': {
-    productId: null, // No product in Polar - uses checkout link
-    priceId: null,
+    productId: '153df206-7d4e-4ec2-8044-87c4eeb5cceb',
+    priceId: 'bfcd229f-2958-4e35-b52c-c80e7ce24878',
     name: '3 Month Membership Gift',
-    checkoutUrl: 'https://buy.polar.sh/polar_cl_C9NR8NuqXZKl78WdxOmIJhP4kxC0JDU3ByePqTZDwOv',
     url: 'https://polar.sh/no3d-tools'
   },
   'christmas-gift-card-33': {
