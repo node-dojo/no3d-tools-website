@@ -597,6 +597,474 @@
             padding: var(--space-medium);
             text-align: center;
         }
+
+        /* Orders Section Styles */
+        .orders-section {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            margin-bottom: var(--space-large);
+        }
+
+        .orders-section h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-medium);
+            margin-top: var(--space-medium);
+        }
+
+        .order-card {
+            background: var(--color-stone-gray);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-medium);
+            transition: all var(--transition-fast);
+        }
+
+        .order-card:hover {
+            background: rgba(240, 255, 0, 0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-small);
+            flex-wrap: wrap;
+            gap: var(--space-small);
+        }
+
+        .order-id {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-dark-gray);
+        }
+
+        .order-date {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-medium-gray);
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: var(--space-tiny) var(--space-small);
+            border: 1px solid var(--color-void-black);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-micro);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+        }
+
+        .order-status.paid {
+            background: var(--color-lello);
+            color: var(--color-void-black);
+        }
+
+        .order-status.pending {
+            background: var(--color-paper-white);
+            color: var(--color-dark-gray);
+        }
+
+        .order-products {
+            margin: var(--space-small) 0;
+        }
+
+        .order-product {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            color: var(--color-void-black);
+            text-transform: uppercase;
+            margin-bottom: var(--space-tiny);
+        }
+
+        .order-amount {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            color: var(--color-void-black);
+            margin-top: var(--space-small);
+        }
+
+        .order-actions {
+            display: flex;
+            gap: var(--space-small);
+            margin-top: var(--space-small);
+            flex-wrap: wrap;
+        }
+
+        .order-invoice-link {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-small);
+            color: var(--color-void-black);
+            text-decoration: none;
+            padding: var(--space-tiny) var(--space-small);
+            border: 1px solid var(--color-void-black);
+            transition: all var(--transition-fast);
+        }
+
+        .order-invoice-link:hover {
+            background: var(--color-lello);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space-small);
+            margin-top: var(--space-large);
+        }
+
+        .pagination-button {
+            background: var(--color-paper-white);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-tiny) var(--space-medium);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-small);
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background: var(--color-lello);
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-dark-gray);
+        }
+
+        .orders-empty {
+            text-align: center;
+            padding: var(--space-xlarge);
+            color: var(--color-dark-gray);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+        }
+
+        /* Magic Link Auth Styles */
+        .auth-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: var(--space-small) var(--space-medium);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            margin-bottom: var(--space-small);
+            background: var(--color-paper-white);
+            box-sizing: border-box;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--color-lello);
+            box-shadow: 0 0 0 2px rgba(240, 255, 0, 0.3);
+        }
+
+        .auth-button {
+            width: 100%;
+            background-color: var(--color-lello);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-small) var(--space-large);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border-radius: 0;
+            box-sizing: border-box;
+        }
+
+        .auth-button:hover:not(:disabled) {
+            background-color: var(--color-lello-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lello-glow);
+        }
+
+        .auth-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .auth-message {
+            margin-top: var(--space-small);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            padding: var(--space-small);
+            border-radius: 0;
+        }
+
+        .auth-message.success {
+            background: rgba(240, 255, 0, 0.2);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-lello);
+        }
+
+        .auth-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            color: #cc0000;
+            border: 1px solid #cc0000;
+        }
+
+        .auth-message.info {
+            background: rgba(0, 100, 255, 0.1);
+            color: #0066cc;
+            border: 1px solid #0066cc;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--color-paper-white);
+            border: 2px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h3 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+
+        .modal-content p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-void-black);
+            margin-bottom: var(--space-medium);
+            line-height: var(--line-height-base);
+        }
+
+        .cancel-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-small);
+            margin-bottom: var(--space-medium);
+        }
+
+        .cancel-options label {
+            display: flex;
+            align-items: center;
+            padding: var(--space-small);
+            background: var(--color-stone-gray);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+        }
+
+        .cancel-options label:hover {
+            background: rgba(240, 255, 0, 0.1);
+            border-color: var(--color-lello);
+        }
+
+        .cancel-options input[type="radio"] {
+            margin-right: var(--space-small);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .cancel-reason {
+            margin-bottom: var(--space-medium);
+        }
+
+        .cancel-reason label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-tiny);
+            text-transform: uppercase;
+        }
+
+        .cancel-reason select {
+            width: 100%;
+            padding: var(--space-small);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            background: var(--color-paper-white);
+            cursor: pointer;
+        }
+
+        .cancel-reason select:focus {
+            outline: none;
+            border-color: var(--color-lello);
+            box-shadow: 0 0 0 2px rgba(240, 255, 0, 0.3);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--space-small);
+            justify-content: flex-end;
+            margin-top: var(--space-medium);
+        }
+
+        .modal-actions button {
+            padding: var(--space-small) var(--space-medium);
+        }
+
+        .warning-message {
+            background: rgba(255, 200, 0, 0.1);
+            border: 1px solid #ffc800;
+            padding: var(--space-small);
+            margin-top: var(--space-medium);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-void-black);
+        }
+
+        .subscription-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-medium);
+            margin-top: var(--space-medium);
+        }
+
+        .subscription-card {
+            background: var(--color-stone-gray);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-medium);
+            border-radius: 0;
+        }
+
+        .subscription-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-medium);
+        }
+
+        .subscription-product-name {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+        }
+
+        .subscription-price {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            color: var(--color-void-black);
+        }
+
+        .subscription-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-small);
+            margin-bottom: var(--space-small);
+        }
+
+        .subscription-detail {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+        }
+
+        .subscription-detail-label {
+            color: var(--color-dark-gray);
+            text-transform: uppercase;
+            font-size: var(--font-size-micro);
+        }
+
+        .subscription-actions {
+            display: flex;
+            gap: var(--space-small);
+            margin-top: var(--space-medium);
+            flex-wrap: wrap;
+        }
+
+        .subscription-actions button {
+            padding: var(--space-tiny) var(--space-medium);
+            font-size: var(--font-size-base);
+            border: 1px solid var(--color-void-black);
+            background: var(--color-paper-white);
+            color: var(--color-void-black);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: var(--font-visitor);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .subscription-actions button:hover:not(:disabled) {
+            background: var(--color-lello);
+            transform: translateY(-1px);
+        }
+
+        .subscription-actions button.danger {
+            color: #cc0000;
+            border-color: #cc0000;
+        }
+
+        .subscription-actions button.danger:hover:not(:disabled) {
+            background: #cc0000;
+            color: var(--color-paper-white);
+        }
+
+        .subscription-actions button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -631,9 +1099,20 @@
 
             <!-- Login Prompt -->
             <div id="login-prompt" class="login-prompt" style="display: none;">
-                <h2>Please Sign In</h2>
-                <p>You need to sign in to access your account.</p>
-                <a href="#" class="login-button" id="login-button">Sign In with Polar</a>
+                <h2>Sign In to Your Account</h2>
+                <p>Enter your email to receive a magic link for secure, passwordless sign-in.</p>
+                <div class="auth-form">
+                    <input type="email"
+                           id="auth-email"
+                           class="auth-input"
+                           placeholder="your@email.com"
+                           autocomplete="email"
+                           required>
+                    <button class="auth-button" id="send-magic-link-button" onclick="sendMagicLink()">
+                        Send Magic Link
+                    </button>
+                    <div id="auth-message" class="auth-message" style="display: none;"></div>
+                </div>
             </div>
 
             <!-- Account Content -->
@@ -673,24 +1152,11 @@
 
                 <!-- Subscription Status -->
                 <div class="subscription-status">
-                    <h2>Subscription Status</h2>
-                    <div>
-                        <span class="status-badge" id="status-badge">Loading...</span>
-                        <span id="update-badge" class="update-badge" style="display: none;">Update Available</span>
+                    <h2>Subscription Management</h2>
+                    <div id="subscriptions-list" class="subscription-list">
+                        <div class="loading">Loading subscriptions...</div>
                     </div>
-                    <div class="subscription-info">
-                        <div class="info-item">
-                            <div class="info-label">Plan</div>
-                            <div class="info-value" id="plan-name">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Status</div>
-                            <div class="info-value" id="subscription-status">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Renews</div>
-                            <div class="info-value" id="renewal-date">-</div>
-                        </div>
+                    <div class="subscription-info" style="margin-top: var(--space-large);">
                         <div class="info-item">
                             <div class="info-label">Name</div>
                             <div class="info-value" id="customer-name">-</div>
@@ -699,6 +1165,17 @@
                             <div class="info-label">Email</div>
                             <div class="info-value" id="customer-email" style="font-size: var(--font-size-base); font-weight: normal; text-transform: none;">-</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Orders Section -->
+                <div class="orders-section">
+                    <h2>Order History</h2>
+                    <div id="orders-list" class="orders-list">
+                        <div class="loading">Loading orders...</div>
+                    </div>
+                    <div id="orders-pagination" class="pagination" style="display: none;">
+                        <!-- Pagination populated by JS -->
                     </div>
                 </div>
 
@@ -736,6 +1213,39 @@
         </div>
     </main>
 
+    <!-- Cancellation Modal -->
+    <div id="cancel-modal" class="modal">
+        <div class="modal-content">
+            <h3>Cancel Subscription</h3>
+            <p>Choose how you'd like to cancel:</p>
+            <div class="cancel-options">
+                <label>
+                    <input type="radio" name="cancel-type" value="period-end" checked>
+                    Cancel at period end (keep access until renewal date)
+                </label>
+                <label>
+                    <input type="radio" name="cancel-type" value="immediately">
+                    Cancel immediately (lose access now)
+                </label>
+            </div>
+            <div class="cancel-reason">
+                <label>Reason (optional):</label>
+                <select id="cancel-reason">
+                    <option value="">Select a reason</option>
+                    <option value="too_expensive">Too expensive</option>
+                    <option value="not_using">Not using enough</option>
+                    <option value="missing_features">Missing features I need</option>
+                    <option value="switching_service">Switching to another service</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeCancelModal()" class="action-link">Keep Subscription</button>
+                <button onclick="confirmCancel()" class="download-button" style="background: #cc0000; color: white;">Confirm Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <p class="footer-text">&copy; 2025 NO3D Tools. All rights reserved.</p>
     </footer>
@@ -744,6 +1254,7 @@
         let customerId = null;
         let subscriptionData = null;
         let catalogVersion = null;
+        let sessionToken = null;
 
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', () => {
@@ -751,22 +1262,22 @@
         });
 
         async function checkAuthentication() {
-            // Check for stored customer ID in session
-            customerId = sessionStorage.getItem('polar_customer_id');
-            
-            if (!customerId) {
-                // Try to get from URL params (if redirected from Polar)
-                const urlParams = new URLSearchParams(window.location.search);
-                customerId = urlParams.get('customer_id');
-                
-                if (customerId) {
-                    sessionStorage.setItem('polar_customer_id', customerId);
-                    // Clean URL
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }
+            // Check for session token in localStorage
+            sessionToken = localStorage.getItem('no3d_session_token');
+
+            // Check for magic link token in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const magicLinkToken = urlParams.get('token');
+
+            if (magicLinkToken) {
+                // Verify magic link token
+                await verifyMagicLinkToken(magicLinkToken);
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
             }
 
-            if (customerId) {
+            if (sessionToken) {
                 await loadAccountData();
             } else {
                 showLoginPrompt();
@@ -776,16 +1287,167 @@
         function showLoginPrompt() {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('login-prompt').style.display = 'block';
-            
-            // Set up login button to redirect to Polar customer portal
-            document.getElementById('login-button').href = getPolarLoginUrl();
         }
 
-        function getPolarLoginUrl() {
-            // Redirect to Polar customer portal
-            // In production, this would be configured based on your Polar setup
-            const returnUrl = encodeURIComponent(window.location.href);
-            return `https://polar.sh/login?return_to=${returnUrl}`;
+        /**
+         * Send magic link email
+         */
+        async function sendMagicLink() {
+            const emailInput = document.getElementById('auth-email');
+            const sendButton = document.getElementById('send-magic-link-button');
+            const messageDiv = document.getElementById('auth-message');
+
+            const email = emailInput.value.trim();
+
+            if (!email || !isValidEmail(email)) {
+                showAuthMessage('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Disable button during request
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+
+            try {
+                const response = await fetch('/api/customer/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAuthMessage('Check your email for a sign-in link!', 'success');
+                    emailInput.value = '';
+                } else {
+                    showAuthMessage(data.error || 'Failed to send magic link', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending magic link:', error);
+                showAuthMessage('An error occurred. Please try again.', 'error');
+            } finally {
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send Magic Link';
+            }
+        }
+
+        /**
+         * Verify magic link token and create session
+         */
+        async function verifyMagicLinkToken(token) {
+            document.getElementById('loading-state').style.display = 'block';
+            document.getElementById('login-prompt').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/customer/session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: token }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store session token in localStorage
+                    sessionToken = data.sessionToken;
+                    localStorage.setItem('no3d_session_token', sessionToken);
+
+                    // Store customer info
+                    customerId = data.customer.id;
+
+                    // Load account data
+                    await loadAccountData();
+                } else {
+                    document.getElementById('loading-state').style.display = 'none';
+                    document.getElementById('error-state').style.display = 'block';
+                    document.getElementById('error-message').textContent = data.error || 'Invalid or expired magic link';
+
+                    // Show login prompt after 3 seconds
+                    setTimeout(() => {
+                        document.getElementById('error-state').style.display = 'none';
+                        showLoginPrompt();
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error verifying magic link:', error);
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('error-state').style.display = 'block';
+                document.getElementById('error-message').textContent = 'Failed to verify magic link';
+
+                setTimeout(() => {
+                    document.getElementById('error-state').style.display = 'none';
+                    showLoginPrompt();
+                }, 3000);
+            }
+        }
+
+        /**
+         * Show authentication message
+         */
+        function showAuthMessage(message, type) {
+            const messageDiv = document.getElementById('auth-message');
+            messageDiv.textContent = message;
+            messageDiv.className = `auth-message ${type}`;
+            messageDiv.style.display = 'block';
+
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        /**
+         * Validate email format
+         */
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        /**
+         * Handle Enter key in email input
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailInput = document.getElementById('auth-email');
+            if (emailInput) {
+                emailInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        sendMagicLink();
+                    }
+                });
+            }
+        });
+
+        /**
+         * Handle session expiration
+         */
+        function handleSessionExpired() {
+            console.log('Session expired');
+            localStorage.removeItem('no3d_session_token');
+            sessionToken = null;
+            customerId = null;
+
+            // Hide account content
+            document.getElementById('account-content').style.display = 'none';
+            document.getElementById('loading-state').style.display = 'none';
+
+            // Show error message
+            document.getElementById('error-state').style.display = 'block';
+            document.getElementById('error-message').textContent = 'Your session has expired. Please sign in again.';
+
+            // Show login prompt after 3 seconds
+            setTimeout(() => {
+                document.getElementById('error-state').style.display = 'none';
+                showLoginPrompt();
+            }, 3000);
         }
 
         async function loadAccountData() {
@@ -795,10 +1457,13 @@
 
                 // Load subscription data
                 await loadSubscriptionStatus();
-                
+
                 // Load catalog version for update detection
                 await loadCatalogVersion();
-                
+
+                // Load orders
+                await loadOrders();
+
                 // Load library files
                 await loadLibraryFiles();
 
@@ -899,14 +1564,24 @@
             if (!filesList) return;
 
             try {
-                // Try to fetch library files from API
-                const response = await fetch(`/api/v1/library/files?customer_id=${customerId}`);
-                
+                // Fetch owned products from orders API
+                const response = await fetch('/api/customer/orders?page=1&limit=100', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`,
+                    },
+                });
+
+                if (response.status === 401) {
+                    handleSessionExpired();
+                    return;
+                }
+
                 if (response.ok) {
                     const data = await response.json();
-                    displayLibraryFiles(data.files || []);
+                    const ownedProducts = extractOwnedProducts(data.orders);
+                    displayLibraryFiles(ownedProducts);
                 } else {
-                    // If API not available, show mock data for preview
+                    // Fallback to mock data if API fails
                     displayLibraryFiles(getMockLibraryFiles());
                 }
             } catch (error) {
@@ -914,6 +1589,36 @@
                 // Show mock data for preview
                 displayLibraryFiles(getMockLibraryFiles());
             }
+        }
+
+        function extractOwnedProducts(orders) {
+            const productsMap = new Map();
+
+            if (!orders || orders.length === 0) {
+                return [];
+            }
+
+            // Extract unique products from paid orders
+            for (const order of orders) {
+                if (order.status !== 'paid') continue;
+
+                if (order.products && Array.isArray(order.products)) {
+                    for (const product of order.products) {
+                        if (!productsMap.has(product.id)) {
+                            productsMap.set(product.id, {
+                                id: product.id,
+                                name: product.name,
+                                handle: product.handle,
+                                path: product.handle || product.id,
+                                files: ['Product files available for download'],
+                                category: 'Product',
+                            });
+                        }
+                    }
+                }
+            }
+
+            return Array.from(productsMap.values());
         }
 
         function getMockLibraryFiles() {
@@ -949,14 +1654,15 @@
                     const ext = f.split('.').pop();
                     return ext.toUpperCase();
                 }).join(', ') : '';
-                
+
                 const fileName = escapeHtml(file.name || 'Unnamed Product');
                 const filePath = escapeHtml(file.path || '');
                 const fileCategory = escapeHtml(file.category || 'Product');
-                
+                const productId = file.id || '';
+
                 return `
-                    <div class="library-file-item" data-file-path="${filePath}" data-file-name="${fileName}">
-                        <div class="library-file-download-icon" onclick="downloadIndividualFile(event, ${JSON.stringify(filePath)}, ${JSON.stringify(fileName)})" title="Download ${fileName}">
+                    <div class="library-file-item" data-file-path="${filePath}" data-file-name="${fileName}" data-product-id="${productId}">
+                        <div class="library-file-download-icon" onclick="downloadProductFromLibrary(event, '${productId}', ${JSON.stringify(fileName)})" title="Download ${fileName}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
                             </svg>
@@ -972,17 +1678,226 @@
             }).join('');
         }
 
+        async function downloadProductFromLibrary(event, productId, productName) {
+            event.stopPropagation();
+
+            if (!productId) {
+                alert('Product ID not available.');
+                return;
+            }
+
+            // Use the downloadProduct function
+            await downloadProduct(productId, productName);
+        }
+
         function checkForUpdates() {
             const lastDownloadVersion = localStorage.getItem('last_download_version');
             const lastDownloadDate = localStorage.getItem('last_download_date');
-            
+
             if (lastDownloadDate) {
                 document.getElementById('last-download-date').textContent = new Date(lastDownloadDate).toLocaleString();
             }
-            
+
             if (lastDownloadVersion && catalogVersion && parseInt(lastDownloadVersion) < parseInt(catalogVersion)) {
                 document.getElementById('update-badge').style.display = 'inline-block';
             }
+        }
+
+        // ============================================
+        // Orders Functions
+        // ============================================
+
+        let currentOrdersPage = 1;
+
+        async function loadOrders(page = 1) {
+            const ordersList = document.getElementById('orders-list');
+            const paginationDiv = document.getElementById('orders-pagination');
+
+            if (!ordersList) return;
+
+            try {
+                // Show loading state
+                if (page === 1) {
+                    ordersList.innerHTML = '<div class="loading">Loading orders...</div>';
+                }
+
+                const response = await fetch(`/api/customer/orders?page=${page}&limit=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`,
+                    },
+                });
+
+                if (response.status === 401) {
+                    handleSessionExpired();
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to load orders');
+                }
+
+                const data = await response.json();
+
+                currentOrdersPage = page;
+
+                // Display orders
+                displayOrders(data.orders);
+
+                // Display pagination
+                displayOrdersPagination(data.pagination);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                ordersList.innerHTML = '<div class="orders-empty">Failed to load orders. Please try again later.</div>';
+                paginationDiv.style.display = 'none';
+            }
+        }
+
+        function displayOrders(orders) {
+            const ordersList = document.getElementById('orders-list');
+
+            if (!orders || orders.length === 0) {
+                ordersList.innerHTML = '<div class="orders-empty">No orders found.</div>';
+                return;
+            }
+
+            ordersList.innerHTML = orders.map(order => renderOrderCard(order)).join('');
+        }
+
+        function renderOrderCard(order) {
+            const date = new Date(order.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            });
+
+            const amount = formatCurrency(order.amount, order.currency);
+            const statusClass = order.status === 'paid' ? 'paid' : 'pending';
+            const statusText = order.status.toUpperCase();
+
+            const products = order.products.map(product => {
+                return `
+                    <div class="order-product">
+                        ${escapeHtml(product.name)}
+                    </div>
+                `;
+            }).join('');
+
+            const downloadButtons = order.products.map(product => {
+                return `
+                    <button class="download-button" style="font-size: var(--font-size-small); padding: var(--space-tiny) var(--space-small);"
+                            onclick="downloadProduct('${product.id}', '${escapeHtml(product.name)}')">
+                        Download ${escapeHtml(product.name)}
+                    </button>
+                `;
+            }).join('');
+
+            const invoiceLink = order.invoiceUrl
+                ? `<a href="${order.invoiceUrl}" target="_blank" class="order-invoice-link">View Invoice</a>`
+                : '';
+
+            return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #${order.id.slice(0, 8)}</div>
+                            <div class="order-date">${date}</div>
+                        </div>
+                        <span class="order-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="order-products">
+                        ${products}
+                    </div>
+                    <div class="order-amount">${amount}</div>
+                    <div class="order-actions">
+                        ${downloadButtons}
+                        ${invoiceLink}
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayOrdersPagination(pagination) {
+            const paginationDiv = document.getElementById('orders-pagination');
+
+            if (!pagination || pagination.totalPages <= 1) {
+                paginationDiv.style.display = 'none';
+                return;
+            }
+
+            paginationDiv.style.display = 'flex';
+
+            const prevDisabled = pagination.page <= 1;
+            const nextDisabled = pagination.page >= pagination.totalPages;
+
+            paginationDiv.innerHTML = `
+                <button class="pagination-button" ${prevDisabled ? 'disabled' : ''} onclick="loadOrders(${pagination.page - 1})">
+                    Previous
+                </button>
+                <span class="pagination-info">
+                    Page ${pagination.page} of ${pagination.totalPages}
+                </span>
+                <button class="pagination-button" ${nextDisabled ? 'disabled' : ''} onclick="loadOrders(${pagination.page + 1})">
+                    Next
+                </button>
+            `;
+        }
+
+        async function downloadProduct(productId, productName) {
+            if (!sessionToken) {
+                alert('Please sign in to download products.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/customer/download', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId: productId }),
+                });
+
+                if (response.status === 401) {
+                    handleSessionExpired();
+                    return;
+                }
+
+                if (response.status === 403) {
+                    alert('You do not have access to this product.');
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate download URL');
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                if (data.downloadUrl) {
+                    // Open download URL in new tab
+                    window.open(data.downloadUrl, '_blank');
+                } else {
+                    alert('Download URL not available yet. This feature is coming soon!');
+                }
+            } catch (error) {
+                console.error('Error downloading product:', error);
+                alert('Failed to download product. Please try again later.');
+            }
+        }
+
+        function formatCurrency(amountCents, currency = 'usd') {
+            const amount = amountCents / 100;
+            const formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency.toUpperCase(),
+            });
+            return formatter.format(amount);
         }
 
         async function downloadAllFiles() {
@@ -1045,81 +1960,16 @@
             }
         }
 
-        async function downloadIndividualFile(event, filePath, fileName) {
-            event.stopPropagation(); // Prevent any parent click handlers
-            
-            if (!customerId) {
-                alert('Please sign in to download files.');
-                return;
-            }
-
-            if (!filePath) {
-                alert('File path not available.');
-                return;
-            }
-
-            // Find the clicked icon element
-            const icon = event.currentTarget;
-            const originalOpacity = icon.style.opacity;
-            
-            // Show loading state
-            icon.style.opacity = '0.3';
-            icon.style.pointerEvents = 'none';
-
-            try {
-                // For MVP: Download individual product as ZIP
-                // In production, this would call a specific endpoint like /api/v1/library/download/product?path=...
-                // For now, we'll create a simple download that uses the path
-                const response = await fetch(`/api/v1/library/download/product?customer_id=${customerId}&path=${encodeURIComponent(filePath)}`);
-                
-                if (!response.ok) {
-                    // If individual product endpoint doesn't exist, fall back to showing a message
-                    if (response.status === 404) {
-                        // Individual product download endpoint not yet implemented
-                        // For now, show a message that this feature is coming
-                        alert(`Individual file download for "${fileName}" is coming soon. Please use "Download All Files" to get all products.`);
-                        icon.style.opacity = originalOpacity || '';
-                        icon.style.pointerEvents = 'auto';
-                        return;
-                    } else if (response.status === 403) {
-                        throw new Error('Active subscription required to download files.');
-                    } else {
-                        throw new Error('Failed to download file. Please try again later.');
-                    }
-                }
-
-                // Get the file as a blob
-                const blob = await response.blob();
-                
-                // Create download link
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${fileName || filePath.split('/').pop()}.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Error downloading individual file:', error);
-                // If the endpoint doesn't exist, show a helpful message
-                if (error.message.includes('404') || error.message.includes('Failed to fetch')) {
-                    alert(`Individual file download for "${fileName}" is coming soon. Please use "Download All Files" to get all products.`);
-                } else {
-                    alert(error.message || 'Failed to download file. Please try again later.');
-                }
-            } finally {
-                // Restore icon state
-                icon.style.opacity = originalOpacity || '';
-                icon.style.pointerEvents = 'auto';
-            }
-        }
 
         function handleLogout(event) {
             event.preventDefault();
-            sessionStorage.removeItem('polar_customer_id');
+            // Clear session token
+            localStorage.removeItem('no3d_session_token');
             localStorage.removeItem('last_download_version');
             localStorage.removeItem('last_download_date');
+            localStorage.removeItem('customer_email');
+            sessionToken = null;
+            customerId = null;
             window.location.href = 'index.html';
         }
 
@@ -1139,13 +1989,28 @@
             }
 
             try {
-                const response = await fetch(`/api/credit/balance?email=${encodeURIComponent(customerEmail)}`);
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                // Add Authorization header if session token exists
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
+                const response = await fetch(`/api/credit/balance?email=${encodeURIComponent(customerEmail)}`, {
+                    headers: headers,
+                });
+
                 if (response.ok) {
                     const data = await response.json();
                     updateCreditBalanceUI(data.balance);
 
                     // Store email in localStorage for checkout flow
                     localStorage.setItem('customer_email', customerEmail);
+                } else if (response.status === 401) {
+                    // Session expired, show login prompt
+                    handleSessionExpired();
                 }
             } catch (error) {
                 console.error('Error loading credit balance:', error);
@@ -1168,10 +2033,23 @@
             if (!customerEmail) return;
 
             try {
-                const response = await fetch(`/api/credit/history?email=${encodeURIComponent(customerEmail)}&limit=10`);
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
+                const response = await fetch(`/api/credit/history?email=${encodeURIComponent(customerEmail)}&limit=10`, {
+                    headers: headers,
+                });
+
                 if (response.ok) {
                     const data = await response.json();
                     displayCreditHistory(data.transactions);
+                } else if (response.status === 401) {
+                    handleSessionExpired();
                 }
             } catch (error) {
                 console.error('Error loading credit history:', error);
@@ -1228,11 +2106,17 @@
             redeemButton.textContent = 'Redeeming...';
 
             try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
                 const response = await fetch('/api/credit/redeem', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: headers,
                     body: JSON.stringify({
                         code: code,
                         email: customerEmail,
@@ -1297,10 +2181,251 @@
                 await loadCreditBalance();
                 await loadCreditHistory();
             }
+
+            // Load subscriptions
+            await loadSubscriptions();
         };
+
+        // ============================================
+        // Subscription Management Functions
+        // ============================================
+
+        let currentCancelSubscriptionId = null;
+
+        /**
+         * Load subscriptions from API
+         */
+        async function loadSubscriptions() {
+            const subscriptionsList = document.getElementById('subscriptions-list');
+            if (!subscriptionsList) return;
+
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
+                const response = await fetch('/api/customer/subscriptions', {
+                    headers: headers,
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displaySubscriptions(data.subscriptions);
+                } else if (response.status === 401) {
+                    handleSessionExpired();
+                } else {
+                    console.error('Failed to load subscriptions');
+                    subscriptionsList.innerHTML = '<div class="loading" style="color: #cc0000;">Failed to load subscriptions</div>';
+                }
+            } catch (error) {
+                console.error('Error loading subscriptions:', error);
+                subscriptionsList.innerHTML = '<div class="loading" style="color: #cc0000;">Error loading subscriptions</div>';
+            }
+        }
+
+        /**
+         * Display subscriptions in UI
+         */
+        function displaySubscriptions(subscriptions) {
+            const subscriptionsList = document.getElementById('subscriptions-list');
+            if (!subscriptionsList) return;
+
+            if (!subscriptions || subscriptions.length === 0) {
+                subscriptionsList.innerHTML = `
+                    <div class="loading" style="color: var(--color-dark-gray);">
+                        No active subscriptions found.
+                        <a href="subscribe.html" class="action-link" style="margin-left: var(--space-small); display: inline-block;">Subscribe Now</a>
+                    </div>
+                `;
+                return;
+            }
+
+            subscriptionsList.innerHTML = subscriptions.map(sub => {
+                const productName = sub.product ? sub.product.name : 'Subscription';
+                const amount = sub.amount / 100;
+                const currency = sub.currency.toUpperCase();
+                const interval = sub.interval;
+                const status = sub.status || 'active';
+                const cancelAtPeriodEnd = sub.cancelAtPeriodEnd;
+
+                const periodStart = sub.currentPeriodStart ? new Date(sub.currentPeriodStart).toLocaleDateString() : '-';
+                const periodEnd = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString() : '-';
+
+                let statusBadgeClass = 'active';
+                let statusText = 'Active';
+
+                if (status === 'canceled' || cancelAtPeriodEnd) {
+                    statusBadgeClass = 'inactive';
+                    statusText = cancelAtPeriodEnd ? 'Cancels at Period End' : 'Canceled';
+                } else if (status === 'past_due') {
+                    statusBadgeClass = 'expired';
+                    statusText = 'Past Due';
+                }
+
+                const warningHtml = cancelAtPeriodEnd
+                    ? `<div class="warning-message">This subscription will cancel on ${periodEnd}. You will lose access after this date.</div>`
+                    : '';
+
+                const actionButtons = cancelAtPeriodEnd
+                    ? `<button onclick="reactivateSubscription('${sub.id}')">Reactivate Subscription</button>`
+                    : status === 'active'
+                        ? `<button class="danger" onclick="showCancelModal('${sub.id}')">Cancel Subscription</button>`
+                        : '';
+
+                return `
+                    <div class="subscription-card">
+                        <div class="subscription-card-header">
+                            <div class="subscription-product-name">${escapeHtml(productName)}</div>
+                            <div class="subscription-price">$${amount.toFixed(2)}/${interval}</div>
+                        </div>
+                        <div>
+                            <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+                        </div>
+                        ${warningHtml}
+                        <div class="subscription-details">
+                            <div class="subscription-detail">
+                                <div class="subscription-detail-label">Period Start</div>
+                                <div>${periodStart}</div>
+                            </div>
+                            <div class="subscription-detail">
+                                <div class="subscription-detail-label">Period End</div>
+                                <div>${periodEnd}</div>
+                            </div>
+                            <div class="subscription-detail">
+                                <div class="subscription-detail-label">Status</div>
+                                <div>${escapeHtml(status)}</div>
+                            </div>
+                        </div>
+                        ${actionButtons ? `<div class="subscription-actions">${actionButtons}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /**
+         * Show cancel subscription modal
+         */
+        function showCancelModal(subscriptionId) {
+            currentCancelSubscriptionId = subscriptionId;
+            const modal = document.getElementById('cancel-modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        /**
+         * Close cancel subscription modal
+         */
+        function closeCancelModal() {
+            const modal = document.getElementById('cancel-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+            currentCancelSubscriptionId = null;
+        }
+
+        /**
+         * Confirm cancellation
+         */
+        async function confirmCancel() {
+            if (!currentCancelSubscriptionId) {
+                return;
+            }
+
+            const cancelType = document.querySelector('input[name="cancel-type"]:checked')?.value;
+            const reason = document.getElementById('cancel-reason')?.value;
+            const immediately = cancelType === 'immediately';
+
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
+                const response = await fetch('/api/customer/subscriptions/cancel', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        subscriptionId: currentCancelSubscriptionId,
+                        immediately: immediately,
+                        reason: reason || undefined,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeCancelModal();
+                    alert(immediately
+                        ? 'Subscription cancelled immediately. You no longer have access.'
+                        : 'Subscription will cancel at the end of the current billing period.');
+                    await loadSubscriptions();
+                } else {
+                    alert(data.error || 'Failed to cancel subscription');
+                }
+            } catch (error) {
+                console.error('Error cancelling subscription:', error);
+                alert('An error occurred while cancelling subscription');
+            }
+        }
+
+        /**
+         * Reactivate subscription
+         */
+        async function reactivateSubscription(subscriptionId) {
+            if (!confirm('Reactivate this subscription? It will continue renewing at the end of the current period.')) {
+                return;
+            }
+
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
+                const response = await fetch('/api/customer/subscriptions/reactivate', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        subscriptionId: subscriptionId,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Subscription reactivated successfully!');
+                    await loadSubscriptions();
+                } else {
+                    alert(data.error || 'Failed to reactivate subscription');
+                }
+            } catch (error) {
+                console.error('Error reactivating subscription:', error);
+                alert('An error occurred while reactivating subscription');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('cancel-modal');
+            if (modal && e.target === modal) {
+                closeCancelModal();
+            }
+        });
     </script>
 </body>
 </html>
+
 
 
 
