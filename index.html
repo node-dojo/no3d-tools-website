@@ -90,7 +90,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="header-left">
-                <img src="assets/no3d-tools.png" alt="NO3D TOOLS" class="logo" id="header-logo">
+                <img src="assets/light/no3d-tools.png" alt="NO3D TOOLS" class="logo" id="header-logo">
             </div>
             <div class="header-icons">
                 <button class="header-icon theme-toggle-button" id="theme-toggle-button" aria-label="Toggle dark mode">
@@ -101,12 +101,12 @@
                     <span class="member-cta-text">BECOME A MEMBER / GET ALL TOOLS, TUTORIALS, ASSETS</span>
                 </a>
                 <div class="cart-icon-wrapper" id="cart-icon-wrapper">
-                    <img src="assets/cart-icon.png" alt="Shopping Cart" class="cart-icon-image" id="cart-icon">
+                    <img src="assets/light/cart-icon.png" alt="Shopping Cart" class="cart-icon-image" id="cart-icon">
                     <span class="cart-badge" id="cart-badge">0</span>
                 </div>
                 <div class="account-menu-wrapper" id="account-menu-wrapper">
                     <button class="header-icon account-menu-button" id="account-menu-button" aria-label="Account menu">
-                        <img src="assets/account-icon.png" alt="Account" class="account-icon-image">
+                        <img src="assets/light/account-icon.png" alt="Account" class="account-icon-image">
                     </button>
                     <div class="account-menu-dropdown" id="account-menu-dropdown">
                         <div class="account-menu-header">
@@ -136,13 +136,29 @@
         <!-- Center Product Card - JSX Component Structure -->
         <main class="product-card">
             <!-- Home Grid (shown when no product selected) -->
-            <div class="home-grid-container" id="home-grid-container">
+            <div class="home-grid-container visible" id="home-grid-container">
+                <!-- Christmas Gift Card CTA Banner -->
+                <div class="home-cta-banner" id="christmas-cta-banner">
+                    <div class="home-cta-content">
+                        <div class="home-cta-text">
+                            <span class="home-cta-label">LAST MINUTE GIFT</span>
+                            <h2 class="home-cta-title">GIFT CARDS AVAILABLE</h2>
+                            <p class="home-cta-description">Give the gift of raw geometry power</p>
+                        </div>
+                        <div class="home-cta-actions">
+                            <a href="https://buy.polar.sh/polar_cl_C9NR8NuqXZKl78WdxOmIJhP4kxC0JDU3ByePqTZDwOv" class="home-cta-button home-cta-button-primary" target="_blank">3 MONTH MEMBERSHIP</a>
+                            <a href="https://buy.polar.sh/polar_cl_xC5xgSz9dbkpWCxM4fvV4v9nbyxknTOhyZNmgqCU8K8" class="home-cta-button home-cta-button-secondary" target="_blank">$111 GIFT CARD</a>
+                        </div>
+                    </div>
+                    <button class="home-cta-dismiss" id="christmas-cta-dismiss" aria-label="Dismiss banner">&times;</button>
+                </div>
+
                 <div class="home-grid" id="home-grid">
                     <!-- Product thumbnails will be populated by JavaScript -->
                 </div>
             </div>
 
-            <div class="product-card-container">
+            <div class="product-card-container hidden">
                 <!-- Left Section: Product Image and Details -->
                 <div class="product-left-section">
                     <!-- Product Image Carousel -->
@@ -267,7 +283,7 @@
     <footer class="footer">
         <span class="footer-text" id="footer-text">Cmd/ctrl + K to Search</span>
         <span class="footer-text" id="footer-commit">Commit: <span id="commit-hash">-</span></span>
-        <img src="assets/stone-logo.png" alt="Stone Logo" class="footer-logo">
+        <img src="assets/light/stone-logo.png" alt="Stone Logo" class="footer-logo">
     </footer>
 
     <!-- Command Palette Search Modal -->
@@ -370,10 +386,10 @@
                 
                 <!-- Gift Card Options -->
                 <div class="christmas-popup-cards">
-                    <div class="christmas-card-option" data-product-handle="christmas-gift-card-33">
+                    <div class="christmas-card-option" data-product-handle="3-month-membership-gift">
                         <div class="christmas-card-value">3</div>
                         <div class="christmas-card-label">MONTHS MEMBERSHIP</div>
-                        <button class="christmas-card-button" data-product-handle="christmas-gift-card-33">
+                        <button class="christmas-card-button" data-product-handle="3-month-membership-gift">
                             PURCHASE
                         </button>
                     </div>

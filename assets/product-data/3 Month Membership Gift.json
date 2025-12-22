@@ -1,0 +1,70 @@
+{
+  "title": "3 Month Membership Gift",
+  "handle": "3-month-membership-gift",
+  "description": "Give the (last minute) gift of raw geometry power! This 3-month membership provides full access to all tools, tutorials, and assets in our library. Perfect for the creative professional in your life.",
+  "vendor": "The Well Tarot",
+  "product_type": "Gift Card",
+  "tags": [
+    "gift-card",
+    "christmas",
+    "holiday",
+    "membership",
+    "subscription"
+  ],
+  "status": "active",
+  "variants": [
+    {
+      "price": "33.00",
+      "sku": "NO3D-TOOLS-3MO-MEMBERSHIP-GIFT",
+      "inventory_policy": "continue",
+      "inventory_management": "polar"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "MEMBERSHIP_GIFT",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "membership_duration",
+      "value": "3",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-12-21",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "Gift Cards",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_3 Month Membership Gift.png",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "membership-gift",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "membership-gift",
+      "type": "single_line_text_field"
+    }
+  ],
+  "polar": {
+    "checkout_link": "https://buy.polar.sh/polar_cl_C9NR8NuqXZKl78WdxOmIJhP4kxC0JDU3ByePqTZDwOv"
+  }
+}

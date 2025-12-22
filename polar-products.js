@@ -76,10 +76,17 @@ const POLAR_PRODUCTS = {
     name: 'Dojo Squircle v4.5_obj',
     url: 'https://polar.sh/no3d-tools'
   },
-  // Christmas Gift Cards
+  // Christmas Gift Cards & Membership Gifts
+  '3-month-membership-gift': {
+    productId: null, // No product in Polar - uses checkout link
+    priceId: null,
+    name: '3 Month Membership Gift',
+    checkoutUrl: 'https://buy.polar.sh/polar_cl_C9NR8NuqXZKl78WdxOmIJhP4kxC0JDU3ByePqTZDwOv',
+    url: 'https://polar.sh/no3d-tools'
+  },
   'christmas-gift-card-33': {
     productId: 'c36ce649-f55f-4901-a8a0-339ca41deb27',
-    priceId: null, // Gift cards use productId for checkout
+    priceId: null,
     name: 'Christmas Gift Card $33',
     url: 'https://polar.sh/no3d-tools'
   },

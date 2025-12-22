@@ -154,3 +154,6 @@ The popup is fully responsive:
 The Christmas gift card popup is fully implemented with PETRI UI design and ready for use once gift cards are synced to Polar.
 
 
+
+
+

@@ -36,8 +36,9 @@ const mimeTypes = {
 
 const server = http.createServer((req, res) => {
   // Parse URL
-  let filePath = req.url === '/' ? '/index.html' : req.url;
-  filePath = path.join(BASE_DIR, filePath.split('?')[0]); // Remove query params for file path
+  let urlPath = req.url.split('?')[0]; // Remove query params first
+  let filePath = urlPath === '/' ? '/index.html' : urlPath;
+  filePath = path.join(BASE_DIR, filePath);
 
   // Security: prevent directory traversal
   if (!filePath.startsWith(BASE_DIR)) {
@@ -90,6 +91,9 @@ server.listen(PORT, () => {
   console.log(`   showLandingPopupNow()`);
   console.log(`\nPress Ctrl+C to stop the server\n`);
 });
+
+
+
 
 
 

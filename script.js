@@ -438,7 +438,11 @@ async function loadProductsFromJSON() {
       'Dojo Mesh Repair.json',
       'Dojo Print Viz_V4.5.json',
       'Dojo Squircle v4.5_obj.json',
-      'Dojo_Squircle v4.5.json'
+      'Dojo_Squircle v4.5.json',
+      // Gift Cards
+      '3 Month Membership Gift.json',
+      'Dojo Christmas Gift Card $55.json',
+      'Dojo Christmas Gift Card $77.json'
     ];
     
     products = {};
@@ -695,27 +699,27 @@ async function loadProductsFromJSON() {
 const productTypeDefinitions = {
   tools: {
     label: 'TOOLS',
-    logo: 'assets/no3d-tools.png',
+    logo: 'no3d-tools',
     description: 'Advanced 3D modeling enhancements for Blender users designing real world products, built with 3D printing and laser cutting in mind!'
   },
   tutorials: {
     label: 'TUTORIALS',
-    logo: 'assets/no3d-dojo.png',
+    logo: 'no3d-dojo',
     description: 'Welcome to Node Dojo! Here you\'ll find tutorials on Blender and Geometry nodes. The Node Dojo Modules are famous for being interactive video game style tutorials built right into Blender.'
   },
   prints: {
     label: 'PRINTS',
-    logo: 'assets/no3d-prints.png',
+    logo: 'no3d-prints',
     description: 'Here are downloadable 3D print, CNC and laser cut files that you can use to build your own projects.'
   },
   apps: {
     label: 'APPS',
-    logo: 'assets/no3d-code.png',
+    logo: 'no3d-code',
     description: 'Here are some vibe coded apps and Blender Add-ons to enhance your design workflows and make NO3D Tools even more usable.'
   },
   docs: {
     label: 'DOCS/BLOG',
-    logo: 'assets/no3d-not3s.png',
+    logo: 'no3d-not3s',
     description: 'Some documentation, some musings.'
   }
 };
@@ -1333,6 +1337,11 @@ async function handleProductTypeToggle(typeKey) {
 
     updateIconGrid();
     updateHorizontalIconGrid();
+
+    // Refresh home grid if no product is selected
+    if (!currentProduct) {
+      renderHomeGrid();
+    }
   }
 }
 
@@ -1421,9 +1430,9 @@ function updateHeaderLogo(typeKey) {
   headerLogo.onerror = function() {
     console.error(`Failed to load header logo: ${finalLogoPath}`);
     // Try fallback to default tools logo
-    const fallbackPath = currentTheme === 'dark' 
-      ? '/assets/no3d-tools-dark.png'
-      : '/assets/no3d-tools.png';
+    const fallbackPath = currentTheme === 'dark'
+      ? '/assets/dark/no3d-tools-dark.png'
+      : '/assets/light/no3d-tools.png';
     this.src = fallbackPath;
     this.setAttribute('src', fallbackPath);
   };
@@ -1732,6 +1741,7 @@ function renderHomeGrid() {
 
     // Create image
     const img = document.createElement('img');
+    img.className = 'home-grid-item-thumbnail';
     img.src = product.icon || product.thumbnail || '';
     img.alt = product.name || product.title || '';
     img.loading = 'lazy';
@@ -1754,22 +1764,19 @@ function renderHomeGrid() {
 
 // Update view state based on whether a product is selected
 function updateViewState() {
-  const homeView = document.getElementById('home-view');
-  const productView = document.getElementById('product-view');
-  const productCard = document.querySelector('.product-card');
-  const closeButton = document.getElementById('close-product-button');
+  const homeGridContainer = document.getElementById('home-grid-container');
+  const productCardContainer = document.querySelector('.product-card-container');
+  const closeButton = document.getElementById('product-close-button');
 
   if (currentProduct) {
     // Product selected - show product view
-    if (homeView) homeView.classList.add('hidden');
-    if (productView) productView.classList.remove('hidden');
-    if (productCard) productCard.classList.remove('hidden');
-    if (closeButton) closeButton.style.display = 'block';
+    if (homeGridContainer) homeGridContainer.classList.remove('visible');
+    if (productCardContainer) productCardContainer.classList.remove('hidden');
+    if (closeButton) closeButton.style.display = 'flex';
   } else {
     // No product selected - show home view
-    if (homeView) homeView.classList.remove('hidden');
-    if (productView) productView.classList.add('hidden');
-    if (productCard) productCard.classList.add('hidden');
+    if (homeGridContainer) homeGridContainer.classList.add('visible');
+    if (productCardContainer) productCardContainer.classList.add('hidden');
     if (closeButton) closeButton.style.display = 'none';
   }
 
@@ -1805,6 +1812,11 @@ function initializeEventListeners() {
     if (e.target.closest('.changelog-icon')) {
       const changelogIcon = e.target.closest('.changelog-icon');
       toggleChangelogIcon(changelogIcon);
+    }
+
+    // Close button to return to home grid
+    if (e.target.closest('#product-close-button')) {
+      deselectProduct();
     }
   });
 
@@ -4570,17 +4582,24 @@ async function handleBuyNow() {
   // Get Polar product data
   const polarProduct = getPolarProductData(productSlug);
 
-  if (!polarProduct || !polarProduct.productId) {
+  if (!polarProduct || (!polarProduct.productId && !polarProduct.checkoutUrl)) {
     console.error('Polar product data not found for:', currentProduct);
     console.error('Product slug used:', productSlug);
     console.error('POLAR_PRODUCTS available:', typeof POLAR_PRODUCTS !== 'undefined');
-    
+
     // Provide more helpful error message
-    const errorMsg = polarProduct 
+    const errorMsg = polarProduct
       ? 'Product checkout configuration error. Please contact support.'
       : `Product "${currentProduct}" is not available for checkout. Please try again later.`;
-    
+
     alert(errorMsg);
+    return;
+  }
+
+  // If product has direct checkout URL (e.g., gift cards), redirect to it
+  if (polarProduct.checkoutUrl) {
+    console.log('Redirecting to checkout URL:', polarProduct.checkoutUrl);
+    window.open(polarProduct.checkoutUrl, '_blank');
     return;
   }
 
@@ -6658,7 +6677,11 @@ window.debugCarousel = function() {
 };
 
 // ============================================================================
-// LANDING POP-UP MODAL
+// ============================================================================
+// WELCOME POP-UP MODAL (Onboarding Pop-up)
+// Name: "Welcome Pop-up" or "Onboarding Pop-up"
+// Purpose: Welcomes new users and explains the two shopping options
+// (individual purchases vs. subscription membership)
 // ============================================================================
 
 const LANDING_POPUP_STORAGE_KEY = 'no3d-tools-landing-popup-dismissed';
@@ -6677,6 +6700,16 @@ function shouldShowLandingPopup() {
     // Clear the dismissal flag if forcing show
     localStorage.removeItem(LANDING_POPUP_STORAGE_KEY);
     return true;
+  }
+  
+  // Date-based logic: Disable welcome pop-up until after December 28
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const dec28 = new Date(currentYear, 11, 28); // Month is 0-indexed, so 11 = December
+  
+  // If before or on December 28, don't show welcome pop-up (gift card pop-up will show instead)
+  if (now <= dec28) {
+    return false;
   }
   
   // Check localStorage to see if user has dismissed the pop-up
@@ -6810,7 +6843,9 @@ if (document.readyState === 'loading') {
 }
 
 /* ============================================================================
-   CHRISTMAS GIFT CARD POPUP - PETRI UI DESIGN
+   GIFT CARD POP-UP MODAL (Holiday Promo Pop-up)
+   Name: "Gift Card Pop-up" or "Holiday Promo Pop-up"
+   Purpose: Promotes gift card options during holiday season (December)
    ============================================================================ */
 
 // Get Christmas popup elements
@@ -6828,10 +6863,19 @@ function shouldShowChristmasPopup() {
     return false;
   }
   
-  // Check if it's Christmas season (December)
+  // Date-based logic: Only show until December 28
   const now = new Date();
+  const currentYear = now.getFullYear();
+  const dec28 = new Date(currentYear, 11, 28); // Month is 0-indexed, so 11 = December
+  
+  // Only show if it's December AND before or on December 28
   const month = now.getMonth(); // 0-11, where 11 = December
-  return month === 11; // Only show in December
+  if (month !== 11) {
+    return false; // Not December
+  }
+  
+  // Show only until December 28 (inclusive)
+  return now <= dec28;
 }
 
 // Show Christmas popup
@@ -6860,25 +6904,36 @@ function hideChristmasPopup() {
 // Handle Christmas popup purchase
 async function handleChristmasPurchase(productHandle) {
   console.log('Christmas gift card purchase:', productHandle);
-  
+
   // Get Polar product data
   const polarProduct = getPolarProductData(productHandle);
-  
-  if (!polarProduct || !polarProduct.productId) {
+
+  if (!polarProduct) {
     console.error('Polar product data not found for:', productHandle);
     alert(`Gift card "${productHandle}" is not available for checkout. Please try again later.`);
     return;
   }
-  
+
   // Hide popup
   hideChristmasPopup();
-  
-  // Open checkout
-  try {
-    await openCheckoutModal([polarProduct.productId]);
-  } catch (error) {
-    console.error('Failed to open checkout:', error);
-    alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+
+  // If we have a direct checkout URL, use it (works in local dev and production)
+  if (polarProduct.checkoutUrl) {
+    console.log('Redirecting to checkout URL:', polarProduct.checkoutUrl);
+    window.open(polarProduct.checkoutUrl, '_blank');
+    return;
+  }
+
+  // Fallback to modal checkout if no direct URL but have productId
+  if (polarProduct.productId) {
+    try {
+      await openCheckoutModal([polarProduct.productId]);
+    } catch (error) {
+      console.error('Failed to open checkout:', error);
+      alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
+    }
+  } else {
+    alert(`Gift card "${productHandle}" is not available for checkout. Please try again later.`);
   }
 }
 
@@ -7006,30 +7061,18 @@ function toggleTheme() {
 // Dark mode: uses white/transparent PNGs (files with -dark suffix)
 function getThemedIconPath(iconPath, theme) {
   if (!iconPath) return iconPath;
-  
-  // Map of icon names to their dark mode equivalents
-  // Regular files (without -dark) are black/transparent for light mode
-  // -dark files are white/transparent for dark mode
-  const iconMap = {
-    'account-icon.png': 'account-icon-dark.png',
-    'account-icon-dark.png': 'account-icon.png',
-    'cart-icon.png': 'cart-icon-dark.png',
-    'cart-icon-dark.png': 'cart-icon.png',
-    'stone-logo.png': 'stone-logo-dark.png',
-    'stone-logo-dark.png': 'stone-logo.png'
-  };
-  
-  // Extract filename from path
+
+  // Extract the base filename (without -dark suffix, extension, and path)
   const filename = iconPath.split('/').pop();
-  
+  // Remove -dark suffix and .png extension to get base name
+  const baseName = filename.replace('-dark.png', '.png').replace('.png', '');
+
   if (theme === 'dark') {
-    // Dark mode: use white/transparent assets (files with -dark suffix)
-    const darkFilename = iconMap[filename] || filename.replace('.png', '-dark.png');
-    return iconPath.replace(filename, darkFilename);
+    // Dark mode: use assets/dark/{baseName}-dark.png
+    return `assets/dark/${baseName}-dark.png`;
   } else {
-    // Light mode: use black/transparent assets (regular files without -dark suffix)
-    const lightFilename = iconMap[filename] || filename.replace('-dark.png', '.png');
-    return iconPath.replace(filename, lightFilename);
+    // Light mode: use assets/light/{baseName}.png
+    return `assets/light/${baseName}.png`;
   }
 }
 
@@ -7038,34 +7081,18 @@ function getThemedIconPath(iconPath, theme) {
 // Dark mode: uses white/transparent PNGs (files with -dark suffix)
 function getThemedLogoPath(logoPath, theme) {
   if (!logoPath) return logoPath;
-  
-  // Map of logo names to their dark mode equivalents
-  // Regular files (without -dark) are black/transparent for light mode
-  // -dark files are white/transparent for dark mode
-  const logoMap = {
-    'no3d-tools.png': 'no3d-tools-dark.png',
-    'no3d-dojo.png': 'no3d-dojo-dark.png',
-    'no3d-prints.png': 'no3d-prints-dark.png',
-    'no3d-code.png': 'no3d-code-dark.png',
-    'no3d-not3s.png': 'no3d-not3s-dark.png',
-    'no3d-tools-dark.png': 'no3d-tools.png',
-    'no3d-dojo-dark.png': 'no3d-dojo.png',
-    'no3d-prints-dark.png': 'no3d-prints.png',
-    'no3d-code-dark.png': 'no3d-code.png',
-    'no3d-not3s-dark.png': 'no3d-not3s.png'
-  };
-  
-  // Extract filename from path
+
+  // Extract the base filename (without -dark suffix, extension, and path)
   const filename = logoPath.split('/').pop();
-  
+  // Remove -dark suffix and .png extension to get base name
+  const baseName = filename.replace('-dark.png', '.png').replace('.png', '');
+
   if (theme === 'dark') {
-    // Dark mode: use white/transparent assets (files with -dark suffix)
-    const darkFilename = logoMap[filename] || filename.replace('.png', '-dark.png');
-    return logoPath.replace(filename, darkFilename);
+    // Dark mode: use assets/dark/{baseName}-dark.png
+    return `assets/dark/${baseName}-dark.png`;
   } else {
-    // Light mode: use black/transparent assets (regular files without -dark suffix)
-    const lightFilename = logoMap[filename] || filename.replace('-dark.png', '.png');
-    return logoPath.replace(filename, lightFilename);
+    // Light mode: use assets/light/{baseName}.png
+    return `assets/light/${baseName}.png`;
   }
 }
 
@@ -7113,9 +7140,9 @@ function updateThemeIcon(theme) {
     headerLogo.onerror = function() {
       console.error(`Failed to load header logo: ${themedLogoPath}`);
       // Try fallback to default tools logo
-      const fallbackPath = theme === 'dark' 
-        ? 'assets/NO3D TOOLS-dark.png'
-        : 'assets/no3d-tools.png';
+      const fallbackPath = theme === 'dark'
+        ? 'assets/dark/no3d-tools-dark.png'
+        : 'assets/light/no3d-tools.png';
       this.src = fallbackPath;
       this.setAttribute('src', fallbackPath);
     };
@@ -7251,4 +7278,40 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeThemeToggle);
 } else {
   initializeThemeToggle();
+}
+
+/* ============================================================================
+   HOME CTA BANNER
+   ============================================================================ */
+
+function initializeHomeCTABanner() {
+  const dismissButton = document.getElementById('christmas-cta-dismiss');
+  const ctaBanner = document.getElementById('christmas-cta-banner');
+
+  if (!dismissButton || !ctaBanner) return;
+
+  // Allow reset via query parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('resetBanner') === 'true') {
+    sessionStorage.removeItem('christmas-cta-dismissed');
+  }
+
+  // Check if banner was previously dismissed (session storage)
+  const isDismissed = sessionStorage.getItem('christmas-cta-dismissed');
+  if (isDismissed === 'true') {
+    ctaBanner.classList.add('hidden');
+    return;
+  }
+
+  dismissButton.addEventListener('click', function() {
+    ctaBanner.classList.add('hidden');
+    sessionStorage.setItem('christmas-cta-dismissed', 'true');
+  });
+}
+
+// Initialize CTA banner when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeHomeCTABanner);
+} else {
+  initializeHomeCTABanner();
 }
