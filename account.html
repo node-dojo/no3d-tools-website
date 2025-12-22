@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - NO3D Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Account Page Styles - Following NO3D Tools Design System */
+        body {
+            background-color: var(--color-stone-gray);
+        }
+        
+        .site-header .logo img {
+            height: 43px;
+            width: 274px;
+            object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            padding: 6px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            display: block;
+            color: rgba(0, 0, 0, 1);
+            font-family: "Visitor TT1 BRK";
+            border-color: rgba(0, 0, 0, 0);
+            border-image: none;
+        }
+        
+        .account-container {
+            max-width: var(--content-max-width);
+            margin: var(--space-xlarge) auto;
+            padding: var(--space-large);
+        }
+        
+        .account-header {
+            margin-bottom: var(--space-large);
+        }
+        
+        .account-header h1 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h1);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-small);
+            line-height: 1.0;
+        }
+        
+        .account-header h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+        
+        .subscription-status,
+        .download-section {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            margin-bottom: var(--space-large);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: var(--space-tiny) var(--space-medium);
+            border-radius: 0;
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            border: 1px solid var(--color-void-black);
+        }
+        
+        .status-badge.active {
+            background: var(--color-lello);
+            color: var(--color-void-black);
+        }
+        
+        .status-badge.expired {
+            background: var(--color-void-black);
+            color: var(--color-paper-white);
+        }
+        
+        .status-badge.inactive {
+            background: var(--color-dark-gray);
+            color: var(--color-paper-white);
+        }
+        
+        .subscription-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-medium);
+            margin: var(--space-medium) 0;
+        }
+        
+        .info-item {
+            padding: var(--space-medium);
+            background: var(--color-stone-gray);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+        }
+        
+        .info-label {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            font-weight: var(--font-mono-weight);
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-tiny);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+        }
+        
+        .info-value {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            color: var(--color-void-black);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+        }
+        
+        .download-button {
+            background-color: var(--color-lello);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-small) var(--space-large);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border-radius: 0;
+            display: inline-block;
+            margin: var(--space-medium) 0;
+            text-decoration: none;
+            line-height: 1.0;
+            width: auto;
+            min-width: auto;
+            height: auto;
+        }
+        
+        .download-button:hover:not(:disabled) {
+            background-color: var(--color-lello-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lello-glow);
+        }
+        
+        .download-button:active:not(:disabled) {
+            background-color: #d4e600;
+            transform: translateY(0);
+        }
+        
+        .download-button:disabled {
+            background: var(--color-stone-gray);
+            color: var(--color-medium-gray);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .update-badge {
+            display: inline-block;
+            padding: var(--space-tiny) var(--space-medium);
+            background: var(--color-lello);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            margin-left: var(--space-medium);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-small);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .account-actions {
+            display: flex;
+            gap: var(--space-medium);
+            flex-wrap: wrap;
+            margin-top: var(--space-medium);
+        }
+        
+        .action-link {
+            color: var(--color-void-black);
+            text-decoration: none;
+            padding: var(--space-tiny) var(--space-medium);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            transition: all var(--transition-normal);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            background: var(--color-paper-white);
+        }
+        
+        .action-link:hover {
+            background: var(--color-lello);
+            color: var(--color-void-black);
+            transform: translateY(-1px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: var(--space-xlarge);
+            color: var(--color-dark-gray);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+        }
+        
+        .error-message {
+            background: var(--color-paper-white);
+            color: var(--color-void-black);
+            padding: var(--space-medium);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            margin: var(--space-medium) 0;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: var(--space-xlarge) var(--space-large);
+        }
+        
+        .login-prompt h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-bottom: var(--space-medium);
+        }
+        
+        .login-prompt p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-medium);
+        }
+        
+        .login-button {
+            background-color: var(--color-lello);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-small) var(--space-large);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            text-decoration: none;
+            display: inline-block;
+            margin-top: var(--space-medium);
+            border-radius: 0;
+            transition: all var(--transition-normal);
+        }
+        
+        .login-button:hover {
+            background-color: var(--color-lello-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lello-glow);
+        }
+        
+        .download-section h2 {
+            font-family: "Visitor TT1 BRK";
+        }
+        
+        .download-section p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-void-black);
+            margin-bottom: var(--space-medium);
+            line-height: var(--line-height-base);
+            padding-top: 7px;
+            padding-bottom: 7px;
+        }
+        
+        #last-download {
+            font-family: "JetBrains Mono";
+            font-size: var(--font-size-small);
+            color: var(--color-dark-gray);
+            margin-top: var(--space-medium);
+        }
+        
+        #download-progress {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-dark-gray);
+            margin-top: var(--space-medium);
+        }
+        
+        .library-files-section {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            margin-bottom: var(--space-large);
+        }
+        
+        .library-files-section h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+        
+        .library-files-section p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-void-black);
+            margin-bottom: var(--space-medium);
+            line-height: var(--line-height-base);
+        }
+        
+        .library-files-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--space-medium);
+            margin-top: var(--space-medium);
+        }
+        
+        .library-file-item {
+            background: var(--color-stone-gray);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-medium);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-small);
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        
+        .library-file-item:hover {
+            background: rgba(240, 255, 0, 0.1);
+            border-color: var(--color-void-black);
+        }
+        
+        .library-file-name {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            line-height: 1.0;
+        }
+        
+        .library-file-path {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-dark-gray);
+            word-break: break-all;
+        }
+        
+        .library-file-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--space-tiny);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-micro);
+            color: var(--color-medium-gray);
+        }
+        
+        .library-files-empty {
+            text-align: center;
+            padding: var(--space-xlarge);
+            color: var(--color-dark-gray);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+        }
+
+        .library-file-download-icon {
+            position: absolute;
+            top: var(--space-small);
+            right: var(--space-small);
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity var(--transition-fast);
+            z-index: 10;
+        }
+
+        .library-file-download-icon:hover {
+            opacity: 1;
+        }
+
+        .library-file-download-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--color-void-black);
+        }
+
+        /* Credit Balance Section */
+        .credit-section {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            margin-bottom: var(--space-large);
+        }
+
+        .credit-section h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+
+        .credit-balance-display {
+            display: flex;
+            align-items: center;
+            gap: var(--space-large);
+            margin-bottom: var(--space-medium);
+        }
+
+        .credit-amount {
+            font-family: var(--font-visitor);
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--color-void-black);
+            line-height: 1.0;
+        }
+
+        .credit-amount.has-credit {
+            color: var(--color-lello);
+            background: var(--color-void-black);
+            padding: var(--space-small) var(--space-medium);
+            border: 1px solid var(--color-void-black);
+        }
+
+        .redeem-section {
+            margin-top: var(--space-medium);
+            padding-top: var(--space-medium);
+            border-top: 1px solid var(--color-stone-gray);
+        }
+
+        .redeem-form {
+            display: flex;
+            gap: var(--space-small);
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .redeem-input {
+            flex: 1;
+            min-width: 200px;
+            padding: var(--space-small) var(--space-medium);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: var(--color-paper-white);
+        }
+
+        .redeem-input::placeholder {
+            text-transform: none;
+            letter-spacing: normal;
+            color: var(--color-medium-gray);
+        }
+
+        .redeem-input:focus {
+            outline: none;
+            border-color: var(--color-lello);
+            box-shadow: 0 0 0 2px rgba(240, 255, 0, 0.3);
+        }
+
+        .redeem-button {
+            background-color: var(--color-void-black);
+            color: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-small) var(--space-large);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border-radius: 0;
+        }
+
+        .redeem-button:hover:not(:disabled) {
+            background-color: var(--color-lello);
+            color: var(--color-void-black);
+        }
+
+        .redeem-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .redeem-message {
+            margin-top: var(--space-small);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            padding: var(--space-small);
+        }
+
+        .redeem-message.success {
+            background: rgba(240, 255, 0, 0.2);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-lello);
+        }
+
+        .redeem-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            color: #cc0000;
+            border: 1px solid #cc0000;
+        }
+
+        .credit-history {
+            margin-top: var(--space-medium);
+        }
+
+        .credit-history h3 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-bottom: var(--space-small);
+        }
+
+        .credit-history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .credit-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-small);
+            border-bottom: 1px solid var(--color-stone-gray);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+        }
+
+        .credit-history-item:last-child {
+            border-bottom: none;
+        }
+
+        .credit-history-amount {
+            font-weight: bold;
+        }
+
+        .credit-history-amount.positive {
+            color: #00aa00;
+        }
+
+        .credit-history-amount.negative {
+            color: #cc0000;
+        }
+
+        .credit-history-date {
+            color: var(--color-medium-gray);
+            font-size: var(--font-size-micro);
+        }
+
+        .credit-history-empty {
+            color: var(--color-medium-gray);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            padding: var(--space-medium);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-left">
+            <a href="index.html" class="logo">
+                <img src="assets/no3d-tools.png" alt="NO3D Tools" class="logo">
+            </a>
+        </div>
+        <div class="header-icons">
+            <a href="subscribe.html" class="action-link" id="subscribe-header-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Subscribe</a>
+            <a href="account.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium); background: var(--color-lello);">Account</a>
+        </div>
+    </header>
+
+    <main class="site-container">
+        <div class="account-container">
+            <div class="account-header">
+                <h1>Welcome, Initiate.</h1>
+                <h2>Behold.. your stuff.</h2>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="loading">
+                Loading account information...
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="error-message" style="display: none;">
+                <strong>Error:</strong> <span id="error-message"></span>
+            </div>
+
+            <!-- Login Prompt -->
+            <div id="login-prompt" class="login-prompt" style="display: none;">
+                <h2>Please Sign In</h2>
+                <p>You need to sign in to access your account.</p>
+                <a href="#" class="login-button" id="login-button">Sign In with Polar</a>
+            </div>
+
+            <!-- Account Content -->
+            <div id="account-content" style="display: none;">
+                <!-- Credit Balance Section -->
+                <div class="credit-section">
+                    <h2>Store Credit</h2>
+                    <div class="credit-balance-display">
+                        <span class="credit-amount" id="credit-balance">$0.00</span>
+                    </div>
+
+                    <div class="redeem-section">
+                        <p style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-dark-gray); margin-bottom: var(--space-small);">
+                            Have a gift card code? Enter it below to add credit to your account.
+                        </p>
+                        <div class="redeem-form">
+                            <input type="text"
+                                   id="gift-card-code"
+                                   class="redeem-input"
+                                   placeholder="DOJO-XXXX-XXXX-XXXX"
+                                   maxlength="19"
+                                   autocomplete="off">
+                            <button class="redeem-button" id="redeem-button" onclick="redeemGiftCard()">
+                                Redeem
+                            </button>
+                        </div>
+                        <div id="redeem-message" class="redeem-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="credit-history" id="credit-history-container" style="display: none;">
+                        <h3>Transaction History</h3>
+                        <div class="credit-history-list" id="credit-history-list">
+                            <!-- Transactions populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscription Status -->
+                <div class="subscription-status">
+                    <h2>Subscription Status</h2>
+                    <div>
+                        <span class="status-badge" id="status-badge">Loading...</span>
+                        <span id="update-badge" class="update-badge" style="display: none;">Update Available</span>
+                    </div>
+                    <div class="subscription-info">
+                        <div class="info-item">
+                            <div class="info-label">Plan</div>
+                            <div class="info-value" id="plan-name">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Status</div>
+                            <div class="info-value" id="subscription-status">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Renews</div>
+                            <div class="info-value" id="renewal-date">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Name</div>
+                            <div class="info-value" id="customer-name">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Email</div>
+                            <div class="info-value" id="customer-email" style="font-size: var(--font-size-base); font-weight: normal; text-transform: none;">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Library Files Section -->
+                <div class="library-files-section">
+                    <h2>Library Files</h2>
+                    <p>Your purchased products and files available for download.</p>
+                    <div id="library-files-list" class="library-files-list">
+                        <div class="loading">Loading library files...</div>
+                    </div>
+                </div>
+
+                <!-- Download Section -->
+                <div class="download-section">
+                    <h2>Library Download</h2>
+                    <p>Download the complete NO3D Tools library as a ZIP file. Includes all products currently available.</p>
+                    <button class="download-button" id="download-all-button" onclick="downloadAllFiles()">
+                        Download All Files
+                    </button>
+                    <div id="download-progress" style="display: none; margin-top: 1rem;">
+                        <p>Preparing download... This may take a moment.</p>
+                    </div>
+                    <div id="last-download" style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+                        Last downloaded: <span id="last-download-date">Never</span>
+                    </div>
+                </div>
+
+                <!-- Account Actions -->
+                <div class="account-actions">
+                    <a href="#" class="action-link" id="billing-link">Manage Billing</a>
+                    <a href="subscribe.html" class="action-link">Change Plan</a>
+                    <a href="#" class="action-link" id="logout-link" onclick="handleLogout(event)">Sign Out</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2025 NO3D Tools. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let customerId = null;
+        let subscriptionData = null;
+        let catalogVersion = null;
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthentication();
+        });
+
+        async function checkAuthentication() {
+            // Check for stored customer ID in session
+            customerId = sessionStorage.getItem('polar_customer_id');
+            
+            if (!customerId) {
+                // Try to get from URL params (if redirected from Polar)
+                const urlParams = new URLSearchParams(window.location.search);
+                customerId = urlParams.get('customer_id');
+                
+                if (customerId) {
+                    sessionStorage.setItem('polar_customer_id', customerId);
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            }
+
+            if (customerId) {
+                await loadAccountData();
+            } else {
+                showLoginPrompt();
+            }
+        }
+
+        function showLoginPrompt() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('login-prompt').style.display = 'block';
+            
+            // Set up login button to redirect to Polar customer portal
+            document.getElementById('login-button').href = getPolarLoginUrl();
+        }
+
+        function getPolarLoginUrl() {
+            // Redirect to Polar customer portal
+            // In production, this would be configured based on your Polar setup
+            const returnUrl = encodeURIComponent(window.location.href);
+            return `https://polar.sh/login?return_to=${returnUrl}`;
+        }
+
+        async function loadAccountData() {
+            try {
+                document.getElementById('loading-state').style.display = 'block';
+                document.getElementById('error-state').style.display = 'none';
+
+                // Load subscription data
+                await loadSubscriptionStatus();
+                
+                // Load catalog version for update detection
+                await loadCatalogVersion();
+                
+                // Load library files
+                await loadLibraryFiles();
+
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('account-content').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading account data:', error);
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('error-state').style.display = 'block';
+                document.getElementById('error-message').textContent = error.message || 'Failed to load account information';
+            }
+        }
+
+        async function loadSubscriptionStatus() {
+            try {
+                // Call API to get subscription status
+                const response = await fetch(`/api/v1/user/entitlements?customer_id=${customerId}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    subscriptionData = data;
+                    updateSubscriptionUI(data);
+                } else if (response.status === 401) {
+                    // Not authenticated, show login
+                    sessionStorage.removeItem('polar_customer_id');
+                    showLoginPrompt();
+                } else {
+                    throw new Error('Failed to load subscription status');
+                }
+            } catch (error) {
+                console.error('Error loading subscription:', error);
+                // For MVP, show mock data if API not available
+                updateSubscriptionUI({
+                    user: {
+                        id: customerId,
+                        email: 'user@example.com',
+                        subscription_tier: 'pro_monthly'
+                    },
+                    entitlements: {
+                        libraries: ['all'],
+                        features: [],
+                        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                    }
+                });
+            }
+        }
+
+        function updateSubscriptionUI(data) {
+            const { user, entitlements } = data;
+            
+            // Update customer name and email
+            const customerName = user.name || user.email?.split('@')[0] || 'User';
+            document.getElementById('customer-name').textContent = customerName;
+            document.getElementById('customer-email').textContent = user.email || '-';
+            
+            // Update status badge
+            const statusBadge = document.getElementById('status-badge');
+            const isActive = entitlements.expires_at && new Date(entitlements.expires_at) > new Date();
+            
+            if (isActive) {
+                statusBadge.textContent = 'Active';
+                statusBadge.className = 'status-badge active';
+                // Hide subscribe button in header if user is subscribed
+                const subscribeLink = document.getElementById('subscribe-header-link');
+                if (subscribeLink) {
+                    subscribeLink.style.display = 'none';
+                }
+            } else {
+                statusBadge.textContent = 'Expired';
+                statusBadge.className = 'status-badge expired';
+            }
+            
+            // Update subscription info
+            document.getElementById('plan-name').textContent = 'Full Access';
+            document.getElementById('subscription-status').textContent = isActive ? 'Active' : 'Expired';
+            
+            if (entitlements.expires_at) {
+                const renewalDate = new Date(entitlements.expires_at);
+                document.getElementById('renewal-date').textContent = renewalDate.toLocaleDateString();
+            }
+        }
+
+        async function loadCatalogVersion() {
+            try {
+                const response = await fetch('/api/v1/catalog/version');
+                if (response.ok) {
+                    const data = await response.json();
+                    catalogVersion = data.version;
+                    checkForUpdates();
+                }
+            } catch (error) {
+                console.error('Error loading catalog version:', error);
+            }
+        }
+
+        async function loadLibraryFiles() {
+            const filesList = document.getElementById('library-files-list');
+            if (!filesList) return;
+
+            try {
+                // Try to fetch library files from API
+                const response = await fetch(`/api/v1/library/files?customer_id=${customerId}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayLibraryFiles(data.files || []);
+                } else {
+                    // If API not available, show mock data for preview
+                    displayLibraryFiles(getMockLibraryFiles());
+                }
+            } catch (error) {
+                console.error('Error loading library files:', error);
+                // Show mock data for preview
+                displayLibraryFiles(getMockLibraryFiles());
+            }
+        }
+
+        function getMockLibraryFiles() {
+            // Mock library files for preview
+            return [
+                { name: 'Dojo_Assets_001', path: 'DojoAssets/Dojo_Assets_001', files: ['asset.blend', 'metadata.json', 'icon.png'], category: 'Assets' },
+                { name: 'Dojo_Assets_002', path: 'DojoAssets/Dojo_Assets_002', files: ['asset.blend', 'metadata.json', 'icon.png'], category: 'Assets' },
+                { name: 'Dojo_Tools_001', path: 'DojoTools/Dojo_Tools_001', files: ['tool.blend', 'metadata.json', 'preview.png'], category: 'Tools' },
+                { name: 'Dojo_Tools_002', path: 'DojoTools/Dojo_Tools_002', files: ['tool.blend', 'metadata.json', 'preview.png'], category: 'Tools' },
+                { name: 'Dojo_Environments_001', path: 'DojoEnvironments/Dojo_Environments_001', files: ['env.blend', 'metadata.json', 'icon.png'], category: 'Environments' },
+                { name: 'Dojo_Materials_001', path: 'DojoMaterials/Dojo_Materials_001', files: ['material.blend', 'metadata.json', 'preview.png'], category: 'Materials' },
+            ];
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function displayLibraryFiles(files) {
+            const filesList = document.getElementById('library-files-list');
+            if (!filesList) return;
+
+            if (!files || files.length === 0) {
+                filesList.innerHTML = '<div class="library-files-empty">No library files available.</div>';
+                return;
+            }
+
+            filesList.innerHTML = files.map((file, index) => {
+                const fileCount = file.files ? file.files.length : 0;
+                const fileTypes = file.files ? file.files.map(f => {
+                    const ext = f.split('.').pop();
+                    return ext.toUpperCase();
+                }).join(', ') : '';
+                
+                const fileName = escapeHtml(file.name || 'Unnamed Product');
+                const filePath = escapeHtml(file.path || '');
+                const fileCategory = escapeHtml(file.category || 'Product');
+                
+                return `
+                    <div class="library-file-item" data-file-path="${filePath}" data-file-name="${fileName}">
+                        <div class="library-file-download-icon" onclick="downloadIndividualFile(event, ${JSON.stringify(filePath)}, ${JSON.stringify(fileName)})" title="Download ${fileName}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                            </svg>
+                        </div>
+                        <div class="library-file-name">${fileName}</div>
+                        <div class="library-file-path">${filePath}</div>
+                        <div class="library-file-meta">
+                            <span>${fileCount} files</span>
+                            <span>${fileCategory}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function checkForUpdates() {
+            const lastDownloadVersion = localStorage.getItem('last_download_version');
+            const lastDownloadDate = localStorage.getItem('last_download_date');
+            
+            if (lastDownloadDate) {
+                document.getElementById('last-download-date').textContent = new Date(lastDownloadDate).toLocaleString();
+            }
+            
+            if (lastDownloadVersion && catalogVersion && parseInt(lastDownloadVersion) < parseInt(catalogVersion)) {
+                document.getElementById('update-badge').style.display = 'inline-block';
+            }
+        }
+
+        async function downloadAllFiles() {
+            if (!customerId) {
+                alert('Please sign in to download files.');
+                return;
+            }
+
+            const downloadButton = document.getElementById('download-all-button');
+            const downloadProgress = document.getElementById('download-progress');
+            
+            // Show progress
+            downloadButton.disabled = true;
+            downloadProgress.style.display = 'block';
+            downloadButton.textContent = 'Preparing Download...';
+
+            try {
+                const response = await fetch(`/api/v1/library/download?customer_id=${customerId}`);
+                
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        throw new Error('Active subscription required to download files.');
+                    } else if (response.status === 400) {
+                        throw new Error('Customer ID required.');
+                    } else {
+                        throw new Error('Failed to download library. Please try again later.');
+                    }
+                }
+
+                // Get the ZIP file as a blob
+                const blob = await response.blob();
+                const catalogVersion = response.headers.get('X-Catalog-Version') || 'latest';
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `no3d-tools-library-${catalogVersion}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                // Update last download info
+                const now = new Date();
+                localStorage.setItem('last_download_date', now.toISOString());
+                localStorage.setItem('last_download_version', catalogVersion);
+                document.getElementById('last-download-date').textContent = now.toLocaleString();
+                
+                // Hide progress
+                downloadProgress.style.display = 'none';
+                downloadButton.textContent = 'Download All Files';
+                downloadButton.disabled = false;
+            } catch (error) {
+                console.error('Error downloading library:', error);
+                alert(error.message || 'Failed to download library. Please try again later.');
+                downloadProgress.style.display = 'none';
+                downloadButton.textContent = 'Download All Files';
+                downloadButton.disabled = false;
+            }
+        }
+
+        async function downloadIndividualFile(event, filePath, fileName) {
+            event.stopPropagation(); // Prevent any parent click handlers
+            
+            if (!customerId) {
+                alert('Please sign in to download files.');
+                return;
+            }
+
+            if (!filePath) {
+                alert('File path not available.');
+                return;
+            }
+
+            // Find the clicked icon element
+            const icon = event.currentTarget;
+            const originalOpacity = icon.style.opacity;
+            
+            // Show loading state
+            icon.style.opacity = '0.3';
+            icon.style.pointerEvents = 'none';
+
+            try {
+                // For MVP: Download individual product as ZIP
+                // In production, this would call a specific endpoint like /api/v1/library/download/product?path=...
+                // For now, we'll create a simple download that uses the path
+                const response = await fetch(`/api/v1/library/download/product?customer_id=${customerId}&path=${encodeURIComponent(filePath)}`);
+                
+                if (!response.ok) {
+                    // If individual product endpoint doesn't exist, fall back to showing a message
+                    if (response.status === 404) {
+                        // Individual product download endpoint not yet implemented
+                        // For now, show a message that this feature is coming
+                        alert(`Individual file download for "${fileName}" is coming soon. Please use "Download All Files" to get all products.`);
+                        icon.style.opacity = originalOpacity || '';
+                        icon.style.pointerEvents = 'auto';
+                        return;
+                    } else if (response.status === 403) {
+                        throw new Error('Active subscription required to download files.');
+                    } else {
+                        throw new Error('Failed to download file. Please try again later.');
+                    }
+                }
+
+                // Get the file as a blob
+                const blob = await response.blob();
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${fileName || filePath.split('/').pop()}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error downloading individual file:', error);
+                // If the endpoint doesn't exist, show a helpful message
+                if (error.message.includes('404') || error.message.includes('Failed to fetch')) {
+                    alert(`Individual file download for "${fileName}" is coming soon. Please use "Download All Files" to get all products.`);
+                } else {
+                    alert(error.message || 'Failed to download file. Please try again later.');
+                }
+            } finally {
+                // Restore icon state
+                icon.style.opacity = originalOpacity || '';
+                icon.style.pointerEvents = 'auto';
+            }
+        }
+
+        function handleLogout(event) {
+            event.preventDefault();
+            sessionStorage.removeItem('polar_customer_id');
+            localStorage.removeItem('last_download_version');
+            localStorage.removeItem('last_download_date');
+            window.location.href = 'index.html';
+        }
+
+        // Set billing link (would be configured based on Polar setup)
+        document.getElementById('billing-link').href = 'https://polar.sh/account';
+
+        // ============================================
+        // Credit Balance Functions
+        // ============================================
+
+        let customerEmail = null;
+
+        async function loadCreditBalance() {
+            if (!customerEmail) {
+                console.log('No customer email available for credit balance');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/credit/balance?email=${encodeURIComponent(customerEmail)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateCreditBalanceUI(data.balance);
+
+                    // Store email in localStorage for checkout flow
+                    localStorage.setItem('customer_email', customerEmail);
+                }
+            } catch (error) {
+                console.error('Error loading credit balance:', error);
+            }
+        }
+
+        function updateCreditBalanceUI(balanceCents) {
+            const balanceElement = document.getElementById('credit-balance');
+            const formattedBalance = `$${(balanceCents / 100).toFixed(2)}`;
+            balanceElement.textContent = formattedBalance;
+
+            if (balanceCents > 0) {
+                balanceElement.classList.add('has-credit');
+            } else {
+                balanceElement.classList.remove('has-credit');
+            }
+        }
+
+        async function loadCreditHistory() {
+            if (!customerEmail) return;
+
+            try {
+                const response = await fetch(`/api/credit/history?email=${encodeURIComponent(customerEmail)}&limit=10`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayCreditHistory(data.transactions);
+                }
+            } catch (error) {
+                console.error('Error loading credit history:', error);
+            }
+        }
+
+        function displayCreditHistory(transactions) {
+            const container = document.getElementById('credit-history-container');
+            const list = document.getElementById('credit-history-list');
+
+            if (!transactions || transactions.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            list.innerHTML = transactions.map(txn => {
+                const isPositive = txn.amount >= 0;
+                const amountClass = isPositive ? 'positive' : 'negative';
+                const date = new Date(txn.createdAt).toLocaleDateString();
+
+                return `
+                    <div class="credit-history-item">
+                        <div>
+                            <div>${escapeHtml(txn.description)}</div>
+                            <div class="credit-history-date">${date}</div>
+                        </div>
+                        <div class="credit-history-amount ${amountClass}">
+                            ${txn.amountFormatted}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function redeemGiftCard() {
+            const codeInput = document.getElementById('gift-card-code');
+            const redeemButton = document.getElementById('redeem-button');
+            const messageDiv = document.getElementById('redeem-message');
+            const code = codeInput.value.trim().toUpperCase();
+
+            if (!code) {
+                showRedeemMessage('Please enter a gift card code', false);
+                return;
+            }
+
+            if (!customerEmail) {
+                showRedeemMessage('Please sign in to redeem gift cards', false);
+                return;
+            }
+
+            // Disable button during request
+            redeemButton.disabled = true;
+            redeemButton.textContent = 'Redeeming...';
+
+            try {
+                const response = await fetch('/api/credit/redeem', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        email: customerEmail,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showRedeemMessage(data.message, true);
+                    codeInput.value = '';
+                    updateCreditBalanceUI(data.newBalance);
+                    await loadCreditHistory();
+                } else {
+                    showRedeemMessage(data.message || data.error || 'Failed to redeem code', false);
+                }
+            } catch (error) {
+                console.error('Error redeeming gift card:', error);
+                showRedeemMessage('An error occurred. Please try again.', false);
+            } finally {
+                redeemButton.disabled = false;
+                redeemButton.textContent = 'Redeem';
+            }
+        }
+
+        function showRedeemMessage(message, isSuccess) {
+            const messageDiv = document.getElementById('redeem-message');
+            messageDiv.textContent = message;
+            messageDiv.className = `redeem-message ${isSuccess ? 'success' : 'error'}`;
+            messageDiv.style.display = 'block';
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Format gift card code input
+        document.getElementById('gift-card-code').addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+            // Add dashes after every 4 characters (DOJO-XXXX-XXXX-XXXX)
+            let formatted = '';
+            for (let i = 0; i < value.length && i < 16; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formatted += '-';
+                }
+                formatted += value[i];
+            }
+
+            e.target.value = formatted;
+        });
+
+        // Update loadAccountData to include credit functions
+        const originalLoadAccountData = loadAccountData;
+        loadAccountData = async function() {
+            await originalLoadAccountData();
+
+            // Get customer email from subscription data
+            if (subscriptionData && subscriptionData.user && subscriptionData.user.email) {
+                customerEmail = subscriptionData.user.email;
+                await loadCreditBalance();
+                await loadCreditHistory();
+            }
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

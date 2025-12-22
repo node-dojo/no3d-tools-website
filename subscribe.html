@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscribe - NO3D Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Subscribe Page Styles - Following NO3D Tools Design System */
+        body {
+            background-color: var(--color-stone-gray);
+        }
+        
+        .site-header .logo img {
+            height: 43px;
+            width: 274px;
+            object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            padding: 6px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            display: block;
+            color: rgba(0, 0, 0, 1);
+            font-family: "Visitor TT1 BRK";
+            border-color: rgba(0, 0, 0, 0);
+            border-image: none;
+        }
+        
+        .subscribe-container {
+            max-width: var(--content-max-width);
+            margin: var(--space-xlarge) auto;
+            padding: var(--space-large);
+        }
+        
+        .subscribe-header {
+            text-align: center;
+            margin-bottom: var(--space-xlarge);
+        }
+        
+        .subscribe-header h1 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h1);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+        
+        .subscribe-header p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-void-black);
+            line-height: var(--line-height-base);
+        }
+        
+        .product-count {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-dark-gray);
+            margin-top: var(--space-medium);
+        }
+        
+        .benefits-section {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            margin-bottom: var(--space-large);
+        }
+        
+        .benefits-section h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-medium);
+            margin-top: var(--space-medium);
+        }
+        
+        .benefit-card {
+            padding: var(--space-medium);
+            background: var(--color-stone-gray);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-small);
+        }
+        
+        .benefit-card h3 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin: 0;
+            line-height: 1.0;
+        }
+        
+        .benefit-card p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-void-black);
+            line-height: var(--line-height-base);
+            margin: 0;
+        }
+        
+        .pricing-section {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            margin-bottom: var(--space-large);
+            text-align: center;
+        }
+        
+        .pricing-section h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+        
+        .pricing-amount {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h1);
+            font-weight: 700;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin: var(--space-medium) 0;
+            line-height: 1.0;
+        }
+        
+        .pricing-period {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-medium);
+        }
+        
+        .product-count-detail {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-dark-gray);
+            margin: var(--space-medium) 0;
+        }
+        
+        .subscribe-button {
+            background-color: var(--color-lello);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-small) var(--space-large);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border-radius: 0;
+            display: inline-block;
+            margin: var(--space-medium) 0;
+            text-decoration: none;
+            line-height: 1.0;
+        }
+        
+        .subscribe-button:hover:not(:disabled) {
+            background-color: var(--color-lello-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lello-glow);
+        }
+        
+        .subscribe-button:active:not(:disabled) {
+            background-color: #d4e600;
+            transform: translateY(0);
+        }
+        
+        .subscribe-button:disabled {
+            background: var(--color-stone-gray);
+            color: var(--color-medium-gray);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .subscribe-footer-note {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-dark-gray);
+            margin-top: var(--space-medium);
+        }
+        
+        .action-link {
+            color: var(--color-void-black);
+            text-decoration: none;
+            padding: var(--space-tiny) var(--space-medium);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            transition: all var(--transition-normal);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            background: var(--color-paper-white);
+        }
+        
+        .action-link:hover {
+            background: var(--color-lello);
+            color: var(--color-void-black);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-left">
+            <a href="index.html" class="logo">
+                <img src="assets/no3d-tools.png" alt="NO3D Tools" class="logo">
+            </a>
+        </div>
+        <div class="header-icons">
+            <a href="subscribe.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium); background: var(--color-lello);">Subscribe</a>
+            <a href="account.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Account</a>
+        </div>
+    </header>
+
+    <main class="site-container">
+        <div class="subscribe-container">
+            <div class="subscribe-header">
+                <h1>Get Full Access</h1>
+                <p>Unlock the entire library of premium Blender assets, nodes, and tools</p>
+                <div class="product-count" id="product-count">
+                    Loading product count...
+                </div>
+            </div>
+
+            <div class="benefits-section">
+                <h2>What You Get</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <h3>Complete Library Access</h3>
+                        <p>Access all current and future products in the NO3D Tools library. New products are automatically included.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>Regular Updates</h3>
+                        <p>Get notified when new products are added. Download updated library anytime with all new content.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>Premium Quality</h3>
+                        <p>High-quality Blender assets, shader nodes, geometry nodes, and utility tools crafted by professionals.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>Priority Support</h3>
+                        <p>Get priority support for any questions or issues. We're here to help you succeed.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>Cancel Anytime</h3>
+                        <p>No long-term commitment. Cancel your subscription anytime, access continues until period ends.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pricing-section">
+                <h2>Simple Monthly Pricing</h2>
+                <div class="pricing-amount" id="monthly-price">$19.99</div>
+                <div class="pricing-period">per month</div>
+                <p class="product-count-detail" id="product-count-detail">Access to <span id="product-count-number">100+</span> products and growing</p>
+                <a href="#" class="subscribe-button" id="subscribe-button" onclick="handleSubscribe(event)">
+                    Subscribe Now
+                </a>
+                <p class="subscribe-footer-note">
+                    Cancel anytime • No hidden fees • Full access while subscribed
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2025 NO3D Tools. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Load subscription configuration
+        let subscriptionConfig = null;
+
+        async function loadSubscriptionConfig() {
+            try {
+                const response = await fetch('/config/subscription-config.json');
+                if (response.ok) {
+                    subscriptionConfig = await response.json();
+                    if (subscriptionConfig.checkoutUrl) {
+                        document.getElementById('subscribe-button').href = subscriptionConfig.checkoutUrl;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading subscription config:', error);
+            }
+        }
+
+        // Fetch product count from GitHub API
+        async function fetchProductCount() {
+            try {
+                const response = await fetch('https://api.github.com/repos/node-dojo/no3d-tools-library/contents');
+                if (response.ok) {
+                    const contents = await response.json();
+                    // Count Dojo* folders (product categories)
+                    const productFolders = contents.filter(item => 
+                        item.type === 'dir' && item.name.startsWith('Dojo')
+                    );
+                    const count = productFolders.length;
+                    
+                    // Update UI
+                    document.getElementById('product-count').textContent = `${count}+ products available`;
+                    document.getElementById('product-count-number').textContent = `${count}+`;
+                } else {
+                    document.getElementById('product-count').textContent = '100+ products available';
+                    document.getElementById('product-count-number').textContent = '100+';
+                }
+            } catch (error) {
+                console.error('Error fetching product count:', error);
+                document.getElementById('product-count').textContent = '100+ products available';
+                document.getElementById('product-count-number').textContent = '100+';
+            }
+        }
+
+        function handleSubscribe(event) {
+            const button = document.getElementById('subscribe-button');
+            if (!subscriptionConfig || !subscriptionConfig.checkoutUrl) {
+                event.preventDefault();
+                alert('Subscription checkout is not configured. Please contact support.');
+                return false;
+            }
+            // Button href will handle navigation
+            return true;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSubscriptionConfig();
+            fetchProductCount();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

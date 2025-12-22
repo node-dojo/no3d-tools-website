@@ -250,9 +250,8 @@ Perfect for makers, designers, and educators, Dojo Print Viz helps optimize mode
 };
 
 // Current selected product
-// Default to a product that exists in POLAR_PRODUCTS
-// Available mapped products: 'dojo-mesh-repair', 'dojo-print-vizv45', 'dojo-squircle-v45obj', 'dojosquircle-v45', 'print-bed-previewobj'
-let currentProduct = 'dojo-mesh-repair';
+// Default to null (no product selected on page load - show home grid)
+let currentProduct = null;
 
 // 3-Tier Sidebar State
 let productDataByType = {};
@@ -314,14 +313,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateHeaderLogo('tools');
     // Set Tools as default expanded type
     expandProductType('tools');
-    // Select first product if available
-    const firstProductId = Object.keys(products)[0];
-    if (firstProductId) {
-      currentProduct = firstProductId;
-      await updateProductDisplay(currentProduct);
-      updateIconGrid();
-    }
-    
+    // Show home grid on initial load (no product selected)
+    renderHomeGrid();
+    updateViewState();
+
     // Start periodic price refresh
     startPriceRefresh();
   } catch (error) {
@@ -338,13 +333,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeSidebarEventListeners();
     updateHeaderLogo('tools');
     expandProductType('tools');
-    const firstProductId = Object.keys(products)[0];
-    if (firstProductId) {
-      currentProduct = firstProductId;
-      await updateProductDisplay(currentProduct);
-      updateIconGrid();
-    }
-    
+    // Show home grid on initial load (no product selected)
+    renderHomeGrid();
+    updateViewState();
+
     // Start periodic price refresh even with fallback data
     startPriceRefresh();
   }
@@ -703,27 +695,27 @@ async function loadProductsFromJSON() {
 const productTypeDefinitions = {
   tools: {
     label: 'TOOLS',
-    logo: 'assets/NO3D TOOLS.png',
+    logo: 'assets/no3d-tools.png',
     description: 'Advanced 3D modeling enhancements for Blender users designing real world products, built with 3D printing and laser cutting in mind!'
   },
   tutorials: {
     label: 'TUTORIALS',
-    logo: 'assets/NO3D DOJO.png',
+    logo: 'assets/no3d-dojo.png',
     description: 'Welcome to Node Dojo! Here you\'ll find tutorials on Blender and Geometry nodes. The Node Dojo Modules are famous for being interactive video game style tutorials built right into Blender.'
   },
   prints: {
     label: 'PRINTS',
-    logo: 'assets/NO3D PRINTS.png',
+    logo: 'assets/no3d-prints.png',
     description: 'Here are downloadable 3D print, CNC and laser cut files that you can use to build your own projects.'
   },
   apps: {
     label: 'APPS',
-    logo: 'assets/NO3D CODE.png',
+    logo: 'assets/no3d-code.png',
     description: 'Here are some vibe coded apps and Blender Add-ons to enhance your design workflows and make NO3D Tools even more usable.'
   },
   docs: {
     label: 'DOCS/BLOG',
-    logo: 'assets/NO3D NOT3S.png',
+    logo: 'assets/no3d-not3s.png',
     description: 'Some documentation, some musings.'
   }
 };
@@ -1430,8 +1422,8 @@ function updateHeaderLogo(typeKey) {
     console.error(`Failed to load header logo: ${finalLogoPath}`);
     // Try fallback to default tools logo
     const fallbackPath = currentTheme === 'dark' 
-      ? '/assets/NO3D TOOLS-dark.png'
-      : '/assets/NO3D TOOLS.png';
+      ? '/assets/no3d-tools-dark.png'
+      : '/assets/no3d-tools.png';
     this.src = fallbackPath;
     this.setAttribute('src', fallbackPath);
   };
@@ -1705,6 +1697,85 @@ function updateIconGrid() {
   console.log(`Icon grid updated: ${productsToShow.length} products displayed (Type: ${activeProductType || 'all'}, Groups: ${expandedProductGroups.size})`);
 }
 
+// Render home grid when no product is selected
+function renderHomeGrid() {
+  const homeGrid = document.getElementById('home-grid');
+  if (!homeGrid) return;
+
+  // Clear existing grid
+  homeGrid.innerHTML = '';
+
+  // Filter products based on active Product Type
+  let filteredProducts = {};
+  if (activeProductType && productDataByType[activeProductType]) {
+    filteredProducts = productDataByType[activeProductType];
+  } else {
+    filteredProducts = products;
+  }
+
+  // Convert to array and sort by name
+  const productsArray = Object.keys(filteredProducts).map(productId => ({
+    id: productId,
+    ...filteredProducts[productId]
+  })).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  // Create grid items
+  productsArray.forEach(product => {
+    const gridItem = document.createElement('div');
+    gridItem.className = 'home-grid-item';
+    gridItem.dataset.productId = product.id;
+
+    // Add click handler
+    gridItem.addEventListener('click', async () => {
+      await selectProduct(product.id);
+    });
+
+    // Create image
+    const img = document.createElement('img');
+    img.src = product.icon || product.thumbnail || '';
+    img.alt = product.name || product.title || '';
+    img.loading = 'lazy';
+    img.onerror = function() {
+      this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjBGMEYwIi8+Cjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+Cjwvc3ZnPg==';
+    };
+
+    // Create title
+    const title = document.createElement('div');
+    title.className = 'home-grid-item-title';
+    title.textContent = product.name || product.title || 'Untitled';
+
+    gridItem.appendChild(img);
+    gridItem.appendChild(title);
+    homeGrid.appendChild(gridItem);
+  });
+
+  console.log(`Home grid rendered: ${productsArray.length} products`);
+}
+
+// Update view state based on whether a product is selected
+function updateViewState() {
+  const homeView = document.getElementById('home-view');
+  const productView = document.getElementById('product-view');
+  const productCard = document.querySelector('.product-card');
+  const closeButton = document.getElementById('close-product-button');
+
+  if (currentProduct) {
+    // Product selected - show product view
+    if (homeView) homeView.classList.add('hidden');
+    if (productView) productView.classList.remove('hidden');
+    if (productCard) productCard.classList.remove('hidden');
+    if (closeButton) closeButton.style.display = 'block';
+  } else {
+    // No product selected - show home view
+    if (homeView) homeView.classList.remove('hidden');
+    if (productView) productView.classList.add('hidden');
+    if (productCard) productCard.classList.add('hidden');
+    if (closeButton) closeButton.style.display = 'none';
+  }
+
+  console.log(`View state updated: ${currentProduct ? 'product view' : 'home view'}`);
+}
+
 // Set up event listeners
 function initializeEventListeners() {
   // Use event delegation for dynamically generated content
@@ -1789,6 +1860,16 @@ async function selectProduct(productId) {
   updateButtonVisibility(productId);
   await updateProductDisplay(productId);
   updateActiveStates(productId);
+  updateViewState();
+}
+
+// Deselect current product and return to home view
+function deselectProduct() {
+  currentProduct = null;
+  updateActiveStates(null);
+  updateViewState();
+  renderHomeGrid();
+  console.log('Product deselected, returning to home view');
 }
 
 // Update button visibility based on subscriber status
@@ -4625,22 +4706,62 @@ async function openCheckoutModal(productIds) {
       }, 2000);
       return;
     } else {
-      // Call serverless function to create checkout session
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productIds: productIds
-        })
-      });
+      // Check if customer has credit to apply
+      const customerEmail = localStorage.getItem('customer_email');
+      let creditBalance = 0;
+
+      if (customerEmail) {
+        try {
+          const creditResponse = await fetch(`/api/credit/balance?email=${encodeURIComponent(customerEmail)}`);
+          if (creditResponse.ok) {
+            const creditData = await creditResponse.json();
+            creditBalance = creditData.balance || 0;
+            console.log(`Customer credit balance: $${(creditBalance / 100).toFixed(2)}`);
+          }
+        } catch (creditError) {
+          console.log('Could not fetch credit balance:', creditError);
+        }
+      }
+
+      let response;
+
+      // If customer has credit, use apply-to-checkout endpoint
+      if (creditBalance > 0 && customerEmail && productIds.length === 1) {
+        console.log('Using credit checkout endpoint');
+        response = await fetch('/api/credit/apply-to-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: customerEmail,
+            productId: productIds[0],
+            successUrl: window.location.origin + '/success'
+          })
+        });
+      } else {
+        // Call regular serverless function to create checkout session
+        response = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productIds: productIds
+          })
+        });
+      }
 
       // Check if response is JSON before parsing
       const contentType = response.headers.get('content-type');
-      
+
       if (contentType && contentType.includes('application/json')) {
         data = await response.json();
+
+        // Log if credit was applied
+        if (data.creditApplied && data.creditApplied > 0) {
+          console.log(`Credit applied: $${(data.creditApplied / 100).toFixed(2)}`);
+        }
       } else {
         const textResponse = await response.text();
         console.error('Non-JSON response from API:', textResponse);
@@ -4737,6 +4858,12 @@ async function openCheckoutModal(productIds) {
               closeCheckoutModalUI();
               return;
             }
+          }
+
+          // Store customer email for future credit checking
+          if (customerEmail) {
+            localStorage.setItem('customer_email', customerEmail);
+            console.log('Customer email stored for credit system:', customerEmail);
           }
 
           // Verify purchase and get download URLs
@@ -6074,6 +6201,13 @@ function updateHorizontalIconGrid() {
     return;
   }
 
+  // Hide grid when no product is selected (showing home grid instead)
+  if (!currentProduct) {
+    console.log('❌ No product selected, hiding horizontal grid');
+    container.classList.remove('visible');
+    return;
+  }
+
   console.log('📊 activeProductType:', activeProductType);
   console.log('📊 productDataByType:', Object.keys(productDataByType));
 
@@ -6879,10 +7013,10 @@ function getThemedIconPath(iconPath, theme) {
   const iconMap = {
     'account-icon.png': 'account-icon-dark.png',
     'account-icon-dark.png': 'account-icon.png',
-    'cart icon.png': 'cart icon-dark.png',
-    'cart icon-dark.png': 'cart icon.png',
-    'stone logo.png': 'stone logo-dark.png',
-    'stone logo-dark.png': 'stone logo.png'
+    'cart-icon.png': 'cart-icon-dark.png',
+    'cart-icon-dark.png': 'cart-icon.png',
+    'stone-logo.png': 'stone-logo-dark.png',
+    'stone-logo-dark.png': 'stone-logo.png'
   };
   
   // Extract filename from path
@@ -6909,16 +7043,16 @@ function getThemedLogoPath(logoPath, theme) {
   // Regular files (without -dark) are black/transparent for light mode
   // -dark files are white/transparent for dark mode
   const logoMap = {
-    'NO3D TOOLS.png': 'NO3D TOOLS-dark.png',
-    'NO3D DOJO.png': 'NO3D DOJO-dark.png',
-    'NO3D PRINTS.png': 'NO3D PRINTS-dark.png',
-    'NO3D CODE.png': 'NO3D CODE-dark.png',
-    'NO3D NOT3S.png': 'NO3D NOT3S-dark.png',
-    'NO3D TOOLS-dark.png': 'NO3D TOOLS.png',
-    'NO3D DOJO-dark.png': 'NO3D DOJO.png',
-    'NO3D PRINTS-dark.png': 'NO3D PRINTS.png',
-    'NO3D CODE-dark.png': 'NO3D CODE.png',
-    'NO3D NOT3S-dark.png': 'NO3D NOT3S.png'
+    'no3d-tools.png': 'no3d-tools-dark.png',
+    'no3d-dojo.png': 'no3d-dojo-dark.png',
+    'no3d-prints.png': 'no3d-prints-dark.png',
+    'no3d-code.png': 'no3d-code-dark.png',
+    'no3d-not3s.png': 'no3d-not3s-dark.png',
+    'no3d-tools-dark.png': 'no3d-tools.png',
+    'no3d-dojo-dark.png': 'no3d-dojo.png',
+    'no3d-prints-dark.png': 'no3d-prints.png',
+    'no3d-code-dark.png': 'no3d-code.png',
+    'no3d-not3s-dark.png': 'no3d-not3s.png'
   };
   
   // Extract filename from path
@@ -6961,29 +7095,27 @@ function updateThemeIcon(theme) {
       const currentSrc = headerLogo.src;
       logoPath = currentSrc.includes('assets/') 
         ? currentSrc.substring(currentSrc.indexOf('assets/'))
-        : 'assets/NO3D TOOLS.png';
+        : 'assets/no3d-tools.png';
     }
     
     // Fallback to default if still no path
     if (!logoPath) {
-      logoPath = 'assets/NO3D TOOLS.png';
+      logoPath = 'assets/no3d-tools.png';
     }
     
     // Convert to theme-appropriate version
     const themedLogoPath = getThemedLogoPath(logoPath, theme);
-    // Ensure path starts with / for absolute path from root
-    const finalLogoPath = themedLogoPath.startsWith('/') ? themedLogoPath : '/' + themedLogoPath;
-    
-    headerLogo.src = finalLogoPath;
-    headerLogo.setAttribute('src', finalLogoPath);
+    // Use relative path (no leading /) to work in all deployment scenarios
+    headerLogo.src = themedLogoPath;
+    headerLogo.setAttribute('src', themedLogoPath);
     
     // Add error handler to debug loading issues
     headerLogo.onerror = function() {
-      console.error(`Failed to load header logo: ${finalLogoPath}`);
+      console.error(`Failed to load header logo: ${themedLogoPath}`);
       // Try fallback to default tools logo
       const fallbackPath = theme === 'dark' 
-        ? '/assets/NO3D TOOLS-dark.png'
-        : '/assets/NO3D TOOLS.png';
+        ? 'assets/NO3D TOOLS-dark.png'
+        : 'assets/no3d-tools.png';
       this.src = fallbackPath;
       this.setAttribute('src', fallbackPath);
     };
@@ -7006,9 +7138,14 @@ function updateThemeIcon(theme) {
     }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
-    const finalIconPath = themedIconPath.startsWith('/') ? themedIconPath : '/' + themedIconPath;
-    accountIcon.src = finalIconPath;
-    accountIcon.setAttribute('src', finalIconPath);
+    // Use relative path (no leading /) to work in all deployment scenarios
+    accountIcon.src = themedIconPath;
+    accountIcon.setAttribute('src', themedIconPath);
+    
+    // Add error handler
+    accountIcon.onerror = function() {
+      console.error(`Failed to load account icon: ${themedIconPath}`);
+    };
   }
   
   // Update cart icon
@@ -7020,17 +7157,22 @@ function updateThemeIcon(theme) {
       const currentSrc = cartIcon.src;
       iconPath = currentSrc.includes('assets/') 
         ? currentSrc.substring(currentSrc.indexOf('assets/'))
-        : 'assets/cart icon.png';
+        : 'assets/cart-icon.png';
     }
     
     if (!iconPath) {
-      iconPath = 'assets/cart icon.png';
+      iconPath = 'assets/cart-icon.png';
     }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
-    const finalIconPath = themedIconPath.startsWith('/') ? themedIconPath : '/' + themedIconPath;
-    cartIcon.src = finalIconPath;
-    cartIcon.setAttribute('src', finalIconPath);
+    // Use relative path (no leading /) to work in all deployment scenarios
+    cartIcon.src = themedIconPath;
+    cartIcon.setAttribute('src', themedIconPath);
+    
+    // Add error handler
+    cartIcon.onerror = function() {
+      console.error(`Failed to load cart icon: ${themedIconPath}`);
+    };
   }
   
   // Update footer logo (stone logo)
@@ -7042,18 +7184,52 @@ function updateThemeIcon(theme) {
       const currentSrc = footerLogo.src;
       iconPath = currentSrc.includes('assets/') 
         ? currentSrc.substring(currentSrc.indexOf('assets/'))
-        : 'assets/stone logo.png';
+        : 'assets/stone-logo.png';
     }
     
     if (!iconPath) {
-      iconPath = 'assets/stone logo.png';
+      iconPath = 'assets/stone-logo.png';
     }
     
     const themedIconPath = getThemedIconPath(iconPath, theme);
-    const finalIconPath = themedIconPath.startsWith('/') ? themedIconPath : '/' + themedIconPath;
-    footerLogo.src = finalIconPath;
-    footerLogo.setAttribute('src', finalIconPath);
+    // Use relative path (no leading /) to work in all deployment scenarios
+    footerLogo.src = themedIconPath;
+    footerLogo.setAttribute('src', themedIconPath);
+    
+    // Add error handler
+    footerLogo.onerror = function() {
+      console.error(`Failed to load footer logo: ${themedIconPath}`);
+    };
   }
+  
+  // Update blender icon (member CTA button)
+  const blenderIcons = document.querySelectorAll('.member-cta-icon, .mobile-member-cta-icon');
+  blenderIcons.forEach(blenderIcon => {
+    if (blenderIcon) {
+      let iconPath = blenderIcon.getAttribute('src');
+      
+      if (!iconPath && blenderIcon.src) {
+        const currentSrc = blenderIcon.src;
+        iconPath = currentSrc.includes('assets/') 
+          ? currentSrc.substring(currentSrc.indexOf('assets/'))
+          : 'assets/blender_bit_icon.png';
+      }
+      
+      if (!iconPath) {
+        iconPath = 'assets/blender_bit_icon.png';
+      }
+      
+      // Blender icon doesn't have dark mode variant, so use same icon
+      // Use relative path (no leading /) to work in all deployment scenarios
+      blenderIcon.src = iconPath;
+      blenderIcon.setAttribute('src', iconPath);
+      
+      // Add error handler
+      blenderIcon.onerror = function() {
+        console.error(`Failed to load blender icon: ${iconPath}`);
+      };
+    }
+  });
 }
 
 function initializeThemeToggle() {

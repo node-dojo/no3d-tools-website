@@ -90,7 +90,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="header-left">
-                <img src="assets/NO3D TOOLS.png" alt="NO3D TOOLS" class="logo" id="header-logo">
+                <img src="assets/no3d-tools.png" alt="NO3D TOOLS" class="logo" id="header-logo">
             </div>
             <div class="header-icons">
                 <button class="header-icon theme-toggle-button" id="theme-toggle-button" aria-label="Toggle dark mode">
@@ -101,7 +101,7 @@
                     <span class="member-cta-text">BECOME A MEMBER / GET ALL TOOLS, TUTORIALS, ASSETS</span>
                 </a>
                 <div class="cart-icon-wrapper" id="cart-icon-wrapper">
-                    <img src="assets/cart icon.png" alt="Shopping Cart" class="cart-icon-image" id="cart-icon">
+                    <img src="assets/cart-icon.png" alt="Shopping Cart" class="cart-icon-image" id="cart-icon">
                     <span class="cart-badge" id="cart-badge">0</span>
                 </div>
                 <div class="account-menu-wrapper" id="account-menu-wrapper">
@@ -135,6 +135,13 @@
 
         <!-- Center Product Card - JSX Component Structure -->
         <main class="product-card">
+            <!-- Home Grid (shown when no product selected) -->
+            <div class="home-grid-container" id="home-grid-container">
+                <div class="home-grid" id="home-grid">
+                    <!-- Product thumbnails will be populated by JavaScript -->
+                </div>
+            </div>
+
             <div class="product-card-container">
                 <!-- Left Section: Product Image and Details -->
                 <div class="product-left-section">
@@ -165,6 +172,7 @@
                         
                         <div class="product-header-row">
                             <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
+                            <button class="product-close-button" id="product-close-button" aria-label="Close product view">×</button>
                             <div class="product-price-wrapper">
                                 <div class="product-price" id="product-price">PRICE: $7.99</div>
                                 <button class="download-button" id="download-button" style="display: none;">DOWNLOAD</button>
@@ -259,7 +267,7 @@
     <footer class="footer">
         <span class="footer-text" id="footer-text">Cmd/ctrl + K to Search</span>
         <span class="footer-text" id="footer-commit">Commit: <span id="commit-hash">-</span></span>
-        <img src="assets/stone logo.png" alt="Stone Logo" class="footer-logo">
+        <img src="assets/stone-logo.png" alt="Stone Logo" class="footer-logo">
     </footer>
 
     <!-- Command Palette Search Modal -->
