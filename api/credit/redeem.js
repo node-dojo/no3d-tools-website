@@ -55,11 +55,23 @@ export default async function handler(req, res) {
       return res.status(400).json(result);
     }
 
-    // Get updated balance for response
+    // Handle membership type - return discount code
+    if (result.type === 'membership') {
+      return res.status(200).json({
+        success: true,
+        type: 'membership',
+        message: result.message,
+        discountCode: result.discountCode,
+        months: result.months,
+      });
+    }
+
+    // Handle credit type - return balance info
     const { balance } = await getBalance(email);
 
     return res.status(200).json({
       success: true,
+      type: 'credit',
       message: result.message,
       valueAdded: result.valueAdded,
       valueAddedFormatted: `$${(result.valueAdded / 100).toFixed(2)}`,

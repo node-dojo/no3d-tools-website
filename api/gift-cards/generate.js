@@ -18,10 +18,23 @@ import crypto from 'crypto';
 import { storeGiftCard, getGiftCard, redeemGiftCard } from '../../lib/credit.js';
 
 // Gift card product IDs and their values (in cents for Polar API)
+// type: 'credit' - adds value to customer credit balance
+// type: 'membership' - creates a Polar discount code for N months free subscription
 const GIFT_CARD_PRODUCTS = {
-  'c36ce649-f55f-4901-a8a0-339ca41deb27': { valueCents: 3300, valueDollars: 33, name: 'Christmas Gift Card $33' },
-  '7d677970-f244-48fa-aba9-e1e91c977a88': { valueCents: 11100, valueDollars: 111, name: 'Christmas Gift Card $111' },
-  'ea5c5645-eea2-46b0-ae23-86061fd432a7': { valueCents: 22200, valueDollars: 222, name: 'Christmas Gift Card $222' },
+  // Credit-based gift cards (add to balance)
+  'c36ce649-f55f-4901-a8a0-339ca41deb27': { type: 'credit', valueCents: 3300, valueDollars: 33, name: 'Christmas Gift Card $33' },
+  '7d677970-f244-48fa-aba9-e1e91c977a88': { type: 'credit', valueCents: 11100, valueDollars: 111, name: 'Christmas Gift Card $111' },
+  'ea5c5645-eea2-46b0-ae23-86061fd432a7': { type: 'credit', valueCents: 22200, valueDollars: 222, name: 'Christmas Gift Card $222' },
+  // Membership gift (creates Polar discount for free months)
+  '153df206-7d4e-4ec2-8044-87c4eeb5cceb': {
+    type: 'membership',
+    months: 3,
+    valueCents: 3300,
+    valueDollars: 33,
+    name: '3 Month Membership Gift',
+    // The subscription product this discount applies to
+    subscriptionProductId: 'abee39f0-c7d8-4e08-b28b-01a49cd77ec2', // NO3D Membership
+  },
 };
 
 /**
@@ -75,15 +88,22 @@ export async function createGiftCardDiscount(productId, orderId, purchaserEmail)
 
   try {
     // Store the gift card in Vercel KV for later redemption
-    await storeGiftCard(code, giftCardDetails.valueCents, purchaserEmail, orderId);
+    // Pass type-specific options for membership gifts
+    await storeGiftCard(code, giftCardDetails.valueCents, purchaserEmail, orderId, {
+      type: giftCardDetails.type || 'credit',
+      months: giftCardDetails.months || null,
+      subscriptionProductId: giftCardDetails.subscriptionProductId || null,
+    });
 
-    console.log(`🎁 Gift card stored: ${code} for $${giftCardDetails.valueDollars}`);
+    console.log(`🎁 Gift card stored: ${code} for $${giftCardDetails.valueDollars} (type: ${giftCardDetails.type || 'credit'})`);
 
     return {
       code,
       value: giftCardDetails.valueDollars,
       valueCents: giftCardDetails.valueCents,
       name: giftCardDetails.name,
+      type: giftCardDetails.type || 'credit',
+      months: giftCardDetails.months || null,
       orderId,
       purchaserEmail,
       createdAt: new Date().toISOString(),
