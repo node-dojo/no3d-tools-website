@@ -466,14 +466,20 @@ async function loadProductsFromJSON() {
         // Create product ID from handle
         const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-        // Get thumbnail from metafields or use local icon
+        // Get thumbnail from JSON thumbnail_image field, metafields, or use local icon
         // Product folder name matches the JSON filename (without .json extension)
         const productFolderName = fileName.replace('.json', '');
         let thumbnail = null;
-        
-        // Determine thumbnail filename
+
+        // Priority 1: Check for thumbnail_image field (set by co-aug dashboard)
+        if (jsonData.thumbnail_image && jsonData.hosted_media && jsonData.hosted_media[jsonData.thumbnail_image]) {
+          thumbnail = jsonData.hosted_media[jsonData.thumbnail_image];
+          console.log(`📷 Using thumbnail_image for ${productId}: ${jsonData.thumbnail_image}`);
+        }
+
+        // Priority 2: Check metafields for thumbnail
         let thumbnailFileName = `icon_${productFolderName}.png`;
-        if (jsonData.metafields) {
+        if (!thumbnail && jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
             thumbnailFileName = thumbnailField.value || thumbnailFileName;
@@ -483,8 +489,8 @@ async function loadProductsFromJSON() {
             }
           }
         }
-        
-        // Use helper function to resolve media URL (checks hosted_media, then local)
+
+        // Priority 3: Use helper function to resolve media URL (checks hosted_media, then local)
         if (!thumbnail) {
           const fallbackUrl = jsonData.metafields?.find(f => f.key === 'thumbnail')
             ? getProductImageUrl(thumbnailFileName)
@@ -1070,12 +1076,18 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
         // Create product ID from handle or title
         const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-        // Find thumbnail/icon image - prioritize hosted URLs
+        // Find thumbnail/icon image - prioritize thumbnail_image from dashboard, then hosted URLs
         let thumbnail = null;
-        
-        // Determine thumbnail filename
+
+        // Priority 1: Check for thumbnail_image field (set by co-aug dashboard)
+        if (jsonData.thumbnail_image && jsonData.hosted_media && jsonData.hosted_media[jsonData.thumbnail_image]) {
+          thumbnail = jsonData.hosted_media[jsonData.thumbnail_image];
+          console.log(`📷 Using thumbnail_image for ${productId}: ${jsonData.thumbnail_image}`);
+        }
+
+        // Priority 2: Determine thumbnail filename from metafields
         let thumbnailFileName = `icon_${dir.name}.png`;
-        if (jsonData.metafields) {
+        if (!thumbnail && jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
             thumbnailFileName = thumbnailField.value || thumbnailFileName;
@@ -1085,12 +1097,12 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
             }
           }
         }
-        
-        // Use helper function to resolve media URL (checks hosted_media, then local)
+
+        // Priority 3: Use helper function to resolve media URL (checks hosted_media, then local)
         if (!thumbnail) {
           // Build fallback URL - try GitHub files first, then local
           let fallbackUrl = null;
-          
+
           // Try common icon/thumbnail filename patterns from GitHub
           const possibleIconNames = [
             `icon_${dir.name}.png`,
@@ -1102,7 +1114,7 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
             'preview.png'
           ];
 
-          const iconFile = dirContents.find(item => 
+          const iconFile = dirContents.find(item =>
             item.type === 'file' && possibleIconNames.includes(item.name)
           );
 
@@ -1114,11 +1126,11 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
               fallbackUrl = getProductImageUrl(thumbnailField.value);
             }
           }
-          
+
           if (!fallbackUrl) {
             fallbackUrl = getProductIconUrl(dir.name);
           }
-          
+
           thumbnail = resolveMediaUrl(jsonData, thumbnailFileName, fallbackUrl);
         }
         
@@ -2846,79 +2858,95 @@ async function loadProductCardAssets(productId) {
       console.log(`   Product: ${folderName}`);
 
       // When useLocalAssets is true, load media from JSON (Cloudinary URLs)
-      // Priority: carousel_media (curated selection) > hosted_media (all media)
+      // Priority: main_image first > carousel_media (curated selection) > hosted_media (all media)
+      // Respect: excluded_carousel_media (files to never show)
       if (product.jsonData) {
         const hostedMedia = product.jsonData.hosted_media || {};
         const carouselMedia = product.jsonData.carousel_media || [];
+        const excludedMedia = product.jsonData.excluded_carousel_media || [];
+        const mainImage = product.jsonData.main_image;
 
         const supportedFormats = {
           image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
           video: ['mp4', 'webm', 'ogg', 'mov']
         };
 
-        // If carousel_media is defined, only load those specific files in order
+        // Helper to check if file is excluded
+        const isExcluded = (filename) => excludedMedia.includes(filename);
+
+        // Helper to add media asset
+        const addMediaAsset = (filename, url, isFirst = false) => {
+          if (isExcluded(filename)) {
+            console.log(`🚫 Skipping excluded media: ${filename}`);
+            return false;
+          }
+
+          const ext = filename.split('.').pop().toLowerCase();
+          let mediaType = 'other';
+
+          if (supportedFormats.image.includes(ext)) {
+            mediaType = 'image';
+          } else if (supportedFormats.video.includes(ext)) {
+            mediaType = 'video';
+          }
+
+          if (mediaType !== 'other') {
+            const asset = {
+              type: mediaType,
+              url: url,
+              format: ext,
+              name: filename,
+              isIcon: false,
+              isMainImage: isFirst
+            };
+
+            if (isFirst) {
+              cardAssets.unshift(asset);
+              console.log(`🌟 Added main image first: ${filename}`);
+            } else {
+              cardAssets.push(asset);
+              console.log(`📦 Added carousel media asset: ${filename} (${mediaType})`);
+            }
+            return true;
+          }
+          return false;
+        };
+
+        // Step 1: Add main_image first if defined
+        let mainImageAdded = false;
+        if (mainImage && hostedMedia[mainImage]) {
+          mainImageAdded = addMediaAsset(mainImage, hostedMedia[mainImage], true);
+        }
+
+        // Step 2: If carousel_media is defined, load those specific files in order
         if (carouselMedia.length > 0) {
           console.log(`📦 Loading carousel assets from carousel_media (${carouselMedia.length} items)`);
 
           for (const filename of carouselMedia) {
-            // Get the URL from hosted_media
+            // Skip if already added as main image
+            if (mainImageAdded && filename === mainImage) continue;
+
             const url = hostedMedia[filename];
             if (!url) {
               console.warn(`⚠️ Carousel media file not found in hosted_media: ${filename}`);
               continue;
             }
 
-            const ext = filename.split('.').pop().toLowerCase();
-            let mediaType = 'other';
-
-            if (supportedFormats.image.includes(ext)) {
-              mediaType = 'image';
-            } else if (supportedFormats.video.includes(ext)) {
-              mediaType = 'video';
-            }
-
-            if (mediaType !== 'other') {
-              cardAssets.push({
-                type: mediaType,
-                url: url,
-                format: ext,
-                name: filename,
-                isIcon: false
-              });
-              console.log(`📦 Added carousel media asset: ${filename} (${mediaType})`);
-            }
+            addMediaAsset(filename, url);
           }
           console.log(`📊 Loaded ${cardAssets.length} assets from carousel_media`);
         }
-        // Fallback: load all non-icon media from hosted_media
+        // Fallback: load all non-icon, non-excluded media from hosted_media
         else if (Object.keys(hostedMedia).length > 0) {
           console.log(`📦 Loading carousel assets from hosted_media (no carousel_media defined)`);
 
           for (const [filename, url] of Object.entries(hostedMedia)) {
+            // Skip if already added as main image
+            if (mainImageAdded && filename === mainImage) continue;
             // Skip icon files - they're added separately
-            if (filename.toLowerCase().startsWith('icon_')) {
-              continue;
-            }
+            if (filename.toLowerCase().startsWith('icon_')) continue;
 
-            const ext = filename.split('.').pop().toLowerCase();
-            let mediaType = 'other';
-
-            if (supportedFormats.image.includes(ext)) {
-              mediaType = 'image';
-            } else if (supportedFormats.video.includes(ext)) {
-              mediaType = 'video';
-            }
-
-            if (mediaType !== 'other') {
-              cardAssets.push({
-                type: mediaType,
-                url: url,
-                format: ext,
-                name: filename,
-                isIcon: false
-              });
-              console.log(`📦 Added hosted media asset: ${filename} (${mediaType})`);
-            }
+            addMediaAsset(filename, url);
           }
           console.log(`📊 Loaded ${cardAssets.length} assets from hosted_media`);
         }
