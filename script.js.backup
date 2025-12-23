@@ -4867,13 +4867,41 @@ async function openCheckoutModal(productIds) {
         // Handle successful checkout
         checkout.addEventListener("success", async (eventData) => {
           console.log('Checkout completed successfully!', eventData);
+          
+          // Extract customer email from checkout data if available
+          let customerEmail = null;
+          if (eventData && eventData.customer && eventData.customer.email) {
+            customerEmail = eventData.customer.email;
+          } else if (eventData && eventData.email) {
+            customerEmail = eventData.email;
+          }
 
-          // Close modal and redirect to success page
-          closeCheckoutModalUI();
+          // If email not available, prompt user
+          if (!customerEmail) {
+            customerEmail = prompt('Please enter your email address to access your downloads:');
+            if (!customerEmail) {
+              alert('Email is required to verify your purchase. Please contact support if you need assistance.');
+              closeCheckoutModalUI();
+              return;
+            }
+          }
 
-          // Redirect to success page with checkout session ID if available
-          const checkoutSessionId = eventData?.id || eventData?.checkout?.id || 'success';
-          window.location.href = `/success?checkout_session_id=${checkoutSessionId}`;
+          // Store customer email for future credit checking
+          if (customerEmail) {
+            localStorage.setItem('customer_email', customerEmail);
+            console.log('Customer email stored for credit system:', customerEmail);
+          }
+
+          // Verify purchase and get download URLs
+          try {
+            await handlePurchaseSuccess(productIds, customerEmail);
+            closeCheckoutModalUI();
+          } catch (error) {
+            console.error('Error handling purchase success:', error);
+            alert(`Purchase successful! However, we couldn't verify your purchase immediately. Please check your email for download links.\n\nError: ${error.message}`);
+            closeCheckoutModalUI();
+            window.location.reload();
+          }
         });
 
         // Handle checkout close/cancel
@@ -6406,10 +6434,6 @@ async function initializeCarousel(productId) {
       img.src = asset.url;
       img.alt = asset.name;
       img.loading = index === 0 ? 'eager' : 'lazy';
-      // Add fetchpriority hint for first image to improve LCP
-      if (index === 0) {
-        img.fetchPriority = 'high';
-      }
       img.onerror = function() {
         this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDMyMCAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjU2IiBmaWxsPSIjRThFOEU4Ii8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4=';
       };

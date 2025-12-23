@@ -1359,6 +1359,8 @@
 
                     // Store customer info
                     customerId = data.customer.id;
+                    customerEmail = data.customer.email;
+                    localStorage.setItem('customer_email', customerEmail);
 
                     // Load account data
                     await loadAccountData();
@@ -1495,54 +1497,67 @@
                 }
             } catch (error) {
                 console.error('Error loading subscription:', error);
-                // For MVP, show mock data if API not available
+                // Use actual customer data from session, not mock data
                 updateSubscriptionUI({
                     user: {
                         id: customerId,
-                        email: 'user@example.com',
-                        subscription_tier: 'pro_monthly'
+                        email: customerEmail || localStorage.getItem('customer_email') || '-',
+                        name: null
                     },
-                    entitlements: {
-                        libraries: ['all'],
-                        features: [],
-                        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-                    }
+                    entitlements: null
                 });
             }
         }
 
         function updateSubscriptionUI(data) {
             const { user, entitlements } = data;
-            
+
             // Update customer name and email
             const customerName = user.name || user.email?.split('@')[0] || 'User';
-            document.getElementById('customer-name').textContent = customerName;
-            document.getElementById('customer-email').textContent = user.email || '-';
-            
-            // Update status badge
+            const customerNameEl = document.getElementById('customer-name');
+            const customerEmailEl = document.getElementById('customer-email');
+
+            if (customerNameEl) customerNameEl.textContent = customerName;
+            if (customerEmailEl) customerEmailEl.textContent = user.email || '-';
+
+            // Store customer email for credit balance
+            if (user.email) {
+                customerEmail = user.email;
+            }
+
+            // Update status badge (if element exists)
             const statusBadge = document.getElementById('status-badge');
-            const isActive = entitlements.expires_at && new Date(entitlements.expires_at) > new Date();
-            
+            const isActive = entitlements && entitlements.expires_at && new Date(entitlements.expires_at) > new Date();
+
+            if (statusBadge) {
+                if (isActive) {
+                    statusBadge.textContent = 'Active';
+                    statusBadge.className = 'status-badge active';
+                } else {
+                    statusBadge.textContent = 'Expired';
+                    statusBadge.className = 'status-badge expired';
+                }
+            }
+
+            // Hide subscribe button in header if user is subscribed
             if (isActive) {
-                statusBadge.textContent = 'Active';
-                statusBadge.className = 'status-badge active';
-                // Hide subscribe button in header if user is subscribed
                 const subscribeLink = document.getElementById('subscribe-header-link');
                 if (subscribeLink) {
                     subscribeLink.style.display = 'none';
                 }
-            } else {
-                statusBadge.textContent = 'Expired';
-                statusBadge.className = 'status-badge expired';
             }
-            
-            // Update subscription info
-            document.getElementById('plan-name').textContent = 'Full Access';
-            document.getElementById('subscription-status').textContent = isActive ? 'Active' : 'Expired';
-            
-            if (entitlements.expires_at) {
+
+            // Update subscription info (if elements exist)
+            const planNameEl = document.getElementById('plan-name');
+            const subscriptionStatusEl = document.getElementById('subscription-status');
+            const renewalDateEl = document.getElementById('renewal-date');
+
+            if (planNameEl) planNameEl.textContent = 'Full Access';
+            if (subscriptionStatusEl) subscriptionStatusEl.textContent = isActive ? 'Active' : 'Expired';
+
+            if (renewalDateEl && entitlements && entitlements.expires_at) {
                 const renewalDate = new Date(entitlements.expires_at);
-                document.getElementById('renewal-date').textContent = renewalDate.toLocaleDateString();
+                renewalDateEl.textContent = renewalDate.toLocaleDateString();
             }
         }
 
@@ -1644,7 +1659,17 @@
             if (!filesList) return;
 
             if (!files || files.length === 0) {
-                filesList.innerHTML = '<div class="library-files-empty">No library files available.</div>';
+                filesList.innerHTML = `
+                    <div class="library-files-empty">
+                        <p>No library files yet.</p>
+                        <p style="margin-top: var(--space-small); font-size: var(--font-size-small);">
+                            Purchase products to access your library files here.
+                        </p>
+                        <a href="index.html#products" class="action-link" style="margin-top: var(--space-medium); display: inline-block;">
+                            Browse Products
+                        </a>
+                    </div>
+                `;
                 return;
             }
 
@@ -1756,7 +1781,17 @@
             const ordersList = document.getElementById('orders-list');
 
             if (!orders || orders.length === 0) {
-                ordersList.innerHTML = '<div class="orders-empty">No orders found.</div>';
+                ordersList.innerHTML = `
+                    <div class="orders-empty">
+                        <p>No orders yet.</p>
+                        <p style="margin-top: var(--space-small); font-size: var(--font-size-small);">
+                            Your purchase history will appear here.
+                        </p>
+                        <a href="index.html#products" class="action-link" style="margin-top: var(--space-medium); display: inline-block;">
+                            Browse Products
+                        </a>
+                    </div>
+                `;
                 return;
             }
 
@@ -2217,13 +2252,17 @@
                     displaySubscriptions(data.subscriptions);
                 } else if (response.status === 401) {
                     handleSessionExpired();
+                } else if (response.status === 404) {
+                    // API endpoint doesn't exist yet, show empty state
+                    displaySubscriptions([]);
                 } else {
                     console.error('Failed to load subscriptions');
-                    subscriptionsList.innerHTML = '<div class="loading" style="color: #cc0000;">Failed to load subscriptions</div>';
+                    displaySubscriptions([]);
                 }
             } catch (error) {
                 console.error('Error loading subscriptions:', error);
-                subscriptionsList.innerHTML = '<div class="loading" style="color: #cc0000;">Error loading subscriptions</div>';
+                // Show empty state instead of error for better UX
+                displaySubscriptions([]);
             }
         }
 

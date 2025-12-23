@@ -164,10 +164,14 @@ export default async function handler(req, res) {
       stack: error.stack,
     });
 
-    // Generic error message (don't leak details)
+    // Temporarily return detailed error for debugging
     return res.status(500).json({
       success: false,
       error: 'An error occurred. Please try again.',
+      debug: {
+        message: error.message,
+        name: error.name,
+      },
     });
   }
 }

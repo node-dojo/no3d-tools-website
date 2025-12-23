@@ -6,6 +6,10 @@
   "framework": null,
   "outputDirectory": ".",
   "public": true,
+  "rewrites": [
+    { "source": "/account", "destination": "/account.html" },
+    { "source": "/success", "destination": "/success.html" }
+  ],
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10

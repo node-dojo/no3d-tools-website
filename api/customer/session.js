@@ -15,17 +15,6 @@ import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 import { createSession } from '../lib/session.js';
 
-// Initialize Polar SDK
-const polar = new Polar({
-  accessToken: process.env.POLAR_API_TOKEN,
-});
-
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
 // Magic link token key prefix
 const AUTH_TOKEN_KEY = (token) => `auth:token:${token}`;
 
@@ -61,6 +50,16 @@ export default async function handler(req, res) {
         error: 'Invalid token',
       });
     }
+
+    // Initialize SDKs inside handler (required for Vercel serverless)
+    const polar = new Polar({
+      accessToken: process.env.POLAR_API_TOKEN,
+    });
+
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
 
     console.log(`🔐 Verifying magic link token`);
 
@@ -109,12 +108,21 @@ export default async function handler(req, res) {
           finalCustomerId = customer.id;
           console.log(`✅ Customer found by email: ${customer.email}`);
         } else {
-          console.log(`No customer found for ${email}`);
-          // Return error - customer must exist in Polar
-          return res.status(404).json({
-            success: false,
-            error: 'No customer account found. Please make a purchase first.',
-          });
+          // No customer found - create a new one
+          console.log(`No customer found for ${email}, creating new account...`);
+          try {
+            customer = await polar.customers.create({
+              email: email,
+            });
+            finalCustomerId = customer.id;
+            console.log(`✅ New customer created: ${customer.email} (${customer.id})`);
+          } catch (createError) {
+            console.error('Error creating customer:', createError);
+            return res.status(500).json({
+              success: false,
+              error: 'Failed to create customer account. Please try again.',
+            });
+          }
         }
       } catch (error) {
         console.error('Error looking up customer by email:', error);
