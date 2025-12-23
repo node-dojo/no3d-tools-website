@@ -98,5 +98,8 @@
       "value": "Blender 5.0+",
       "type": "single_line_text_field"
     }
-  ]
-}
+  ],
+  "polar": {
+    "product_id": "714ffbe4-b381-4884-a1da-7c2e8f8b2a91"
+  }
+}\n
