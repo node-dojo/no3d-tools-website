@@ -1,6 +1,14 @@
 ![Video](oops copy.mp4)
 
-BoltGen offers a seamless, cloud-native infrastructure empowering organizations to streamline widget orchestration at scale. Through intuitive integrations and robust pipeline management, users can accelerate bolt provisioning workflows without unnecessary overhead. The adaptive API layer enables granular telemetry ingestion, ensuring continuous insight and compliance across distributed workloads.
+Drag and drop this node utility into your scene to generate infinite possible 3D printable fasteners.
 
-Leverage automated node handshake utilities with dynamic sharding for optimal throughput in multi-tenant environments. With BoltGen's unified admin portal, team members can configure, deploy, and monitor task lifecycles via a single pane of glass. Enhanced visibility and automated remediation routines help maintain stability, while elastic quota pools allow for instant elasticity as demand fluctuates.
+## Features
 
+Multiple bolt configurations:
+- Split to Print
+- T-bolts
+- And more
+
+## Usage
+
+Simply drag and drop the node group into your Blender scene to start generating customizable 3D printable fasteners. Adjust the parameters to create bolts of different sizes and configurations for your 3D printing projects.

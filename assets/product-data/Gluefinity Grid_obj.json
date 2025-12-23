@@ -1,0 +1,27 @@
+{
+  "asset_name": "Gluefinity Grid_obj",
+  "asset_type": "MESH",
+  "source_file": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/Product Listing Management/The Well Product Catalog/NO3D TOOLS workbench_20oct2025.blend",
+  "description": "",
+  "author": "",
+  "catalog": "",
+  "catalog_id": "00000000-0000-0000-0000-000000000000",
+  "tags": [],
+  "license": "",
+  "copyright": "",
+  "export_date": "2025-10-22T20:10:52.551163",
+  "blender_version": "4.5.2",
+  "files": {
+    "blend_file": "Gluefinity Grid_obj.blend",
+    "thumbnail": "icon_Gluefinity Grid_obj.png",
+    "description": "desc_Gluefinity Grid_obj.txt",
+    "textures": []
+  },
+  "geometry_stats": {
+    "vertices": 1,
+    "edges": 0,
+    "faces": 0,
+    "materials": 1
+  },
+  "custom_properties": {
+    "M3": 
