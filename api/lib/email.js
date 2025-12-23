@@ -7,13 +7,18 @@
 
 import { Resend } from 'resend';
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // Email configuration
 // Use environment variable for from email, fallback to Resend's test domain for development
 const FROM_EMAIL = process.env.FROM_EMAIL || 'NO3D Tools <onboarding@resend.dev>';
 const SITE_URL = process.env.SITE_URL || 'https://no3dtools.com';
+
+/**
+ * Get Resend client instance (lazy initialization)
+ * @returns {Resend} Resend client
+ */
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 /**
  * Generate HTML for magic link email
@@ -159,6 +164,7 @@ If you didn't request this, you can safely ignore this email.
  */
 export async function sendMagicLinkEmail(email, token) {
   try {
+    const resend = getResendClient();
     const response = await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
@@ -186,6 +192,7 @@ export async function sendMagicLinkEmail(email, token) {
  */
 export async function sendEmail({ to, subject, html, text }) {
   try {
+    const resend = getResendClient();
     const response = await resend.emails.send({
       from: FROM_EMAIL,
       to,
