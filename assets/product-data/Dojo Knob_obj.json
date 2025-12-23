@@ -136,6 +136,9 @@
       "type": "single_line_text_field"
     }
   ],
+  "hosted_media": {
+    "Dojo Knob.gif": "/assets/product-images/Dojo Knob.gif"
+  },
   "polar": {
     "product_id": "53bbe0f8-7f9f-4d40-8387-473355277ece"
   }
