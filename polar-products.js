@@ -83,6 +83,13 @@ const POLAR_PRODUCTS = {
     name: 'Print Bed Preview_obj',
     url: 'https://polar.sh/no3d-tools'
   },
+  // Chrome Crayon
+  'chrome-crayon': {
+    productId: 'dd9334f8-2482-4896-97d1-f53a2dbc0cee',
+    priceId: 'c264c7f1-7efa-45bc-98c2-fe78d8673e1b',
+    name: 'Chrome Crayon',
+    url: 'https://polar.sh/no3d-tools'
+  },
   // Christmas Gift Cards & Membership Gifts
   '3-month-membership-gift': {
     productId: '153df206-7d4e-4ec2-8044-87c4eeb5cceb',
