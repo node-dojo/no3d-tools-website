@@ -61,7 +61,7 @@
       "key": "thumbnail",
       "value": "icon_Dojo Bolt Gen v05.png",
       "type": "single_line_text_field",
-      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693462/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png"
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448738/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png"
     },
     {
       "namespace": "polar",
@@ -102,11 +102,22 @@
   ],
   "hosted_media": {
     "bolt gen demo 6.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765770922/no3d-tools/-media-upload-status/bolt-gen-demo-6.gif",
-    "icon_Dojo Bolt Gen v05.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765771027/no3d-tools/-media-upload-status/icon_Dojo-Bolt-Gen-v05.png",
+    "icon_Dojo Bolt Gen v05.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448738/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png",
     "bolt gen mod panel.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765769984/no3d-tools/-media-upload-status/bolt-gen-mod-panel.png",
     "bolt gen demo 3.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693667/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo-3.mov",
     "bolt gen demo2.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693675/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo2.mov",
     "bolt gen demo 5.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693680/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo-5.mov",
-    "bolt gen demo.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693685/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo.mov"
+    "bolt gen demo.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693685/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo.mov",
+    "Screenshot 2025-12-22 at 4.22.16 PM.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448702/no3d-tools/dojo-bolt-gen-v05/Screenshot-2025-12-22-at-4-22-16-PM.png",
+    "animated bolt assembly.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448704/no3d-tools/dojo-bolt-gen-v05/animated-bolt-assembly.mov",
+    "bolt gen demo2.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448707/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo2.gif",
+    "bolt group gizmo adjust.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448713/no3d-tools/dojo-bolt-gen-v05/bolt-group-gizmo-adjust.mov",
+    "bolt node group drop demo.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448716/no3d-tools/dojo-bolt-gen-v05/bolt-node-group-drop-demo.gif",
+    "bolt node group drop demo.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448721/no3d-tools/dojo-bolt-gen-v05/bolt-node-group-drop-demo.mov",
+    "bolt printing configs.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448724/no3d-tools/dojo-bolt-gen-v05/bolt-printing-configs.mov",
+    "dojo bolt print types.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448729/no3d-tools/dojo-bolt-gen-v05/dojo-bolt-print-types.mov",
+    "instance bolts on faces.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448734/no3d-tools/dojo-bolt-gen-v05/instance-bolts-on-faces.mov",
+    "mulitple print types.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448736/no3d-tools/dojo-bolt-gen-v05/mulitple-print-types.png",
+    "icon_Dojo Bolt Gen v05_inverted.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448741/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05_inverted.png"
   }
 }
