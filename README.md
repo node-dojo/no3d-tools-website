@@ -2,6 +2,57 @@
 
 A modern, retro-futuristic website for the NO3D Tools library, built following the Figma design system specifications.
 
+---
+
+## 🛠️ MVP Standalone Mode
+
+This branch operates independently from solvet-global automation. Products are managed manually.
+
+### Adding a New Product
+
+1. **Create product in Polar** (polar.sh/no3d-tools):
+   - Add name, description, price
+   - Upload downloadable file (.blend, .zip)
+   - Copy product ID from URL: `https://polar.sh/no3d-tools/products/{productId}`
+   - Copy price ID from product settings
+
+2. **Update `polar-products.js`**:
+   ```javascript
+   'product-slug': {
+     productId: 'uuid-from-polar',
+     priceId: 'price-uuid-from-polar',
+     name: 'Product Name',
+     url: 'https://polar.sh/no3d-tools'
+   },
+   ```
+
+3. **Create `assets/product-data/Product Name.json`**:
+   ```json
+   {
+     "title": "Product Name",
+     "handle": "product-slug",
+     "description": "Product description",
+     "vendor": "The Well Tarot",
+     "product_type": "Blender Add-on",
+     "tags": ["blender", "addon"],
+     "status": "active",
+     "variants": [{"price": "9.99", "sku": "NO3D-PRODUCT"}]
+   }
+   ```
+
+4. **Add icon**: `assets/product-images/icon_Product Name.png` (50x50px recommended)
+
+5. **Commit & push** - Vercel auto-deploys
+
+### Switching Back to Full Automation
+
+1. Commit all pending MVP changes
+2. `git checkout main && git pull`
+3. Cherry-pick or merge product additions from MVP branch
+4. Change Vercel production branch back to `main`
+
+---
+
 ## 🎯 **Features**
 
 - **Three-Column Layout**: Sidebar navigation, product details, and icon grid
