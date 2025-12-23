@@ -96,8 +96,9 @@
     {
       "namespace": "no3d_tools",
       "key": "thumbnail",
-      "value": "icon_Dojo Knob_obj.png",
-      "type": "single_line_text_field"
+      "value": "1222--1-.gif",
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766511770/no3d-tools/dojo-knob_obj/1222--1-.gif"
     },
     {
       "namespace": "polar",
@@ -137,8 +138,17 @@
     }
   ],
   "hosted_media": {
-    "Dojo Knob.gif": "/assets/product-images/Dojo Knob.gif"
+    "Dojo Knob.gif": "/assets/product-images/Dojo Knob.gif",
+    "plug-knob2.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766511775/no3d-tools/dojo-knob_obj/plug-knob2.gif",
+    "1222--1-.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766511770/no3d-tools/dojo-knob_obj/1222--1-.gif",
+    "icon_Dojo Knob_obj.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766511770/no3d-tools/dojo-knob_obj/1222--1-.gif"
   },
+  "main_image": "plug-knob2.gif",
+  "thumbnail_image": "1222--1-.gif",
+  "carousel_media": [
+    "plug-knob2.gif",
+    "1222--1-.gif"
+  ],
   "polar": {
     "product_id": "53bbe0f8-7f9f-4d40-8387-473355277ece"
   }

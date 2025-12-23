@@ -95,9 +95,9 @@
     {
       "namespace": "no3d_tools",
       "key": "thumbnail",
-      "value": "icon_Dojo Bolt Gen v05_Obj.png",
+      "value": "bolt-disassemble-thumb_compressed.gif",
       "type": "single_line_text_field",
-      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693693/no3d-tools/dojo-bolt-gen-v05_obj/icon_Dojo-Bolt-Gen-v05_Obj.png"
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766451200/no3d-tools/-media-upload-status/bolt-disassemble-thumb_compressed.gif"
     },
     {
       "namespace": "polar",
@@ -137,9 +137,11 @@
     }
   ],
   "hosted_media": {
-    "Dojo Bolt Gen v05_Obj.gif": "/assets/product-images/Dojo Bolt Gen v05_Obj.gif",
-    "icon_Dojo Bolt Gen v05_Obj.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693693/no3d-tools/dojo-bolt-gen-v05_obj/icon_Dojo-Bolt-Gen-v05_Obj.png"
+    "Dojo Bolt Gen v05_Obj.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766451200/no3d-tools/-media-upload-status/bolt-disassemble-thumb_compressed.gif",
+    "bolt-disassemble-thumb_compressed.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766451200/no3d-tools/-media-upload-status/bolt-disassemble-thumb_compressed.gif",
+    "icon_Dojo Bolt Gen v05_Obj.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/v1766451200/no3d-tools/-media-upload-status/bolt-disassemble-thumb_compressed.gif"
   },
+  "thumbnail_image": "bolt-disassemble-thumb_compressed.gif",
   "polar": {
     "product_id": "eb28f590-e6eb-463a-830d-95243e51de89"
   }
