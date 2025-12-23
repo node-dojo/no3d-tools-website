@@ -72,7 +72,7 @@ export default async function handler(req, res) {
       console.error('POLAR_API_TOKEN not configured');
       return res.status(500).json({
         success: false,
-        error: 'Server configuration error',
+        error: 'Server configuration error: POLAR_API_TOKEN missing',
       });
     }
 
@@ -80,7 +80,15 @@ export default async function handler(req, res) {
       console.error('RESEND_API_KEY not configured');
       return res.status(500).json({
         success: false,
-        error: 'Server configuration error',
+        error: 'Server configuration error: RESEND_API_KEY missing',
+      });
+    }
+
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      console.error('Upstash Redis credentials not configured');
+      return res.status(500).json({
+        success: false,
+        error: 'Server configuration error: Redis credentials missing',
       });
     }
 
