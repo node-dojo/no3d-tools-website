@@ -63,6 +63,10 @@
       "type": "single_line_text_field"
     }
   ],
+  "thumbnail_image": "icon_Dojo Christmas Gift Card $55.png",
+  "hosted_media": {
+    "icon_Dojo Christmas Gift Card $55.png": "/assets/product-images/icon_Dojo Christmas Gift Card $55.png"
+  },
   "polar": {
     "product_id": "7d677970-f244-48fa-aba9-e1e91c977a88",
     "benefit_id": "102079dd-7568-4678-b0e9-e04695ac6013",
