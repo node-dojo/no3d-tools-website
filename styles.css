@@ -165,6 +165,12 @@ body {
   margin-bottom: 0px;
   margin-left: 0px;
   margin-right: 0px;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.site-header .logo:hover {
+  opacity: 0.8;
 }
 
 .site-header .header-icons {

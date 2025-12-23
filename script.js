@@ -1834,6 +1834,11 @@ function initializeEventListeners() {
     if (e.target.closest('#product-close-button')) {
       deselectProduct();
     }
+
+    // Header logo click to return to home grid
+    if (e.target.closest('#header-logo') || e.target.id === 'header-logo') {
+      deselectProduct();
+    }
   });
 
   // Tab navigation
