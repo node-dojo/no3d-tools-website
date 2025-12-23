@@ -439,8 +439,13 @@ async function loadProductsFromJSON() {
       'Dojo Print Viz_V4.5.json',
       'Dojo Squircle v4.5_obj.json',
       'Dojo_Squircle v4.5.json',
+      'Print Bed Preview_obj.json',
+      'Chrome Crayon.json',
+      'NODE CHROME.json',
+      'Gluefinity Grid_obj.json',
       // Gift Cards
       '3 Month Membership Gift.json',
+      'Dojo Christmas Gift Card $33.json',
       'Dojo Christmas Gift Card $55.json',
       'Dojo Christmas Gift Card $77.json'
     ];
