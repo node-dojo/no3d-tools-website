@@ -33,6 +33,21 @@ try {
     console.log(`   Using: ${commitHash}`);
   }
 
+  // Get the current git branch name
+  let branchName;
+  try {
+    branchName = execSync('git rev-parse --abbrev-ref HEAD', {
+      cwd: rootDir,
+      encoding: 'utf-8'
+    }).trim();
+    console.log(`✅ Found git branch: ${branchName}`);
+  } catch (error) {
+    // If git is not available or not in a git repo, use fallback
+    console.warn('⚠️ Could not get git branch, using fallback');
+    branchName = process.env.VERCEL_GIT_COMMIT_REF || 'dev';
+    console.log(`   Using: ${branchName}`);
+  }
+
   // Read the index.html file
   let html = readFileSync(indexPath, 'utf-8');
 
@@ -52,6 +67,29 @@ try {
     } else {
       console.error('❌ Could not find viewport meta tag to insert deployment-version');
       process.exit(1);
+    }
+  }
+
+  // Update or add the branch name meta tag
+  const branchMetaTagRegex = /<meta\s+name=["']deployment-branch["']\s+content=["'][^"']*["']\s*>/i;
+  const newBranchMetaTag = `<meta name="deployment-branch" content="${branchName}">`;
+
+  if (branchMetaTagRegex.test(html)) {
+    html = html.replace(branchMetaTagRegex, newBranchMetaTag);
+    console.log(`✅ Updated branch meta tag to: ${branchName}`);
+  } else {
+    // If branch meta tag doesn't exist, add it after the deployment-version meta tag
+    const deploymentVersionRegex = /(<meta\s+name=["']deployment-version["'][^>]*>)/i;
+    if (deploymentVersionRegex.test(html)) {
+      html = html.replace(deploymentVersionRegex, `$1\n    ${newBranchMetaTag}`);
+      console.log(`✅ Added branch meta tag with: ${branchName}`);
+    } else {
+      console.warn('⚠️ Could not find deployment-version meta tag to insert branch, adding after viewport');
+      const viewportRegex = /(<meta\s+name=["']viewport["'][^>]*>)/i;
+      if (viewportRegex.test(html)) {
+        html = html.replace(viewportRegex, `$1\n    ${newBranchMetaTag}`);
+        console.log(`✅ Added branch meta tag with: ${branchName}`);
+      }
     }
   }
 

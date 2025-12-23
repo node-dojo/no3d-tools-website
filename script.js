@@ -6011,15 +6011,46 @@ function updateFooterCommit() {
   }
 }
 
-// Initialize footer shortcut and commit hash on page load
+// Update footer branch name from meta tag
+function updateFooterBranch() {
+  const branchNameEl = document.getElementById('branch-name');
+  const footerBranchEl = document.getElementById('footer-branch');
+  
+  console.log('🔍 updateFooterBranch called');
+  console.log('  branchNameEl:', branchNameEl);
+  console.log('  footerBranchEl:', footerBranchEl);
+  
+  if (!branchNameEl) {
+    console.warn('⚠️ branch-name element not found');
+    return;
+  }
+  
+  // Get branch name from meta tag
+  const branchMetaTag = document.querySelector('meta[name="deployment-branch"]');
+  console.log('  branchMetaTag:', branchMetaTag);
+  console.log('  branchMetaTag.content:', branchMetaTag ? branchMetaTag.content : 'null');
+  
+  if (branchMetaTag && branchMetaTag.content) {
+    branchNameEl.textContent = branchMetaTag.content;
+    console.log('✅ Branch name set to:', branchMetaTag.content);
+  } else {
+    // Fallback: use 'dev' for local development
+    branchNameEl.textContent = 'dev';
+    console.log('⚠️ No branch meta tag found, using fallback: dev');
+  }
+}
+
+// Initialize footer shortcut, commit hash, and branch on page load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     updateFooterShortcut();
     updateFooterCommit();
+    updateFooterBranch();
   });
 } else {
   updateFooterShortcut();
   updateFooterCommit();
+  updateFooterBranch();
 }
 
 // Initialize mobile search bar
