@@ -10,7 +10,7 @@ import { Polar } from '@polar-sh/sdk';
 import crypto from 'crypto';
 import { isGiftCardProduct, createGiftCardDiscount } from '../../gift-cards/generate.js';
 import { sendGiftCardEmail } from '../../gift-cards/email.js';
-import { consumePendingDebit, debitCredit } from '../../../lib/credit.js';
+import { consumePendingDebit, debitCredit, redis } from '../../../lib/credit.js';
 
 const POLAR_API_TOKEN = process.env.POLAR_API_TOKEN;
 const POLAR_WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
@@ -188,6 +188,11 @@ async function handleOrderCreated(data) {
         // Create gift card and store in KV
         const giftCard = await createGiftCardDiscount(productId, data.id, customerEmail);
         console.log(`   ✅ Gift card created: ${giftCard.code} for $${giftCard.value}`);
+
+        // Track this gift card code as purchased by this email
+        const purchasedSetKey = `purchaser:${customerEmail.toLowerCase()}:giftcards`;
+        await redis.sadd(purchasedSetKey, giftCard.code);
+        console.log(`   ✅ Gift card tracked for purchaser: ${customerEmail}`);
 
         // Send email with gift card code
         const emailResult = await sendGiftCardEmail(giftCard, customerEmail);

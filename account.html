@@ -112,7 +112,7 @@
         
         .info-label {
             font-family: var(--font-mono);
-            font-size: var(--font-size-small);
+            font-size: 11px;
             font-weight: var(--font-mono-weight);
             color: var(--color-dark-gray);
             margin-bottom: var(--space-tiny);
@@ -591,6 +591,98 @@
         }
 
         .credit-history-empty {
+            color: var(--color-medium-gray);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            padding: var(--space-medium);
+            text-align: center;
+        }
+
+        /* Purchased Gift Cards Section */
+        .purchased-giftcards {
+            margin-top: var(--space-medium);
+            padding-top: var(--space-medium);
+            border-top: 1px solid var(--color-stone-gray);
+        }
+
+        .purchased-giftcards h3 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-bottom: var(--space-small);
+        }
+
+        .purchased-giftcards-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-small);
+        }
+
+        .giftcard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-medium);
+            background: var(--color-stone-gray);
+            border-left: 4px solid var(--color-lello);
+            font-family: var(--font-mono);
+        }
+
+        .giftcard-item.redeemed {
+            opacity: 0.6;
+            border-left-color: var(--color-medium-gray);
+        }
+
+        .giftcard-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-tiny);
+        }
+
+        .giftcard-code {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-base);
+            font-weight: 700;
+            color: var(--color-void-black);
+            letter-spacing: 2px;
+        }
+
+        .giftcard-details {
+            font-size: var(--font-size-small);
+            color: var(--color-dark-gray);
+        }
+
+        .giftcard-value {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            font-weight: 700;
+            color: var(--color-void-black);
+        }
+
+        .giftcard-status {
+            display: inline-block;
+            padding: var(--space-tiny) var(--space-small);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-micro);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid var(--color-void-black);
+        }
+
+        .giftcard-status.active {
+            background: var(--color-lello);
+            color: var(--color-void-black);
+        }
+
+        .giftcard-status.redeemed {
+            background: var(--color-medium-gray);
+            color: var(--color-paper-white);
+        }
+
+        .purchased-giftcards-empty {
             color: var(--color-medium-gray);
             font-family: var(--font-mono);
             font-size: var(--font-size-small);
@@ -1099,24 +1191,90 @@
 
             <!-- Login Prompt -->
             <div id="login-prompt" class="login-prompt" style="display: none;">
-                <h2>Sign In to Your Account</h2>
-                <p>Enter your email to receive a magic link for secure, passwordless sign-in.</p>
-                <div class="auth-form">
-                    <input type="email"
-                           id="auth-email"
-                           class="auth-input"
-                           placeholder="your@email.com"
-                           autocomplete="email"
-                           required>
-                    <button class="auth-button" id="send-magic-link-button" onclick="sendMagicLink()">
-                        Send Magic Link
-                    </button>
-                    <div id="auth-message" class="auth-message" style="display: none;"></div>
+                <!-- Login Form -->
+                <div id="login-form-container">
+                    <h2>Sign In to Your Account</h2>
+                    <p>Enter your email and password to access your account.</p>
+                    <div class="auth-form">
+                        <input type="email"
+                               id="auth-email"
+                               class="auth-input"
+                               placeholder="your@email.com"
+                               autocomplete="email"
+                               required>
+                        <input type="password"
+                               id="auth-password"
+                               class="auth-input"
+                               placeholder="Password"
+                               autocomplete="current-password"
+                               required
+                               style="margin-top: var(--space-small);">
+                        <button class="auth-button" id="login-button" onclick="handleLogin()">
+                            Sign In
+                        </button>
+                        <div id="auth-message" class="auth-message" style="display: none;"></div>
+                        <p class="auth-toggle" style="margin-top: var(--space-medium); font-family: var(--font-mono); font-size: var(--font-size-small);">
+                            Don't have an account? <a href="#" onclick="showRegisterForm(); return false;" style="color: var(--color-accent);">Create one</a>
+                        </p>
+                    </div>
                 </div>
+
+                <!-- Register Form -->
+                <div id="register-form-container" style="display: none;">
+                    <h2>Create Your Account</h2>
+                    <p>Sign up to access your purchases and manage your account.</p>
+                    <div class="auth-form">
+                        <input type="email"
+                               id="register-email"
+                               class="auth-input"
+                               placeholder="your@email.com"
+                               autocomplete="email"
+                               required>
+                        <input type="password"
+                               id="register-password"
+                               class="auth-input"
+                               placeholder="Password (min 8 characters)"
+                               autocomplete="new-password"
+                               required
+                               style="margin-top: var(--space-small);">
+                        <input type="password"
+                               id="register-password-confirm"
+                               class="auth-input"
+                               placeholder="Confirm Password"
+                               autocomplete="new-password"
+                               required
+                               style="margin-top: var(--space-small);">
+                        <button class="auth-button" id="register-button" onclick="handleRegister()">
+                            Create Account
+                        </button>
+                        <div id="register-message" class="auth-message" style="display: none;"></div>
+                        <p class="auth-toggle" style="margin-top: var(--space-medium); font-family: var(--font-mono); font-size: var(--font-size-small);">
+                            Already have an account? <a href="#" onclick="showLoginForm(); return false;" style="color: var(--color-accent);">Sign in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Name and Email Info Items -->
+            <div class="info-item">
+                <div class="info-label">Name</div>
+                <div class="info-value" id="customer-name">-</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value" id="customer-email" style="font-size: var(--font-size-base); font-weight: normal; text-transform: none;">-</div>
             </div>
 
             <!-- Account Content -->
             <div id="account-content" style="display: none;">
+                <!-- Subscription Status -->
+                <div class="subscription-status">
+                    <h2>Subscription Management</h2>
+                    <div id="subscriptions-list" class="subscription-list">
+                        <div class="loading">Loading subscriptions...</div>
+                    </div>
+                </div>
+
                 <!-- Credit Balance Section -->
                 <div class="credit-section">
                     <h2>Store Credit</h2>
@@ -1142,28 +1300,21 @@
                         <div id="redeem-message" class="redeem-message" style="display: none;"></div>
                     </div>
 
+                    <!-- Purchased Gift Cards Section -->
+                    <div class="purchased-giftcards" id="purchased-giftcards-container" style="display: none;">
+                        <h3>Your Gift Cards</h3>
+                        <p style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-dark-gray); margin-bottom: var(--space-small);">
+                            Gift cards you've purchased. Share these codes with recipients or redeem them yourself.
+                        </p>
+                        <div class="purchased-giftcards-list" id="purchased-giftcards-list">
+                            <!-- Gift cards populated by JS -->
+                        </div>
+                    </div>
+
                     <div class="credit-history" id="credit-history-container" style="display: none;">
                         <h3>Transaction History</h3>
                         <div class="credit-history-list" id="credit-history-list">
                             <!-- Transactions populated by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Subscription Status -->
-                <div class="subscription-status">
-                    <h2>Subscription Management</h2>
-                    <div id="subscriptions-list" class="subscription-list">
-                        <div class="loading">Loading subscriptions...</div>
-                    </div>
-                    <div class="subscription-info" style="margin-top: var(--space-large);">
-                        <div class="info-item">
-                            <div class="info-label">Name</div>
-                            <div class="info-value" id="customer-name">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Email</div>
-                            <div class="info-value" id="customer-email" style="font-size: var(--font-size-base); font-weight: normal; text-transform: none;">-</div>
                         </div>
                     </div>
                 </div>
@@ -1290,47 +1441,161 @@
         }
 
         /**
-         * Send magic link email
+         * Toggle between login and register forms
          */
-        async function sendMagicLink() {
+        function showLoginForm() {
+            document.getElementById('login-form-container').style.display = 'block';
+            document.getElementById('register-form-container').style.display = 'none';
+            // Clear any messages
+            document.getElementById('auth-message').style.display = 'none';
+            const registerMsg = document.getElementById('register-message');
+            if (registerMsg) registerMsg.style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('login-form-container').style.display = 'none';
+            document.getElementById('register-form-container').style.display = 'block';
+            // Clear any messages
+            document.getElementById('auth-message').style.display = 'none';
+            const registerMsg = document.getElementById('register-message');
+            if (registerMsg) registerMsg.style.display = 'none';
+        }
+
+        /**
+         * Show message in register form
+         */
+        function showRegisterMessage(message, type) {
+            const messageDiv = document.getElementById('register-message');
+            if (!messageDiv) return;
+            messageDiv.textContent = message;
+            messageDiv.className = 'auth-message ' + type;
+            messageDiv.style.display = 'block';
+        }
+
+        /**
+         * Handle login form submission
+         */
+        async function handleLogin() {
             const emailInput = document.getElementById('auth-email');
-            const sendButton = document.getElementById('send-magic-link-button');
-            const messageDiv = document.getElementById('auth-message');
+            const passwordInput = document.getElementById('auth-password');
+            const loginButton = document.getElementById('login-button');
 
             const email = emailInput.value.trim();
+            const password = passwordInput.value;
 
             if (!email || !isValidEmail(email)) {
                 showAuthMessage('Please enter a valid email address', 'error');
                 return;
             }
 
+            if (!password) {
+                showAuthMessage('Please enter your password', 'error');
+                return;
+            }
+
             // Disable button during request
-            sendButton.disabled = true;
-            sendButton.textContent = 'Sending...';
+            loginButton.disabled = true;
+            loginButton.textContent = 'Signing in...';
 
             try {
-                const response = await fetch('/api/customer/auth', {
+                const response = await fetch('/api/customer/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email: email }),
+                    body: JSON.stringify({ email, password }),
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    showAuthMessage('Check your email for a sign-in link!', 'success');
-                    emailInput.value = '';
+                    // Store session token
+                    sessionToken = data.sessionToken;
+                    localStorage.setItem('no3d_session_token', sessionToken);
+
+                    // Store customer info
+                    customerId = data.customer.id;
+                    customerEmail = data.customer.email;
+                    localStorage.setItem('customer_email', customerEmail);
+
+                    // Load account data
+                    await loadAccountData();
                 } else {
-                    showAuthMessage(data.error || 'Failed to send magic link', 'error');
+                    showAuthMessage(data.error || 'Invalid email or password', 'error');
                 }
             } catch (error) {
-                console.error('Error sending magic link:', error);
+                console.error('Error logging in:', error);
                 showAuthMessage('An error occurred. Please try again.', 'error');
             } finally {
-                sendButton.disabled = false;
-                sendButton.textContent = 'Send Magic Link';
+                loginButton.disabled = false;
+                loginButton.textContent = 'Sign In';
+            }
+        }
+
+        /**
+         * Handle registration form submission
+         */
+        async function handleRegister() {
+            const emailInput = document.getElementById('register-email');
+            const passwordInput = document.getElementById('register-password');
+            const confirmInput = document.getElementById('register-password-confirm');
+            const registerButton = document.getElementById('register-button');
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmInput.value;
+
+            if (!email || !isValidEmail(email)) {
+                showRegisterMessage('Please enter a valid email address', 'error');
+                return;
+            }
+
+            if (!password || password.length < 8) {
+                showRegisterMessage('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showRegisterMessage('Passwords do not match', 'error');
+                return;
+            }
+
+            // Disable button during request
+            registerButton.disabled = true;
+            registerButton.textContent = 'Creating account...';
+
+            try {
+                const response = await fetch('/api/customer/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store session token
+                    sessionToken = data.sessionToken;
+                    localStorage.setItem('no3d_session_token', sessionToken);
+
+                    // Store customer info
+                    customerId = data.customer.id;
+                    customerEmail = data.customer.email;
+                    localStorage.setItem('customer_email', customerEmail);
+
+                    // Load account data
+                    await loadAccountData();
+                } else {
+                    showRegisterMessage(data.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error registering:', error);
+                showRegisterMessage('An error occurred. Please try again.', 'error');
+            } finally {
+                registerButton.disabled = false;
+                registerButton.textContent = 'Create Account';
             }
         }
 
@@ -1456,6 +1721,7 @@
             try {
                 document.getElementById('loading-state').style.display = 'block';
                 document.getElementById('error-state').style.display = 'none';
+                document.getElementById('login-prompt').style.display = 'none';
 
                 // Load subscription data
                 await loadSubscriptionStatus();
@@ -1470,6 +1736,7 @@
                 await loadLibraryFiles();
 
                 document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('login-prompt').style.display = 'none';
                 document.getElementById('account-content').style.display = 'block';
             } catch (error) {
                 console.error('Error loading account data:', error);
@@ -2165,6 +2432,7 @@
                     codeInput.value = '';
                     updateCreditBalanceUI(data.newBalance);
                     await loadCreditHistory();
+                    await loadPurchasedGiftCards();
                 } else {
                     showRedeemMessage(data.message || data.error || 'Failed to redeem code', false);
                 }
@@ -2187,6 +2455,80 @@
             setTimeout(() => {
                 messageDiv.style.display = 'none';
             }, 5000);
+        }
+
+        async function loadPurchasedGiftCards() {
+            if (!customerEmail) {
+                return;
+            }
+
+            const container = document.getElementById('purchased-giftcards-container');
+            const listEl = document.getElementById('purchased-giftcards-list');
+
+            try {
+                const headers = {};
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
+                const response = await fetch(`/api/gift-cards/purchased?email=${encodeURIComponent(customerEmail)}`, {
+                    headers: headers,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load purchased gift cards');
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.giftCards && data.giftCards.length > 0) {
+                    container.style.display = 'block';
+                    listEl.innerHTML = data.giftCards.map(card => {
+                        const isRedeemed = card.redeemedAt !== null;
+                        const valueFormatted = `$${(card.valueCents / 100).toFixed(2)}`;
+                        const createdDate = new Date(card.createdAt).toLocaleDateString();
+
+                        let detailsText = '';
+                        if (card.type === 'months') {
+                            detailsText = `${card.months} Month Membership`;
+                        } else if (card.type === 'credit') {
+                            detailsText = `Store Credit`;
+                        }
+
+                        if (isRedeemed) {
+                            const redeemedDate = new Date(card.redeemedAt).toLocaleDateString();
+                            detailsText += ` • Redeemed ${redeemedDate}`;
+                            if (card.redeemedBy) {
+                                detailsText += ` by ${card.redeemedBy}`;
+                            }
+                        } else {
+                            detailsText += ` • Purchased ${createdDate}`;
+                        }
+
+                        return `
+                            <div class="giftcard-item ${isRedeemed ? 'redeemed' : ''}">
+                                <div class="giftcard-info">
+                                    <div class="giftcard-code">${card.code}</div>
+                                    <div class="giftcard-details">${detailsText}</div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-tiny);">
+                                    <div class="giftcard-value">${valueFormatted}</div>
+                                    <div class="giftcard-status ${isRedeemed ? 'redeemed' : 'active'}">
+                                        ${isRedeemed ? 'REDEEMED' : 'ACTIVE'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    // Don't show the section if there are no gift cards
+                    container.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading purchased gift cards:', error);
+                // Don't show the section if there's an error
+                container.style.display = 'none';
+            }
         }
 
         // Format gift card code input
@@ -2215,6 +2557,7 @@
                 customerEmail = subscriptionData.user.email;
                 await loadCreditBalance();
                 await loadCreditHistory();
+                await loadPurchasedGiftCards();
             }
 
             // Load subscriptions
@@ -2464,6 +2807,7 @@
     </script>
 </body>
 </html>
+
 
 
 

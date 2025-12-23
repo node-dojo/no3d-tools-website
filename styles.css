@@ -1343,7 +1343,8 @@ h2 {
   display: flex;
   align-items: center;
   background-color: var(--color-stone-gray);
-  overflow: hidden;
+  /* overflow: hidden; - Moved to carousel-viewport to prevent clipping arrows */
+  overflow: visible; /* DEBUG: Allow arrows to be visible */
 }
 
 .carousel-viewport {
@@ -1414,25 +1415,77 @@ h2 {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #ff0000; /* DEBUG: Red background to make arrows highly visible */
+  border: 3px solid #ffff00; /* DEBUG: Yellow border */
   border-radius: 4px;
   cursor: pointer;
-  z-index: 10;
+  z-index: 100; /* Increased z-index to ensure arrows appear above all carousel content */
   padding: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  /* DEBUG: Force visibility to diagnose issue */
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  /* Original hidden state - uncomment after debugging:
   opacity: 0;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  visibility: hidden;
   pointer-events: none;
+  */
+  transition: opacity 0.2s ease, visibility 0.2s ease, background-color 0.2s ease;
   min-width: 40px;
   min-height: 40px;
 }
 
 .carousel-arrow.visible {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+}
+
+/* DEBUG: Carousel page indicators */
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px dashed #ff0000; /* DEBUG border */
+}
+
+.carousel-indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.carousel-indicator-dot.active {
+  background: var(--color-lello);
+  border-color: var(--color-void-black);
+}
+
+.carousel-indicator-dot:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.carousel-indicator-dot.active:hover {
+  background: var(--color-lello);
+}
+
+/* DEBUG: Carousel debug info */
+.carousel-debug-info {
+  font-size: 10px;
+  color: #ff0000;
+  text-align: center;
+  padding: 5px;
+  background: rgba(255, 255, 0, 0.3);
+  font-family: monospace;
 }
 
 .carousel-arrow:hover {
@@ -2031,6 +2084,7 @@ h2 {
   .carousel-arrow.visible {
     /* Ensure visible arrows are shown on mobile */
     opacity: 1 !important;
+    visibility: visible !important;
     pointer-events: auto !important;
   }
 
@@ -2516,6 +2570,7 @@ h2 {
   /* Preserve desktop carousel arrow visibility */
   .carousel-arrow {
     opacity: 0 !important;
+    visibility: hidden !important;
     pointer-events: none !important;
     padding: 0.75rem !important;
     min-width: 40px !important;
@@ -2524,6 +2579,7 @@ h2 {
 
   .carousel-arrow.visible {
     opacity: 1 !important;
+    visibility: visible !important;
     pointer-events: auto !important;
   }
 
@@ -4682,6 +4738,11 @@ h2 {
 :root[data-theme="dark"] .carousel-arrow {
   background: rgba(255, 255, 255, 0.6);
   border-color: var(--border-dark-primary);
+}
+
+:root[data-theme="dark"] .carousel-arrow img {
+  /* Remove inversion in dark mode - arrows should be black on white background */
+  filter: brightness(0);
 }
 
 :root[data-theme="dark"] .carousel-arrow:hover {

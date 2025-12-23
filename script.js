@@ -2844,6 +2844,51 @@ async function loadProductCardAssets(productId) {
     } else {
       console.log(`ℹ️ Skipping GitHub API call for card assets (local development or useLocalAssets=true)`);
       console.log(`   Product: ${folderName}, Card assets folder: ${cardAssetsFolder}`);
+
+      // DEBUG: Check jsonData availability
+      console.log(`🔍 DEBUG: product.jsonData exists: ${!!product.jsonData}`);
+      console.log(`🔍 DEBUG: product.jsonData.hosted_media exists: ${!!(product.jsonData && product.jsonData.hosted_media)}`);
+      if (product.jsonData && product.jsonData.hosted_media) {
+        console.log(`🔍 DEBUG: hosted_media keys: ${Object.keys(product.jsonData.hosted_media).join(', ')}`);
+      }
+
+      // When useLocalAssets is true, load media from hosted_media in JSON (Cloudinary URLs)
+      if (product.jsonData && product.jsonData.hosted_media) {
+        console.log(`📦 Loading carousel assets from hosted_media (Cloudinary)`);
+        const hostedMedia = product.jsonData.hosted_media;
+        const supportedFormats = {
+          image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
+          video: ['mp4', 'webm', 'ogg', 'mov']
+        };
+
+        for (const [filename, url] of Object.entries(hostedMedia)) {
+          // Skip icon files - they're added separately
+          if (filename.toLowerCase().startsWith('icon_')) {
+            continue;
+          }
+
+          const ext = filename.split('.').pop().toLowerCase();
+          let mediaType = 'other';
+
+          if (supportedFormats.image.includes(ext)) {
+            mediaType = 'image';
+          } else if (supportedFormats.video.includes(ext)) {
+            mediaType = 'video';
+          }
+
+          if (mediaType !== 'other') {
+            cardAssets.push({
+              type: mediaType,
+              url: url,
+              format: ext,
+              name: filename,
+              isIcon: false
+            });
+            console.log(`📦 Added hosted media asset: ${filename} (${mediaType})`);
+          }
+        }
+        console.log(`📊 Loaded ${cardAssets.length} assets from hosted_media`);
+      }
     }
 
     // Add static PNG icon at the end (if GIF was found) or at the beginning (if no GIF)
@@ -5697,9 +5742,6 @@ async function openAccountMenu() {
         <div class="account-menu-info-label">Status</div>
         <div class="account-menu-info-value">Not signed in</div>
       </div>
-      <div class="account-menu-info-item" style="margin-top: var(--space-medium);">
-        <a href="subscribe.html" class="account-menu-link" style="display: block; text-align: center;">Sign In / Subscribe</a>
-      </div>
     `;
     return;
   }
@@ -6533,6 +6575,7 @@ async function initializeCarousel(productId) {
   // Set initial position
   updateCarouselPosition();
   updateCarouselArrows();
+  updateCarouselIndicators(); // DEBUG: Update page indicators
   console.log(`🎠 Carousel initialized and positioned`);
 
   // Add event listeners for arrows
@@ -6547,6 +6590,43 @@ async function initializeCarousel(productId) {
   // This provides better control and prevents accidental swipes on mobile
 }
 
+// DEBUG: Update carousel page indicators
+function updateCarouselIndicators() {
+  const indicatorsContainer = document.getElementById('carousel-indicators');
+  if (!indicatorsContainer) {
+    console.warn('⚠️ Carousel indicators container not found');
+    return;
+  }
+
+  // Clear existing indicators
+  indicatorsContainer.innerHTML = '';
+
+  // Add debug info
+  const debugInfo = document.createElement('div');
+  debugInfo.className = 'carousel-debug-info';
+  debugInfo.textContent = `Items: ${carouselItems.length} | Current: ${carouselCurrentIndex} | Arrows: L=${document.getElementById('carousel-arrow-left')?.classList.contains('visible') ? 'ON' : 'OFF'} R=${document.getElementById('carousel-arrow-right')?.classList.contains('visible') ? 'ON' : 'OFF'}`;
+  indicatorsContainer.appendChild(debugInfo);
+
+  // Create dots for each carousel item
+  carouselItems.forEach((item, index) => {
+    const dot = document.createElement('button');
+    dot.className = 'carousel-indicator-dot';
+    if (index === carouselCurrentIndex) {
+      dot.classList.add('active');
+    }
+    dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+    dot.onclick = () => {
+      carouselCurrentIndex = index;
+      updateCarouselPosition();
+      updateCarouselArrows();
+      updateCarouselIndicators();
+    };
+    indicatorsContainer.appendChild(dot);
+  });
+
+  console.log(`🔘 Updated carousel indicators: ${carouselItems.length} dots, current=${carouselCurrentIndex}`);
+}
+
 // Navigate carousel
 function navigateCarousel(direction) {
   if (carouselItems.length === 0) return;
@@ -6559,6 +6639,7 @@ function navigateCarousel(direction) {
 
   updateCarouselPosition();
   updateCarouselArrows();
+  updateCarouselIndicators(); // DEBUG: Update page indicators
 }
 
 // Update carousel position
