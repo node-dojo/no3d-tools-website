@@ -16,17 +16,6 @@ import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 import { sendMagicLinkEmail } from '../lib/email.js';
 
-// Initialize Polar SDK
-const polar = new Polar({
-  accessToken: process.env.POLAR_API_TOKEN,
-});
-
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
 // Magic link token key prefix
 const AUTH_TOKEN_KEY = (token) => `auth:token:${token}`;
 
@@ -96,6 +85,17 @@ export default async function handler(req, res) {
     }
 
     console.log(`🔐 Magic link request for ${normalizedEmail}`);
+
+    // Initialize Polar SDK
+    const polar = new Polar({
+      accessToken: process.env.POLAR_API_TOKEN,
+    });
+
+    // Initialize Redis client
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
 
     // Look up customer in Polar
     let customer = null;
