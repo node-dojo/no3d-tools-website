@@ -978,7 +978,7 @@ body {
 
 /* Left Section Styles */
 .product-left-section {
-  width: 555px;
+  width: 600px;
   min-height: 494px; /* Minimum height to maintain design */
   height: 100%; /* Fill available space */
   display: flex;
@@ -1338,7 +1338,7 @@ h2 {
 
 .product-image-carousel {
   width: 100%;
-  height: 320px;
+  height: 450px;
   position: relative;
   display: flex;
   align-items: center;
@@ -1376,8 +1376,8 @@ h2 {
   height: 100%;
   object-fit: contain;
   object-position: center;
-  max-width: 555px;
-  max-height: 320px;
+  max-width: 600px;
+  max-height: 450px;
   display: block;
 }
 
@@ -1385,10 +1385,10 @@ h2 {
 @media (max-width: 700px) {
   .carousel-item img,
   .carousel-item video {
-    /* Scale from 540px at 700px down to 300px at 300px */
-    max-width: clamp(300px, calc(60vw + 120px), 540px);
-    /* Maintain aspect ratio: height scales proportionally (540:320 = 1.6875:1) */
-    max-height: clamp(178px, calc(35.5vw + 71px), 320px);
+    /* Scale from 600px at 700px down to 300px at 300px */
+    max-width: clamp(300px, calc(60vw + 120px), 600px);
+    /* Maintain aspect ratio: height scales proportionally (600:450 = 1.333:1) */
+    max-height: clamp(225px, calc(45vw + 90px), 450px);
   }
 }
 
@@ -2433,7 +2433,7 @@ h2 {
 
   /* Preserve desktop product left section */
   .product-left-section {
-    width: 555px !important;
+    width: 600px !important;
     min-height: 494px !important;
     padding-right: 15px !important;
   }
@@ -2542,7 +2542,7 @@ h2 {
 
   /* Preserve desktop product image carousel height */
   .product-image-carousel {
-    height: 320px !important;
+    height: 450px !important;
   }
 
   /* Ensure product tags are visible on desktop */
