@@ -442,7 +442,6 @@ async function loadProductsFromJSON() {
       'Print Bed Preview_obj.json',
       'Chrome Crayon.json',
       'NODE CHROME.json',
-      'Gluefinity Grid_obj.json',
       // Gift Cards
       '3 Month Membership Gift.json',
       'Dojo Christmas Gift Card $33.json',

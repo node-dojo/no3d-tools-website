@@ -700,7 +700,7 @@ body {
    ============================================================================ */
 
 .home-cta-banner {
-  width: 100%;
+  width: calc(100% - 2 * var(--space-medium));
   height: 150px;
   min-height: 150px;
   background-color: var(--color-lello);
