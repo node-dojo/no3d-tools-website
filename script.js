@@ -2843,51 +2843,85 @@ async function loadProductCardAssets(productId) {
       }
     } else {
       console.log(`ℹ️ Skipping GitHub API call for card assets (local development or useLocalAssets=true)`);
-      console.log(`   Product: ${folderName}, Card assets folder: ${cardAssetsFolder}`);
+      console.log(`   Product: ${folderName}`);
 
-      // DEBUG: Check jsonData availability
-      console.log(`🔍 DEBUG: product.jsonData exists: ${!!product.jsonData}`);
-      console.log(`🔍 DEBUG: product.jsonData.hosted_media exists: ${!!(product.jsonData && product.jsonData.hosted_media)}`);
-      if (product.jsonData && product.jsonData.hosted_media) {
-        console.log(`🔍 DEBUG: hosted_media keys: ${Object.keys(product.jsonData.hosted_media).join(', ')}`);
-      }
+      // When useLocalAssets is true, load media from JSON (Cloudinary URLs)
+      // Priority: carousel_media (curated selection) > hosted_media (all media)
+      if (product.jsonData) {
+        const hostedMedia = product.jsonData.hosted_media || {};
+        const carouselMedia = product.jsonData.carousel_media || [];
 
-      // When useLocalAssets is true, load media from hosted_media in JSON (Cloudinary URLs)
-      if (product.jsonData && product.jsonData.hosted_media) {
-        console.log(`📦 Loading carousel assets from hosted_media (Cloudinary)`);
-        const hostedMedia = product.jsonData.hosted_media;
         const supportedFormats = {
           image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
           video: ['mp4', 'webm', 'ogg', 'mov']
         };
 
-        for (const [filename, url] of Object.entries(hostedMedia)) {
-          // Skip icon files - they're added separately
-          if (filename.toLowerCase().startsWith('icon_')) {
-            continue;
-          }
+        // If carousel_media is defined, only load those specific files in order
+        if (carouselMedia.length > 0) {
+          console.log(`📦 Loading carousel assets from carousel_media (${carouselMedia.length} items)`);
 
-          const ext = filename.split('.').pop().toLowerCase();
-          let mediaType = 'other';
+          for (const filename of carouselMedia) {
+            // Get the URL from hosted_media
+            const url = hostedMedia[filename];
+            if (!url) {
+              console.warn(`⚠️ Carousel media file not found in hosted_media: ${filename}`);
+              continue;
+            }
 
-          if (supportedFormats.image.includes(ext)) {
-            mediaType = 'image';
-          } else if (supportedFormats.video.includes(ext)) {
-            mediaType = 'video';
-          }
+            const ext = filename.split('.').pop().toLowerCase();
+            let mediaType = 'other';
 
-          if (mediaType !== 'other') {
-            cardAssets.push({
-              type: mediaType,
-              url: url,
-              format: ext,
-              name: filename,
-              isIcon: false
-            });
-            console.log(`📦 Added hosted media asset: ${filename} (${mediaType})`);
+            if (supportedFormats.image.includes(ext)) {
+              mediaType = 'image';
+            } else if (supportedFormats.video.includes(ext)) {
+              mediaType = 'video';
+            }
+
+            if (mediaType !== 'other') {
+              cardAssets.push({
+                type: mediaType,
+                url: url,
+                format: ext,
+                name: filename,
+                isIcon: false
+              });
+              console.log(`📦 Added carousel media asset: ${filename} (${mediaType})`);
+            }
           }
+          console.log(`📊 Loaded ${cardAssets.length} assets from carousel_media`);
         }
-        console.log(`📊 Loaded ${cardAssets.length} assets from hosted_media`);
+        // Fallback: load all non-icon media from hosted_media
+        else if (Object.keys(hostedMedia).length > 0) {
+          console.log(`📦 Loading carousel assets from hosted_media (no carousel_media defined)`);
+
+          for (const [filename, url] of Object.entries(hostedMedia)) {
+            // Skip icon files - they're added separately
+            if (filename.toLowerCase().startsWith('icon_')) {
+              continue;
+            }
+
+            const ext = filename.split('.').pop().toLowerCase();
+            let mediaType = 'other';
+
+            if (supportedFormats.image.includes(ext)) {
+              mediaType = 'image';
+            } else if (supportedFormats.video.includes(ext)) {
+              mediaType = 'video';
+            }
+
+            if (mediaType !== 'other') {
+              cardAssets.push({
+                type: mediaType,
+                url: url,
+                format: ext,
+                name: filename,
+                isIcon: false
+              });
+              console.log(`📦 Added hosted media asset: ${filename} (${mediaType})`);
+            }
+          }
+          console.log(`📊 Loaded ${cardAssets.length} assets from hosted_media`);
+        }
       }
     }
 
@@ -6575,7 +6609,6 @@ async function initializeCarousel(productId) {
   // Set initial position
   updateCarouselPosition();
   updateCarouselArrows();
-  updateCarouselIndicators(); // DEBUG: Update page indicators
   console.log(`🎠 Carousel initialized and positioned`);
 
   // Add event listeners for arrows
@@ -6590,43 +6623,6 @@ async function initializeCarousel(productId) {
   // This provides better control and prevents accidental swipes on mobile
 }
 
-// DEBUG: Update carousel page indicators
-function updateCarouselIndicators() {
-  const indicatorsContainer = document.getElementById('carousel-indicators');
-  if (!indicatorsContainer) {
-    console.warn('⚠️ Carousel indicators container not found');
-    return;
-  }
-
-  // Clear existing indicators
-  indicatorsContainer.innerHTML = '';
-
-  // Add debug info
-  const debugInfo = document.createElement('div');
-  debugInfo.className = 'carousel-debug-info';
-  debugInfo.textContent = `Items: ${carouselItems.length} | Current: ${carouselCurrentIndex} | Arrows: L=${document.getElementById('carousel-arrow-left')?.classList.contains('visible') ? 'ON' : 'OFF'} R=${document.getElementById('carousel-arrow-right')?.classList.contains('visible') ? 'ON' : 'OFF'}`;
-  indicatorsContainer.appendChild(debugInfo);
-
-  // Create dots for each carousel item
-  carouselItems.forEach((item, index) => {
-    const dot = document.createElement('button');
-    dot.className = 'carousel-indicator-dot';
-    if (index === carouselCurrentIndex) {
-      dot.classList.add('active');
-    }
-    dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
-    dot.onclick = () => {
-      carouselCurrentIndex = index;
-      updateCarouselPosition();
-      updateCarouselArrows();
-      updateCarouselIndicators();
-    };
-    indicatorsContainer.appendChild(dot);
-  });
-
-  console.log(`🔘 Updated carousel indicators: ${carouselItems.length} dots, current=${carouselCurrentIndex}`);
-}
-
 // Navigate carousel
 function navigateCarousel(direction) {
   if (carouselItems.length === 0) return;
@@ -6639,7 +6635,6 @@ function navigateCarousel(direction) {
 
   updateCarouselPosition();
   updateCarouselArrows();
-  updateCarouselIndicators(); // DEBUG: Update page indicators
 }
 
 // Update carousel position
