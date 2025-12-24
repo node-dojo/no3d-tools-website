@@ -320,9 +320,9 @@
                 const response = await fetch('https://api.github.com/repos/node-dojo/no3d-tools-library/contents');
                 if (response.ok) {
                     const contents = await response.json();
-                    // Count Dojo* folders (product categories)
-                    const productFolders = contents.filter(item => 
-                        item.type === 'dir' && item.name.startsWith('Dojo')
+                    // Count product folders
+                    const productFolders = contents.filter(item =>
+                        item.type === 'dir'
                     );
                     const count = productFolders.length;
                     
