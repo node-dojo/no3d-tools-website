@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "0.00",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-CALIPERS",
       "inventory_policy": "continue",
       "inventory_management": "polar"
@@ -121,7 +121,7 @@
       "key": "thumbnail",
       "value": "icon_Dojo Calipers.png",
       "type": "single_line_text_field",
-      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693706/no3d-tools/dojo-calipers/icon_Dojo-Calipers.png"
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766606963/no3d-tools/-media-upload-status/icon_digital-caliper-controller.png"
     },
     {
       "namespace": "polar",
@@ -161,8 +161,20 @@
     }
   ],
   "hosted_media": {
-    "icon_Dojo Calipers.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693706/no3d-tools/dojo-calipers/icon_Dojo-Calipers.png"
+    "icon_Dojo Calipers.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766567208/no3d-tools/-media-upload-status/icon_Dojo-Calipers.png",
+    "0001-0064.mkv": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766569596/no3d-tools/-media-upload-status/0001-0064.mkv",
+    "Dojo Calipers.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766569706/no3d-tools/-media-upload-status/Dojo-Calipers.gif",
+    "caliper 1280.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766569882/no3d-tools/-media-upload-status/caliper-1280.png",
+    "caliper 1280_2.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766569911/no3d-tools/-media-upload-status/caliper-1280_2.png",
+    "icon_1_calipers.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766606963/no3d-tools/-media-upload-status/icon_1_calipers.png",
+    "icon_digital caliper controller.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766606963/no3d-tools/-media-upload-status/icon_digital-caliper-controller.png",
+    "imagepaste-251224-025204.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766569928/no3d-tools/-media-upload-status/imagepaste-251224-025204.png"
   },
+  "carousel_media": [
+    "caliper 1280_2.png",
+    "imagepaste-251224-025204.png",
+    "0001-0064.mkv"
+  ],
   "polar": {
     "product_id": "2092d69f-a243-468c-b1ca-48f7cea19e68"
   }
