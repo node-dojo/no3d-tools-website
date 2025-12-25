@@ -66,7 +66,8 @@ export default async function handler(req, res) {
       if (error.code === 'PGRST116') {
         // Product not found
         return res.status(404).json({
-          error: 'Product not found'
+          error: 'Product not found',
+          handle
         })
       }
       throw error
@@ -74,7 +75,8 @@ export default async function handler(req, res) {
 
     if (!data) {
       return res.status(404).json({
-        error: 'Product not found'
+        error: 'Product not found',
+        handle
       })
     }
 
@@ -115,4 +117,3 @@ export default async function handler(req, res) {
     })
   }
 }
-
