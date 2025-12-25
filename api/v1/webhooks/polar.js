@@ -7,6 +7,7 @@
  */
 
 import { Polar } from '@polar-sh/sdk';
+import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { isGiftCardProduct, createGiftCardDiscount } from '../../gift-cards/generate.js';
 import { sendGiftCardEmail } from '../../gift-cards/email.js';
@@ -14,6 +15,17 @@ import { consumePendingDebit, debitCredit, redis } from '../../../lib/credit.js'
 
 const POLAR_API_TOKEN = process.env.POLAR_API_TOKEN;
 const POLAR_WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Initialize Supabase client with service role for webhook operations
+let supabase = null;
+function getSupabase() {
+  if (!supabase && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  }
+  return supabase;
+}
 
 /**
  * Verify Polar webhook signature
@@ -87,8 +99,42 @@ async function handleSubscriptionCreated(data) {
   console.log(`   Subscription ID: ${data.id}`);
   console.log(`   Product ID: ${data.product_id}`);
 
-  // TODO: Store subscription in database or Polar metadata
-  // For MVP, we'll just log and use Polar API for verification
+  const db = getSupabase();
+  if (!db) {
+    console.warn('   ⚠️  Supabase not configured, skipping database storage');
+    return;
+  }
+
+  try {
+    const customerEmail = data.customer?.email || data.user?.email || '';
+
+    const { error } = await db
+      .from('subscriptions')
+      .upsert({
+        polar_subscription_id: data.id,
+        customer_id: data.customer_id || data.user_id,
+        customer_email: customerEmail,
+        product_id: data.product_id,
+        status: data.status || 'active',
+        started_at: data.started_at || data.created_at || new Date().toISOString(),
+        current_period_end: data.current_period_end,
+        metadata: {
+          polar_data: data,
+          product_name: data.product?.name,
+          price_id: data.price_id
+        }
+      }, {
+        onConflict: 'polar_subscription_id'
+      });
+
+    if (error) {
+      console.error(`   ❌ Error storing subscription:`, error);
+    } else {
+      console.log(`   ✅ Subscription stored in database`);
+    }
+  } catch (error) {
+    console.error(`   ❌ Error in handleSubscriptionCreated:`, error);
+  }
 }
 
 /**
@@ -99,7 +145,47 @@ async function handleSubscriptionUpdated(data) {
   console.log(`   Subscription ID: ${data.id}`);
   console.log(`   Status: ${data.status}`);
 
-  // TODO: Update subscription status in database
+  const db = getSupabase();
+  if (!db) {
+    console.warn('   ⚠️  Supabase not configured, skipping database update');
+    return;
+  }
+
+  try {
+    const updateData = {
+      status: data.status,
+      current_period_end: data.current_period_end,
+      updated_at: new Date().toISOString()
+    };
+
+    // Update metadata with latest polar data
+    const { data: existing } = await db
+      .from('subscriptions')
+      .select('metadata')
+      .eq('polar_subscription_id', data.id)
+      .single();
+
+    if (existing) {
+      updateData.metadata = {
+        ...existing.metadata,
+        polar_data: data,
+        last_updated_event: 'subscription.updated'
+      };
+    }
+
+    const { error } = await db
+      .from('subscriptions')
+      .update(updateData)
+      .eq('polar_subscription_id', data.id);
+
+    if (error) {
+      console.error(`   ❌ Error updating subscription:`, error);
+    } else {
+      console.log(`   ✅ Subscription updated in database`);
+    }
+  } catch (error) {
+    console.error(`   ❌ Error in handleSubscriptionUpdated:`, error);
+  }
 }
 
 /**
@@ -110,8 +196,31 @@ async function handleSubscriptionCanceled(data) {
   console.log(`   Subscription ID: ${data.id}`);
   console.log(`   Customer ID: ${data.customer_id}`);
 
-  // TODO: Mark subscription for end-of-period revocation
-  // Access remains until period ends
+  const db = getSupabase();
+  if (!db) {
+    console.warn('   ⚠️  Supabase not configured, skipping database update');
+    return;
+  }
+
+  try {
+    const { error } = await db
+      .from('subscriptions')
+      .update({
+        status: 'canceled',
+        canceled_at: data.canceled_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('polar_subscription_id', data.id);
+
+    if (error) {
+      console.error(`   ❌ Error updating subscription:`, error);
+    } else {
+      console.log(`   ✅ Subscription marked as canceled in database`);
+      console.log(`   ℹ️  Access remains until period ends`);
+    }
+  } catch (error) {
+    console.error(`   ❌ Error in handleSubscriptionCanceled:`, error);
+  }
 }
 
 /**
@@ -122,7 +231,31 @@ async function handleSubscriptionRevoked(data) {
   console.log(`   Subscription ID: ${data.id}`);
   console.log(`   Customer ID: ${data.customer_id}`);
 
-  // TODO: Immediately revoke access
+  const db = getSupabase();
+  if (!db) {
+    console.warn('   ⚠️  Supabase not configured, skipping database update');
+    return;
+  }
+
+  try {
+    const { error } = await db
+      .from('subscriptions')
+      .update({
+        status: 'revoked',
+        revoked_at: data.revoked_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('polar_subscription_id', data.id);
+
+    if (error) {
+      console.error(`   ❌ Error updating subscription:`, error);
+    } else {
+      console.log(`   ✅ Subscription marked as revoked in database`);
+      console.log(`   🚫 Access immediately revoked`);
+    }
+  } catch (error) {
+    console.error(`   ❌ Error in handleSubscriptionRevoked:`, error);
+  }
 }
 
 /**
@@ -150,6 +283,49 @@ async function handleOrderCreated(data) {
   if (!customerEmail) {
     console.warn('   ⚠️  No customer email found in order');
     return;
+  }
+
+  // Store order in database
+  const db = getSupabase();
+  if (db) {
+    try {
+      const items = data.items || data.line_items || [];
+      const primaryProductId = items[0]?.product_id || items[0]?.product?.id || null;
+
+      const { error } = await db
+        .from('orders')
+        .upsert({
+          polar_order_id: data.id,
+          customer_id: data.customer_id || data.user_id,
+          customer_email: customerEmail,
+          product_id: primaryProductId,
+          amount: data.amount || data.total || 0,
+          currency: data.currency || 'usd',
+          status: 'completed',
+          metadata: {
+            polar_data: data,
+            items: items.map(item => ({
+              product_id: item.product_id || item.product?.id,
+              product_name: item.product?.name || item.name,
+              amount: item.amount || item.price
+            })),
+            discount: data.discount,
+            billing_address: data.billing_address
+          }
+        }, {
+          onConflict: 'polar_order_id'
+        });
+
+      if (error) {
+        console.error(`   ❌ Error storing order:`, error);
+      } else {
+        console.log(`   ✅ Order stored in database`);
+      }
+    } catch (error) {
+      console.error(`   ❌ Error in order storage:`, error);
+    }
+  } else {
+    console.warn('   ⚠️  Supabase not configured, skipping order storage');
   }
 
   // Check if a credit discount was used (by checking discount metadata)
