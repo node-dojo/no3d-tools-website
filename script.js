@@ -302,9 +302,142 @@ window.refreshPolarPrices = refreshPricesFromPolar;
 // Initialize dev customer ID on page load if needed
 initializeDevCustomerId();
 
+// Supabase Realtime subscription
+let supabaseClient = null;
+let supabaseRealtimeChannel = null;
+
+/**
+ * Initialize Supabase client and set up Realtime subscription
+ */
+async function initializeSupabaseRealtime() {
+  try {
+    // Wait for Supabase client to load from CDN (with timeout)
+    let createClient = null;
+    const maxWaitTime = 5000; // 5 seconds
+    const checkInterval = 100; // Check every 100ms
+    let waited = 0;
+    
+    while (!createClient && waited < maxWaitTime) {
+      if (window.supabase && window.supabase.createClient) {
+        createClient = window.supabase.createClient;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+      waited += checkInterval;
+    }
+    
+    if (!createClient) {
+      console.warn('⚠️ Supabase client not loaded from CDN after timeout, skipping Realtime');
+      return;
+    }
+
+    // Fetch public config
+    const configResponse = await fetch('/api/config');
+    if (!configResponse.ok) {
+      console.warn('⚠️ Could not fetch Supabase config, skipping Realtime');
+      return;
+    }
+
+    const config = await configResponse.json();
+    if (!config.supabase || !config.supabase.url || !config.supabase.anonKey) {
+      console.warn('⚠️ Supabase not configured, skipping Realtime');
+      return;
+    }
+
+    // Initialize Supabase client
+    supabaseClient = createClient(config.supabase.url, config.supabase.anonKey, {
+      realtime: {
+        params: {
+          eventsPerSecond: 10
+        }
+      }
+    });
+
+    // Set up Realtime subscription for products table
+    supabaseRealtimeChannel = supabaseClient
+      .channel('products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'products',
+          filter: 'status=eq.active' // Only listen for active products
+        },
+        async (payload) => {
+          console.log('🔄 Product change detected via Realtime:', payload.eventType, payload.new || payload.old);
+          
+          // Reload products when changes are detected
+          try {
+            await loadProductsFromSupabase();
+            console.log('✅ Products reloaded after Realtime update');
+            
+            // Re-organize and re-render
+            organizeProductsByType();
+            renderSidebar();
+            
+            // Update display if a product is currently selected
+            if (currentProduct && products[currentProduct]) {
+              await updateProductDisplay(currentProduct);
+            } else {
+              // If on home grid, re-render it
+              renderHomeGrid();
+            }
+            
+            updateViewState();
+          } catch (error) {
+            console.error('❌ Error reloading products after Realtime update:', error);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Supabase Realtime subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Supabase Realtime channel error');
+        } else if (status === 'TIMED_OUT') {
+          console.warn('⚠️ Supabase Realtime subscription timed out');
+        } else if (status === 'CLOSED') {
+          console.warn('⚠️ Supabase Realtime subscription closed');
+        }
+      });
+
+    console.log('✅ Supabase Realtime initialized');
+  } catch (error) {
+    console.warn('⚠️ Failed to initialize Supabase Realtime (non-critical):', error);
+    // Don't throw - Realtime is optional, polling will still work
+  }
+}
+
+/**
+ * Clean up Realtime subscription
+ */
+function cleanupSupabaseRealtime() {
+  if (supabaseRealtimeChannel) {
+    supabaseClient?.removeChannel(supabaseRealtimeChannel);
+    supabaseRealtimeChannel = null;
+    console.log('🧹 Supabase Realtime subscription cleaned up');
+  }
+}
+
+// Clean up on page unload
+window.addEventListener('beforeunload', cleanupSupabaseRealtime);
+
 document.addEventListener('DOMContentLoaded', async function() {
   try {
-    await loadProductsFromJSON();
+    // Try to load from Supabase first, fallback to JSON
+    try {
+      await loadProductsFromSupabase();
+      console.log('✅ Products loaded from Supabase');
+      
+      // Initialize Realtime subscription after successful load
+      await initializeSupabaseRealtime();
+    } catch (supabaseError) {
+      console.warn('⚠️ Failed to load from Supabase, falling back to JSON:', supabaseError);
+      await loadProductsFromJSON();
+      console.log('✅ Products loaded from JSON files');
+    }
+    
     organizeProductsByType();
     renderSidebar();
     initializeEventListeners();
@@ -320,7 +453,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Start periodic price refresh
     startPriceRefresh();
   } catch (error) {
-    console.warn('Failed to load products from JSON, using fallback data:', error);
+    console.warn('Failed to load products, using fallback data:', error);
     products = defaultProducts;
     // Add productType to default products
     Object.keys(products).forEach(key => {
@@ -420,6 +553,216 @@ async function refreshPricesFromPolar() {
   } catch (error) {
     console.error('Error refreshing prices:', error);
     return 0;
+  }
+}
+
+// Load Products from Supabase API
+async function loadProductsFromSupabase() {
+  try {
+    console.log('🔄 Loading products from Supabase...');
+    
+    const response = await fetch('/api/products');
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Handle both old array format and new paginated format
+    const supabaseProducts = Array.isArray(data) ? data : (data.products || []);
+
+    if (supabaseProducts.length === 0) {
+      console.warn('⚠️ No products returned from Supabase, falling back to JSON');
+      throw new Error('No products from Supabase');
+    }
+
+    if (data.total !== undefined) {
+      console.log(`📊 Total products available: ${data.total}`);
+    }
+
+    products = {};
+    
+    // Fetch Polar prices first (for price updates)
+    const polarPrices = await syncPricesFromPolar();
+    
+    for (const productData of supabaseProducts) {
+      try {
+        const productId = productData.handle || 
+          productData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        
+        // Get thumbnail/image
+        let thumbnail = productData.image || null;
+        
+        // Check hosted_media for thumbnail
+        if (!thumbnail && productData.hosted_media) {
+          if (productData.thumbnail_image && productData.hosted_media[productData.thumbnail_image]) {
+            thumbnail = productData.hosted_media[productData.thumbnail_image];
+          } else {
+            // Try to find any image in hosted_media
+            const mediaKeys = Object.keys(productData.hosted_media);
+            const imageKey = mediaKeys.find(key => 
+              key.match(/\.(png|jpg|jpeg|gif|webp)$/i)
+            );
+            if (imageKey) {
+              thumbnail = productData.hosted_media[imageKey];
+            }
+          }
+        }
+        
+        // Fallback to local icon if no hosted image
+        if (!thumbnail) {
+          const folderName = productData.handle || productId;
+          thumbnail = getProductIconUrl(folderName);
+        }
+        
+        // Get price from Polar if available, otherwise use Supabase price
+        let price = productData.price || '$0.00';
+        
+        // Try to get updated price from Polar
+        if (productData.polar_product_id && polarPrices[productData.polar_product_id]) {
+          const polarPrice = polarPrices[productData.polar_product_id];
+          if (polarPrice && polarPrice.formatted) {
+            price = polarPrice.formatted;
+            console.log(`✅ Synced price for ${productId}: ${price} from Polar`);
+          }
+        }
+        
+        // Extract product groups from tags
+        const productGroups = (productData.tags || []).filter(tag => {
+          return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
+        });
+        
+        // Normalize changelog format
+        let changelog = [];
+        if (productData.changelog && Array.isArray(productData.changelog)) {
+          productData.changelog.forEach(entry => {
+            if (typeof entry === 'string') {
+              changelog.push({
+                version: '',
+                date: '',
+                changes: [entry]
+              });
+            } else if (entry && entry.changes) {
+              const normalizedEntry = {
+                version: entry.version || '',
+                date: entry.date || '',
+                changes: []
+              };
+              
+              if (Array.isArray(entry.changes)) {
+                normalizedEntry.changes = entry.changes
+                  .filter(change => change && change.trim())
+                  .map(change => change.trim());
+              } else if (typeof entry.changes === 'string' && entry.changes.trim()) {
+                normalizedEntry.changes = [entry.changes.trim()];
+              }
+              
+              if (normalizedEntry.changes.length > 0) {
+                changelog.push(normalizedEntry);
+              }
+            }
+          });
+        }
+        
+        // Get description (use from Supabase or try to load from markdown)
+        let description = productData.description || generateDescription(productData.title);
+        
+        // Try to load description from markdown file
+        const folderName = productData.handle || productId;
+        try {
+          const descBasePath = `/assets/product-docs/${folderName}`;
+          const descPatterns = [
+            `desc_${folderName}.md`,
+            `desc_${folderName.toLowerCase().replace(/\s+/g, '-')}.md`,
+            `${folderName}_desc.md`
+          ];
+          
+          let descUrl = null;
+          for (const pattern of descPatterns) {
+            const pathParts = descBasePath.split('/').filter(part => part.length > 0);
+            const encodedPathParts = pathParts.map(part => encodeURIComponent(part));
+            const encodedBasePath = '/' + encodedPathParts.join('/');
+            const encodedPattern = encodeURIComponent(pattern);
+            const testUrl = `${encodedBasePath}/${encodedPattern}`;
+            
+            try {
+              const testResponse = await fetch(testUrl, { method: 'HEAD' });
+              if (testResponse.ok) {
+                descUrl = testUrl;
+                break;
+              }
+            } catch (e) {
+              try {
+                const testResponse = await fetch(testUrl);
+                if (testResponse.ok) {
+                  descUrl = testUrl;
+                  break;
+                }
+              } catch (e2) {
+                // Continue to next pattern
+              }
+            }
+          }
+          
+          if (descUrl) {
+            const descResponse = await fetch(descUrl);
+            if (descResponse.ok) {
+              description = await descResponse.text();
+            }
+          }
+        } catch (error) {
+          // Use Supabase description if markdown load fails
+          console.debug(`Could not load desc_*.md for ${folderName}, using Supabase description`);
+        }
+        
+        products[productId] = {
+          name: productData.title.toUpperCase(),
+          price: price,
+          description: description,
+          changelog: changelog,
+          image3d: thumbnail,
+          icon: thumbnail,
+          productType: productData.type || 'tools',
+          groups: productGroups,
+          handle: productData.handle || productId,
+          jsonData: productData, // Store full data for hosted_media access
+          polarProductId: productData.polar_product_id || null,
+          folderName: folderName,
+          metafields: productData.metafields || [],
+          folder: folderName,
+          library: 'no3d-tools-library'
+        };
+      } catch (error) {
+        console.warn(`Failed to process product ${productData.handle || productData.title}:`, error);
+      }
+    }
+    
+    if (Object.keys(products).length === 0) {
+      throw new Error('No products loaded from Supabase');
+    }
+    
+    console.log(`✅ Loaded ${Object.keys(products).length} products from Supabase`);
+    
+    // Log price summary
+    const productsWithPrices = Object.keys(products).filter(id => 
+      products[id].price && products[id].price !== '$0.00'
+    );
+    const productsWithoutPrices = Object.keys(products).filter(id => 
+      !products[id].price || products[id].price === '$0.00'
+    );
+    
+    console.log(`📊 Price Summary: ${productsWithPrices.length} products with prices, ${productsWithoutPrices.length} products without prices`);
+    
+    // Update display if a product is currently selected
+    if (currentProduct && products[currentProduct]) {
+      await updateProductDisplay(currentProduct);
+    }
+    
+    return products;
+  } catch (error) {
+    console.error('Error loading products from Supabase:', error);
+    throw error;
   }
 }
 
