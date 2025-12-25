@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "0.00",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-GLUEFINITY-GRID-OBJ",
       "inventory_policy": "continue",
       "inventory_management": "polar"
@@ -149,9 +149,6 @@
     }
   ],
   "hosted_media": {
-    "icon_Dojo Gluefinity Grid_obj.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693713/no3d-tools/dojo-gluefinity-grid_obj/icon_Dojo-Gluefinity-Grid_obj.png"
-  },
-  "polar": {
-    "product_id": "b3c265a8-272d-41b7-930d-529538b41f8a"
+    "icon_Dojo Gluefinity Grid_obj.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766631232/no3d-tools/dojo-gluefinity-grid_obj/icon_Dojo-Gluefinity-Grid_obj.png"
   }
 }

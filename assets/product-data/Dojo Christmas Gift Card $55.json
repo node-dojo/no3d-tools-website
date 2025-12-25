@@ -48,7 +48,8 @@
       "namespace": "no3d_tools",
       "key": "thumbnail",
       "value": "icon_Dojo Christmas Gift Card $55.png",
-      "type": "single_line_text_field"
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766449226/no3d-tools/dojo-christmas-gift-card--55/icon_Dojo-Christmas-Gift-Card--55.svg"
     },
     {
       "namespace": "polar",
@@ -63,14 +64,16 @@
       "type": "single_line_text_field"
     }
   ],
-  "thumbnail_image": "icon_Dojo Christmas Gift Card $55.png",
-  "hosted_media": {
-    "icon_Dojo Christmas Gift Card $55.png": "/assets/product-images/icon_Dojo Christmas Gift Card $55.png"
-  },
   "polar": {
     "product_id": "7d677970-f244-48fa-aba9-e1e91c977a88",
-    "benefit_id": "102079dd-7568-4678-b0e9-e04695ac6013",
-    "file_id": "2841cb23-c678-4089-b655-c51c61e6c6d2",
-    "last_synced": "2025-12-21T22:33:31.477Z"
+    "benefit_id": "98940927-b989-42d6-955e-9fa09bd1f839",
+    "file_id": "fe34b1f9-86b0-4727-922b-7ecd8a26a67f",
+    "last_synced": "2025-12-23T03:21:30.803Z"
+  },
+  "hosted_media": {
+    "icon_Dojo Christmas Gift Card $55.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766449225/no3d-tools/dojo-christmas-gift-card--55/icon_Dojo-Christmas-Gift-Card--55.png",
+    "icon_Dojo Christmas Gift Card $55.svg": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766449226/no3d-tools/dojo-christmas-gift-card--55/icon_Dojo-Christmas-Gift-Card--55.svg",
+    "icon_Dojo Christmas Gift Card $111.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766533784/no3d-tools/-media-upload-status/icon_Dojo-Christmas-Gift-Card--111.png",
+    "gift card 111_icon.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766543817/no3d-tools/-media-upload-status/gift-card-111_icon.png"
   }
 }

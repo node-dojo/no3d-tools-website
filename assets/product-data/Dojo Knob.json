@@ -14,7 +14,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "0.00",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-KNOB",
       "inventory_policy": "continue",
       "inventory_management": "polar"
@@ -102,10 +102,6 @@
     }
   ],
   "hosted_media": {
-    "Dojo Knob.gif": "/assets/product-images/Dojo Knob.gif",
-    "icon_Dojo Knob.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693710/no3d-tools/dojo-knob/icon_Dojo-Knob.png"
-  },
-  "polar": {
-    "product_id": "c17384fb-dee6-4d86-891c-ed02bbb2e5d7"
+    "icon_Dojo Knob.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766631235/no3d-tools/dojo-knob/icon_Dojo-Knob.png"
   }
 }

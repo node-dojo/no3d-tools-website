@@ -13,10 +13,10 @@
   "status": "active",
   "variants": [
     {
-      "price": "0.00",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-BOLT-GEN-V05",
       "inventory_policy": "continue",
-      "inventory_management": "polar"
+      "inventory_management": "shopify"
     }
   ],
   "metafields": [
@@ -61,7 +61,7 @@
       "key": "thumbnail",
       "value": "icon_Dojo Bolt Gen v05.png",
       "type": "single_line_text_field",
-      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448738/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png"
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448741/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05_inverted.png"
     },
     {
       "namespace": "polar",
@@ -101,9 +101,8 @@
     }
   ],
   "hosted_media": {
-    "Dojo Bolt Gen v05.gif": "/assets/product-images/Dojo Bolt Gen v05.gif",
-    "icon_Dojo Bolt Gen v05.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448738/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png",
     "bolt gen demo 6.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765770922/no3d-tools/-media-upload-status/bolt-gen-demo-6.gif",
+    "icon_Dojo Bolt Gen v05.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448738/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05.png",
     "bolt gen mod panel.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765769984/no3d-tools/-media-upload-status/bolt-gen-mod-panel.png",
     "bolt gen demo 3.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693667/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo-3.mov",
     "bolt gen demo2.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693675/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo2.mov",
@@ -119,9 +118,20 @@
     "dojo bolt print types.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448729/no3d-tools/dojo-bolt-gen-v05/dojo-bolt-print-types.mov",
     "instance bolts on faces.mp4": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448734/no3d-tools/dojo-bolt-gen-v05/instance-bolts-on-faces.mov",
     "mulitple print types.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448736/no3d-tools/dojo-bolt-gen-v05/mulitple-print-types.png",
-    "icon_Dojo Bolt Gen v05_inverted.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448741/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05_inverted.png"
+    "icon_Dojo Bolt Gen v05_inverted.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766448741/no3d-tools/dojo-bolt-gen-v05/icon_Dojo-Bolt-Gen-v05_inverted.png",
+    "sticky2@2x.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766629448/no3d-tools/-media-upload-status/sticky2-2x.png",
+    "bolt 1280 2.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766631212/no3d-tools/dojo-bolt-gen-v05/bolt-1280-2.gif"
   },
-  "polar": {
-    "product_id": "2fbe03f5-f6bc-4d53-a309-1b9aa7fa010c"
-  }
+  "carousel_media": [
+    "icon_Dojo Bolt Gen v05.png",
+    "bolt 1280 2.gif",
+    "bolt gen demo2.gif",
+    "bolt node group drop demo.gif",
+    "animated bolt assembly.mp4",
+    "bolt gen demo2.mov",
+    "bolt group gizmo adjust.mp4",
+    "bolt gen demo 6.gif"
+  ],
+  "changelog": [],
+  "thumbnail_image": null
 }

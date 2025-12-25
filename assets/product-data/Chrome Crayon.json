@@ -1,30 +1,42 @@
 {
   "title": "Chrome Crayon",
   "handle": "chrome-crayon",
-  "description": "Chrome Crayon is a distinctive Blender material asset that combines the reflective properties of chrome with a unique, stylized crayon-like appearance. This asset creates a playful yet sophisticated material effect that stands out in 3D renders, perfect for creative projects, product visualization, and stylized animations.",
+  "description": "",
   "vendor": "The Well Tarot",
   "product_type": "Blender Add-on",
-  "tags": ["chrome", "crayon", "material", "shader", "stylized", "blender", "addon", "3d", "asset"],
+  "tags": [],
   "status": "active",
   "variants": [
     {
-      "price": "22.22",
+      "price": "0.00",
       "sku": "NO3D-TOOLS-CHROME-CRAYON",
       "inventory_policy": "continue",
-      "inventory_management": "polar"
+      "inventory_management": "shopify"
     }
   ],
   "metafields": [
     {
       "namespace": "no3d_tools",
       "key": "asset_type",
-      "value": "MATERIAL",
+      "value": "GEOMETRY",
       "type": "single_line_text_field"
     },
     {
       "namespace": "no3d_tools",
       "key": "blender_version",
       "value": "5.0.0+",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-12-23",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "source_file",
+      "value": "",
       "type": "single_line_text_field"
     },
     {
@@ -40,11 +52,23 @@
       "type": "single_line_text_field"
     }
   ],
-  "polar": {
-    "product_id": "dd9334f8-2482-4896-97d1-f53a2dbc0cee"
-  },
+  "changelog": [],
   "hosted_media": {
     "3D chrome crayon skull.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766451189/no3d-tools/-media-upload-status/3D-chrome-crayon-skull.gif",
-    "chrome 4x3.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766459901/no3d-tools/chrome-crayon/chrome-4x3.webp"
-  }
+    "chrome 4x3.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766459901/no3d-tools/chrome-crayon/chrome-4x3.webp",
+    "chrome crayon2.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766459909/no3d-tools/chrome-crayon/chrome-crayon2.mov",
+    "node chrome banner.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766459914/no3d-tools/chrome-crayon/node-chrome-banner.gif",
+    "3D chrome crayon skull_compressed.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766451076/no3d-tools/-media-upload-status/3D-chrome-crayon-skull_compressed.gif"
+  },
+  "carousel_media": [
+    "bolt disassemble thumb.gif",
+    "bolt gen demo 3.gif",
+    "bolt gen demo 5.gif",
+    "icon_Dojo Bolt Gen v05_Obj.png",
+    "bolt gen demo 3.mov",
+    "chrome 4x3.gif",
+    "chorme crayon.mov",
+    "3D chrome crayon skull.gif",
+    "chrome crayon2.mov"
+  ]
 }

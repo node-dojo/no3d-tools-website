@@ -13,7 +13,7 @@
   "status": "active",
   "variants": [
     {
-      "price": "0.00",
+      "price": "7.77",
       "sku": "NO3D-TOOLS-DOJO-CRV-WRAPPER-V4",
       "inventory_policy": "continue",
       "inventory_management": "polar"
@@ -101,9 +101,6 @@
     }
   ],
   "hosted_media": {
-    "icon_Dojo Crv Wrapper v4.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693708/no3d-tools/dojo-crv-wrapper-v4/icon_Dojo-Crv-Wrapper-v4.png"
-  },
-  "polar": {
-    "product_id": "5d70352c-a1fa-4f2f-8729-6eec35126387"
+    "icon_Dojo Crv Wrapper v4.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766631226/no3d-tools/dojo-crv-wrapper-v4/icon_Dojo-Crv-Wrapper-v4.png"
   }
 }
