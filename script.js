@@ -832,6 +832,12 @@ async function loadProductsFromJSON() {
 
         const jsonData = await response.json();
 
+        // Skip archived products
+        if (jsonData.status === 'archived') {
+          console.log(`⏭️ Skipping archived product: ${fileName}`);
+          continue;
+        }
+
         // Create product ID from handle
         const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
