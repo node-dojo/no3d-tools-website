@@ -18,34 +18,46 @@ const indexPath = join(rootDir, 'index.html');
 try {
   // Get the current git commit hash (short version)
   let commitHash;
-  try {
-    commitHash = execSync('git rev-parse --short HEAD', {
-      cwd: rootDir,
-      encoding: 'utf-8'
-    }).trim();
-    console.log(`✅ Found git commit hash: ${commitHash}`);
-  } catch (error) {
-    // If git is not available or not in a git repo, use fallback
-    console.warn('⚠️ Could not get git commit hash, using fallback');
-    commitHash = process.env.VERCEL_GIT_COMMIT_SHA 
-      ? process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7)
-      : 'dev';
-    console.log(`   Using: ${commitHash}`);
+  
+  if (process.env.VERCEL_GIT_COMMIT_SHA) {
+    commitHash = process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7);
+    console.log(`✅ Found Vercel commit hash: ${commitHash}`);
+  } else {
+    try {
+      commitHash = execSync('git rev-parse --short HEAD', {
+        cwd: rootDir,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr to avoid log noise
+      }).trim();
+      console.log(`✅ Found git commit hash: ${commitHash}`);
+    } catch (error) {
+      // If git is not available or not in a git repo, use fallback
+      console.warn('⚠️ Could not get git commit hash, using fallback');
+      commitHash = 'dev';
+      console.log(`   Using: ${commitHash}`);
+    }
   }
 
   // Get the current git branch name
   let branchName;
-  try {
-    branchName = execSync('git rev-parse --abbrev-ref HEAD', {
-      cwd: rootDir,
-      encoding: 'utf-8'
-    }).trim();
-    console.log(`✅ Found git branch: ${branchName}`);
-  } catch (error) {
-    // If git is not available or not in a git repo, use fallback
-    console.warn('⚠️ Could not get git branch, using fallback');
-    branchName = process.env.VERCEL_GIT_COMMIT_REF || 'dev';
-    console.log(`   Using: ${branchName}`);
+  
+  if (process.env.VERCEL_GIT_COMMIT_REF) {
+    branchName = process.env.VERCEL_GIT_COMMIT_REF;
+    console.log(`✅ Found Vercel branch: ${branchName}`);
+  } else {
+    try {
+      branchName = execSync('git rev-parse --abbrev-ref HEAD', {
+        cwd: rootDir,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr
+      }).trim();
+      console.log(`✅ Found git branch: ${branchName}`);
+    } catch (error) {
+      // If git is not available or not in a git repo, use fallback
+      console.warn('⚠️ Could not get git branch, using fallback');
+      branchName = 'dev';
+      console.log(`   Using: ${branchName}`);
+    }
   }
 
   // Read the index.html file

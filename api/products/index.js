@@ -111,7 +111,18 @@ export default async function handler(req, res) {
       tags: p.tags,
       polarProductId: p.polar_product_id,
       sku: p.sku,
-      vendor: p.vendor
+      vendor: p.vendor,
+      metafields: p.metafields || [],
+      hosted_media: p.metadata?.hosted_media || {},
+      thumbnail_image: p.metadata?.thumbnail_image || null,
+      carousel_media: p.metadata?.carousel_media || [],
+      excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
+      main_image: p.metadata?.main_image || null,
+      changelog: p.metadata?.changelog || [],
+      polar: p.polar_product_id ? {
+        product_id: p.polar_product_id,
+        price_id: p.polar_price_id
+      } : null
     }))
 
     res.status(200).json({

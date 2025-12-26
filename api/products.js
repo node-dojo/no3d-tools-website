@@ -106,6 +106,9 @@ export default async function handler(req, res) {
       hosted_media: p.metadata?.hosted_media || {},
       // Additional fields from metadata
       thumbnail_image: p.metadata?.thumbnail_image,
+      carousel_media: p.metadata?.carousel_media || [],
+      main_image: p.metadata?.main_image,
+      excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
       metafields: p.metafields || [],
       variants: [{
         price: p.price ? parseFloat(p.price).toFixed(2) : '0.00',

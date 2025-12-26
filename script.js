@@ -588,9 +588,12 @@ async function loadProductsFromSupabase() {
     
     for (const productData of supabaseProducts) {
       try {
-        const productId = productData.handle || 
+        const productId = productData.handle ||
           productData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        
+
+        // Define folderName early so it's available throughout the product processing
+        const folderName = productData.handle || productId;
+
         // Get thumbnail/image
         let thumbnail = productData.image || null;
         
@@ -612,7 +615,6 @@ async function loadProductsFromSupabase() {
         
         // Fallback to local icon if no hosted image
         if (!thumbnail) {
-          const folderName = productData.handle || productId;
           thumbnail = getProductIconUrl(folderName);
         }
         
@@ -620,8 +622,9 @@ async function loadProductsFromSupabase() {
         let price = productData.price || '$0.00';
         
         // Try to get updated price from Polar
-        if (productData.polar_product_id && polarPrices[productData.polar_product_id]) {
-          const polarPrice = polarPrices[productData.polar_product_id];
+        const polarProductId = productData.polarProductId || productData.polar?.product_id || productData.polar_product_id;
+        if (polarProductId && polarPrices[polarProductId]) {
+          const polarPrice = polarPrices[polarProductId];
           if (polarPrice && polarPrice.formatted) {
             price = polarPrice.formatted;
             console.log(`✅ Synced price for ${productId}: ${price} from Polar`);
@@ -666,54 +669,60 @@ async function loadProductsFromSupabase() {
         }
         
         // Get description (use from Supabase or try to load from markdown)
-        let description = productData.description || generateDescription(productData.title);
+        let description = productData.description;
         
-        // Try to load description from markdown file
-        const folderName = productData.handle || productId;
-        try {
-          const descBasePath = `/assets/product-docs/${folderName}`;
-          const descPatterns = [
-            `desc_${folderName}.md`,
-            `desc_${folderName.toLowerCase().replace(/\s+/g, '-')}.md`,
-            `${folderName}_desc.md`
-          ];
-          
-          let descUrl = null;
-          for (const pattern of descPatterns) {
-            const pathParts = descBasePath.split('/').filter(part => part.length > 0);
-            const encodedPathParts = pathParts.map(part => encodeURIComponent(part));
-            const encodedBasePath = '/' + encodedPathParts.join('/');
-            const encodedPattern = encodeURIComponent(pattern);
-            const testUrl = `${encodedBasePath}/${encodedPattern}`;
+        // If description is missing or empty, try to load from markdown file
+        if (!description) {
+          try {
+            const descBasePath = `/assets/product-docs/${folderName}`;
+            const descPatterns = [
+              `desc_${folderName}.md`,
+              `desc_${folderName.toLowerCase().replace(/\s+/g, '-')}.md`,
+              `${folderName}_desc.md`
+            ];
             
-            try {
-              const testResponse = await fetch(testUrl, { method: 'HEAD' });
-              if (testResponse.ok) {
-                descUrl = testUrl;
-                break;
-              }
-            } catch (e) {
+            let descUrl = null;
+            for (const pattern of descPatterns) {
+              const pathParts = descBasePath.split('/').filter(part => part.length > 0);
+              const encodedPathParts = pathParts.map(part => encodeURIComponent(part));
+              const encodedBasePath = '/' + encodedPathParts.join('/');
+              const encodedPattern = encodeURIComponent(pattern);
+              const testUrl = `${encodedBasePath}/${encodedPattern}`;
+              
               try {
-                const testResponse = await fetch(testUrl);
+                const testResponse = await fetch(testUrl, { method: 'HEAD' });
                 if (testResponse.ok) {
                   descUrl = testUrl;
                   break;
                 }
-              } catch (e2) {
-                // Continue to next pattern
+              } catch (e) {
+                try {
+                  const testResponse = await fetch(testUrl);
+                  if (testResponse.ok) {
+                    descUrl = testUrl;
+                    break;
+                  }
+                } catch (e2) {
+                  // Continue to next pattern
+                }
               }
             }
-          }
-          
-          if (descUrl) {
-            const descResponse = await fetch(descUrl);
-            if (descResponse.ok) {
-              description = await descResponse.text();
+            
+            if (descUrl) {
+              const descResponse = await fetch(descUrl);
+              if (descResponse.ok) {
+                description = await descResponse.text();
+              }
             }
+          } catch (error) {
+            // Use Supabase description if markdown load fails
+            console.debug(`Could not load desc_*.md for ${folderName}, using default description`);
           }
-        } catch (error) {
-          // Use Supabase description if markdown load fails
-          console.debug(`Could not load desc_*.md for ${folderName}, using Supabase description`);
+        }
+
+        // Final fallback
+        if (!description) {
+          description = generateDescription(productData.title);
         }
         
         products[productId] = {
@@ -727,7 +736,7 @@ async function loadProductsFromSupabase() {
           groups: productGroups,
           handle: productData.handle || productId,
           jsonData: productData, // Store full data for hosted_media access
-          polarProductId: productData.polar_product_id || null,
+          polarProductId: productData.polarProductId || productData.polar?.product_id || productData.polar_product_id || null,
           folderName: folderName,
           metafields: productData.metafields || [],
           folder: folderName,
@@ -3266,7 +3275,9 @@ async function loadProductCardAssets(productId) {
 
         // Step 1: Add main_image first if defined
         let mainImageAdded = false;
+        console.log(`🖼️ main_image check: mainImage="${mainImage}", exists in hosted_media=${!!hostedMedia[mainImage]}`);
         if (mainImage && hostedMedia[mainImage]) {
+          console.log(`🖼️ Adding main_image first: ${mainImage}`);
           mainImageAdded = addMediaAsset(mainImage, hostedMedia[mainImage], true);
         }
 
@@ -3305,35 +3316,47 @@ async function loadProductCardAssets(productId) {
       }
     }
 
-    // Add static PNG icon at the end (if GIF was found) or at the beginning (if no GIF)
-    const iconPngName = `icon_${folderName}.png`;
-    const iconPngPath = `${folderName}/${iconPngName}`;
-    
-    // Check hosted_media first, then fallback to local/GitHub
-    let iconPngUrl = null;
-    if (product.jsonData && product.jsonData.hosted_media && product.jsonData.hosted_media[iconPngName]) {
-      iconPngUrl = product.jsonData.hosted_media[iconPngName];
+    // Add static PNG icon - but only if carousel_media is NOT defined (user hasn't curated the carousel)
+    // When carousel_media is defined, respect the user's curation and don't auto-add icons
+    const hasCarouselMedia = product.jsonData?.carousel_media?.length > 0;
+    if (!hasCarouselMedia) {
+      const iconPngName = `icon_${folderName}.png`;
+      const iconPngPath = `${folderName}/${iconPngName}`;
+
+      // Check hosted_media first, then fallback to local/GitHub
+      let iconPngUrl = null;
+      if (product.jsonData && product.jsonData.hosted_media && product.jsonData.hosted_media[iconPngName]) {
+        iconPngUrl = product.jsonData.hosted_media[iconPngName];
+      } else {
+        iconPngUrl = config.useLocalAssets
+          ? getProductIconUrl(folderName)
+          : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconPngPath}`;
+      }
+
+      const iconPngItem = {
+        type: 'image',
+        url: iconPngUrl,
+        format: 'png',
+        name: iconPngName,
+        isIcon: true
+      };
+
+      // If GIF exists, add PNG at end; otherwise add at beginning
+      // BUT: If main_image is already set, don't add icon at beginning (it would override main_image position)
+      const hasMainImage = cardAssets.some(item => item.isMainImage);
+      if (cardAssets.some(item => item.format === 'gif' && item.isIcon)) {
+        cardAssets.push(iconPngItem);
+        console.log(`🖼️ Added icon PNG at end (GIF found first)`);
+      } else if (hasMainImage) {
+        // Don't override main_image position - add icon after main_image
+        cardAssets.splice(1, 0, iconPngItem);
+        console.log(`🖼️ Added icon PNG at position 1 (main_image is at position 0)`);
+      } else {
+        cardAssets.unshift(iconPngItem);
+        console.log(`🖼️ Added icon PNG at beginning (no GIF found, no main_image)`);
+      }
     } else {
-      iconPngUrl = config.useLocalAssets
-        ? getProductIconUrl(folderName)
-        : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconPngPath}`;
-    }
-    
-    const iconPngItem = {
-      type: 'image',
-      url: iconPngUrl,
-      format: 'png',
-      name: iconPngName,
-      isIcon: true
-    };
-    
-    // If GIF exists, add PNG at end; otherwise add at beginning
-    if (cardAssets.some(item => item.format === 'gif' && item.isIcon)) {
-      cardAssets.push(iconPngItem);
-      console.log(`🖼️ Added icon PNG at end (GIF found first)`);
-    } else {
-      cardAssets.unshift(iconPngItem);
-      console.log(`🖼️ Added icon PNG at beginning (no GIF found)`);
+      console.log(`📋 Skipping auto-icon (carousel_media is curated)`);
     }
 
     // Check for 3D models and generate embeds if config exists
@@ -3399,6 +3422,14 @@ async function loadProductCardAssets(productId) {
           console.log(`🗑️ Removed ${processedModelFiles.length} original model3d item(s) after generating HTML embeds`);
         }
       }
+    }
+
+    // Remove any remaining model3d items that weren't converted to HTML embeds
+    // These would create empty placeholder containers when there are already images available
+    const remainingModel3d = cardAssets.filter(asset => asset.type === 'model3d');
+    if (remainingModel3d.length > 0) {
+      cardAssets = cardAssets.filter(asset => asset.type !== 'model3d');
+      console.log(`🗑️ Removed ${remainingModel3d.length} unconverted model3d item(s) to prevent empty placeholders`);
     }
 
     console.log(`📊 Final carousel assets count: ${cardAssets.length}`);
@@ -3704,6 +3735,22 @@ async function loadProductDocs(productId) {
       return;
     }
 
+    // 1. Check Supabase metadata for documentation first (Source of Truth)
+    if (product.jsonData && product.jsonData.metadata && product.jsonData.metadata.documentation) {
+      console.log(`✅ Loaded documentation from Supabase metadata for ${productId}`);
+      const markdown = product.jsonData.metadata.documentation;
+      productDescription.innerHTML = marked.parse(markdown);
+      
+      // Process links to open in new tab
+      const links = productDescription.querySelectorAll('a');
+      links.forEach(link => {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+      });
+      return;
+    }
+
+    // 2. Fallback to local assets (Legacy/Backup)
     // Get folder name from product (used for docs folder)
     // folderName is the original folder name like "Dojo Bolt Gen v05"
     const folderName = product.folderName || product.name;
@@ -6882,6 +6929,12 @@ async function initializeCarousel(productId) {
   // Create carousel items
   console.log(`🎠 Creating ${carouselItems.length} carousel items...`);
   carouselItems.forEach((asset, index) => {
+    // Skip assets without valid URLs to prevent empty containers
+    if (!asset.url || asset.url.trim() === '') {
+      console.warn(`⚠️ Skipping carousel item ${index} (${asset.name}): missing or empty URL`);
+      return;
+    }
+
     console.log(`🎠 Creating carousel item ${index}: ${asset.name} (type: ${asset.type})`);
     const item = document.createElement('div');
     item.className = 'carousel-item';
