@@ -3743,11 +3743,95 @@ async function loadProductDocs(productId) {
       return;
     }
 
+    // Helper function to process image paths in markdown
+    const processImagePaths = (markdownText, hostedMedia, docsBasePath = '') => {
+      if (!markdownText) return markdownText;
+      
+      let processed = markdownText;
+      
+      // Process markdown image syntax: ![alt](path)
+      if (hostedMedia) {
+        processed = processed.replace(
+          /!\[([^\]]*)\]\(<?([^>)]+)>?\)/g,
+          (match, altText, imagePath) => {
+            // Skip if already a full URL (Cloudinary or other)
+            if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+              return match;
+            }
+            
+            // Extract filename from path
+            let cleanPath = imagePath.trim();
+            cleanPath = cleanPath.replace(/^\.\//, '');
+            cleanPath = cleanPath.replace(/^\.\.\//, '');
+            cleanPath = decodeURIComponent(cleanPath);
+            const filename = cleanPath.split('/').pop();
+            
+            // Try to find matching Cloudinary URL in hosted_media
+            if (hostedMedia[filename]) {
+              console.log(`✅ Replaced image in docs: ${imagePath} → ${hostedMedia[filename]}`);
+              return `![${altText}](${hostedMedia[filename]})`;
+            }
+            
+            // Try case-insensitive match
+            const lowerFilename = filename.toLowerCase();
+            for (const [key, url] of Object.entries(hostedMedia)) {
+              if (key.toLowerCase() === lowerFilename) {
+                console.log(`✅ Replaced image in docs (case-insensitive): ${imagePath} → ${url}`);
+                return `![${altText}](${url})`;
+              }
+            }
+            
+            // If no Cloudinary URL found and we have a docsBasePath, try relative path
+            if (docsBasePath && !imagePath.startsWith('http')) {
+              const encodedPath = cleanPath.split('/').map(part => encodeURIComponent(part)).join('/');
+              return `![${altText}](${docsBasePath}/${encodedPath})`;
+            }
+            
+            return match;
+          }
+        );
+      }
+      
+      return processed;
+    };
+
     // 1. Check Supabase metadata for documentation first (Source of Truth)
     if (product.jsonData && product.jsonData.metadata && product.jsonData.metadata.documentation) {
       console.log(`✅ Loaded documentation from Supabase metadata for ${productId}`);
-      const markdown = product.jsonData.metadata.documentation;
-      productDescription.innerHTML = marked.parse(markdown);
+      let markdown = product.jsonData.metadata.documentation;
+      
+      // Process image paths to replace with Cloudinary URLs
+      const hostedMedia = product.jsonData.hosted_media || {};
+      markdown = processImagePaths(markdown, hostedMedia);
+      
+      // Parse markdown to HTML
+      const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdown) : `<pre>${markdown}</pre>`;
+      productDescription.innerHTML = htmlContent;
+      
+      // Process image tags in rendered HTML (in case some weren't caught in markdown)
+      if (hostedMedia && Object.keys(hostedMedia).length > 0) {
+        const imgTags = productDescription.querySelectorAll('img');
+        imgTags.forEach(img => {
+          const src = img.getAttribute('src');
+          if (src && !src.startsWith('http://') && !src.startsWith('https://')) {
+            const filename = src.split('/').pop();
+            if (hostedMedia[filename]) {
+              img.setAttribute('src', hostedMedia[filename]);
+              console.log(`✅ Replaced img tag src: ${src} → ${hostedMedia[filename]}`);
+            } else {
+              // Try case-insensitive match
+              const lowerFilename = filename.toLowerCase();
+              for (const [key, url] of Object.entries(hostedMedia)) {
+                if (key.toLowerCase() === lowerFilename) {
+                  img.setAttribute('src', url);
+                  console.log(`✅ Replaced img tag src (case-insensitive): ${src} → ${url}`);
+                  break;
+                }
+              }
+            }
+          }
+        });
+      }
       
       // Process links to open in new tab
       const links = productDescription.querySelectorAll('a');
@@ -3847,9 +3931,12 @@ async function loadProductDocs(productId) {
       return;
     }
 
-    const markdownContent = await response.text();
-    // Markdown files now contain Cloudinary URLs directly (processed by sync script)
-    // No path transformation needed - marked.js will render Cloudinary URLs as-is
+    let markdownContent = await response.text();
+    // Markdown files may contain relative image paths that need to be replaced with Cloudinary URLs
+    
+    // Process image paths to replace with Cloudinary URLs from hosted_media
+    const hostedMedia = product.jsonData?.hosted_media || {};
+    markdownContent = processImagePaths(markdownContent, hostedMedia, docsBasePath);
     
     // Convert video markdown references to HTML5 video tags (if they're still relative paths)
     // Pattern: ![alt](video.mp4) - only if not already a Cloudinary URL
@@ -3951,6 +4038,38 @@ async function loadProductDocs(productId) {
 
     // Update the description with rendered HTML
     productDescription.innerHTML = htmlContent;
+    
+    // Process image tags in rendered HTML (in case some weren't caught in markdown)
+    if (hostedMedia && Object.keys(hostedMedia).length > 0) {
+      const imgTags = productDescription.querySelectorAll('img');
+      imgTags.forEach(img => {
+        const src = img.getAttribute('src');
+        if (src && !src.startsWith('http://') && !src.startsWith('https://')) {
+          const filename = src.split('/').pop();
+          if (hostedMedia[filename]) {
+            img.setAttribute('src', hostedMedia[filename]);
+            console.log(`✅ Replaced img tag src in docs: ${src} → ${hostedMedia[filename]}`);
+          } else {
+            // Try case-insensitive match
+            const lowerFilename = filename.toLowerCase();
+            for (const [key, url] of Object.entries(hostedMedia)) {
+              if (key.toLowerCase() === lowerFilename) {
+                img.setAttribute('src', url);
+                console.log(`✅ Replaced img tag src in docs (case-insensitive): ${src} → ${url}`);
+                break;
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Process links to open in new tab
+    const links = productDescription.querySelectorAll('a');
+    links.forEach(link => {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    });
 
     // Load 3D models if Three.js is available
     if (typeof THREE !== 'undefined') {
