@@ -671,8 +671,11 @@ async function loadProductsFromSupabase() {
         // Get description (use from Supabase or try to load from markdown)
         let description = productData.description;
         
-        // If description is missing or empty, try to load from markdown file
-        if (!description) {
+        // If description is missing, empty, or looks like a short summary (< 200 chars), 
+        // try to load the full documentation from the markdown file.
+        // This ensures users see the full docs even if Supabase hasn't been updated with the full markdown yet.
+        if (!description || description.length < 200) {
+          // folderName is already defined at the start of the product processing loop
           try {
             const descBasePath = `/assets/product-docs/${folderName}`;
             const descPatterns = [
@@ -711,7 +714,12 @@ async function loadProductsFromSupabase() {
             if (descUrl) {
               const descResponse = await fetch(descUrl);
               if (descResponse.ok) {
-                description = await descResponse.text();
+                const fullMarkdown = await descResponse.text();
+                // Only replace if the fetched markdown is actually longer/better
+                if (fullMarkdown.length > (description || '').length) {
+                  description = fullMarkdown;
+                  console.log(`✅ Enhanced description loaded from ${descUrl} (${description.length} chars)`);
+                }
               }
             }
           } catch (error) {
