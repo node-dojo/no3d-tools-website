@@ -40,142 +40,50 @@ export default async (req, res) => {
   }
 
   try {
-    const { email, productIds } = req.body;
+    const { email, productIds, checkoutSessionId } = req.body;
 
-    // Validate input
-    if (!email || typeof email !== 'string') {
-      return res.status(400).json({
-        error: 'Invalid request: email required',
-        downloads: []
-      });
-    }
+    let targetProductIds = productIds;
+    let customerEmail = email;
 
-    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
-      return res.status(400).json({
-        error: 'Invalid request: productIds array required',
-        downloads: []
-      });
-    }
-
-    // Validate environment
-    if (!process.env.POLAR_API_TOKEN) {
-      console.error('POLAR_API_TOKEN not configured');
-      return res.status(500).json({
-        error: 'Server configuration error: POLAR_API_TOKEN not set',
-        downloads: []
-      });
-    }
-
-    console.log(`Getting download URLs for ${email} with ${productIds.length} products`);
-
-    // First verify ownership (reuse logic from verify-purchase)
-    let customer;
-    try {
-      const customers = await polar.customers.list({
-        email: email,
-        limit: 1
-      });
-
-      if (!customers || !customers.items || customers.items.length === 0) {
-        console.log(`No customer found with email: ${email}`);
-        return res.status(200).json({
-          downloads: [],
-          error: null
-        });
-      }
-
-      customer = customers.items[0];
-    } catch (error) {
-      if (error.statusCode === 404 || error.status === 404) {
-        return res.status(200).json({
-          downloads: [],
-          error: null
-        });
-      }
-      throw new Error(`Failed to find customer: ${error.message || 'Unknown error'}`);
-    }
-
-    // Get entitlements to verify ownership
-    let entitlements;
-    try {
-      entitlements = await polar.entitlements.list({
-        customerId: customer.id,
-        limit: 100
-      });
-    } catch (error) {
-      // Try subscriptions as fallback
-      const subscriptions = await polar.subscriptions.list({
-        customerId: customer.id,
-        limit: 100
-      });
-
-      const ownedProductIds = new Set();
-      if (subscriptions?.items) {
-        for (const sub of subscriptions.items) {
-          if (sub.product && sub.product.id) {
-            ownedProductIds.add(sub.product.id);
-          }
-        }
-      }
-
-      // Filter to only owned products
-      const ownedProducts = productIds.filter(id => ownedProductIds.has(id));
-
-      // Get download URLs for owned products
-      const downloads = [];
-      for (const productId of ownedProducts) {
+    // Mode 1: Verify via Checkout Session ID (Instant access)
+    if (checkoutSessionId) {
+        console.log(`Getting download URLs via session ID: ${checkoutSessionId}`);
         try {
-          const product = await polar.products.get({ id: productId });
-          if (product && product.benefits) {
-            for (const benefit of product.benefits) {
-              if (benefit.type === 'downloadable' && benefit.properties?.file_id) {
-                // Get file download URL
-                const file = await polar.files.get({ id: benefit.properties.file_id });
-                if (file && file.url) {
-                  downloads.push({
-                    productId,
-                    url: file.url,
-                    filename: file.name || `${product.name || 'product'}.blend`
-                  });
-                  break; // Use first downloadable benefit
-                }
-              }
+            const checkout = await polar.checkouts.get({ id: checkoutSessionId });
+            
+            if (!checkout || (checkout.status !== 'succeeded' && checkout.status !== 'confirmed')) {
+                return res.status(403).json({ error: 'Invalid or incomplete checkout session', downloads: [] });
             }
-          }
-        } catch (productError) {
-          console.error(`Error getting product ${productId}:`, productError.message);
+
+            customerEmail = checkout.customer_email || checkout.customer?.email;
+            
+            // Extract product IDs
+            if (checkout.products) {
+                targetProductIds = checkout.products.map(p => p.id);
+            } else if (checkout.product) {
+                targetProductIds = [checkout.product.id];
+            } else if (checkout.product_id) {
+                targetProductIds = [checkout.product_id];
+            }
+        } catch (error) {
+            console.error('Error verifying checkout for downloads:', error);
+            return res.status(500).json({ error: 'Failed to verify checkout' });
         }
-      }
-
-      return res.status(200).json({
-        downloads,
-        error: null
-      });
     }
 
-    // Extract owned product IDs from entitlements
-    const ownedProductIds = new Set();
-    if (entitlements?.items) {
-      for (const entitlement of entitlements.items) {
-        if (entitlement.product && entitlement.product.id) {
-          ownedProductIds.add(entitlement.product.id);
-        }
-      }
+    // Validate we have what we need
+    if (!customerEmail) {
+      return res.status(400).json({ error: 'Email required', downloads: [] });
+    }
+    if (!targetProductIds || !Array.isArray(targetProductIds) || targetProductIds.length === 0) {
+      return res.status(200).json({ downloads: [], error: null });
     }
 
-    // Filter to only owned products
-    const ownedProducts = productIds.filter(id => ownedProductIds.has(id));
+    console.log(`Retrieving downloads for ${customerEmail}`);
 
-    if (ownedProducts.length === 0) {
-      return res.status(200).json({
-        downloads: [],
-        error: null
-      });
-    }
-
-    // Get download URLs for each owned product
+    // Get download URLs for the target products
     const downloads = [];
-    for (const productId of ownedProducts) {
+    for (const productId of targetProductIds) {
       try {
         // Get product details with benefits
         const product = await polar.products.get({ id: productId });

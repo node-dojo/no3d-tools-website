@@ -1407,10 +1407,19 @@
         let catalogVersion = null;
         let sessionToken = null;
 
-        // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuthentication();
-        });
+        // Initialize account page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check for email param to prefill login
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefillEmail = urlParams.get('email');
+            if (prefillEmail) {
+                const emailInput = document.getElementById('email');
+                if (emailInput) emailInput.value = prefillEmail;
+            }
+
+            // Check if user is already logged in
+            const session = await checkSession();
+
 
         async function checkAuthentication() {
             // Check for session token in localStorage

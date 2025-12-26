@@ -19,49 +19,54 @@ try {
   // Get the current git commit hash (short version)
   let commitHash;
   
+  // 1. Prioritize Vercel environment variables
   if (process.env.VERCEL_GIT_COMMIT_SHA) {
     commitHash = process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7);
     console.log(`✅ Found Vercel commit hash: ${commitHash}`);
   } else {
+    // 2. Fallback to git command if Vercel vars are not available (e.g., local dev)
     try {
       commitHash = execSync('git rev-parse --short HEAD', {
         cwd: rootDir,
         encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr to avoid log noise
+        stdio: ['ignore', 'pipe', 'pipe'] // Capture stdout, ignore stdin/stderr to prevent direct printing
       }).trim();
       console.log(`✅ Found git commit hash: ${commitHash}`);
     } catch (error) {
-      // If git is not available or not in a git repo, use fallback
-      console.warn('⚠️ Could not get git commit hash, using fallback');
+      // Log the error message from stderr if git command fails
+      console.warn('⚠️ Could not get git commit hash:', error.message || String(error));
       commitHash = 'dev';
-      console.log(`   Using: ${commitHash}`);
+      console.log(`   Using fallback: ${commitHash}`);
     }
   }
 
   // Get the current git branch name
   let branchName;
   
+  // 1. Prioritize Vercel environment variables
   if (process.env.VERCEL_GIT_COMMIT_REF) {
     branchName = process.env.VERCEL_GIT_COMMIT_REF;
     console.log(`✅ Found Vercel branch: ${branchName}`);
   } else {
+    // 2. Fallback to git command
     try {
       branchName = execSync('git rev-parse --abbrev-ref HEAD', {
         cwd: rootDir,
         encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr
+        stdio: ['ignore', 'pipe', 'pipe'] // Capture stdout, ignore stdin/stderr
       }).trim();
       console.log(`✅ Found git branch: ${branchName}`);
     } catch (error) {
-      // If git is not available or not in a git repo, use fallback
-      console.warn('⚠️ Could not get git branch, using fallback');
+      // Log the error message from stderr if git command fails
+      console.warn('⚠️ Could not get git branch:', error.message || String(error));
       branchName = 'dev';
-      console.log(`   Using: ${branchName}`);
+      console.log(`   Using fallback: ${branchName}`);
     }
   }
 
   // Read the index.html file
   let html = readFileSync(indexPath, 'utf-8');
+
 
   // Update the meta tag with the commit hash
   const metaTagRegex = /<meta\s+name=["']deployment-version["']\s+content=["'][^"']*["']\s*>/i;

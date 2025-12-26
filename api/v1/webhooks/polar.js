@@ -8,15 +8,26 @@
 
 import { Polar } from '@polar-sh/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 import { isGiftCardProduct, createGiftCardDiscount } from '../../gift-cards/generate.js';
 import { sendGiftCardEmail } from '../../gift-cards/email.js';
-import { consumePendingDebit, debitCredit, redis } from '../../../lib/credit.js';
+import { consumePendingDebit, debitCredit } from '../../../lib/credit.js';
+import { sendWelcomeEmail } from '../../lib/email.js';
 
 const POLAR_API_TOKEN = process.env.POLAR_API_TOKEN;
 const POLAR_WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Redis client for auth tokens
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+const AUTH_TOKEN_KEY = (token) => `auth:token:${token}`;
+const MAGIC_LINK_TTL = 24 * 60 * 60; // 24 hours for welcome emails
 
 // Initialize Supabase client with service role for webhook operations
 let supabase = null;
@@ -327,6 +338,28 @@ async function handleOrderCreated(data) {
   } else {
     console.warn('   ⚠️  Supabase not configured, skipping order storage');
   }
+
+  // --- WELCOME EMAIL & ACCOUNT SETUP ---
+  try {
+    // Generate a magic link token for account setup
+    const token = crypto.randomUUID();
+    const customerName = data.customer?.name || data.billing_address?.name || 'Initiate';
+    
+    // Store token in Redis
+    await redis.set(AUTH_TOKEN_KEY(token), {
+      email: customerEmail.toLowerCase().trim(),
+      customerId: data.customer_id || data.user_id,
+      createdAt: new Date().toISOString(),
+      source: 'welcome_email'
+    }, { ex: MAGIC_LINK_TTL });
+
+    // Send Welcome Email
+    await sendWelcomeEmail(customerEmail, customerName, token);
+    console.log(`   📧 Welcome & Setup email triggered for ${customerEmail}`);
+  } catch (authError) {
+    console.error(`   ❌ Error triggering welcome email:`, authError);
+  }
+  // --------------------------------------
 
   // Check if a credit discount was used (by checking discount metadata)
   const discount = data.discount;

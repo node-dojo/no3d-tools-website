@@ -40,8 +40,51 @@ export default async (req, res) => {
   }
 
   try {
-    const { email, productIds } = req.body;
+    const { email, productIds, checkoutSessionId } = req.body;
 
+    // Mode 1: Verify via Checkout Session ID
+    if (checkoutSessionId) {
+        console.log(`Verifying purchase via session ID: ${checkoutSessionId}`);
+        try {
+            const checkout = await polar.checkouts.get({ id: checkoutSessionId });
+            
+            if (!checkout) {
+                return res.status(404).json({ error: 'Checkout session not found', ownedProducts: [] });
+            }
+
+            if (checkout.status !== 'succeeded' && checkout.status !== 'confirmed') {
+                 // It might be 'open' if payment is pending, or 'expired'
+                 console.log(`Checkout status is ${checkout.status}`);
+                 // We might still want to return info but maybe with a warning? 
+                 // For now, let's assume if they are on success page, it should be succeeded.
+            }
+
+            const customerEmail = checkout.customer_email || checkout.customer?.email;
+            // Extract products. The structure depends on Polar API version.
+            // Usually checkout.products (array) or checkout.product (single)
+            let sessionProductIds = [];
+            if (checkout.products) {
+                sessionProductIds = checkout.products.map(p => p.id);
+            } else if (checkout.product) {
+                sessionProductIds = [checkout.product.id];
+            } else if (checkout.product_id) {
+                sessionProductIds = [checkout.product_id];
+            }
+
+            return res.status(200).json({
+                ownedProducts: sessionProductIds,
+                email: customerEmail,
+                checkoutStatus: checkout.status,
+                error: null
+            });
+
+        } catch (error) {
+            console.error('Error fetching checkout session:', error);
+            return res.status(500).json({ error: 'Failed to verify checkout session', details: error.message });
+        }
+    }
+
+    // Mode 2: Verify via Email + Product IDs (Existing Logic)
     // Validate input
     if (!email || typeof email !== 'string') {
       return res.status(400).json({

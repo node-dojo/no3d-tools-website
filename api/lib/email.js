@@ -704,8 +704,127 @@ Questions? Contact us at support@no3dtools.com
   };
 }
 
+/**
+ * Generate HTML for Welcome & Account Setup email
+ */
+export function getWelcomeEmail(customerName, token) {
+  const setupLink = `${SITE_URL}/account?token=${token}`;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to NO3D Tools</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border: 2px solid #000;
+      padding: 40px;
+      margin: 20px 0;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      font-family: monospace;
+      font-size: 24px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #000;
+      letter-spacing: 2px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #f0ff00;
+      color: #000;
+      text-decoration: none;
+      padding: 16px 32px;
+      border: 2px solid #000;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">NO3D TOOLS</div>
+    </div>
+
+    <h1 style="font-size: 24px; margin-bottom: 20px;">Welcome, ${customerName}!</h1>
+
+    <p>Thank you for joining NO3D Tools. We've secured your purchased assets in your new digital library.</p>
+    
+    <p>Use the button below to access your account instantly and set a password for permanent access.</p>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${setupLink}" class="button">Claim Your Assets</a>
+    </div>
+
+    <p style="margin-top: 30px; font-size: 14px;">
+      <strong>Why set up an account?</strong><br>
+      • Lifetime access to your purchases<br>
+      • Instant access to all future updates<br>
+      • Manage your library from any device
+    </p>
+
+    <div class="footer">
+      <p>Questions? We're here to help at support@no3dtools.com</p>
+      <p>&copy; 2025 NO3D Tools. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Send welcome & setup email
+ */
+export async function sendWelcomeEmail(email, name, token) {
+  try {
+    const resend = getResendClient();
+    const response = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Welcome to NO3D Tools - Access Your Assets',
+      html: getWelcomeEmail(name || 'Initiate', token),
+    });
+
+    console.log(`📧 Welcome email sent to ${email}`);
+    return response;
+  } catch (error) {
+    console.error('Error sending welcome email:', error);
+    throw error;
+  }
+}
+
 export default {
   sendMagicLinkEmail,
+  sendWelcomeEmail,
   sendEmail,
   getMagicLinkEmail,
   getMagicLinkEmailText,

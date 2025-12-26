@@ -235,14 +235,14 @@
                     <div class="purchase-type">
                         <div class="purchase-type-title">💎 INDIVIDUAL PRODUCT</div>
                         <div class="purchase-type-description">
-                            Visit your <a href="account.html">account page</a> to download your purchase. You'll have lifetime access to this product and all future updates.
+                            Download your purchase above. We've also created an account for you using your email—you are now logged in! Use the <strong>MY ACCOUNT</strong> page to access your files anytime.
                         </div>
                     </div>
 
                     <div class="purchase-type">
                         <div class="purchase-type-title">🔄 SUBSCRIPTION</div>
                         <div class="purchase-type-description">
-                            You now have full access to the entire NO3D Tools library! Visit your <a href="account.html">account page</a> to download everything. New products are automatically included.
+                            You now have full access to the entire NO3D Tools library! You are automatically logged in. Visit your <a href="account.html">account page</a> to download everything.
                         </div>
                     </div>
                 </div>
@@ -265,12 +265,123 @@
             localStorage.removeItem('cart');
         }
 
-        // Log checkout session ID if present
-        const urlParams = new URLSearchParams(window.location.search);
-        const checkoutSessionId = urlParams.get('checkout_session_id');
-        if (checkoutSessionId) {
-            console.log('Checkout session ID:', checkoutSessionId);
+        // Handle Checkout Session verification
+        async function initSuccessPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const checkoutSessionId = urlParams.get('checkout_session_id');
+            const successContainer = document.querySelector('.success-container');
+            const subtitle = document.querySelector('.success-subtitle');
+            
+            if (checkoutSessionId) {
+                console.log('Verifying checkout session:', checkoutSessionId);
+                subtitle.textContent = "Verifying your purchase...";
+                
+                try {
+                    const response = await fetch('/api/verify-purchase', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ checkoutSessionId })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.email) {
+                        console.log('Purchase verified for:', data.email);
+                        subtitle.textContent = `Confirmation sent to ${data.email}`;
+                        
+                        // AUTO-LOGIN: Create a session from the purchase
+                        try {
+                            const sessionResponse = await fetch('/api/customer/purchase-session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ checkoutSessionId })
+                            });
+                            
+                            const sessionData = await sessionResponse.json();
+                            
+                            if (sessionData.success && sessionData.sessionToken) {
+                                console.log('Auto-login successful');
+                                localStorage.setItem('no3d_session_token', sessionData.sessionToken);
+                                localStorage.setItem('customer_email', data.email);
+                                
+                                // Show logged in message
+                                const loginMessage = document.createElement('p');
+                                loginMessage.className = 'success-subtitle';
+                                loginMessage.style.color = 'var(--color-success-green, #4CAF50)';
+                                loginMessage.style.marginTop = 'var(--space-small)';
+                                loginMessage.innerHTML = '<strong>✨ INSTANT ACCESS:</strong> You are now logged in. We have also sent a secure link to your email to help you set a password for permanent access.';
+                                subtitle.parentNode.insertBefore(loginMessage, subtitle.nextSibling);
+                                
+                                // Update button text
+                                const accountBtn = document.querySelector('.action-button-primary');
+                                if (accountBtn) accountBtn.textContent = "GOTO MY STUFF";
+                            }
+                        } catch (sessionError) {
+                            console.error('Auto-login failed:', sessionError);
+                        }
+
+                        // Update Account Button with prefilled email (fallback)
+                        const accountBtn = document.querySelector('.action-button-primary');
+                        if (accountBtn && !localStorage.getItem('no3d_session_token')) {
+                            accountBtn.href = `account.html?email=${encodeURIComponent(data.email)}`;
+                        }
+
+                        // Try to get download links immediately
+                        if (data.ownedProducts && data.ownedProducts.length > 0) {
+                            await fetchDownloadLinks(data.email, data.ownedProducts);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Verification failed:', error);
+                    subtitle.textContent = "Check your email for next steps";
+                }
+            }
         }
+
+        async function fetchDownloadLinks(email, productIds) {
+            try {
+                const response = await fetch('/api/get-download-urls', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, productIds })
+                });
+                
+                const data = await response.json();
+                
+                if (data.downloads && data.downloads.length > 0) {
+                    const purchaseTypesDiv = document.querySelector('.purchase-types');
+                    
+                    // Create downloads section
+                    const downloadsHtml = data.downloads.map(d => `
+                        <div class="purchase-type" style="border-left-color: var(--color-success-green, #4CAF50);">
+                            <div class="purchase-type-title">⬇️ READY TO DOWNLOAD</div>
+                            <div class="purchase-type-description">
+                                <a href="${d.url}" target="_blank" download>Download ${d.filename}</a>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    const downloadsSection = document.createElement('div');
+                    downloadsSection.innerHTML = `
+                        <h2>YOUR DOWNLOADS</h2>
+                        <div class="purchase-type-list">
+                            ${downloadsHtml}
+                        </div>
+                        <br>
+                    `;
+                    
+                    // Insert before the existing "What Happens Next?" section
+                    if (purchaseTypesDiv) {
+                        purchaseTypesDiv.parentNode.insertBefore(downloadsSection, purchaseTypesDiv);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch downloads:', error);
+            }
+        }
+
+        // Run on load
+        initSuccessPage();
     </script>
 </body>
 </html>
