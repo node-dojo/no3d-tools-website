@@ -303,18 +303,19 @@
                                 console.log('Auto-login successful');
                                 localStorage.setItem('no3d_session_token', sessionData.sessionToken);
                                 localStorage.setItem('customer_email', data.email);
-                                
+
                                 // Show logged in message
                                 const loginMessage = document.createElement('p');
                                 loginMessage.className = 'success-subtitle';
                                 loginMessage.style.color = 'var(--color-success-green, #4CAF50)';
                                 loginMessage.style.marginTop = 'var(--space-small)';
-                                loginMessage.innerHTML = '<strong>✨ INSTANT ACCESS:</strong> You are now logged in. We have also sent a secure link to your email to help you set a password for permanent access.';
+                                loginMessage.innerHTML = '<strong>✨ INSTANT ACCESS:</strong> You are now logged in. Redirecting to your account...';
                                 subtitle.parentNode.insertBefore(loginMessage, subtitle.nextSibling);
-                                
-                                // Update button text
-                                const accountBtn = document.querySelector('.action-button-primary');
-                                if (accountBtn) accountBtn.textContent = "GOTO MY STUFF";
+
+                                // Auto-redirect to account page after 2 seconds
+                                setTimeout(() => {
+                                    window.location.href = 'account.html';
+                                }, 2000);
                             }
                         } catch (sessionError) {
                             console.error('Auto-login failed:', sessionError);

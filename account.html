@@ -1403,24 +1403,12 @@
 
     <script>
         let customerId = null;
+        let customerEmail = null;
         let subscriptionData = null;
         let catalogVersion = null;
         let sessionToken = null;
 
-        // Initialize account page
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Check for email param to prefill login
-            const urlParams = new URLSearchParams(window.location.search);
-            const prefillEmail = urlParams.get('email');
-            if (prefillEmail) {
-                const emailInput = document.getElementById('email');
-                if (emailInput) emailInput.value = prefillEmail;
-            }
-
-            // Check if user is already logged in
-            const session = await checkSession();
-
-
+        // Check authentication and initialize account page
         async function checkAuthentication() {
             // Check for session token in localStorage
             sessionToken = localStorage.getItem('no3d_session_token');
@@ -1443,6 +1431,20 @@
                 showLoginPrompt();
             }
         }
+
+        // Initialize account page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check for email param to prefill login
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefillEmail = urlParams.get('email');
+            if (prefillEmail) {
+                const emailInput = document.getElementById('auth-email');
+                if (emailInput) emailInput.value = prefillEmail;
+            }
+
+            // Check if user is already logged in
+            await checkAuthentication();
+        });
 
         function showLoginPrompt() {
             document.getElementById('loading-state').style.display = 'none';
@@ -1688,15 +1690,26 @@
         }
 
         /**
-         * Handle Enter key in email input
+         * Handle Enter key in login form inputs
          */
         document.addEventListener('DOMContentLoaded', () => {
             const emailInput = document.getElementById('auth-email');
+            const passwordInput = document.getElementById('auth-password');
+
             if (emailInput) {
                 emailInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        sendMagicLink();
+                        passwordInput?.focus();
+                    }
+                });
+            }
+
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLogin();
                     }
                 });
             }
@@ -2290,8 +2303,6 @@
         // ============================================
         // Credit Balance Functions
         // ============================================
-
-        let customerEmail = null;
 
         async function loadCreditBalance() {
             if (!customerEmail) {
