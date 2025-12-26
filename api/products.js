@@ -88,6 +88,23 @@ export default async function handler(req, res) {
       })
     }
 
+    // Map Supabase product_type to website productType
+    // Website expects: 'tools', 'tutorials', 'prints', 'apps', 'docs'
+    const mapProductType = (productType) => {
+      if (!productType) return 'tools';
+      const lower = productType.toLowerCase();
+      // Map Supabase types to website types
+      if (lower === 'tools' || lower.includes('blender') || lower.includes('add-on') || lower.includes('geometry node')) {
+        return 'tools';
+      }
+      if (lower.includes('tutorial')) return 'tutorials';
+      if (lower.includes('print')) return 'prints';
+      if (lower.includes('app')) return 'apps';
+      if (lower.includes('doc') || lower.includes('blog')) return 'docs';
+      // Default to tools for unknown types
+      return 'tools';
+    };
+
     // Transform to website format
     const products = (data || []).map(p => ({
       id: p.id,
@@ -97,7 +114,7 @@ export default async function handler(req, res) {
       price: p.price ? `$${parseFloat(p.price).toFixed(2)}` : '$0.00',
       image: p.icon_url,
       video: p.video_url,
-      type: p.product_type,
+      type: mapProductType(p.product_type), // Map to website productType
       tags: p.tags || [],
       polar_product_id: p.polar_product_id,
       polar_price_id: p.polar_price_id,
