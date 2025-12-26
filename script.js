@@ -595,10 +595,10 @@ async function loadProductsFromSupabase() {
         const folderName = productData.handle || productId;
 
         // Get thumbnail/image
-        let thumbnail = productData.image || null;
+        let thumbnail = null;
         
-        // Check hosted_media for thumbnail
-        if (!thumbnail && productData.hosted_media) {
+        // Check hosted_media for thumbnail (Cloudinary - INSTANT)
+        if (productData.hosted_media) {
           if (productData.thumbnail_image && productData.hosted_media[productData.thumbnail_image]) {
             thumbnail = productData.hosted_media[productData.thumbnail_image];
           } else {
@@ -612,8 +612,13 @@ async function loadProductsFromSupabase() {
             }
           }
         }
+
+        // If still no thumbnail, use productData.image (Supabase field)
+        if (!thumbnail) {
+          thumbnail = productData.image;
+        }
         
-        // Fallback to local icon if no hosted image
+        // Fallback to local icon (REQUIRES DEPLOY)
         if (!thumbnail) {
           thumbnail = getProductIconUrl(folderName);
         }
@@ -671,10 +676,10 @@ async function loadProductsFromSupabase() {
         // Get description (use from Supabase or try to load from markdown)
         let description = productData.description;
         
-        // If description is missing, empty, or looks like a short summary (< 200 chars), 
-        // try to load the full documentation from the markdown file.
-        // This ensures users see the full docs even if Supabase hasn't been updated with the full markdown yet.
-        if (!description || description.length < 200) {
+        // If description is missing or extremely short (placeholder), 
+        // try to load the full documentation from the markdown file as a fallback.
+        // NOTE: We trust Supabase first to enable instant updates without Vercel deploys.
+        if (!description || description.length < 50) {
           // folderName is already defined at the start of the product processing loop
           try {
             const descBasePath = `/assets/product-docs/${folderName}`;
