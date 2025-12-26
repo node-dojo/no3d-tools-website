@@ -2162,13 +2162,11 @@ h2 {
   }
 
   .site-header .logo {
-    font-size: 24px; /* Slightly smaller on mobile */
-    max-width: 60vw; /* Limit logo width to 60% of viewport width */
-    text-align: center; /* Center text within logo */
-    overflow: hidden; /* Hide overflow if text is too long */
-    text-overflow: ellipsis; /* Show ellipsis for long text */
-    white-space: nowrap; /* Keep text on one line */
-    line-height: 1; /* Prevent extra line height spacing */
+    height: 28px; /* Smaller height on mobile */
+    width: auto; /* Auto width to maintain aspect ratio */
+    min-width: unset; /* Override desktop min-width */
+    max-width: 50vw; /* Limit logo width to 50% of viewport width */
+    object-fit: contain; /* Maintain aspect ratio */
   }
 
   /* Sidebar becomes hamburger dropdown menu */
@@ -2408,7 +2406,8 @@ h2 {
 
 @media (max-width: 480px) {
   .site-header .logo {
-    font-size: 20px;
+    height: 24px; /* Even smaller on very small screens */
+    max-width: 45vw; /* Slightly narrower limit */
   }
 
   /* Ensure member CTA button is hidden on very small screens */
