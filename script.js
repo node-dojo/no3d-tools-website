@@ -5616,12 +5616,13 @@ async function openCheckoutModal(productIds) {
         checkout.addEventListener("success", async (eventData) => {
           console.log('Checkout completed successfully!', eventData);
 
-          // Close modal and redirect to success page
+          // Close modal
           closeCheckoutModalUI();
 
-          // Redirect to success page with checkout session ID if available
-          const checkoutSessionId = eventData?.id || eventData?.checkout?.id || 'success';
-          window.location.href = `/success?checkout_session_id=${checkoutSessionId}`;
+          // Redirect directly to Polar customer account page where they can download
+          // Polar will automatically show their purchased products and download links
+          console.log('Redirecting to Polar customer account page...');
+          window.location.href = 'https://polar.sh/account';
         });
 
         // Handle checkout close/cancel
