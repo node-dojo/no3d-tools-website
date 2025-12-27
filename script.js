@@ -5036,7 +5036,7 @@ async function openCheckoutModal(productIds) {
 async function handlePurchaseSuccess(productIds, customerEmail, orderId, checkoutSessionId) {
   console.log('Handling purchase success for:', { productIds, customerEmail, orderId, checkoutSessionId });
 
-  const maxAttempts = 3;
+  const maxAttempts = 5;
   const delayMs = 2000;
   let attempts = 0;
   let downloads = [];
@@ -5169,7 +5169,6 @@ async function handlePurchaseSuccess(productIds, customerEmail, orderId, checkou
 // isPending: if true, shows a "processing" message because downloads aren't ready yet
 function showDownloadModal(purchasedProductIds, downloads, customerEmail, isPending = false) {
   // #region agent log
-  fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5051',message:'showDownloadModal called',data:{purchasedProductIdsCount:purchasedProductIds.length,downloadsCount:downloads.length,downloads:downloads.map(d=>({productId:d.productId,filename:d.filename})),customerEmail,isPending},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
   // #endregion
   
   // Create modal overlay
@@ -5311,13 +5310,11 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail, isPend
 
     // Find download info
     // #region agent log
-    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5170',message:'showDownloadModal - Before downloadInfo check',data:{productId,downloads:downloads.map(d=>({productId:d.productId,filename:d.filename})),downloadInfoExists:!!downloads.find(d => d.productId === productId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
     // #endregion
     const downloadInfo = downloads.find(d => d.productId === productId);
     const downloadBtn = document.createElement('button');
     downloadBtn.textContent = downloadInfo ? 'DOWNLOAD' : 'PROCESSING...';
     // #region agent log
-    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5173',message:'showDownloadModal - Setting button disabled state',data:{productId,isDisabled:!downloadInfo,downloadInfo:downloadInfo?{productId:downloadInfo.productId,filename:downloadInfo.filename}:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
     // #endregion
     downloadBtn.disabled = !downloadInfo;
     downloadBtn.style.cssText = `
@@ -5338,13 +5335,11 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail, isPend
     if (downloadInfo) {
       downloadBtn.addEventListener('click', (e) => {
         // #region agent log
-        fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5187',message:'Download button clicked - before stopPropagation',data:{productId,disabled:downloadBtn.disabled,hasDownloadInfo:!!downloadInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
         // #endregion
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
         // #region agent log
-        fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5191',message:'Download button clicked - calling downloadProductFile',data:{productId,customerEmail,filename:downloadInfo.filename},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
         // #endregion
         downloadProductFile(productId, customerEmail, downloadInfo.filename);
       }, true); // Use capture phase to ensure we handle the event first
@@ -5352,17 +5347,14 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail, isPend
 
     // #region agent log
     downloadBtn.addEventListener('mousedown', (e) => {
-      fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5196',message:'Download button mousedown event',data:{productId,disabled:downloadBtn.disabled,computedPointerEvents:window.getComputedStyle(downloadBtn).pointerEvents,computedZIndex:window.getComputedStyle(downloadBtn).zIndex},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
     });
     downloadBtn.addEventListener('mouseup', (e) => {
-      fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5200',message:'Download button mouseup event',data:{productId,disabled:downloadBtn.disabled},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
     });
     // #endregion
     downloadItem.appendChild(productNameEl);
     downloadItem.appendChild(downloadBtn);
     downloadList.appendChild(downloadItem);
     // #region agent log
-    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5207',message:'showDownloadModal - Download button appended',data:{productId,buttonText:downloadBtn.textContent,isDisabled:downloadBtn.disabled,hasClickListener:!!downloadInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
     // #endregion
   });
 
@@ -5408,7 +5400,6 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail, isPend
   // Close on overlay click
   modalOverlay.addEventListener('click', (e) => {
     // #region agent log
-    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5245',message:'Modal overlay click event',data:{targetId:e.target.id,targetTagName:e.target.tagName,targetClassName:e.target.className,isOverlay:e.target === modalOverlay,isModalContent:e.target === modalContent || modalContent.contains(e.target)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
     // #endregion
     if (e.target === modalOverlay) {
       document.body.removeChild(modalOverlay);
