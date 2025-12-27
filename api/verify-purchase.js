@@ -98,7 +98,6 @@ export default async (req, res) => {
                  // It might be 'open' if payment is pending, or 'expired'
                  console.log(`Checkout status is ${checkout.status}`);
                  // We might still want to return info but maybe with a warning?
-                 // For now, let's assume if they are on success page, it should be succeeded.
             }
 
             const customerEmail = checkout.customer_email || checkout.customer?.email;

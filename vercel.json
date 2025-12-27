@@ -6,8 +6,7 @@
   "outputDirectory": ".",
   "public": true,
   "rewrites": [
-    { "source": "/account", "destination": "/account.html" },
-    { "source": "/success", "destination": "/success.html" }
+    { "source": "/account", "destination": "/account.html" }
   ],
   "functions": {
     "api/**/*.js": {

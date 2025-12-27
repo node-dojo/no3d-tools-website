@@ -71,7 +71,44 @@ export default async (req, res) => {
 
     console.log(`Creating checkout for ${productIds.length} products:`, productIds);
 
-    // Create checkout session with multiple products
+    // Validate products are not archived before creating checkout
+    const archivedProducts = [];
+    const validProductIds = [];
+    
+    for (const productId of productIds) {
+      try {
+        const product = await polar.products.get({ id: productId });
+        if (product.is_archived) {
+          console.warn(`Product ${productId} is archived:`, product.name);
+          archivedProducts.push({
+            id: productId,
+            name: product.name || productId
+          });
+        } else {
+          validProductIds.push(productId);
+        }
+      } catch (error) {
+        console.error(`Error checking product ${productId}:`, error.message);
+        // If we can't verify, include it but log a warning
+        validProductIds.push(productId);
+      }
+    }
+
+    // If all products are archived, return error
+    if (validProductIds.length === 0 && archivedProducts.length > 0) {
+      return res.status(400).json({
+        error: 'All products in your cart are archived and cannot be purchased.',
+        archivedProducts: archivedProducts.map(p => p.name),
+        url: null
+      });
+    }
+
+    // If some products are archived, log warning but proceed with valid ones
+    if (archivedProducts.length > 0) {
+      console.warn(`Removing ${archivedProducts.length} archived products from checkout:`, archivedProducts.map(p => p.name));
+    }
+
+    // Create checkout session with only valid (non-archived) products
     let checkout;
     try {
       // Get origin from request headers (for embedOrigin validation)
@@ -80,12 +117,13 @@ export default async (req, res) => {
         : 'https://no3d-tools-website.vercel.app';
       
       const checkoutData = {
-        products: productIds, // Array of product ID strings
+        products: validProductIds, // Only non-archived products
         // No successUrl - let Polar use their native confirmation/download page
         embedOrigin: origin, // Required for embedded checkout modal - must match your domain
         metadata: {
           source: 'custom_cart',
-          itemCount: productIds.length.toString(),
+          itemCount: validProductIds.length.toString(),
+          originalItemCount: productIds.length.toString(),
           timestamp: new Date().toISOString()
         }
       };
@@ -109,6 +147,18 @@ export default async (req, res) => {
         body: error.body
       });
 
+      // Check if error is about archived products
+      const errorBody = error.body || error.message || '';
+      const errorString = typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody);
+      
+      if (errorString.includes('archived') || errorString.includes('Product is archived')) {
+        // Try to extract product ID from error
+        const archivedMatch = errorString.match(/["']([^"']+)["']/);
+        const archivedProductId = archivedMatch ? archivedMatch[1] : 'unknown';
+        
+        throw new Error(`One or more products in your cart are archived and cannot be purchased. Please remove archived products and try again. (Product ID: ${archivedProductId})`);
+      }
+
       throw new Error(`Failed to create Polar checkout: ${error.message || 'Unknown error'}`);
     }
 
@@ -131,7 +181,10 @@ export default async (req, res) => {
     return res.status(200).json({
       url: checkout.url,
       id: checkout.id,
-      error: null
+      error: null,
+      archivedProductsRemoved: archivedProducts.length > 0 ? archivedProducts.map(p => p.name) : null,
+      validProductCount: validProductIds.length,
+      originalProductCount: productIds.length
     });
 
   } catch (error) {

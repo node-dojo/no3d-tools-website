@@ -5509,8 +5509,7 @@ async function openCheckoutModal(productIds) {
           },
           body: JSON.stringify({
             email: customerEmail,
-            productId: productIds[0],
-            successUrl: window.location.origin + '/success'
+            productId: productIds[0]
           })
         });
       } else {
@@ -5543,11 +5542,27 @@ async function openCheckoutModal(productIds) {
       }
 
       if (!response.ok || data.error) {
+        // Check if error is about archived products
+        if (data.error && (data.error.includes('archived') || data.archivedProducts)) {
+          const archivedList = data.archivedProducts || [];
+          const errorMsg = archivedList.length > 0
+            ? `The following products are archived and cannot be purchased:\n\n${archivedList.join('\n')}\n\nPlease remove them from your cart and try again.`
+            : data.error;
+          throw new Error(errorMsg);
+        }
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
       if (!data.url) {
         throw new Error('No checkout URL returned');
+      }
+
+      // Show warning if some products were filtered out
+      if (data.archivedProductsRemoved && data.archivedProductsRemoved.length > 0) {
+        console.warn('Some archived products were removed from checkout:', data.archivedProductsRemoved);
+        // Show a non-blocking notification to the user
+        const archivedNames = data.archivedProductsRemoved.join(', ');
+        alert(`Note: The following products were removed from checkout because they are archived:\n\n${archivedNames}\n\nProceeding with remaining products.`);
       }
     }
 
@@ -5665,15 +5680,42 @@ async function openCheckoutModal(productIds) {
   } catch (error) {
     console.error('Checkout failed:', error);
     
-    // Show error and fallback to redirect if we have a URL
+    // Show error in checkout modal
     checkoutLoading.style.display = 'none';
     checkoutError.style.display = 'flex';
     
-    // Try to get checkout URL from error or redirect to a generic checkout page
+    // Format error message for archived products
+    let errorMessage = error.message || 'An error occurred during checkout';
+    if (error.message && error.message.includes('archived')) {
+      // Format archived products error more clearly
+      errorMessage = error.message.replace(/\n/g, '<br>');
+      checkoutError.innerHTML = `
+        <span class="checkout-error-text" style="text-align: left; line-height: 1.6;">
+          <strong>⚠️ Archived Products Detected</strong><br><br>
+          ${errorMessage}<br><br>
+          <strong>What to do:</strong><br>
+          1. Remove archived products from your cart<br>
+          2. Try checking out again<br><br>
+          <button onclick="closeCheckoutModalUI(); window.location.reload();" 
+                  style="padding: 8px 16px; background: var(--color-lello, #FFD700); 
+                         border: 1px solid var(--color-void-black, #000); 
+                         cursor: pointer; font-family: var(--font-visitor, monospace); 
+                         font-weight: bold; text-transform: uppercase;">
+            Close & Refresh Cart
+          </button>
+        </span>
+      `;
+    } else {
+      checkoutError.innerHTML = `
+        <span class="checkout-error-text">
+          ${errorMessage}<br><br>
+          Please try again or contact support.
+        </span>
+      `;
+    }
+    
+    // Close modal after showing error
     setTimeout(() => {
-      // If we have a URL from a previous attempt, use it
-      // Otherwise, show error and close modal
-      alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
       closeCheckoutModalUI();
       
       // Re-enable button
@@ -5681,7 +5723,7 @@ async function openCheckoutModal(productIds) {
         buyNowButton.disabled = false;
         buyNowButton.textContent = 'BUY NOW';
       }
-    }, 2000);
+    }, 10000); // Give user time to read the error
   }
 }
 
