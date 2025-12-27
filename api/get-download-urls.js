@@ -153,23 +153,34 @@ export default async (req, res) => {
         }
 
         if (product && product.benefits) {
-          // Find downloadable benefit
+          // Find downloadable benefit (Polar uses "downloadables" as type)
           for (const benefit of product.benefits) {
-            if (benefit.type === 'downloadable' && benefit.properties?.file_id) {
+            if (benefit.type === 'downloadables' && benefit.properties?.files) {
               try {
-                // Get file details to get download URL
-                const file = await polar.files.get({ id: benefit.properties.file_id });
-                
-                if (file && file.url) {
-                  downloads.push({
-                    productId,
-                    url: file.url,
-                    filename: file.name || `${product.name || 'product'}.blend`
-                  });
-                  break; // Use first downloadable benefit found
+                // Polar stores files as an array in properties.files
+                const fileIds = benefit.properties.files;
+                console.log(`Found ${fileIds.length} files in downloadables benefit for ${productId}`);
+
+                // Get download URLs for all files in this benefit
+                for (const fileId of fileIds) {
+                  try {
+                    const file = await polar.files.get({ id: fileId });
+
+                    if (file && file.url) {
+                      downloads.push({
+                        productId,
+                        url: file.url,
+                        filename: file.name || `${product.name || 'product'}.blend`
+                      });
+                      console.log(`✅ Added download for ${productId}: ${file.name}`);
+                    }
+                  } catch (fileError) {
+                    console.error(`Error getting file ${fileId}:`, fileError.message);
+                  }
                 }
-              } catch (fileError) {
-                console.error(`Error getting file for benefit ${benefit.id}:`, fileError.message);
+                break; // Use first downloadables benefit found
+              } catch (benefitError) {
+                console.error(`Error processing benefit ${benefit.id}:`, benefitError.message);
               }
             }
           }
