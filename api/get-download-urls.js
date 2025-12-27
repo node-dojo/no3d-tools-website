@@ -87,7 +87,18 @@ export default async (req, res) => {
       try {
         // Get product details with benefits
         const product = await polar.products.get({ id: productId });
-        
+
+        // Null safety checks
+        if (!product) {
+          console.log(`Product ${productId} not found`);
+          continue;
+        }
+
+        if (!product.benefits || !Array.isArray(product.benefits)) {
+          console.log(`Product ${productId} has no benefits array`);
+          continue;
+        }
+
         if (product && product.benefits) {
           // Find downloadable benefit
           for (const benefit of product.benefits) {
@@ -125,7 +136,7 @@ export default async (req, res) => {
       }
     }
 
-    console.log(`Found ${downloads.length} download URLs for ${ownedProducts.length} owned products`);
+    console.log(`Found ${downloads.length} download URLs for ${targetProductIds.length} target products`);
 
     return res.status(200).json({
       downloads,

@@ -194,6 +194,77 @@
                 text-align: center;
             }
         }
+
+        /* Download Section Styles */
+        .download-section {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            border-radius: 0;
+            padding: var(--space-large);
+            margin-bottom: var(--space-large);
+            border-left: 4px solid var(--color-lello);
+        }
+
+        .download-section h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            margin-bottom: var(--space-medium);
+            line-height: 1.0;
+        }
+
+        .download-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-medium);
+        }
+
+        .download-button {
+            background-color: var(--color-lello);
+            color: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-medium) var(--space-large);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-normal);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            border-radius: 0;
+            display: inline-block;
+            text-decoration: none;
+            line-height: 1.0;
+            text-align: center;
+        }
+
+        .download-button:hover {
+            background-color: var(--color-lello-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lello-glow);
+        }
+
+        .download-button:active {
+            background-color: #d4e600;
+            transform: translateY(0);
+        }
+
+        .loading-message {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            color: var(--color-void-black);
+            padding: var(--space-medium);
+            text-align: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
@@ -309,16 +380,21 @@
                                 loginMessage.className = 'success-subtitle';
                                 loginMessage.style.color = 'var(--color-success-green, #4CAF50)';
                                 loginMessage.style.marginTop = 'var(--space-small)';
-                                loginMessage.innerHTML = '<strong>✨ INSTANT ACCESS:</strong> You are now logged in. Redirecting to your account...';
+                                loginMessage.innerHTML = '<strong>✨ INSTANT ACCESS:</strong> You are now logged in. Your downloads are ready below.';
                                 subtitle.parentNode.insertBefore(loginMessage, subtitle.nextSibling);
 
-                                // Auto-redirect to account page after 2 seconds
-                                setTimeout(() => {
-                                    window.location.href = 'account.html';
-                                }, 2000);
+                                // No auto-redirect - user stays on success page to download
                             }
                         } catch (sessionError) {
                             console.error('Auto-login failed:', sessionError);
+
+                            // Show user-friendly error
+                            const errorMessage = document.createElement('p');
+                            errorMessage.className = 'success-subtitle';
+                            errorMessage.style.color = '#e63946';
+                            errorMessage.style.marginTop = 'var(--space-small)';
+                            errorMessage.innerHTML = '⚠️ Auto-login unavailable. Use the MY ACCOUNT button above to access your files.';
+                            subtitle.parentNode.insertBefore(errorMessage, subtitle.nextSibling);
                         }
 
                         // Update Account Button with prefilled email (fallback)
@@ -340,44 +416,96 @@
         }
 
         async function fetchDownloadLinks(email, productIds) {
+            const purchaseTypesDiv = document.querySelector('.purchase-types');
+
+            // Show loading state
+            const loadingSection = document.createElement('div');
+            loadingSection.className = 'download-section';
+            loadingSection.id = 'downloads-loading';
+            loadingSection.innerHTML = `
+                <h2>YOUR DOWNLOADS</h2>
+                <p class="loading-message">⏳ Preparing your downloads...</p>
+            `;
+            if (purchaseTypesDiv) {
+                purchaseTypesDiv.parentNode.insertBefore(loadingSection, purchaseTypesDiv);
+            }
+
             try {
                 const response = await fetch('/api/get-download-urls', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, productIds })
                 });
-                
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
-                
+
+                // Remove loading state
+                const loadingElement = document.getElementById('downloads-loading');
+                if (loadingElement) {
+                    loadingElement.remove();
+                }
+
                 if (data.downloads && data.downloads.length > 0) {
-                    const purchaseTypesDiv = document.querySelector('.purchase-types');
-                    
-                    // Create downloads section
+                    // Create download section
                     const downloadsHtml = data.downloads.map(d => `
-                        <div class="purchase-type" style="border-left-color: var(--color-success-green, #4CAF50);">
-                            <div class="purchase-type-title">⬇️ READY TO DOWNLOAD</div>
-                            <div class="purchase-type-description">
-                                <a href="${d.url}" target="_blank" download>Download ${d.filename}</a>
-                            </div>
-                        </div>
+                        <a href="${d.url}"
+                           class="download-button"
+                           download="${d.filename}"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            ⬇️ DOWNLOAD ${d.filename.toUpperCase()}
+                        </a>
                     `).join('');
 
                     const downloadsSection = document.createElement('div');
+                    downloadsSection.className = 'download-section';
                     downloadsSection.innerHTML = `
                         <h2>YOUR DOWNLOADS</h2>
-                        <div class="purchase-type-list">
+                        <p style="margin-bottom: var(--space-medium); font-family: var(--font-mono); font-size: var(--font-size-base);">
+                            Your purchase is ready! Click below to download your files:
+                        </p>
+                        <div class="download-list">
                             ${downloadsHtml}
                         </div>
-                        <br>
                     `;
-                    
-                    // Insert before the existing "What Happens Next?" section
+
                     if (purchaseTypesDiv) {
                         purchaseTypesDiv.parentNode.insertBefore(downloadsSection, purchaseTypesDiv);
+                    }
+                } else {
+                    // No downloads - show helpful message
+                    const noDownloadsSection = document.createElement('div');
+                    noDownloadsSection.className = 'download-section';
+                    noDownloadsSection.innerHTML = `
+                        <h2>ACCESS YOUR PURCHASE</h2>
+                        <p style="font-family: var(--font-mono); font-size: var(--font-size-base);">
+                            Visit your <a href="account.html" style="color: var(--color-void-black); text-decoration: underline; font-weight: bold;">account page</a>
+                            to access your subscription benefits or contact support@no3d.tools.
+                        </p>
+                    `;
+
+                    if (purchaseTypesDiv) {
+                        purchaseTypesDiv.parentNode.insertBefore(noDownloadsSection, purchaseTypesDiv);
                     }
                 }
             } catch (error) {
                 console.error('Failed to fetch downloads:', error);
+
+                const loadingElement = document.getElementById('downloads-loading');
+                if (loadingElement) {
+                    loadingElement.innerHTML = `
+                        <h2>DOWNLOAD ERROR</h2>
+                        <p style="font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-void-black);">
+                            Unable to load download links. Please visit your
+                            <a href="account.html" style="color: var(--color-void-black); text-decoration: underline; font-weight: bold;">account page</a>
+                            to access your files, or contact support@no3d.tools.
+                        </p>
+                    `;
+                }
             }
         }
 
