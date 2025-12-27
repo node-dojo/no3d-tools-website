@@ -424,6 +424,13 @@ function cleanupSupabaseRealtime() {
 window.addEventListener('beforeunload', cleanupSupabaseRealtime);
 
 document.addEventListener('DOMContentLoaded', async function() {
+  // Show loading screen (it's visible by default, just ensure it's not hidden)
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) {
+    loadingScreen.classList.remove('hidden');
+    console.log('🔄 Loading screen shown');
+  }
+
   try {
     // Try to load from Supabase first, fallback to JSON
     try {
@@ -472,6 +479,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Start periodic price refresh even with fallback data
     startPriceRefresh();
+  } finally {
+    // Hide loading screen after everything is loaded
+    if (loadingScreen) {
+      console.log('✅ Catalog loaded, hiding loading screen');
+      setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+        // Remove from DOM after transition
+        setTimeout(() => {
+          loadingScreen.remove();
+        }, 300);
+      }, 100);
+    }
   }
 });
 
@@ -7518,6 +7537,9 @@ const christmasCardButtons = document.querySelectorAll('.christmas-card-button')
 
 // Check if Christmas popup should be shown
 function shouldShowChristmasPopup() {
+  // DISABLED: Christmas popup is disabled
+  return false;
+  
   // Check if user has already dismissed it
   const dismissed = sessionStorage.getItem('christmas_popup_dismissed');
   if (dismissed) {
@@ -7950,6 +7972,10 @@ function initializeHomeCTABanner() {
   const ctaBanner = document.getElementById('christmas-cta-banner');
 
   if (!dismissButton || !ctaBanner) return;
+
+  // DISABLED: Christmas banner is disabled - hide it immediately
+  ctaBanner.classList.add('hidden');
+  return;
 
   // Allow reset via query parameter
   const urlParams = new URLSearchParams(window.location.search);
