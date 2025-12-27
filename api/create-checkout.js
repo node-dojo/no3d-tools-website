@@ -81,7 +81,7 @@ export default async (req, res) => {
       
       const checkoutData = {
         products: productIds, // Array of product ID strings
-        successUrl: `${origin}/success`, // Redirect after successful checkout
+        successUrl: `${origin}/success?checkout_session_id={CHECKOUT_SESSION_ID}`, // Redirect after successful checkout with session ID
         embedOrigin: origin, // Required for embedded checkout modal - must match your domain
         metadata: {
           source: 'custom_cart',
