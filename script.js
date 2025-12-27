@@ -4893,30 +4893,55 @@ async function openCheckoutModal(productIds) {
         const checkout = await PolarEmbedCheckout.create(data.url, "light");
 
         // Handle successful checkout
-        checkout.addEventListener("success", async (eventData) => {
-          console.log('Checkout completed successfully!', eventData);
+        checkout.addEventListener("success", async (event) => {
+          // CRITICAL: Prevent Polar's default success screen (which has non-functional download buttons)
+          // This allows us to show our custom download modal instead
+          event.preventDefault();
 
-          // Extract checkout session ID from event data
+          // Close Polar's checkout iframe immediately so our modal can be shown
+          try {
+            checkout.close();
+          } catch (closeErr) {
+            console.warn('Could not close checkout programmatically:', closeErr);
+          }
+
+          // The checkout data is in event.detail, not the event itself
+          const checkoutData = event.detail || event;
+          console.log('Checkout completed successfully!', checkoutData);
+          console.log('Full event object:', JSON.stringify(event, null, 2));
+
+          // Extract order_id from event (primary identifier for download retrieval)
+          let orderId = null;
+          if (checkoutData && checkoutData.order_id) {
+            orderId = checkoutData.order_id;
+          } else if (checkoutData && checkoutData.orderId) {
+            orderId = checkoutData.orderId;
+          } else if (checkoutData && checkoutData.order && checkoutData.order.id) {
+            orderId = checkoutData.order.id;
+          }
+          console.log('Order ID:', orderId);
+
+          // Extract checkout session ID as fallback
           let checkoutSessionId = null;
-          if (eventData && eventData.id) {
-            checkoutSessionId = eventData.id;
-          } else if (eventData && eventData.checkoutId) {
-            checkoutSessionId = eventData.checkoutId;
-          } else if (eventData && eventData.checkout_id) {
-            checkoutSessionId = eventData.checkout_id;
+          if (checkoutData && checkoutData.id) {
+            checkoutSessionId = checkoutData.id;
+          } else if (checkoutData && checkoutData.checkoutId) {
+            checkoutSessionId = checkoutData.checkoutId;
+          } else if (checkoutData && checkoutData.checkout_id) {
+            checkoutSessionId = checkoutData.checkout_id;
           }
           console.log('Checkout session ID:', checkoutSessionId);
 
           // Extract customer email from checkout data if available
           let customerEmail = null;
-          if (eventData && eventData.customer && eventData.customer.email) {
-            customerEmail = eventData.customer.email;
-          } else if (eventData && eventData.email) {
-            customerEmail = eventData.email;
-          } else if (eventData && eventData.customerEmail) {
-            customerEmail = eventData.customerEmail;
-          } else if (eventData && eventData.customer_email) {
-            customerEmail = eventData.customer_email;
+          if (checkoutData && checkoutData.customer && checkoutData.customer.email) {
+            customerEmail = checkoutData.customer.email;
+          } else if (checkoutData && checkoutData.email) {
+            customerEmail = checkoutData.email;
+          } else if (checkoutData && checkoutData.customerEmail) {
+            customerEmail = checkoutData.customerEmail;
+          } else if (checkoutData && checkoutData.customer_email) {
+            customerEmail = checkoutData.customer_email;
           }
 
           // If email not available, prompt user
@@ -4937,7 +4962,7 @@ async function openCheckoutModal(productIds) {
 
           // Verify purchase and get download URLs (with polling)
           try {
-            await handlePurchaseSuccess(productIds, customerEmail, checkoutSessionId);
+            await handlePurchaseSuccess(productIds, customerEmail, orderId, checkoutSessionId);
             closeCheckoutModalUI();
           } catch (error) {
             console.error('Error handling purchase success:', error);
