@@ -4932,7 +4932,7 @@ async function openCheckoutModal(productIds) {
           }
           console.log('Checkout session ID:', checkoutSessionId);
 
-          // Extract customer email from checkout data if available
+          // Extract customer email from checkout data if available (optional - not required)
           let customerEmail = null;
           if (checkoutData && checkoutData.customer && checkoutData.customer.email) {
             customerEmail = checkoutData.customer.email;
@@ -4943,21 +4943,14 @@ async function openCheckoutModal(productIds) {
           } else if (checkoutData && checkoutData.customer_email) {
             customerEmail = checkoutData.customer_email;
           }
+          // Note: Email is optional - we can verify purchase via orderId/checkoutSessionId
 
-          // If email not available, prompt user
-          if (!customerEmail) {
-            customerEmail = prompt('Please enter your email address to access your downloads:');
-            if (!customerEmail) {
-              alert('Email is required to verify your purchase. Please contact support if you need assistance.');
-              closeCheckoutModalUI();
-              return;
-            }
-          }
-
-          // Store customer email for future credit checking
+          // Store customer email for future credit checking if available
           if (customerEmail) {
             localStorage.setItem('customer_email', customerEmail);
             console.log('Customer email stored for credit system:', customerEmail);
+          } else {
+            console.log('No customer email in checkout data - will retrieve from API');
           }
 
           // Verify purchase and get download URLs (with polling)
@@ -5039,99 +5032,65 @@ async function openCheckoutModal(productIds) {
 }
 
 // Handle purchase success - verify ownership and enable downloads
-// Implements polling to handle race condition with webhook processing
-async function handlePurchaseSuccess(productIds, customerEmail, checkoutSessionId) {
-  console.log('Handling purchase success for:', { productIds, customerEmail, checkoutSessionId });
+// Uses orderId (preferred) or checkoutSessionId (fallback) with polling
+async function handlePurchaseSuccess(productIds, customerEmail, orderId, checkoutSessionId) {
+  console.log('Handling purchase success for:', { productIds, customerEmail, orderId, checkoutSessionId });
 
-  const maxAttempts = 5;
+  const maxAttempts = 3;
   const delayMs = 2000;
   let attempts = 0;
   let downloads = [];
   let ownedProducts = [];
+  let resolvedEmail = customerEmail;
 
   // Polling loop - retry up to maxAttempts times with delays
-  while (attempts < maxAttempts) {
+  while (attempts < maxAttempts && downloads.length === 0) {
     attempts++;
     console.log(`Purchase verification attempt ${attempts}/${maxAttempts}...`);
 
     try {
-      // Step 1: Get download URLs using checkout session ID (preferred method)
-      if (checkoutSessionId) {
-        console.log('Fetching downloads via checkout session ID:', checkoutSessionId);
-        const downloadResponse = await fetch('/api/get-download-urls', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            checkoutSessionId: checkoutSessionId
-          })
-        });
-
-        const downloadData = await downloadResponse.json();
-        console.log('Download response:', downloadData);
-
-        // Handle 202 - checkout still processing
-        if (downloadResponse.status === 202) {
-          console.log(`Checkout still processing (status: ${downloadData.status}), will retry...`);
-          if (attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, delayMs));
-            continue;
-          }
-        }
-
-        if (downloadResponse.ok && downloadData.downloads && downloadData.downloads.length > 0) {
-          downloads = downloadData.downloads;
-          ownedProducts = downloadData.productIds || productIds;
-          console.log(`✅ Got ${downloads.length} downloads on attempt ${attempts}`);
-          break;
-        }
+      // Build request params - prefer orderId, fallback to checkoutSessionId
+      const params = {};
+      if (orderId) {
+        params.orderId = orderId;
+      } else if (checkoutSessionId) {
+        params.checkoutSessionId = checkoutSessionId;
       }
 
-      // Step 2: Fallback - verify purchase via email if checkout session didn't work
-      console.log('Verifying purchase via email:', customerEmail);
-      const verifyResponse = await fetch('/api/verify-purchase', {
+      if (Object.keys(params).length === 0) {
+        console.error('No orderId or checkoutSessionId available');
+        break;
+      }
+
+      console.log('Fetching downloads with params:', params);
+      const downloadResponse = await fetch('/api/get-download-urls', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: customerEmail,
-          productIds: productIds,
-          checkoutSessionId: checkoutSessionId
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
       });
 
-      if (verifyResponse.ok) {
-        const verifyData = await verifyResponse.json();
-        ownedProducts = verifyData.ownedProducts || [];
-        console.log('Verified owned products:', ownedProducts);
+      const downloadData = await downloadResponse.json();
+      console.log('Download response:', downloadData);
 
-        if (ownedProducts.length > 0) {
-          // Try to get download URLs for owned products
-          const downloadResponse = await fetch('/api/get-download-urls', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              checkoutSessionId: checkoutSessionId
-            })
-          });
-
-          if (downloadResponse.ok) {
-            const downloadData = await downloadResponse.json();
-            downloads = downloadData.downloads || [];
-            if (downloads.length > 0) {
-              console.log(`✅ Got ${downloads.length} downloads via verify fallback`);
-              break;
-            }
-          }
+      // Handle 202 - checkout still processing
+      if (downloadResponse.status === 202) {
+        console.log(`Still processing (status: ${downloadData.status}), will retry...`);
+        if (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          continue;
         }
       }
 
-      // If we have no downloads yet and have more attempts, wait and retry
-      if (downloads.length === 0 && attempts < maxAttempts) {
+      if (downloadResponse.ok && downloadData.downloads && downloadData.downloads.length > 0) {
+        downloads = downloadData.downloads;
+        ownedProducts = downloadData.productIds || productIds;
+        resolvedEmail = downloadData.customerEmail || customerEmail;
+        console.log(`✅ Got ${downloads.length} downloads on attempt ${attempts}`);
+        break;
+      }
+
+      // No downloads yet, wait and retry
+      if (attempts < maxAttempts) {
         console.log(`No downloads yet, waiting ${delayMs}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
@@ -5150,17 +5109,17 @@ async function handlePurchaseSuccess(productIds, customerEmail, checkoutSessionI
   // If we still have no downloads after all attempts, show a helpful message
   if (downloads.length === 0) {
     console.warn('No downloads available after polling');
-    // Use productIds as ownedProducts if we couldn't verify
     ownedProducts = ownedProducts.length > 0 ? ownedProducts : productIds;
 
-    // Show modal with "processing" message - downloads may arrive later
-    showDownloadModal(ownedProducts, [], customerEmail, true);
+    // Show modal with "processing" message - downloads will arrive via email
+    showDownloadModal(ownedProducts, [], resolvedEmail, true);
 
     // Store purchase info anyway
     const purchaseInfo = {
-      email: customerEmail,
+      email: resolvedEmail,
       ownedProducts: ownedProducts,
       downloads: [],
+      orderId: orderId,
       checkoutSessionId: checkoutSessionId,
       timestamp: new Date().toISOString(),
       pending: true
@@ -5175,9 +5134,10 @@ async function handlePurchaseSuccess(productIds, customerEmail, checkoutSessionI
 
   // Store purchase info in sessionStorage
   const purchaseInfo = {
-    email: customerEmail,
+    email: resolvedEmail,
     ownedProducts: ownedProducts,
     downloads: downloads,
+    orderId: orderId,
     checkoutSessionId: checkoutSessionId,
     timestamp: new Date().toISOString()
   };

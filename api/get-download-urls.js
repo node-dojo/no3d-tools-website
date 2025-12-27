@@ -2,15 +2,18 @@
  * Vercel Serverless Function: Get Download URLs
  *
  * Endpoint: /api/get-download-urls
- * Method: POST
- * Body: { checkoutSessionId: string }
+ * Method: POST or GET
+ * Body/Query: { orderId: string } (preferred) or { checkoutSessionId: string } (fallback)
  *
  * Returns: { downloads: [{ productId, url, filename }], error: null }
  *
- * Flow:
- * 1. Get checkout session to find customer_id and products
- * 2. Create a customer session token
- * 3. Use Customer Portal API to get downloadables with actual URLs
+ * Flow (orderId - preferred):
+ * 1. Query Polar Orders API directly to get order details and benefits
+ * 2. Extract download URLs from granted benefits
+ *
+ * Flow (checkoutSessionId - fallback):
+ * 1. Get checkout session to find customer_id
+ * 2. Create customer session and get downloadables
  */
 
 import { Polar } from '@polar-sh/sdk';
@@ -23,51 +26,208 @@ const polar = new Polar({
 const POLAR_API_BASE = 'https://api.polar.sh';
 
 /**
- * Create a customer session token for accessing the Customer Portal API
+ * Get downloads directly from an order (fastest approach)
  */
-async function createCustomerSession(customerId) {
-  const response = await fetch(`${POLAR_API_BASE}/v1/customer-sessions/`, {
+async function getDownloadsFromOrder(orderId) {
+  console.log(`Fetching order: ${orderId}`);
+
+  // Get the order details
+  const order = await polar.orders.get({ id: orderId });
+
+  if (!order) {
+    throw new Error('Order not found');
+  }
+
+  console.log('Order status:', order.status);
+  console.log('Order product:', order.product?.name);
+
+  // Get customer ID to fetch their downloadables
+  const customerId = order.customer_id;
+  if (!customerId) {
+    throw new Error('No customer ID in order');
+  }
+
+  // Create a customer session to access downloadables
+  const sessionResponse = await fetch(`${POLAR_API_BASE}/v1/customer-sessions/`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.POLAR_API_TOKEN}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      customer_id: customerId,
-    }),
+    body: JSON.stringify({ customer_id: customerId }),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to create customer session: ${response.status} ${errorText}`);
+  if (!sessionResponse.ok) {
+    const errorText = await sessionResponse.text();
+    throw new Error(`Failed to create customer session: ${sessionResponse.status} ${errorText}`);
   }
 
-  return await response.json();
+  const customerSession = await sessionResponse.json();
+  const customerToken = customerSession.token;
+
+  // Get downloadables for this customer
+  const downloadablesResponse = await fetch(
+    `${POLAR_API_BASE}/v1/customer-portal/downloadables/?limit=100`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${customerToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!downloadablesResponse.ok) {
+    const errorText = await downloadablesResponse.text();
+    throw new Error(`Failed to get downloadables: ${downloadablesResponse.status} ${errorText}`);
+  }
+
+  const downloadablesData = await downloadablesResponse.json();
+  const downloadables = downloadablesData.items || [];
+
+  console.log(`Found ${downloadables.length} total downloadables for customer`);
+
+  // Map to download format
+  const downloads = [];
+  for (const downloadable of downloadables) {
+    const file = downloadable.file;
+    if (file && file.download && file.download.url) {
+      downloads.push({
+        productId: order.product?.id || 'unknown',
+        benefitId: downloadable.benefit_id,
+        url: file.download.url,
+        filename: file.name || 'download.blend',
+        expiresAt: file.download.expires_at,
+        size: file.size,
+        sizeReadable: file.size_readable
+      });
+      console.log(`✅ Added download: ${file.name} (${file.size_readable})`);
+    }
+  }
+
+  return {
+    downloads,
+    customerEmail: order.customer?.email || order.customer_email,
+    productIds: order.product ? [order.product.id] : [],
+    orderId: order.id
+  };
 }
 
 /**
- * Get downloadables using the Customer Portal API
+ * Fallback: Get downloads via checkout session ID
  */
-async function getCustomerDownloadables(customerSessionToken, benefitId = null) {
-  let url = `${POLAR_API_BASE}/v1/customer-portal/downloadables/?limit=100`;
-  if (benefitId) {
-    url += `&benefit_id=${benefitId}`;
+async function getDownloadsFromCheckout(checkoutSessionId) {
+  console.log(`Getting download URLs via checkout session: ${checkoutSessionId}`);
+
+  // Get checkout to find customer_id and products
+  const checkout = await polar.checkouts.get({ id: checkoutSessionId });
+
+  console.log('Checkout status:', checkout?.status);
+  console.log('Checkout customer_id:', checkout?.customer_id);
+
+  if (!checkout) {
+    throw new Error('Checkout session not found');
   }
 
-  const response = await fetch(url, {
-    method: 'GET',
+  // Accept both confirmed and succeeded statuses
+  if (checkout.status !== 'succeeded' && checkout.status !== 'confirmed') {
+    console.log(`Checkout not complete yet, status: ${checkout.status}`);
+    return {
+      downloads: [],
+      status: checkout.status,
+      pending: true
+    };
+  }
+
+  const customerId = checkout.customer_id;
+  if (!customerId) {
+    throw new Error('No customer ID found in checkout');
+  }
+
+  // Extract product IDs from checkout
+  let targetProductIds = [];
+  if (checkout.products && Array.isArray(checkout.products)) {
+    targetProductIds = checkout.products.map(p => p.id || p);
+  } else if (checkout.product) {
+    targetProductIds = [checkout.product.id || checkout.product];
+  } else if (checkout.product_id) {
+    targetProductIds = [checkout.product_id];
+  }
+
+  console.log('Target product IDs:', targetProductIds);
+
+  // Create a customer session token
+  console.log('Creating customer session for:', customerId);
+  const sessionResponse = await fetch(`${POLAR_API_BASE}/v1/customer-sessions/`, {
+    method: 'POST',
     headers: {
-      'Authorization': `Bearer ${customerSessionToken}`,
+      'Authorization': `Bearer ${process.env.POLAR_API_TOKEN}`,
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ customer_id: customerId }),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to get downloadables: ${response.status} ${errorText}`);
+  if (!sessionResponse.ok) {
+    const errorText = await sessionResponse.text();
+    throw new Error(`Failed to create customer session: ${sessionResponse.status} ${errorText}`);
   }
 
-  return await response.json();
+  const customerSession = await sessionResponse.json();
+  const customerToken = customerSession.token;
+
+  if (!customerToken) {
+    throw new Error('Failed to create customer session');
+  }
+
+  console.log('Customer session created successfully');
+
+  // Get downloadables via Customer Portal API
+  const downloadablesResponse = await fetch(
+    `${POLAR_API_BASE}/v1/customer-portal/downloadables/?limit=100`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${customerToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!downloadablesResponse.ok) {
+    const errorText = await downloadablesResponse.text();
+    throw new Error(`Failed to get downloadables: ${downloadablesResponse.status} ${errorText}`);
+  }
+
+  const downloadablesData = await downloadablesResponse.json();
+  const downloadables = downloadablesData.items || [];
+
+  console.log(`Found ${downloadables.length} downloadables for customer`);
+
+  // Map downloadables to our download format
+  const downloads = [];
+  for (const downloadable of downloadables) {
+    const file = downloadable.file;
+    if (file && file.download && file.download.url) {
+      downloads.push({
+        productId: 'unknown', // We don't have exact mapping here
+        benefitId: downloadable.benefit_id,
+        url: file.download.url,
+        filename: file.name || 'download.blend',
+        expiresAt: file.download.expires_at,
+        size: file.size,
+        sizeReadable: file.size_readable
+      });
+      console.log(`✅ Added download: ${file.name} (${file.size_readable})`);
+    }
+  }
+
+  console.log(`Returning ${downloads.length} downloads for ${targetProductIds.length} products`);
+
+  return {
+    downloads,
+    customerEmail: checkout.customer_email || checkout.customer?.email,
+    productIds: targetProductIds
+  };
 }
 
 export default async (req, res) => {
@@ -76,7 +236,7 @@ export default async (req, res) => {
 
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // Handle preflight
@@ -84,8 +244,8 @@ export default async (req, res) => {
     return res.status(200).json({ ok: true });
   }
 
-  // Only allow POST
-  if (req.method !== 'POST') {
+  // Allow both GET and POST
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({
       error: 'Method not allowed',
       downloads: []
@@ -93,132 +253,38 @@ export default async (req, res) => {
   }
 
   try {
-    const { checkoutSessionId } = req.body;
+    // Get params from query (GET) or body (POST)
+    const orderId = req.query?.orderId || req.body?.orderId;
+    const checkoutSessionId = req.query?.checkoutSessionId || req.body?.checkoutSessionId;
 
-    if (!checkoutSessionId) {
-      return res.status(400).json({
-        error: 'checkoutSessionId is required',
-        downloads: []
-      });
+    // Prefer orderId if available (faster, more direct)
+    if (orderId) {
+      console.log('Using orderId approach:', orderId);
+      const result = await getDownloadsFromOrder(orderId);
+      return res.status(200).json({ ...result, error: null });
     }
 
-    console.log(`Getting download URLs via checkout session: ${checkoutSessionId}`);
+    // Fallback to checkoutSessionId
+    if (checkoutSessionId) {
+      console.log('Using checkoutSessionId approach:', checkoutSessionId);
+      const result = await getDownloadsFromCheckout(checkoutSessionId);
 
-    // Step 1: Get checkout to find customer_id and products
-    const checkout = await polar.checkouts.get({ id: checkoutSessionId });
-
-    console.log('Checkout status:', checkout?.status);
-    console.log('Checkout customer_id:', checkout?.customer_id);
-
-    if (!checkout) {
-      return res.status(404).json({
-        error: 'Checkout session not found',
-        downloads: []
-      });
-    }
-
-    // Accept both confirmed and succeeded statuses
-    if (checkout.status !== 'succeeded' && checkout.status !== 'confirmed') {
-      console.log(`Checkout not complete yet, status: ${checkout.status}`);
-      return res.status(202).json({
-        error: `Checkout still processing (status: ${checkout.status})`,
-        downloads: [],
-        status: checkout.status
-      });
-    }
-
-    const customerId = checkout.customer_id;
-    if (!customerId) {
-      console.error('No customer_id in checkout');
-      return res.status(400).json({
-        error: 'No customer ID found in checkout',
-        downloads: []
-      });
-    }
-
-    // Extract product IDs from checkout
-    let targetProductIds = [];
-    if (checkout.products && Array.isArray(checkout.products)) {
-      targetProductIds = checkout.products.map(p => p.id || p);
-    } else if (checkout.product) {
-      targetProductIds = [checkout.product.id || checkout.product];
-    } else if (checkout.product_id) {
-      targetProductIds = [checkout.product_id];
-    }
-
-    console.log('Target product IDs:', targetProductIds);
-
-    // Step 2: Create a customer session token
-    console.log('Creating customer session for:', customerId);
-    const customerSession = await createCustomerSession(customerId);
-    const customerToken = customerSession.token;
-
-    if (!customerToken) {
-      console.error('No token in customer session response:', customerSession);
-      return res.status(500).json({
-        error: 'Failed to create customer session',
-        downloads: []
-      });
-    }
-
-    console.log('Customer session created successfully');
-
-    // Step 3: Get downloadables via Customer Portal API
-    const downloadablesResponse = await getCustomerDownloadables(customerToken);
-    const downloadables = downloadablesResponse.items || [];
-
-    console.log(`Found ${downloadables.length} downloadables for customer`);
-
-    // Step 4: Map downloadables to our download format
-    const downloads = [];
-
-    for (const downloadable of downloadables) {
-      // Get the product ID from the benefit
-      // We need to find which product this benefit belongs to
-      const file = downloadable.file;
-      const benefitId = downloadable.benefit_id;
-
-      if (file && file.download && file.download.url) {
-        // Find which product has this benefit
-        let productId = null;
-        for (const targetId of targetProductIds) {
-          try {
-            const product = await polar.products.get({ id: targetId });
-            if (product.benefits?.some(b => b.id === benefitId)) {
-              productId = targetId;
-              break;
-            }
-          } catch (e) {
-            console.error(`Error checking product ${targetId}:`, e.message);
-          }
-        }
-
-        downloads.push({
-          productId: productId || 'unknown',
-          benefitId: benefitId,
-          url: file.download.url,
-          filename: file.name || 'download.blend',
-          expiresAt: file.download.expires_at,
-          size: file.size,
-          sizeReadable: file.size_readable
+      // Return 202 if checkout is still processing
+      if (result.pending) {
+        return res.status(202).json({
+          error: `Checkout still processing (status: ${result.status})`,
+          downloads: [],
+          status: result.status
         });
-
-        console.log(`✅ Added download: ${file.name} (${file.size_readable})`);
       }
+
+      return res.status(200).json({ ...result, error: null });
     }
 
-    // Filter to only include downloads for purchased products
-    const filteredDownloads = downloads.filter(d =>
-      d.productId === 'unknown' || targetProductIds.includes(d.productId)
-    );
-
-    console.log(`Returning ${filteredDownloads.length} downloads for ${targetProductIds.length} products`);
-
-    return res.status(200).json({
-      downloads: filteredDownloads,
-      customerEmail: checkout.customer_email || checkout.customer?.email,
-      productIds: targetProductIds,
-      error: null
+    // No valid identifier provided
+    return res.status(400).json({
+      error: 'orderId or checkoutSessionId is required',
+      downloads: []
     });
 
   } catch (error) {
