@@ -119,6 +119,8 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         checkoutUrl: checkout.url,
+        clientSecret: checkout.client_secret, // Required for embedded checkout
+        id: checkout.id,
         creditApplied: 0,
         creditAppliedFormatted: '$0.00',
       });
@@ -156,6 +158,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       checkoutUrl: checkout.url,
+      clientSecret: checkout.client_secret, // Required for embedded checkout
+      id: checkout.id,
       creditApplied: creditToApply,
       creditAppliedFormatted: `$${(creditToApply / 100).toFixed(2)}`,
       remainingBalance: balance - creditToApply,

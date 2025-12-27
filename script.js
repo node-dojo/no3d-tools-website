@@ -5444,14 +5444,27 @@ function getDirectCheckoutUrl(productIds) {
 }
 
 // Open Polar embedded checkout modal
+// Track if checkout is already in progress to prevent duplicates
+let checkoutInProgress = false;
+let currentCheckoutInstance = null;
+
 async function openCheckoutModal(productIds) {
   console.log('Creating checkout for product IDs:', productIds);
+
+  // Prevent multiple simultaneous checkouts
+  if (checkoutInProgress) {
+    console.warn('Checkout already in progress, ignoring duplicate request');
+    return;
+  }
+
+  checkoutInProgress = true;
 
   // Open modal UI immediately
   openCheckoutModalUI();
 
   // Store checkout ID for use after success (will be set when checkout is created)
   let currentCheckoutId = null;
+  let successHandlerCalled = false;
 
   try {
     let data;
@@ -5648,12 +5661,26 @@ async function openCheckoutModal(productIds) {
         console.log('Creating embedded checkout with URL:', data.url);
         const checkout = await PolarEmbedCheckout.create(data.url, "light");
 
+        // Store checkout instance
+        currentCheckoutInstance = checkout;
+
         // Handle successful checkout
         checkout.addEventListener("success", async (eventData) => {
+          // Prevent multiple success handler calls
+          if (successHandlerCalled) {
+            console.warn('Success handler already called, ignoring duplicate event');
+            return;
+          }
+          successHandlerCalled = true;
+
           console.log('Checkout completed successfully!', eventData);
+          console.log('Event data structure:', JSON.stringify(eventData, null, 2));
 
           // Close modal
           closeCheckoutModalUI();
+          
+          // Reset checkout in progress flag
+          checkoutInProgress = false;
 
           // Extract checkout session ID from event data
           // Try multiple possible locations in eventData, then fallback to stored checkout ID
@@ -5665,8 +5692,8 @@ async function openCheckoutModal(productIds) {
           
           if (!checkoutSessionId) {
             console.error('No checkout session ID found. Event data:', eventData);
-            // Fallback: redirect to Polar account page
-            window.location.href = 'https://polar.sh/account';
+            // Show success message - downloads will be sent via email
+            alert('Purchase successful! Your download links will be sent to your email shortly. You can also access your downloads from your account page.');
             return;
           }
 
@@ -5687,8 +5714,8 @@ async function openCheckoutModal(productIds) {
             if (!downloadResponse.ok) {
               const errorData = await downloadResponse.json();
               console.error('Failed to get download URLs:', errorData);
-              // Fallback: redirect to Polar account page
-              window.location.href = 'https://polar.sh/account';
+              // Show success message - downloads will be sent via email
+              alert('Purchase successful! Your download links will be sent to your email shortly. You can also access your downloads from your account page.');
               return;
             }
 
@@ -5699,8 +5726,8 @@ async function openCheckoutModal(productIds) {
 
             if (downloads.length === 0) {
               console.warn('No downloads available yet');
-              // Redirect to Polar account page - downloads may be processing
-              window.location.href = 'https://polar.sh/account';
+              // Show success message - downloads may still be processing
+              alert('Purchase successful! Your download links are being processed and will be sent to your email shortly. You can also check your account page.');
               return;
             }
 
@@ -5740,8 +5767,8 @@ async function openCheckoutModal(productIds) {
 
           } catch (error) {
             console.error('Error getting download URLs:', error);
-            // Fallback: redirect to Polar account page
-            window.location.href = 'https://polar.sh/account';
+            // Show success message - downloads will be sent via email
+            alert('Purchase successful! Your download links will be sent to your email shortly. You can also access your downloads from your account page.');
           }
         });
 
@@ -5749,6 +5776,8 @@ async function openCheckoutModal(productIds) {
         checkout.addEventListener("close", () => {
           console.log('Checkout modal closed');
           closeCheckoutModalUI();
+          checkoutInProgress = false;
+          currentCheckoutInstance = null;
           // Re-enable button
           if (buyNowButton) {
             buyNowButton.disabled = false;
@@ -5770,20 +5799,29 @@ async function openCheckoutModal(productIds) {
         stack: embeddedError.stack,
         name: embeddedError.name
       });
+      checkoutInProgress = false;
     }
 
-    // Fallback: If embedded checkout fails, redirect to full page
-    console.log('Falling back to full page checkout');
+    // Fallback: If embedded checkout fails, show error message
+    // DO NOT redirect to checkout URL - it becomes invalid after checkout completes
+    console.log('Embedded checkout failed, showing error message');
     checkoutLoading.style.display = 'none';
     checkoutError.style.display = 'flex';
-    
-    // Wait a moment to show error message, then redirect
-    setTimeout(() => {
-      window.location.href = data.url;
-    }, 1500);
+    checkoutError.innerHTML = `
+      <span class="checkout-error-text">
+        Unable to load embedded checkout.<br><br>
+        Please try refreshing the page and checking out again.<br><br>
+        If the problem persists, please contact support.
+      </span>
+    `;
+    checkoutInProgress = false;
 
   } catch (error) {
     console.error('Checkout failed:', error);
+    
+    // Reset checkout in progress flag
+    checkoutInProgress = false;
+    currentCheckoutInstance = null;
     
     // Show error in checkout modal
     checkoutLoading.style.display = 'none';

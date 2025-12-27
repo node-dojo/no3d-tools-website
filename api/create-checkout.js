@@ -177,10 +177,11 @@ export default async (req, res) => {
       url: checkout.url
     });
 
-    // Return checkout URL
+    // Return checkout data for embedded modal
     return res.status(200).json({
-      url: checkout.url,
+      url: checkout.url, // Keep for debugging/fallback
       id: checkout.id,
+      clientSecret: checkout.client_secret, // Required for embedded checkout
       error: null,
       archivedProductsRemoved: archivedProducts.length > 0 ? archivedProducts.map(p => p.name) : null,
       validProductCount: validProductIds.length,
