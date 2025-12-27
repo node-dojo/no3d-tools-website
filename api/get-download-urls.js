@@ -50,32 +50,85 @@ export default async (req, res) => {
         console.log(`Getting download URLs via session ID: ${checkoutSessionId}`);
         try {
             const checkout = await polar.checkouts.get({ id: checkoutSessionId });
-            
-            if (!checkout || (checkout.status !== 'succeeded' && checkout.status !== 'confirmed')) {
-                return res.status(403).json({ error: 'Invalid or incomplete checkout session', downloads: [] });
+
+            console.log('Checkout object:', JSON.stringify(checkout, null, 2));
+            console.log('Checkout status:', checkout?.status);
+
+            if (!checkout) {
+                console.error('Checkout not found for ID:', checkoutSessionId);
+                return res.status(404).json({ error: 'Checkout session not found', downloads: [] });
             }
 
-            customerEmail = checkout.customer_email || checkout.customer?.email;
-            
-            // Extract product IDs
-            if (checkout.products) {
-                targetProductIds = checkout.products.map(p => p.id);
+            if (checkout.status !== 'succeeded' && checkout.status !== 'confirmed') {
+                console.error(`Checkout status is ${checkout.status}, expected 'succeeded' or 'confirmed'`);
+                return res.status(403).json({
+                  error: `Checkout not complete (status: ${checkout.status})`,
+                  downloads: []
+                });
+            }
+
+            // Extract customer email from various possible locations
+            customerEmail = checkout.customer_email ||
+                           checkout.customer?.email ||
+                           checkout.customerEmail ||
+                           checkout.email;
+
+            console.log('Extracted customer email:', customerEmail);
+            console.log('Checkout customer object:', checkout.customer);
+
+            // If email still not found, try to fetch customer from Polar
+            if (!customerEmail && checkout.customer_id) {
+                try {
+                    console.log('Fetching customer details for ID:', checkout.customer_id);
+                    const customer = await polar.customers.get({ id: checkout.customer_id });
+                    customerEmail = customer?.email;
+                    console.log('Fetched customer email from customer object:', customerEmail);
+                } catch (customerError) {
+                    console.error('Error fetching customer:', customerError.message);
+                }
+            }
+
+            // Extract product IDs from various possible locations
+            if (checkout.products && Array.isArray(checkout.products)) {
+                targetProductIds = checkout.products.map(p => p.id || p);
+                console.log('Extracted product IDs from checkout.products:', targetProductIds);
             } else if (checkout.product) {
-                targetProductIds = [checkout.product.id];
+                targetProductIds = [checkout.product.id || checkout.product];
+                console.log('Extracted product ID from checkout.product:', targetProductIds);
             } else if (checkout.product_id) {
                 targetProductIds = [checkout.product_id];
+                console.log('Extracted product ID from checkout.product_id:', targetProductIds);
+            } else if (checkout.productId) {
+                targetProductIds = [checkout.productId];
+                console.log('Extracted product ID from checkout.productId:', targetProductIds);
+            } else {
+                console.error('No product information found in checkout');
             }
         } catch (error) {
             console.error('Error verifying checkout for downloads:', error);
-            return res.status(500).json({ error: 'Failed to verify checkout' });
+            return res.status(500).json({
+              error: 'Failed to verify checkout',
+              details: error.message
+            });
         }
     }
 
     // Validate we have what we need
     if (!customerEmail) {
-      return res.status(400).json({ error: 'Email required', downloads: [] });
+      console.error('Validation failed: No customer email', {
+        checkoutSessionId,
+        providedEmail: email
+      });
+      return res.status(400).json({
+        error: 'Customer email not found in checkout session',
+        downloads: []
+      });
     }
     if (!targetProductIds || !Array.isArray(targetProductIds) || targetProductIds.length === 0) {
+      console.warn('No product IDs found', {
+        checkoutSessionId,
+        providedProductIds: productIds
+      });
       return res.status(200).json({ downloads: [], error: null });
     }
 
