@@ -5450,6 +5450,9 @@ async function openCheckoutModal(productIds) {
   // Open modal UI immediately
   openCheckoutModalUI();
 
+  // Store checkout ID for use after success (will be set when checkout is created)
+  let currentCheckoutId = null;
+
   try {
     let data;
     
@@ -5535,6 +5538,11 @@ async function openCheckoutModal(productIds) {
         if (data.creditApplied && data.creditApplied > 0) {
           console.log(`Credit applied: $${(data.creditApplied / 100).toFixed(2)}`);
         }
+
+        // Normalize response: credit endpoint returns checkoutUrl, regular returns url
+        if (data.checkoutUrl && !data.url) {
+          data.url = data.checkoutUrl;
+        }
       } else {
         const textResponse = await response.text();
         console.error('Non-JSON response from API:', textResponse);
@@ -5568,6 +5576,19 @@ async function openCheckoutModal(productIds) {
 
     console.log('Checkout session created:', data.id);
     console.log('Checkout URL:', data.url);
+
+    // Store checkout ID for use after success
+    // Try to get from response, or extract from URL
+    currentCheckoutId = data.id;
+    if (!currentCheckoutId && data.url) {
+      // Extract checkout ID from Polar checkout URL
+      // Format: https://polar.sh/checkout/{checkout-id}
+      const urlMatch = data.url.match(/\/checkout\/([^/?]+)/);
+      if (urlMatch) {
+        currentCheckoutId = urlMatch[1];
+        console.log('Extracted checkout ID from URL:', currentCheckoutId);
+      }
+    }
 
     // Try to use embedded checkout modal
     try {
@@ -5634,10 +5655,94 @@ async function openCheckoutModal(productIds) {
           // Close modal
           closeCheckoutModalUI();
 
-          // Redirect directly to Polar customer account page where they can download
-          // Polar will automatically show their purchased products and download links
-          console.log('Redirecting to Polar customer account page...');
-          window.location.href = 'https://polar.sh/account';
+          // Extract checkout session ID from event data
+          // Try multiple possible locations in eventData, then fallback to stored checkout ID
+          const checkoutSessionId = eventData?.id || 
+                                   eventData?.checkout?.id || 
+                                   eventData?.checkout_id ||
+                                   eventData?.checkoutSessionId ||
+                                   currentCheckoutId;
+          
+          if (!checkoutSessionId) {
+            console.error('No checkout session ID found. Event data:', eventData);
+            // Fallback: redirect to Polar account page
+            window.location.href = 'https://polar.sh/account';
+            return;
+          }
+
+          console.log('Checkout session ID:', checkoutSessionId);
+
+          try {
+            // Get download URLs using the checkout session ID
+            const downloadResponse = await fetch('/api/get-download-urls', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                checkoutSessionId: checkoutSessionId
+              })
+            });
+
+            if (!downloadResponse.ok) {
+              const errorData = await downloadResponse.json();
+              console.error('Failed to get download URLs:', errorData);
+              // Fallback: redirect to Polar account page
+              window.location.href = 'https://polar.sh/account';
+              return;
+            }
+
+            const downloadData = await downloadResponse.json();
+            const downloads = downloadData.downloads || [];
+
+            console.log('Download URLs retrieved:', downloads);
+
+            if (downloads.length === 0) {
+              console.warn('No downloads available yet');
+              // Redirect to Polar account page - downloads may be processing
+              window.location.href = 'https://polar.sh/account';
+              return;
+            }
+
+            // Show download modal with the download links
+            // Extract product IDs from downloads
+            const purchasedProductIds = downloads.map(d => d.productId).filter(Boolean);
+            
+            // Get customer email from checkout if available
+            let customerEmail = eventData?.customer?.email || eventData?.email || null;
+            
+            // If no email in event, try to get it from the download response
+            if (!customerEmail && downloadData.customerEmail) {
+              customerEmail = downloadData.customerEmail;
+            }
+
+            // Store purchase info
+            const purchaseInfo = {
+              email: customerEmail,
+              ownedProducts: purchasedProductIds,
+              downloads: downloads,
+              checkoutSessionId: checkoutSessionId,
+              timestamp: new Date().toISOString()
+            };
+            sessionStorage.setItem('purchase_info', JSON.stringify(purchaseInfo));
+
+            // Store individual product ownership
+            purchasedProductIds.forEach(productId => {
+              sessionStorage.setItem(`owned_${productId}`, 'true');
+            });
+
+            // Show download modal
+            showDownloadModal(purchasedProductIds, downloads, customerEmail);
+
+            // Clear cart
+            cart.clear();
+            updateCheckoutButton();
+
+          } catch (error) {
+            console.error('Error getting download URLs:', error);
+            // Fallback: redirect to Polar account page
+            window.location.href = 'https://polar.sh/account';
+          }
         });
 
         // Handle checkout close/cancel
