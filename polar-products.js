@@ -85,8 +85,8 @@ const POLAR_PRODUCTS = {
   },
   // Chrome Crayon
   'chrome-crayon': {
-    productId: 'dd9334f8-2482-4896-97d1-f53a2dbc0cee',
-    priceId: 'c264c7f1-7efa-45bc-98c2-fe78d8673e1b',
+    productId: 'c601a3ab-536c-455e-975a-839f759a7e90',
+    priceId: 'e72865d3-8b2f-4453-9d14-7dd378df814b',
     name: 'Chrome Crayon',
     url: 'https://polar.sh/no3d-tools'
   },
