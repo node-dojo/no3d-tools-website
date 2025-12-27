@@ -453,9 +453,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateHeaderLogo('tools');
     // Set Tools as default expanded type
     expandProductType('tools');
-    // Show home grid on initial load (no product selected)
-    renderHomeGrid();
-    updateViewState();
+    
+    // Check URL for product parameter and restore view
+    const urlParams = new URLSearchParams(window.location.search);
+    const productHandle = urlParams.get('product');
+    if (productHandle) {
+      // Find product by handle
+      const productId = Object.keys(products).find(id => {
+        const product = products[id];
+        return (product.handle === productHandle || id === productHandle);
+      });
+      if (productId) {
+        // Skip history update on initial load, then replace state
+        await selectProduct(productId, true);
+        // Replace current history entry (don't add to history on initial load)
+        history.replaceState({ productId, productHandle }, '', window.location);
+      } else {
+        renderHomeGrid();
+        updateViewState();
+      }
+    } else {
+      // Show home grid on initial load (no product selected)
+      renderHomeGrid();
+      updateViewState();
+    }
 
     // Start periodic price refresh
     startPriceRefresh();
@@ -473,9 +494,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeSidebarEventListeners();
     updateHeaderLogo('tools');
     expandProductType('tools');
-    // Show home grid on initial load (no product selected)
-    renderHomeGrid();
-    updateViewState();
+    
+    // Check URL for product parameter and restore view
+    const urlParams = new URLSearchParams(window.location.search);
+    const productHandle = urlParams.get('product');
+    if (productHandle) {
+      // Find product by handle
+      const productId = Object.keys(products).find(id => {
+        const product = products[id];
+        return (product.handle === productHandle || id === productHandle);
+      });
+      if (productId) {
+        // Skip history update on initial load, then replace state
+        await selectProduct(productId, true);
+        // Replace current history entry (don't add to history on initial load)
+        history.replaceState({ productId, productHandle }, '', window.location);
+      } else {
+        renderHomeGrid();
+        updateViewState();
+      }
+    } else {
+      // Show home grid on initial load (no product selected)
+      renderHomeGrid();
+      updateViewState();
+    }
 
     // Start periodic price refresh even with fallback data
     startPriceRefresh();
@@ -490,6 +532,33 @@ document.addEventListener('DOMContentLoaded', async function() {
           loadingScreen.remove();
         }, 300);
       }, 100);
+    }
+    
+    // Handle browser back/forward button (add once after products are loaded)
+    if (!window._popstateHandlerAdded) {
+      window.addEventListener('popstate', async function(event) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productHandle = urlParams.get('product');
+        
+        if (productHandle) {
+          // Find product by handle
+          const productId = Object.keys(products).find(id => {
+            const product = products[id];
+            return (product.handle === productHandle || id === productHandle);
+          });
+          if (productId && productId !== currentProduct) {
+            // Skip history update since we're handling a popstate event
+            await selectProduct(productId, true);
+          }
+        } else {
+          // Return to home view
+          if (currentProduct) {
+            // Skip history update since we're handling a popstate event
+            deselectProduct(true);
+          }
+        }
+      });
+      window._popstateHandlerAdded = true;
     }
   }
 });
@@ -2272,7 +2341,7 @@ function initializeEventListeners() {
 }
 
 // Select a product and update the display
-async function selectProduct(productId) {
+async function selectProduct(productId, skipHistoryUpdate = false) {
   if (!products[productId]) {
     console.warn(`Product ${productId} not found`);
     return;
@@ -2284,15 +2353,31 @@ async function selectProduct(productId) {
   await updateProductDisplay(productId);
   updateActiveStates(productId);
   updateViewState();
+  
+  // Update browser history for back button support (unless called from popstate handler)
+  if (!skipHistoryUpdate) {
+    const product = products[productId];
+    const productHandle = product.handle || productId;
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set('product', productHandle);
+    history.pushState({ productId, productHandle }, '', newUrl);
+  }
 }
 
 // Deselect current product and return to home view
-function deselectProduct() {
+function deselectProduct(skipHistoryUpdate = false) {
   currentProduct = null;
   updateActiveStates(null);
   updateViewState();
   renderHomeGrid();
   console.log('Product deselected, returning to home view');
+  
+  // Update browser history for back button support (unless called from popstate handler)
+  if (!skipHistoryUpdate) {
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.delete('product');
+    history.pushState({ productId: null }, '', newUrl);
+  }
 }
 
 // Update button visibility based on subscriber status
