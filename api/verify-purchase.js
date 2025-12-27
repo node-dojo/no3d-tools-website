@@ -45,9 +45,20 @@ export default async (req, res) => {
     // Mode 1: Verify via Checkout Session ID
     if (checkoutSessionId) {
         console.log(`Verifying purchase via session ID: ${checkoutSessionId}`);
+
+        // Validate checkout session ID format (should be UUID)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(checkoutSessionId)) {
+            console.log(`Invalid checkout session ID format: ${checkoutSessionId}`);
+            return res.status(400).json({
+                error: 'Invalid checkout session ID format',
+                ownedProducts: []
+            });
+        }
+
         try {
             const checkout = await polar.checkouts.get({ id: checkoutSessionId });
-            
+
             if (!checkout) {
                 return res.status(404).json({ error: 'Checkout session not found', ownedProducts: [] });
             }
@@ -55,7 +66,7 @@ export default async (req, res) => {
             if (checkout.status !== 'succeeded' && checkout.status !== 'confirmed') {
                  // It might be 'open' if payment is pending, or 'expired'
                  console.log(`Checkout status is ${checkout.status}`);
-                 // We might still want to return info but maybe with a warning? 
+                 // We might still want to return info but maybe with a warning?
                  // For now, let's assume if they are on success page, it should be succeeded.
             }
 
@@ -80,7 +91,19 @@ export default async (req, res) => {
 
         } catch (error) {
             console.error('Error fetching checkout session:', error);
-            return res.status(500).json({ error: 'Failed to verify checkout session', details: error.message });
+
+            // Handle specific Polar API errors
+            if (error.statusCode === 404 || error.status === 404) {
+                return res.status(404).json({
+                    error: 'Checkout session not found',
+                    ownedProducts: []
+                });
+            }
+
+            return res.status(500).json({
+                error: 'Failed to verify checkout session',
+                details: error.message
+            });
         }
     }
 
