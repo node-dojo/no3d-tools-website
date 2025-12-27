@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="deployment-version" content="f26f977">
+    <meta name="deployment-version" content="a6b83d4">
     <meta name="deployment-branch" content="main">
     <title>NO3D TOOLS</title>
     <link rel="stylesheet" href="styles.css">
@@ -133,6 +133,29 @@
         <div class="loading-screen" id="loading-screen">
             <img src="https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_400/v1766739748/no3d-tools/chrome-crayon/sigil-1280-banner.gif" alt="Loading..." class="loading-gif">
         </div>
+        
+        <!-- Inline script to hide loading screen (available immediately) -->
+        <script>
+            // Make hideLoadingScreen available immediately
+            window.hideLoadingScreen = function() {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                    setTimeout(() => {
+                        loadingScreen.remove();
+                    }, 300);
+                }
+            };
+            
+            // Auto-hide if skipLoading param is present
+            if (new URLSearchParams(window.location.search).get('skipLoading') === 'true') {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', window.hideLoadingScreen);
+                } else {
+                    window.hideLoadingScreen();
+                }
+            }
+        </script>
 
         <!-- Sidebar Backdrop (mobile only) -->
         <div class="sidebar-backdrop" id="sidebar-backdrop"></div>

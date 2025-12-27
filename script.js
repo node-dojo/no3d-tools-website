@@ -4921,16 +4921,20 @@ async function openCheckoutModal(productIds) {
           }
           console.log('Order ID:', orderId);
 
-          // Extract checkout session ID as fallback
-          let checkoutSessionId = null;
-          if (checkoutData && checkoutData.id) {
-            checkoutSessionId = checkoutData.id;
-          } else if (checkoutData && checkoutData.checkoutId) {
-            checkoutSessionId = checkoutData.checkoutId;
-          } else if (checkoutData && checkoutData.checkout_id) {
-            checkoutSessionId = checkoutData.checkout_id;
+          // Extract checkout session ID - use data.id from API response as primary source
+          // since Polar's success event doesn't reliably provide checkout data
+          let checkoutSessionId = data.id; // From API response (most reliable)
+          if (!checkoutSessionId) {
+            // Fallback to event data if somehow data.id is missing
+            if (checkoutData && checkoutData.id) {
+              checkoutSessionId = checkoutData.id;
+            } else if (checkoutData && checkoutData.checkoutId) {
+              checkoutSessionId = checkoutData.checkoutId;
+            } else if (checkoutData && checkoutData.checkout_id) {
+              checkoutSessionId = checkoutData.checkout_id;
+            }
           }
-          console.log('Checkout session ID:', checkoutSessionId);
+          console.log('Checkout session ID:', checkoutSessionId, '(from API response)');
 
           // Extract customer email from checkout data if available (optional - not required)
           let customerEmail = null;
