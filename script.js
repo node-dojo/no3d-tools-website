@@ -302,149 +302,38 @@ window.refreshPolarPrices = refreshPricesFromPolar;
 // Initialize dev customer ID on page load if needed
 initializeDevCustomerId();
 
-// Supabase Realtime subscription
-let supabaseClient = null;
-let supabaseRealtimeChannel = null;
-
-/**
- * Initialize Supabase client and set up Realtime subscription
- */
-async function initializeSupabaseRealtime() {
-  try {
-    // Wait for Supabase client to load from CDN (with timeout)
-    let createClient = null;
-    const maxWaitTime = 5000; // 5 seconds
-    const checkInterval = 100; // Check every 100ms
-    let waited = 0;
-    
-    while (!createClient && waited < maxWaitTime) {
-      if (window.supabase && window.supabase.createClient) {
-        createClient = window.supabase.createClient;
-        break;
-      }
-      await new Promise(resolve => setTimeout(resolve, checkInterval));
-      waited += checkInterval;
-    }
-    
-    if (!createClient) {
-      console.warn('⚠️ Supabase client not loaded from CDN after timeout, skipping Realtime');
-      return;
-    }
-
-    // Fetch public config
-    const configResponse = await fetch('/api/config');
-    if (!configResponse.ok) {
-      console.warn('⚠️ Could not fetch Supabase config, skipping Realtime');
-      return;
-    }
-
-    const config = await configResponse.json();
-    if (!config.supabase || !config.supabase.url || !config.supabase.anonKey) {
-      console.warn('⚠️ Supabase not configured, skipping Realtime');
-      return;
-    }
-
-    // Initialize Supabase client
-    supabaseClient = createClient(config.supabase.url, config.supabase.anonKey, {
-      realtime: {
-        params: {
-          eventsPerSecond: 10
-        }
-      }
-    });
-
-    // Set up Realtime subscription for products table
-    supabaseRealtimeChannel = supabaseClient
-      .channel('products-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen for INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'products',
-          filter: 'status=eq.active' // Only listen for active products
-        },
-        async (payload) => {
-          console.log('🔄 Product change detected via Realtime:', payload.eventType, payload.new || payload.old);
-          
-          // Reload products when changes are detected
-          try {
-            await loadProductsFromSupabase();
-            console.log('✅ Products reloaded after Realtime update');
-            
-            // Re-organize and re-render
-            organizeProductsByType();
-            renderSidebar();
-            
-            // Update display if a product is currently selected
-            if (currentProduct && products[currentProduct]) {
-              await updateProductDisplay(currentProduct);
-            } else {
-              // If on home grid, re-render it
-              renderHomeGrid();
-            }
-            
-            updateViewState();
-          } catch (error) {
-            console.error('❌ Error reloading products after Realtime update:', error);
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Supabase Realtime subscription active');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Supabase Realtime channel error');
-        } else if (status === 'TIMED_OUT') {
-          console.warn('⚠️ Supabase Realtime subscription timed out');
-        } else if (status === 'CLOSED') {
-          console.warn('⚠️ Supabase Realtime subscription closed');
-        }
-      });
-
-    console.log('✅ Supabase Realtime initialized');
-  } catch (error) {
-    console.warn('⚠️ Failed to initialize Supabase Realtime (non-critical):', error);
-    // Don't throw - Realtime is optional, polling will still work
-  }
-}
-
-/**
- * Clean up Realtime subscription
- */
-function cleanupSupabaseRealtime() {
-  if (supabaseRealtimeChannel) {
-    supabaseClient?.removeChannel(supabaseRealtimeChannel);
-    supabaseRealtimeChannel = null;
-    console.log('🧹 Supabase Realtime subscription cleaned up');
-  }
-}
-
-// Clean up on page unload
-window.addEventListener('beforeunload', cleanupSupabaseRealtime);
-
-document.addEventListener('DOMContentLoaded', async function() {
-  // Show loading screen (it's visible by default, just ensure it's not hidden)
+// Function to hide loading screen
+function hideLoadingScreen() {
   const loadingScreen = document.getElementById('loading-screen');
   if (loadingScreen) {
-    loadingScreen.classList.remove('hidden');
-    console.log('🔄 Loading screen shown');
+    loadingScreen.classList.add('hidden');
+    // Remove from DOM after transition
+    setTimeout(() => {
+      loadingScreen.remove();
+    }, 300);
   }
+}
 
+// Check URL parameter to bypass loading screen
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('skipLoading') === 'true') {
+  // Hide immediately if skipLoading param is present
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hideLoadingScreen);
+  } else {
+    hideLoadingScreen();
+  }
+}
+
+// Make it available globally for console access
+window.hideLoadingScreen = hideLoadingScreen;
+
+document.addEventListener('DOMContentLoaded', async function() {
+  // Hide loading screen immediately
+  hideLoadingScreen();
+  
   try {
-    // Try to load from Supabase first, fallback to JSON
-    try {
-      await loadProductsFromSupabase();
-      console.log('✅ Products loaded from Supabase');
-      
-      // Initialize Realtime subscription after successful load
-      await initializeSupabaseRealtime();
-    } catch (supabaseError) {
-      console.warn('⚠️ Failed to load from Supabase, falling back to JSON:', supabaseError);
-      await loadProductsFromJSON();
-      console.log('✅ Products loaded from JSON files');
-    }
-    
+    await loadProductsFromJSON();
     organizeProductsByType();
     renderSidebar();
     initializeEventListeners();
@@ -453,35 +342,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateHeaderLogo('tools');
     // Set Tools as default expanded type
     expandProductType('tools');
-    
-    // Check URL for product parameter and restore view
-    const urlParams = new URLSearchParams(window.location.search);
-    const productHandle = urlParams.get('product');
-    if (productHandle) {
-      // Find product by handle
-      const productId = Object.keys(products).find(id => {
-        const product = products[id];
-        return (product.handle === productHandle || id === productHandle);
-      });
-      if (productId) {
-        // Skip history update on initial load, then replace state
-        await selectProduct(productId, true);
-        // Replace current history entry (don't add to history on initial load)
-        history.replaceState({ productId, productHandle }, '', window.location);
-      } else {
-        renderHomeGrid();
-        updateViewState();
-      }
-    } else {
-      // Show home grid on initial load (no product selected)
-      renderHomeGrid();
-      updateViewState();
-    }
+    // Show home grid on initial load (no product selected)
+    renderHomeGrid();
+    updateViewState();
 
     // Start periodic price refresh
     startPriceRefresh();
   } catch (error) {
-    console.warn('Failed to load products, using fallback data:', error);
+    console.warn('Failed to load products from JSON, using fallback data:', error);
     products = defaultProducts;
     // Add productType to default products
     Object.keys(products).forEach(key => {
@@ -494,72 +362,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeSidebarEventListeners();
     updateHeaderLogo('tools');
     expandProductType('tools');
-    
-    // Check URL for product parameter and restore view
-    const urlParams = new URLSearchParams(window.location.search);
-    const productHandle = urlParams.get('product');
-    if (productHandle) {
-      // Find product by handle
-      const productId = Object.keys(products).find(id => {
-        const product = products[id];
-        return (product.handle === productHandle || id === productHandle);
-      });
-      if (productId) {
-        // Skip history update on initial load, then replace state
-        await selectProduct(productId, true);
-        // Replace current history entry (don't add to history on initial load)
-        history.replaceState({ productId, productHandle }, '', window.location);
-      } else {
-        renderHomeGrid();
-        updateViewState();
-      }
-    } else {
-      // Show home grid on initial load (no product selected)
-      renderHomeGrid();
-      updateViewState();
-    }
+    // Show home grid on initial load (no product selected)
+    renderHomeGrid();
+    updateViewState();
 
     // Start periodic price refresh even with fallback data
     startPriceRefresh();
-  } finally {
-    // Hide loading screen after everything is loaded
-    if (loadingScreen) {
-      console.log('✅ Catalog loaded, hiding loading screen');
-      setTimeout(() => {
-        loadingScreen.classList.add('hidden');
-        // Remove from DOM after transition
-        setTimeout(() => {
-          loadingScreen.remove();
-        }, 300);
-      }, 100);
-    }
-    
-    // Handle browser back/forward button (add once after products are loaded)
-    if (!window._popstateHandlerAdded) {
-      window.addEventListener('popstate', async function(event) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const productHandle = urlParams.get('product');
-        
-        if (productHandle) {
-          // Find product by handle
-          const productId = Object.keys(products).find(id => {
-            const product = products[id];
-            return (product.handle === productHandle || id === productHandle);
-          });
-          if (productId && productId !== currentProduct) {
-            // Skip history update since we're handling a popstate event
-            await selectProduct(productId, true);
-          }
-        } else {
-          // Return to home view
-          if (currentProduct) {
-            // Skip history update since we're handling a popstate event
-            deselectProduct(true);
-          }
-        }
-      });
-      window._popstateHandlerAdded = true;
-    }
+  }
+  
+  // Ensure loading screen is hidden even if it wasn't already
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+    loadingScreen.classList.add('hidden');
+    setTimeout(() => {
+      loadingScreen.remove();
+    }, 300);
   }
 });
 
@@ -644,238 +461,6 @@ async function refreshPricesFromPolar() {
   }
 }
 
-// Load Products from Supabase API
-async function loadProductsFromSupabase() {
-  try {
-    console.log('🔄 Loading products from Supabase...');
-    
-    const response = await fetch('/api/products');
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    // Handle both old array format and new paginated format
-    const supabaseProducts = Array.isArray(data) ? data : (data.products || []);
-
-    if (supabaseProducts.length === 0) {
-      console.warn('⚠️ No products returned from Supabase, falling back to JSON');
-      throw new Error('No products from Supabase');
-    }
-
-    if (data.total !== undefined) {
-      console.log(`📊 Total products available: ${data.total}`);
-    }
-
-    products = {};
-    
-    // Fetch Polar prices first (for price updates)
-    const polarPrices = await syncPricesFromPolar();
-    
-    for (const productData of supabaseProducts) {
-      try {
-        const productId = productData.handle ||
-          productData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-
-        // Define folderName early so it's available throughout the product processing
-        const folderName = productData.handle || productId;
-
-        // Get thumbnail/image
-        let thumbnail = null;
-        
-        // Check hosted_media for thumbnail (Cloudinary - INSTANT)
-        if (productData.hosted_media) {
-          if (productData.thumbnail_image && productData.hosted_media[productData.thumbnail_image]) {
-            thumbnail = productData.hosted_media[productData.thumbnail_image];
-          } else {
-            // Try to find any image in hosted_media
-            const mediaKeys = Object.keys(productData.hosted_media);
-            const imageKey = mediaKeys.find(key => 
-              key.match(/\.(png|jpg|jpeg|gif|webp)$/i)
-            );
-            if (imageKey) {
-              thumbnail = productData.hosted_media[imageKey];
-            }
-          }
-        }
-
-        // If still no thumbnail, use productData.image (Supabase field)
-        if (!thumbnail) {
-          thumbnail = productData.image;
-        }
-        
-        // Fallback to local icon (REQUIRES DEPLOY)
-        if (!thumbnail) {
-          thumbnail = getProductIconUrl(folderName);
-        }
-        
-        // Get price from Polar if available, otherwise use Supabase price
-        let price = productData.price || '$0.00';
-        
-        // Try to get updated price from Polar
-        const polarProductId = productData.polarProductId || productData.polar?.product_id || productData.polar_product_id;
-        if (polarProductId && polarPrices[polarProductId]) {
-          const polarPrice = polarPrices[polarProductId];
-          if (polarPrice && polarPrice.formatted) {
-            price = polarPrice.formatted;
-            console.log(`✅ Synced price for ${productId}: ${price} from Polar`);
-          }
-        }
-        
-        // Extract product groups from tags
-        const productGroups = (productData.tags || []).filter(tag => {
-          return tag && (tag !== tag.toLowerCase() || tag.includes(' '));
-        });
-        
-        // Normalize changelog format
-        let changelog = [];
-        if (productData.changelog && Array.isArray(productData.changelog)) {
-          productData.changelog.forEach(entry => {
-            if (typeof entry === 'string') {
-              changelog.push({
-                version: '',
-                date: '',
-                changes: [entry]
-              });
-            } else if (entry && entry.changes) {
-              const normalizedEntry = {
-                version: entry.version || '',
-                date: entry.date || '',
-                changes: []
-              };
-              
-              if (Array.isArray(entry.changes)) {
-                normalizedEntry.changes = entry.changes
-                  .filter(change => change && change.trim())
-                  .map(change => change.trim());
-              } else if (typeof entry.changes === 'string' && entry.changes.trim()) {
-                normalizedEntry.changes = [entry.changes.trim()];
-              }
-              
-              if (normalizedEntry.changes.length > 0) {
-                changelog.push(normalizedEntry);
-              }
-            }
-          });
-        }
-        
-        // Get description (use from Supabase or try to load from markdown)
-        let description = productData.description;
-        
-        // If description is missing or extremely short (placeholder), 
-        // try to load the full documentation from the markdown file as a fallback.
-        // NOTE: We trust Supabase first to enable instant updates without Vercel deploys.
-        if (!description || description.length < 50) {
-          // folderName is already defined at the start of the product processing loop
-          try {
-            const descBasePath = `/assets/product-docs/${folderName}`;
-            const descPatterns = [
-              `desc_${folderName}.md`,
-              `desc_${folderName.toLowerCase().replace(/\s+/g, '-')}.md`,
-              `${folderName}_desc.md`
-            ];
-            
-            let descUrl = null;
-            for (const pattern of descPatterns) {
-              const pathParts = descBasePath.split('/').filter(part => part.length > 0);
-              const encodedPathParts = pathParts.map(part => encodeURIComponent(part));
-              const encodedBasePath = '/' + encodedPathParts.join('/');
-              const encodedPattern = encodeURIComponent(pattern);
-              const testUrl = `${encodedBasePath}/${encodedPattern}`;
-              
-              try {
-                const testResponse = await fetch(testUrl, { method: 'HEAD' });
-                if (testResponse.ok) {
-                  descUrl = testUrl;
-                  break;
-                }
-              } catch (e) {
-                try {
-                  const testResponse = await fetch(testUrl);
-                  if (testResponse.ok) {
-                    descUrl = testUrl;
-                    break;
-                  }
-                } catch (e2) {
-                  // Continue to next pattern
-                }
-              }
-            }
-            
-            if (descUrl) {
-              const descResponse = await fetch(descUrl);
-              if (descResponse.ok) {
-                const fullMarkdown = await descResponse.text();
-                // Only replace if the fetched markdown is actually longer/better
-                if (fullMarkdown.length > (description || '').length) {
-                  description = fullMarkdown;
-                  console.log(`✅ Enhanced description loaded from ${descUrl} (${description.length} chars)`);
-                }
-              }
-            }
-          } catch (error) {
-            // Use Supabase description if markdown load fails
-            console.debug(`Could not load desc_*.md for ${folderName}, using default description`);
-          }
-        }
-
-        // Final fallback
-        if (!description) {
-          description = generateDescription(productData.title);
-        }
-        
-        products[productId] = {
-          name: productData.title.toUpperCase(),
-          price: price,
-          description: description,
-          changelog: changelog,
-          image3d: thumbnail,
-          icon: thumbnail,
-          productType: productData.type || 'tools',
-          groups: productGroups,
-          handle: productData.handle || productId,
-          jsonData: productData, // Store full data for hosted_media access
-          polarProductId: productData.polarProductId || productData.polar?.product_id || productData.polar_product_id || null,
-          folderName: folderName,
-          metafields: productData.metafields || [],
-          folder: folderName,
-          library: 'no3d-tools-library'
-        };
-      } catch (error) {
-        console.warn(`Failed to process product ${productData.handle || productData.title}:`, error);
-      }
-    }
-    
-    if (Object.keys(products).length === 0) {
-      throw new Error('No products loaded from Supabase');
-    }
-    
-    console.log(`✅ Loaded ${Object.keys(products).length} products from Supabase`);
-    
-    // Log price summary
-    const productsWithPrices = Object.keys(products).filter(id => 
-      products[id].price && products[id].price !== '$0.00'
-    );
-    const productsWithoutPrices = Object.keys(products).filter(id => 
-      !products[id].price || products[id].price === '$0.00'
-    );
-    
-    console.log(`📊 Price Summary: ${productsWithPrices.length} products with prices, ${productsWithoutPrices.length} products without prices`);
-    
-    // Update display if a product is currently selected
-    if (currentProduct && products[currentProduct]) {
-      await updateProductDisplay(currentProduct);
-    }
-    
-    return products;
-  } catch (error) {
-    console.error('Error loading products from Supabase:', error);
-    throw error;
-  }
-}
-
 // Load Products from JSON Files (from GitHub repository)
 async function loadProductsFromJSON() {
   try {
@@ -891,15 +476,7 @@ async function loadProductsFromJSON() {
       'Dojo Mesh Repair.json',
       'Dojo Print Viz_V4.5.json',
       'Dojo Squircle v4.5_obj.json',
-      'Dojo_Squircle v4.5.json',
-      'Print Bed Preview_obj.json',
-      'Chrome Crayon.json',
-      'NODE CHROME.json',
-      // Gift Cards
-      '3 Month Membership Gift.json',
-      'Dojo Christmas Gift Card $33.json',
-      'Dojo Christmas Gift Card $55.json',
-      'Dojo Christmas Gift Card $77.json'
+      'Dojo_Squircle v4.5.json'
     ];
     
     products = {};
@@ -920,29 +497,18 @@ async function loadProductsFromJSON() {
 
         const jsonData = await response.json();
 
-        // Skip archived products
-        if (jsonData.status === 'archived') {
-          console.log(`⏭️ Skipping archived product: ${fileName}`);
-          continue;
-        }
+        // Create product ID from handle (normalized to prevent duplicates)
+        const rawHandle = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const productId = rawHandle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-        // Create product ID from handle
-        const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-
-        // Get thumbnail from JSON thumbnail_image field, metafields, or use local icon
+        // Get thumbnail from metafields or use local icon
         // Product folder name matches the JSON filename (without .json extension)
         const productFolderName = fileName.replace('.json', '');
         let thumbnail = null;
-
-        // Priority 1: Check for thumbnail_image field (set by co-aug dashboard)
-        if (jsonData.thumbnail_image && jsonData.hosted_media && jsonData.hosted_media[jsonData.thumbnail_image]) {
-          thumbnail = jsonData.hosted_media[jsonData.thumbnail_image];
-          console.log(`📷 Using thumbnail_image for ${productId}: ${jsonData.thumbnail_image}`);
-        }
-
-        // Priority 2: Check metafields for thumbnail
+        
+        // Determine thumbnail filename
         let thumbnailFileName = `icon_${productFolderName}.png`;
-        if (!thumbnail && jsonData.metafields) {
+        if (jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
             thumbnailFileName = thumbnailField.value || thumbnailFileName;
@@ -952,8 +518,8 @@ async function loadProductsFromJSON() {
             }
           }
         }
-
-        // Priority 3: Use helper function to resolve media URL (checks hosted_media, then local)
+        
+        // Use helper function to resolve media URL (checks hosted_media, then local)
         if (!thumbnail) {
           const fallbackUrl = jsonData.metafields?.find(f => f.key === 'thumbnail')
             ? getProductImageUrl(thumbnailFileName)
@@ -1536,21 +1102,16 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
 
         const jsonData = await jsonResponse.json();
 
-        // Create product ID from handle or title
-        const productId = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        // Create product ID from handle or title (normalized to prevent duplicates)
+        const rawHandle = jsonData.handle || jsonData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const productId = rawHandle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-        // Find thumbnail/icon image - prioritize thumbnail_image from dashboard, then hosted URLs
+        // Find thumbnail/icon image - prioritize hosted URLs
         let thumbnail = null;
-
-        // Priority 1: Check for thumbnail_image field (set by co-aug dashboard)
-        if (jsonData.thumbnail_image && jsonData.hosted_media && jsonData.hosted_media[jsonData.thumbnail_image]) {
-          thumbnail = jsonData.hosted_media[jsonData.thumbnail_image];
-          console.log(`📷 Using thumbnail_image for ${productId}: ${jsonData.thumbnail_image}`);
-        }
-
-        // Priority 2: Determine thumbnail filename from metafields
+        
+        // Determine thumbnail filename
         let thumbnailFileName = `icon_${dir.name}.png`;
-        if (!thumbnail && jsonData.metafields) {
+        if (jsonData.metafields) {
           const thumbnailField = jsonData.metafields.find(f => f.key === 'thumbnail');
           if (thumbnailField) {
             thumbnailFileName = thumbnailField.value || thumbnailFileName;
@@ -1560,12 +1121,12 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
             }
           }
         }
-
-        // Priority 3: Use helper function to resolve media URL (checks hosted_media, then local)
+        
+        // Use helper function to resolve media URL (checks hosted_media, then local)
         if (!thumbnail) {
           // Build fallback URL - try GitHub files first, then local
           let fallbackUrl = null;
-
+          
           // Try common icon/thumbnail filename patterns from GitHub
           const possibleIconNames = [
             `icon_${dir.name}.png`,
@@ -1577,7 +1138,7 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
             'preview.png'
           ];
 
-          const iconFile = dirContents.find(item =>
+          const iconFile = dirContents.find(item => 
             item.type === 'file' && possibleIconNames.includes(item.name)
           );
 
@@ -1589,11 +1150,11 @@ async function loadProductsFromGitHubLibrary(libraryKey) {
               fallbackUrl = getProductImageUrl(thumbnailField.value);
             }
           }
-
+          
           if (!fallbackUrl) {
             fallbackUrl = getProductIconUrl(dir.name);
           }
-
+          
           thumbnail = resolveMediaUrl(jsonData, thumbnailFileName, fallbackUrl);
         }
         
@@ -2293,11 +1854,6 @@ function initializeEventListeners() {
     if (e.target.closest('#product-close-button')) {
       deselectProduct();
     }
-
-    // Header logo click to return to home grid
-    if (e.target.closest('#header-logo') || e.target.id === 'header-logo') {
-      deselectProduct();
-    }
   });
 
   // Tab navigation
@@ -2341,7 +1897,7 @@ function initializeEventListeners() {
 }
 
 // Select a product and update the display
-async function selectProduct(productId, skipHistoryUpdate = false) {
+async function selectProduct(productId) {
   if (!products[productId]) {
     console.warn(`Product ${productId} not found`);
     return;
@@ -2353,31 +1909,15 @@ async function selectProduct(productId, skipHistoryUpdate = false) {
   await updateProductDisplay(productId);
   updateActiveStates(productId);
   updateViewState();
-  
-  // Update browser history for back button support (unless called from popstate handler)
-  if (!skipHistoryUpdate) {
-    const product = products[productId];
-    const productHandle = product.handle || productId;
-    const newUrl = new URL(window.location);
-    newUrl.searchParams.set('product', productHandle);
-    history.pushState({ productId, productHandle }, '', newUrl);
-  }
 }
 
 // Deselect current product and return to home view
-function deselectProduct(skipHistoryUpdate = false) {
+function deselectProduct() {
   currentProduct = null;
   updateActiveStates(null);
   updateViewState();
   renderHomeGrid();
   console.log('Product deselected, returning to home view');
-  
-  // Update browser history for back button support (unless called from popstate handler)
-  if (!skipHistoryUpdate) {
-    const newUrl = new URL(window.location);
-    newUrl.searchParams.delete('product');
-    history.pushState({ productId: null }, '', newUrl);
-  }
 }
 
 // Update button visibility based on subscriber status
@@ -3339,147 +2879,38 @@ async function loadProductCardAssets(productId) {
       }
     } else {
       console.log(`ℹ️ Skipping GitHub API call for card assets (local development or useLocalAssets=true)`);
-      console.log(`   Product: ${folderName}`);
-
-      // When useLocalAssets is true, load media from JSON (Cloudinary URLs)
-      // Priority: main_image first > carousel_media (curated selection) > hosted_media (all media)
-      // Respect: excluded_carousel_media (files to never show)
-      if (product.jsonData) {
-        const hostedMedia = product.jsonData.hosted_media || {};
-        const carouselMedia = product.jsonData.carousel_media || [];
-        const excludedMedia = product.jsonData.excluded_carousel_media || [];
-        const mainImage = product.jsonData.main_image;
-
-        const supportedFormats = {
-          image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
-          video: ['mp4', 'webm', 'ogg', 'mov']
-        };
-
-        // Helper to check if file is excluded
-        const isExcluded = (filename) => excludedMedia.includes(filename);
-
-        // Helper to add media asset
-        const addMediaAsset = (filename, url, isFirst = false) => {
-          if (isExcluded(filename)) {
-            console.log(`🚫 Skipping excluded media: ${filename}`);
-            return false;
-          }
-
-          const ext = filename.split('.').pop().toLowerCase();
-          let mediaType = 'other';
-
-          if (supportedFormats.image.includes(ext)) {
-            mediaType = 'image';
-          } else if (supportedFormats.video.includes(ext)) {
-            mediaType = 'video';
-          }
-
-          if (mediaType !== 'other') {
-            const asset = {
-              type: mediaType,
-              url: url,
-              format: ext,
-              name: filename,
-              isIcon: false,
-              isMainImage: isFirst
-            };
-
-            if (isFirst) {
-              cardAssets.unshift(asset);
-              console.log(`🌟 Added main image first: ${filename}`);
-            } else {
-              cardAssets.push(asset);
-              console.log(`📦 Added carousel media asset: ${filename} (${mediaType})`);
-            }
-            return true;
-          }
-          return false;
-        };
-
-        // Step 1: Add main_image first if defined
-        let mainImageAdded = false;
-        console.log(`🖼️ main_image check: mainImage="${mainImage}", exists in hosted_media=${!!hostedMedia[mainImage]}`);
-        if (mainImage && hostedMedia[mainImage]) {
-          console.log(`🖼️ Adding main_image first: ${mainImage}`);
-          mainImageAdded = addMediaAsset(mainImage, hostedMedia[mainImage], true);
-        }
-
-        // Step 2: If carousel_media is defined, load those specific files in order
-        if (carouselMedia.length > 0) {
-          console.log(`📦 Loading carousel assets from carousel_media (${carouselMedia.length} items)`);
-
-          for (const filename of carouselMedia) {
-            // Skip if already added as main image
-            if (mainImageAdded && filename === mainImage) continue;
-
-            const url = hostedMedia[filename];
-            if (!url) {
-              console.warn(`⚠️ Carousel media file not found in hosted_media: ${filename}`);
-              continue;
-            }
-
-            addMediaAsset(filename, url);
-          }
-          console.log(`📊 Loaded ${cardAssets.length} assets from carousel_media`);
-        }
-        // Fallback: load all non-icon, non-excluded media from hosted_media
-        else if (Object.keys(hostedMedia).length > 0) {
-          console.log(`📦 Loading carousel assets from hosted_media (no carousel_media defined)`);
-
-          for (const [filename, url] of Object.entries(hostedMedia)) {
-            // Skip if already added as main image
-            if (mainImageAdded && filename === mainImage) continue;
-            // Skip icon files - they're added separately
-            if (filename.toLowerCase().startsWith('icon_')) continue;
-
-            addMediaAsset(filename, url);
-          }
-          console.log(`📊 Loaded ${cardAssets.length} assets from hosted_media`);
-        }
-      }
+      console.log(`   Product: ${folderName}, Card assets folder: ${cardAssetsFolder}`);
     }
 
-    // Add static PNG icon - but only if carousel_media is NOT defined (user hasn't curated the carousel)
-    // When carousel_media is defined, respect the user's curation and don't auto-add icons
-    const hasCarouselMedia = product.jsonData?.carousel_media?.length > 0;
-    if (!hasCarouselMedia) {
-      const iconPngName = `icon_${folderName}.png`;
-      const iconPngPath = `${folderName}/${iconPngName}`;
-
-      // Check hosted_media first, then fallback to local/GitHub
-      let iconPngUrl = null;
-      if (product.jsonData && product.jsonData.hosted_media && product.jsonData.hosted_media[iconPngName]) {
-        iconPngUrl = product.jsonData.hosted_media[iconPngName];
-      } else {
-        iconPngUrl = config.useLocalAssets
-          ? getProductIconUrl(folderName)
-          : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconPngPath}`;
-      }
-
-      const iconPngItem = {
-        type: 'image',
-        url: iconPngUrl,
-        format: 'png',
-        name: iconPngName,
-        isIcon: true
-      };
-
-      // If GIF exists, add PNG at end; otherwise add at beginning
-      // BUT: If main_image is already set, don't add icon at beginning (it would override main_image position)
-      const hasMainImage = cardAssets.some(item => item.isMainImage);
-      if (cardAssets.some(item => item.format === 'gif' && item.isIcon)) {
-        cardAssets.push(iconPngItem);
-        console.log(`🖼️ Added icon PNG at end (GIF found first)`);
-      } else if (hasMainImage) {
-        // Don't override main_image position - add icon after main_image
-        cardAssets.splice(1, 0, iconPngItem);
-        console.log(`🖼️ Added icon PNG at position 1 (main_image is at position 0)`);
-      } else {
-        cardAssets.unshift(iconPngItem);
-        console.log(`🖼️ Added icon PNG at beginning (no GIF found, no main_image)`);
-      }
+    // Add static PNG icon at the end (if GIF was found) or at the beginning (if no GIF)
+    const iconPngName = `icon_${folderName}.png`;
+    const iconPngPath = `${folderName}/${iconPngName}`;
+    
+    // Check hosted_media first, then fallback to local/GitHub
+    let iconPngUrl = null;
+    if (product.jsonData && product.jsonData.hosted_media && product.jsonData.hosted_media[iconPngName]) {
+      iconPngUrl = product.jsonData.hosted_media[iconPngName];
     } else {
-      console.log(`📋 Skipping auto-icon (carousel_media is curated)`);
+      iconPngUrl = config.useLocalAssets
+        ? getProductIconUrl(folderName)
+        : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${iconPngPath}`;
+    }
+    
+    const iconPngItem = {
+      type: 'image',
+      url: iconPngUrl,
+      format: 'png',
+      name: iconPngName,
+      isIcon: true
+    };
+    
+    // If GIF exists, add PNG at end; otherwise add at beginning
+    if (cardAssets.some(item => item.format === 'gif' && item.isIcon)) {
+      cardAssets.push(iconPngItem);
+      console.log(`🖼️ Added icon PNG at end (GIF found first)`);
+    } else {
+      cardAssets.unshift(iconPngItem);
+      console.log(`🖼️ Added icon PNG at beginning (no GIF found)`);
     }
 
     // Check for 3D models and generate embeds if config exists
@@ -3545,14 +2976,6 @@ async function loadProductCardAssets(productId) {
           console.log(`🗑️ Removed ${processedModelFiles.length} original model3d item(s) after generating HTML embeds`);
         }
       }
-    }
-
-    // Remove any remaining model3d items that weren't converted to HTML embeds
-    // These would create empty placeholder containers when there are already images available
-    const remainingModel3d = cardAssets.filter(asset => asset.type === 'model3d');
-    if (remainingModel3d.length > 0) {
-      cardAssets = cardAssets.filter(asset => asset.type !== 'model3d');
-      console.log(`🗑️ Removed ${remainingModel3d.length} unconverted model3d item(s) to prevent empty placeholders`);
     }
 
     console.log(`📊 Final carousel assets count: ${cardAssets.length}`);
@@ -3858,106 +3281,6 @@ async function loadProductDocs(productId) {
       return;
     }
 
-    // Helper function to process image paths in markdown
-    const processImagePaths = (markdownText, hostedMedia, docsBasePath = '') => {
-      if (!markdownText) return markdownText;
-      
-      let processed = markdownText;
-      
-      // Process markdown image syntax: ![alt](path)
-      if (hostedMedia) {
-        processed = processed.replace(
-          /!\[([^\]]*)\]\(<?([^>)]+)>?\)/g,
-          (match, altText, imagePath) => {
-            // Skip if already a full URL (Cloudinary or other)
-            if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-              return match;
-            }
-            
-            // Extract filename from path
-            let cleanPath = imagePath.trim();
-            cleanPath = cleanPath.replace(/^\.\//, '');
-            cleanPath = cleanPath.replace(/^\.\.\//, '');
-            cleanPath = decodeURIComponent(cleanPath);
-            const filename = cleanPath.split('/').pop();
-            
-            // Try to find matching Cloudinary URL in hosted_media
-            if (hostedMedia[filename]) {
-              console.log(`✅ Replaced image in docs: ${imagePath} → ${hostedMedia[filename]}`);
-              return `![${altText}](${hostedMedia[filename]})`;
-            }
-            
-            // Try case-insensitive match
-            const lowerFilename = filename.toLowerCase();
-            for (const [key, url] of Object.entries(hostedMedia)) {
-              if (key.toLowerCase() === lowerFilename) {
-                console.log(`✅ Replaced image in docs (case-insensitive): ${imagePath} → ${url}`);
-                return `![${altText}](${url})`;
-              }
-            }
-            
-            // If no Cloudinary URL found and we have a docsBasePath, try relative path
-            if (docsBasePath && !imagePath.startsWith('http')) {
-              const encodedPath = cleanPath.split('/').map(part => encodeURIComponent(part)).join('/');
-              return `![${altText}](${docsBasePath}/${encodedPath})`;
-            }
-            
-            return match;
-          }
-        );
-      }
-      
-      return processed;
-    };
-
-    // 1. Check Supabase metadata for documentation first (Source of Truth)
-    if (product.jsonData && product.jsonData.metadata && product.jsonData.metadata.documentation) {
-      console.log(`✅ Loaded documentation from Supabase metadata for ${productId}`);
-      let markdown = product.jsonData.metadata.documentation;
-      
-      // Process image paths to replace with Cloudinary URLs
-      const hostedMedia = product.jsonData.hosted_media || {};
-      markdown = processImagePaths(markdown, hostedMedia);
-      
-      // Parse markdown to HTML
-      const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdown) : `<pre>${markdown}</pre>`;
-      productDescription.innerHTML = htmlContent;
-      
-      // Process image tags in rendered HTML (in case some weren't caught in markdown)
-      if (hostedMedia && Object.keys(hostedMedia).length > 0) {
-        const imgTags = productDescription.querySelectorAll('img');
-        imgTags.forEach(img => {
-          const src = img.getAttribute('src');
-          if (src && !src.startsWith('http://') && !src.startsWith('https://')) {
-            const filename = src.split('/').pop();
-            if (hostedMedia[filename]) {
-              img.setAttribute('src', hostedMedia[filename]);
-              console.log(`✅ Replaced img tag src: ${src} → ${hostedMedia[filename]}`);
-            } else {
-              // Try case-insensitive match
-              const lowerFilename = filename.toLowerCase();
-              for (const [key, url] of Object.entries(hostedMedia)) {
-                if (key.toLowerCase() === lowerFilename) {
-                  img.setAttribute('src', url);
-                  console.log(`✅ Replaced img tag src (case-insensitive): ${src} → ${url}`);
-                  break;
-                }
-              }
-            }
-          }
-        });
-      }
-      
-      // Process links to open in new tab
-      const links = productDescription.querySelectorAll('a');
-      links.forEach(link => {
-        link.setAttribute('target', '_blank');
-        link.setAttribute('rel', 'noopener noreferrer');
-      });
-      return;
-    }
-
-    // 2. Fallback to local assets (Legacy/Backup)
     // Get folder name from product (used for docs folder)
     // folderName is the original folder name like "Dojo Bolt Gen v05"
     const folderName = product.folderName || product.name;
@@ -4046,12 +3369,9 @@ async function loadProductDocs(productId) {
       return;
     }
 
-    let markdownContent = await response.text();
-    // Markdown files may contain relative image paths that need to be replaced with Cloudinary URLs
-    
-    // Process image paths to replace with Cloudinary URLs from hosted_media
-    const hostedMedia = product.jsonData?.hosted_media || {};
-    markdownContent = processImagePaths(markdownContent, hostedMedia, docsBasePath);
+    const markdownContent = await response.text();
+    // Markdown files now contain Cloudinary URLs directly (processed by sync script)
+    // No path transformation needed - marked.js will render Cloudinary URLs as-is
     
     // Convert video markdown references to HTML5 video tags (if they're still relative paths)
     // Pattern: ![alt](video.mp4) - only if not already a Cloudinary URL
@@ -4153,38 +3473,6 @@ async function loadProductDocs(productId) {
 
     // Update the description with rendered HTML
     productDescription.innerHTML = htmlContent;
-    
-    // Process image tags in rendered HTML (in case some weren't caught in markdown)
-    if (hostedMedia && Object.keys(hostedMedia).length > 0) {
-      const imgTags = productDescription.querySelectorAll('img');
-      imgTags.forEach(img => {
-        const src = img.getAttribute('src');
-        if (src && !src.startsWith('http://') && !src.startsWith('https://')) {
-          const filename = src.split('/').pop();
-          if (hostedMedia[filename]) {
-            img.setAttribute('src', hostedMedia[filename]);
-            console.log(`✅ Replaced img tag src in docs: ${src} → ${hostedMedia[filename]}`);
-          } else {
-            // Try case-insensitive match
-            const lowerFilename = filename.toLowerCase();
-            for (const [key, url] of Object.entries(hostedMedia)) {
-              if (key.toLowerCase() === lowerFilename) {
-                img.setAttribute('src', url);
-                console.log(`✅ Replaced img tag src in docs (case-insensitive): ${src} → ${url}`);
-                break;
-              }
-            }
-          }
-        }
-      });
-    }
-    
-    // Process links to open in new tab
-    const links = productDescription.querySelectorAll('a');
-    links.forEach(link => {
-      link.setAttribute('target', '_blank');
-      link.setAttribute('rel', 'noopener noreferrer');
-    });
 
     // Load 3D models if Three.js is available
     if (typeof THREE !== 'undefined') {
@@ -5317,13 +4605,6 @@ function getPolarProductData(productSlug) {
   return polarProduct || null;
 }
 
-// Select a product and immediately trigger buy flow (used by banner buttons)
-async function selectProductAndBuy(productName) {
-  console.log('selectProductAndBuy called with:', productName);
-  currentProduct = productName;
-  await handleBuyNow();
-}
-
 // Open embedded checkout modal for current product
 async function handleBuyNow() {
   if (!currentProduct) {
@@ -5337,24 +4618,17 @@ async function handleBuyNow() {
   // Get Polar product data
   const polarProduct = getPolarProductData(productSlug);
 
-  if (!polarProduct || (!polarProduct.productId && !polarProduct.checkoutUrl)) {
+  if (!polarProduct || !polarProduct.productId) {
     console.error('Polar product data not found for:', currentProduct);
     console.error('Product slug used:', productSlug);
     console.error('POLAR_PRODUCTS available:', typeof POLAR_PRODUCTS !== 'undefined');
-
+    
     // Provide more helpful error message
-    const errorMsg = polarProduct
+    const errorMsg = polarProduct 
       ? 'Product checkout configuration error. Please contact support.'
       : `Product "${currentProduct}" is not available for checkout. Please try again later.`;
-
+    
     alert(errorMsg);
-    return;
-  }
-
-  // If product has direct checkout URL (e.g., gift cards), redirect to it
-  if (polarProduct.checkoutUrl) {
-    console.log('Redirecting to checkout URL:', polarProduct.checkoutUrl);
-    window.open(polarProduct.checkoutUrl, '_blank');
     return;
   }
 
@@ -5444,27 +4718,11 @@ function getDirectCheckoutUrl(productIds) {
 }
 
 // Open Polar embedded checkout modal
-// Track if checkout is already in progress to prevent duplicates
-let checkoutInProgress = false;
-let currentCheckoutInstance = null;
-
 async function openCheckoutModal(productIds) {
   console.log('Creating checkout for product IDs:', productIds);
 
-  // Prevent multiple simultaneous checkouts
-  if (checkoutInProgress) {
-    console.warn('Checkout already in progress, ignoring duplicate request');
-    return;
-  }
-
-  checkoutInProgress = true;
-
   // Open modal UI immediately
   openCheckoutModalUI();
-
-  // Store checkout ID for use after success (will be set when checkout is created)
-  let currentCheckoutId = null;
-  let successHandlerCalled = false;
 
   try {
     let data;
@@ -5485,15 +4743,21 @@ async function openCheckoutModal(productIds) {
         </span>
       `;
       
-      // Try to create checkout via direct API call to Polar (if we have the token)
-      // Otherwise, just redirect to organization page
-      setTimeout(() => {
-        // For local dev, we can't create checkout sessions, so redirect to organization page
-        // In production, this will work properly with the API endpoint
-        const orgUrl = 'https://polar.sh/no3d-tools';
-        console.log('Redirecting to Polar organization page:', orgUrl);
-        window.location.href = orgUrl;
-      }, 2000);
+      // In local dev, we can't create checkout sessions
+      // Show error message instead of redirecting to invalid URL
+      checkoutLoading.style.display = 'none';
+      checkoutError.style.display = 'flex';
+      checkoutError.innerHTML = `
+        <span class="checkout-error-text">
+          Local development mode detected.<br><br>
+          Checkout requires serverless functions (Vercel deployment).<br><br>
+          Please test checkout on the deployed site:<br>
+          <a href="https://no3dtoolssite-6bqtuo63f-node-dojos-projects.vercel.app" target="_blank" style="color: var(--color-lello); text-decoration: underline;">
+            Open Production Site
+          </a>
+        </span>
+      `;
+      console.warn('Checkout not available in local development. Please test on deployed site.');
       return;
     } else {
       // Check if customer has credit to apply
@@ -5525,7 +4789,8 @@ async function openCheckoutModal(productIds) {
           },
           body: JSON.stringify({
             email: customerEmail,
-            productId: productIds[0]
+            productId: productIds[0],
+            successUrl: window.location.origin + '/success'
           })
         });
       } else {
@@ -5551,11 +4816,6 @@ async function openCheckoutModal(productIds) {
         if (data.creditApplied && data.creditApplied > 0) {
           console.log(`Credit applied: $${(data.creditApplied / 100).toFixed(2)}`);
         }
-
-        // Normalize response: credit endpoint returns checkoutUrl, regular returns url
-        if (data.checkoutUrl && !data.url) {
-          data.url = data.checkoutUrl;
-        }
       } else {
         const textResponse = await response.text();
         console.error('Non-JSON response from API:', textResponse);
@@ -5563,45 +4823,16 @@ async function openCheckoutModal(productIds) {
       }
 
       if (!response.ok || data.error) {
-        // Check if error is about archived products
-        if (data.error && (data.error.includes('archived') || data.archivedProducts)) {
-          const archivedList = data.archivedProducts || [];
-          const errorMsg = archivedList.length > 0
-            ? `The following products are archived and cannot be purchased:\n\n${archivedList.join('\n')}\n\nPlease remove them from your cart and try again.`
-            : data.error;
-          throw new Error(errorMsg);
-        }
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
       if (!data.url) {
         throw new Error('No checkout URL returned');
       }
-
-      // Show warning if some products were filtered out
-      if (data.archivedProductsRemoved && data.archivedProductsRemoved.length > 0) {
-        console.warn('Some archived products were removed from checkout:', data.archivedProductsRemoved);
-        // Show a non-blocking notification to the user
-        const archivedNames = data.archivedProductsRemoved.join(', ');
-        alert(`Note: The following products were removed from checkout because they are archived:\n\n${archivedNames}\n\nProceeding with remaining products.`);
-      }
     }
 
     console.log('Checkout session created:', data.id);
     console.log('Checkout URL:', data.url);
-
-    // Store checkout ID for use after success
-    // Try to get from response, or extract from URL
-    currentCheckoutId = data.id;
-    if (!currentCheckoutId && data.url) {
-      // Extract checkout ID from Polar checkout URL
-      // Format: https://polar.sh/checkout/{checkout-id}
-      const urlMatch = data.url.match(/\/checkout\/([^/?]+)/);
-      if (urlMatch) {
-        currentCheckoutId = urlMatch[1];
-        console.log('Extracted checkout ID from URL:', currentCheckoutId);
-      }
-    }
 
     // Try to use embedded checkout modal
     try {
@@ -5661,114 +4892,58 @@ async function openCheckoutModal(productIds) {
         console.log('Creating embedded checkout with URL:', data.url);
         const checkout = await PolarEmbedCheckout.create(data.url, "light");
 
-        // Store checkout instance
-        currentCheckoutInstance = checkout;
-
         // Handle successful checkout
         checkout.addEventListener("success", async (eventData) => {
-          // Prevent multiple success handler calls
-          if (successHandlerCalled) {
-            console.warn('Success handler already called, ignoring duplicate event');
-            return;
-          }
-          successHandlerCalled = true;
-
           console.log('Checkout completed successfully!', eventData);
-          console.log('Event data structure:', JSON.stringify(eventData, null, 2));
-
-          // Close modal
-          closeCheckoutModalUI();
-          
-          // Reset checkout in progress flag
-          checkoutInProgress = false;
 
           // Extract checkout session ID from event data
-          // Try multiple possible locations in eventData, then fallback to stored checkout ID
-          const checkoutSessionId = eventData?.id || 
-                                   eventData?.checkout?.id || 
-                                   eventData?.checkout_id ||
-                                   eventData?.checkoutSessionId ||
-                                   currentCheckoutId;
-          
-          if (!checkoutSessionId) {
-            console.error('No checkout session ID found. Event data:', eventData);
-            // Show success message - downloads will be sent via email
-            alert('Purchase successful! Your download links will be sent to your email shortly. You can also access your downloads from your account page.');
-            return;
+          let checkoutSessionId = null;
+          if (eventData && eventData.id) {
+            checkoutSessionId = eventData.id;
+          } else if (eventData && eventData.checkoutId) {
+            checkoutSessionId = eventData.checkoutId;
+          } else if (eventData && eventData.checkout_id) {
+            checkoutSessionId = eventData.checkout_id;
           }
-
           console.log('Checkout session ID:', checkoutSessionId);
 
+          // Extract customer email from checkout data if available
+          let customerEmail = null;
+          if (eventData && eventData.customer && eventData.customer.email) {
+            customerEmail = eventData.customer.email;
+          } else if (eventData && eventData.email) {
+            customerEmail = eventData.email;
+          } else if (eventData && eventData.customerEmail) {
+            customerEmail = eventData.customerEmail;
+          } else if (eventData && eventData.customer_email) {
+            customerEmail = eventData.customer_email;
+          }
+
+          // If email not available, prompt user
+          if (!customerEmail) {
+            customerEmail = prompt('Please enter your email address to access your downloads:');
+            if (!customerEmail) {
+              alert('Email is required to verify your purchase. Please contact support if you need assistance.');
+              closeCheckoutModalUI();
+              return;
+            }
+          }
+
+          // Store customer email for future credit checking
+          if (customerEmail) {
+            localStorage.setItem('customer_email', customerEmail);
+            console.log('Customer email stored for credit system:', customerEmail);
+          }
+
+          // Verify purchase and get download URLs (with polling)
           try {
-            // Get download URLs using the checkout session ID
-            const downloadResponse = await fetch('/api/get-download-urls', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                checkoutSessionId: checkoutSessionId
-              })
-            });
-
-            if (!downloadResponse.ok) {
-              const errorData = await downloadResponse.json();
-              console.error('Failed to get download URLs:', errorData);
-              // Show success message - downloads will be sent via email
-              alert('Purchase successful! Your download links will be sent to your email shortly. You can also access your downloads from your account page.');
-              return;
-            }
-
-            const downloadData = await downloadResponse.json();
-            const downloads = downloadData.downloads || [];
-
-            console.log('Download URLs retrieved:', downloads);
-
-            if (downloads.length === 0) {
-              console.warn('No downloads available yet');
-              // Show success message - downloads may still be processing
-              alert('Purchase successful! Your download links are being processed and will be sent to your email shortly. You can also check your account page.');
-              return;
-            }
-
-            // Show download modal with the download links
-            // Extract product IDs from downloads
-            const purchasedProductIds = downloads.map(d => d.productId).filter(Boolean);
-            
-            // Get customer email from checkout if available
-            let customerEmail = eventData?.customer?.email || eventData?.email || null;
-            
-            // If no email in event, try to get it from the download response
-            if (!customerEmail && downloadData.customerEmail) {
-              customerEmail = downloadData.customerEmail;
-            }
-
-            // Store purchase info
-            const purchaseInfo = {
-              email: customerEmail,
-              ownedProducts: purchasedProductIds,
-              downloads: downloads,
-              checkoutSessionId: checkoutSessionId,
-              timestamp: new Date().toISOString()
-            };
-            sessionStorage.setItem('purchase_info', JSON.stringify(purchaseInfo));
-
-            // Store individual product ownership
-            purchasedProductIds.forEach(productId => {
-              sessionStorage.setItem(`owned_${productId}`, 'true');
-            });
-
-            // Show download modal
-            showDownloadModal(purchasedProductIds, downloads, customerEmail);
-
-            // Clear cart
-            cart.clear();
-            updateCheckoutButton();
-
+            await handlePurchaseSuccess(productIds, customerEmail, checkoutSessionId);
+            closeCheckoutModalUI();
           } catch (error) {
-            console.error('Error getting download URLs:', error);
-            // Show success message - downloads will be sent via email
-            alert('Purchase successful! Your download links will be sent to your email shortly. You can also access your downloads from your account page.');
+            console.error('Error handling purchase success:', error);
+            alert(`Purchase successful! However, we couldn't verify your purchase immediately. Please check your email for download links.\n\nError: ${error.message}`);
+            closeCheckoutModalUI();
+            window.location.reload();
           }
         });
 
@@ -5776,8 +4951,6 @@ async function openCheckoutModal(productIds) {
         checkout.addEventListener("close", () => {
           console.log('Checkout modal closed');
           closeCheckoutModalUI();
-          checkoutInProgress = false;
-          currentCheckoutInstance = null;
           // Re-enable button
           if (buyNowButton) {
             buyNowButton.disabled = false;
@@ -5799,22 +4972,22 @@ async function openCheckoutModal(productIds) {
         stack: embeddedError.stack,
         name: embeddedError.name
       });
-      checkoutInProgress = false;
     }
 
-    // Fallback: If embedded checkout fails, show error message
-    // DO NOT redirect to checkout URL - it becomes invalid after checkout completes
-    console.log('Embedded checkout failed, showing error message');
-    checkoutLoading.style.display = 'none';
-    checkoutError.style.display = 'flex';
-    checkoutError.innerHTML = `
-      <span class="checkout-error-text">
-        Unable to load embedded checkout.<br><br>
-        Please try refreshing the page and checking out again.<br><br>
-        If the problem persists, please contact support.
-      </span>
-    `;
-    checkoutInProgress = false;
+    // Fallback: If embedded checkout fails, redirect to full page
+    if (data && data.url) {
+      console.log('Falling back to full page checkout');
+      checkoutLoading.style.display = 'none';
+      checkoutError.style.display = 'flex';
+      
+      // Wait a moment to show error message, then redirect
+      setTimeout(() => {
+        checkoutInProgress = false;
+        window.location.href = data.url;
+      }, 1500);
+    } else {
+      checkoutInProgress = false;
+    }
 
   } catch (error) {
     console.error('Checkout failed:', error);
@@ -5827,37 +5000,7 @@ async function openCheckoutModal(productIds) {
     checkoutLoading.style.display = 'none';
     checkoutError.style.display = 'flex';
     
-    // Format error message for archived products
-    let errorMessage = error.message || 'An error occurred during checkout';
-    if (error.message && error.message.includes('archived')) {
-      // Format archived products error more clearly
-      errorMessage = error.message.replace(/\n/g, '<br>');
-      checkoutError.innerHTML = `
-        <span class="checkout-error-text" style="text-align: left; line-height: 1.6;">
-          <strong>⚠️ Archived Products Detected</strong><br><br>
-          ${errorMessage}<br><br>
-          <strong>What to do:</strong><br>
-          1. Remove archived products from your cart<br>
-          2. Try checking out again<br><br>
-          <button onclick="closeCheckoutModalUI(); window.location.reload();" 
-                  style="padding: 8px 16px; background: var(--color-lello, #FFD700); 
-                         border: 1px solid var(--color-void-black, #000); 
-                         cursor: pointer; font-family: var(--font-visitor, monospace); 
-                         font-weight: bold; text-transform: uppercase;">
-            Close & Refresh Cart
-          </button>
-        </span>
-      `;
-    } else {
-      checkoutError.innerHTML = `
-        <span class="checkout-error-text">
-          ${errorMessage}<br><br>
-          Please try again or contact support.
-        </span>
-      `;
-    }
-    
-    // Close modal after showing error
+    // Try to get checkout URL from error or redirect to a generic checkout page
     setTimeout(() => {
       closeCheckoutModalUI();
       
@@ -5871,100 +5014,179 @@ async function openCheckoutModal(productIds) {
 }
 
 // Handle purchase success - verify ownership and enable downloads
-async function handlePurchaseSuccess(productIds, customerEmail) {
-  console.log('Handling purchase success for:', productIds, customerEmail);
+// Implements polling to handle race condition with webhook processing
+async function handlePurchaseSuccess(productIds, customerEmail, checkoutSessionId) {
+  console.log('Handling purchase success for:', { productIds, customerEmail, checkoutSessionId });
 
-  try {
-    // Step 1: Verify purchase ownership
-    const verifyResponse = await fetch('/api/verify-purchase', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: customerEmail,
-        productIds: productIds
-      })
-    });
+  const maxAttempts = 5;
+  const delayMs = 2000;
+  let attempts = 0;
+  let downloads = [];
+  let ownedProducts = [];
 
-    if (!verifyResponse.ok) {
-      const errorData = await verifyResponse.json();
-      throw new Error(errorData.error || 'Failed to verify purchase');
+  // Polling loop - retry up to maxAttempts times with delays
+  while (attempts < maxAttempts) {
+    attempts++;
+    console.log(`Purchase verification attempt ${attempts}/${maxAttempts}...`);
+
+    try {
+      // Step 1: Get download URLs using checkout session ID (preferred method)
+      if (checkoutSessionId) {
+        console.log('Fetching downloads via checkout session ID:', checkoutSessionId);
+        const downloadResponse = await fetch('/api/get-download-urls', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            checkoutSessionId: checkoutSessionId
+          })
+        });
+
+        const downloadData = await downloadResponse.json();
+        console.log('Download response:', downloadData);
+
+        // Handle 202 - checkout still processing
+        if (downloadResponse.status === 202) {
+          console.log(`Checkout still processing (status: ${downloadData.status}), will retry...`);
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+            continue;
+          }
+        }
+
+        if (downloadResponse.ok && downloadData.downloads && downloadData.downloads.length > 0) {
+          downloads = downloadData.downloads;
+          ownedProducts = downloadData.productIds || productIds;
+          console.log(`✅ Got ${downloads.length} downloads on attempt ${attempts}`);
+          break;
+        }
+      }
+
+      // Step 2: Fallback - verify purchase via email if checkout session didn't work
+      console.log('Verifying purchase via email:', customerEmail);
+      const verifyResponse = await fetch('/api/verify-purchase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: customerEmail,
+          productIds: productIds,
+          checkoutSessionId: checkoutSessionId
+        })
+      });
+
+      if (verifyResponse.ok) {
+        const verifyData = await verifyResponse.json();
+        ownedProducts = verifyData.ownedProducts || [];
+        console.log('Verified owned products:', ownedProducts);
+
+        if (ownedProducts.length > 0) {
+          // Try to get download URLs for owned products
+          const downloadResponse = await fetch('/api/get-download-urls', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              checkoutSessionId: checkoutSessionId
+            })
+          });
+
+          if (downloadResponse.ok) {
+            const downloadData = await downloadResponse.json();
+            downloads = downloadData.downloads || [];
+            if (downloads.length > 0) {
+              console.log(`✅ Got ${downloads.length} downloads via verify fallback`);
+              break;
+            }
+          }
+        }
+      }
+
+      // If we have no downloads yet and have more attempts, wait and retry
+      if (downloads.length === 0 && attempts < maxAttempts) {
+        console.log(`No downloads yet, waiting ${delayMs}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+
+    } catch (error) {
+      console.error(`Error on attempt ${attempts}:`, error);
+      if (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
     }
+  }
 
-    const verifyData = await verifyResponse.json();
-    const ownedProducts = verifyData.ownedProducts || [];
+  // After polling, handle results
+  console.log(`Polling complete. Downloads: ${downloads.length}, Owned products: ${ownedProducts.length}`);
 
-    if (ownedProducts.length === 0) {
-      console.warn('No products verified as owned');
-      // Still show success message, but downloads may not be available yet
-      alert('Purchase successful! Your purchase is being processed. You will receive download links via email shortly.');
-      window.location.reload();
-      return;
-    }
+  // If we still have no downloads after all attempts, show a helpful message
+  if (downloads.length === 0) {
+    console.warn('No downloads available after polling');
+    // Use productIds as ownedProducts if we couldn't verify
+    ownedProducts = ownedProducts.length > 0 ? ownedProducts : productIds;
 
-    console.log('Verified owned products:', ownedProducts);
+    // Show modal with "processing" message - downloads may arrive later
+    showDownloadModal(ownedProducts, [], customerEmail, true);
 
-    // Step 2: Get download URLs
-    const downloadResponse = await fetch('/api/get-download-urls', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: customerEmail,
-        productIds: ownedProducts
-      })
-    });
-
-    if (!downloadResponse.ok) {
-      const errorData = await downloadResponse.json();
-      throw new Error(errorData.error || 'Failed to get download URLs');
-    }
-
-    const downloadData = await downloadResponse.json();
-    const downloads = downloadData.downloads || [];
-
-    console.log('Download URLs retrieved:', downloads);
-
-    // Step 3: Store purchase info in sessionStorage
+    // Store purchase info anyway
     const purchaseInfo = {
       email: customerEmail,
       ownedProducts: ownedProducts,
-      downloads: downloads,
-      timestamp: new Date().toISOString()
+      downloads: [],
+      checkoutSessionId: checkoutSessionId,
+      timestamp: new Date().toISOString(),
+      pending: true
     };
     sessionStorage.setItem('purchase_info', JSON.stringify(purchaseInfo));
 
-    // Store individual product ownership for quick checks
-    ownedProducts.forEach(productId => {
-      sessionStorage.setItem(`owned_${productId}`, 'true');
-    });
-
-    // Step 4: Show download modal
-    showDownloadModal(ownedProducts, downloads, customerEmail);
-
-    // Step 5: Update button visibility for current product if it was purchased
-    if (currentProduct) {
-      const productSlug = currentProduct.toLowerCase().replace(/\s+/g, '-');
-      const polarProduct = getPolarProductData(productSlug);
-      if (polarProduct && ownedProducts.includes(polarProduct.productId)) {
-        updateButtonVisibility(currentProduct);
-      }
-    }
-
-    // Step 6: Clear cart
+    // Clear cart
     cart.clear();
     updateCheckoutButton();
-
-  } catch (error) {
-    console.error('Error in handlePurchaseSuccess:', error);
-    throw error;
+    return;
   }
+
+  // Store purchase info in sessionStorage
+  const purchaseInfo = {
+    email: customerEmail,
+    ownedProducts: ownedProducts,
+    downloads: downloads,
+    checkoutSessionId: checkoutSessionId,
+    timestamp: new Date().toISOString()
+  };
+  sessionStorage.setItem('purchase_info', JSON.stringify(purchaseInfo));
+
+  // Store individual product ownership for quick checks
+  ownedProducts.forEach(productId => {
+    sessionStorage.setItem(`owned_${productId}`, 'true');
+  });
+
+  // Show download modal with actual downloads
+  showDownloadModal(ownedProducts, downloads, customerEmail);
+
+  // Update button visibility for current product if it was purchased
+  if (currentProduct) {
+    const productSlug = currentProduct.toLowerCase().replace(/\s+/g, '-');
+    const polarProduct = getPolarProductData(productSlug);
+    if (polarProduct && ownedProducts.includes(polarProduct.productId)) {
+      updateButtonVisibility(currentProduct);
+    }
+  }
+
+  // Clear cart
+  cart.clear();
+  updateCheckoutButton();
 }
 
 // Show download modal with purchased products
-function showDownloadModal(purchasedProductIds, downloads, customerEmail) {
+// isPending: if true, shows a "processing" message because downloads aren't ready yet
+function showDownloadModal(purchasedProductIds, downloads, customerEmail, isPending = false) {
+  // #region agent log
+  fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5051',message:'showDownloadModal called',data:{purchasedProductIdsCount:purchasedProductIds.length,downloadsCount:downloads.length,downloads:downloads.map(d=>({productId:d.productId,filename:d.filename})),customerEmail,isPending},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+  
   // Create modal overlay
   const modalOverlay = document.createElement('div');
   modalOverlay.id = 'download-modal-overlay';
@@ -5993,7 +5215,15 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail) {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10001;
+    pointer-events: auto;
   `;
+  
+  // Stop propagation on modal content to prevent overlay from closing
+  modalContent.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
 
   // Modal header
   const modalHeader = document.createElement('div');
@@ -6039,10 +5269,22 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail) {
   // Modal body
   const modalBody = document.createElement('div');
   const successMessage = document.createElement('p');
-  successMessage.textContent = 'Thank you for your purchase! Download your products below:';
+
+  if (isPending) {
+    successMessage.innerHTML = `
+      <strong>Thank you for your purchase!</strong><br><br>
+      Your payment is being processed. Download links will be available shortly.<br>
+      You'll also receive an email with your download links at <strong>${customerEmail || 'your email'}</strong>.<br><br>
+      <em>You can close this window - your downloads will be in your email.</em>
+    `;
+  } else {
+    successMessage.textContent = 'Thank you for your purchase! Download your products below:';
+  }
+
   successMessage.style.cssText = `
     margin-bottom: var(--space-large);
     color: #333;
+    line-height: 1.5;
   `;
   modalBody.appendChild(successMessage);
 
@@ -6083,9 +5325,15 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail) {
     `;
 
     // Find download info
+    // #region agent log
+    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5170',message:'showDownloadModal - Before downloadInfo check',data:{productId,downloads:downloads.map(d=>({productId:d.productId,filename:d.filename})),downloadInfoExists:!!downloads.find(d => d.productId === productId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     const downloadInfo = downloads.find(d => d.productId === productId);
     const downloadBtn = document.createElement('button');
     downloadBtn.textContent = downloadInfo ? 'DOWNLOAD' : 'PROCESSING...';
+    // #region agent log
+    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5173',message:'showDownloadModal - Setting button disabled state',data:{productId,isDisabled:!downloadInfo,downloadInfo:downloadInfo?{productId:downloadInfo.productId,filename:downloadInfo.filename}:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     downloadBtn.disabled = !downloadInfo;
     downloadBtn.style.cssText = `
       background-color: var(--color-lello, #FFD700);
@@ -6095,19 +5343,42 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail) {
       font-family: var(--font-visitor, 'Space Mono', monospace);
       font-size: 14px;
       text-transform: uppercase;
-      cursor: pointer;
+      cursor: ${downloadInfo ? 'pointer' : 'not-allowed'};
       transition: all 0.2s;
+      position: relative;
+      z-index: 10002;
+      pointer-events: auto;
     `;
 
     if (downloadInfo) {
-      downloadBtn.addEventListener('click', () => {
+      downloadBtn.addEventListener('click', (e) => {
+        // #region agent log
+        fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5187',message:'Download button clicked - before stopPropagation',data:{productId,disabled:downloadBtn.disabled,hasDownloadInfo:!!downloadInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        // #region agent log
+        fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5191',message:'Download button clicked - calling downloadProductFile',data:{productId,customerEmail,filename:downloadInfo.filename},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
         downloadProductFile(productId, customerEmail, downloadInfo.filename);
-      });
+      }, true); // Use capture phase to ensure we handle the event first
     }
 
+    // #region agent log
+    downloadBtn.addEventListener('mousedown', (e) => {
+      fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5196',message:'Download button mousedown event',data:{productId,disabled:downloadBtn.disabled,computedPointerEvents:window.getComputedStyle(downloadBtn).pointerEvents,computedZIndex:window.getComputedStyle(downloadBtn).zIndex},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    });
+    downloadBtn.addEventListener('mouseup', (e) => {
+      fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5200',message:'Download button mouseup event',data:{productId,disabled:downloadBtn.disabled},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    });
+    // #endregion
     downloadItem.appendChild(productNameEl);
     downloadItem.appendChild(downloadBtn);
     downloadList.appendChild(downloadItem);
+    // #region agent log
+    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5207',message:'showDownloadModal - Download button appended',data:{productId,buttonText:downloadBtn.textContent,isDisabled:downloadBtn.disabled,hasClickListener:!!downloadInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
   });
 
   modalBody.appendChild(downloadList);
@@ -6151,11 +5422,19 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail) {
 
   // Close on overlay click
   modalOverlay.addEventListener('click', (e) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7249/ingest/7a27ad39-840b-4e4c-8e82-f05772e9db3b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:5245',message:'Modal overlay click event',data:{targetId:e.target.id,targetTagName:e.target.tagName,targetClassName:e.target.className,isOverlay:e.target === modalOverlay,isModalContent:e.target === modalContent || modalContent.contains(e.target)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     if (e.target === modalOverlay) {
       document.body.removeChild(modalOverlay);
       window.location.reload();
     }
   });
+  
+  // Ensure modal content doesn't block pointer events
+  modalContent.style.pointerEvents = 'auto';
+  modalContent.style.position = 'relative';
+  modalContent.style.zIndex = '10001';
 }
 
 // Download product file via proxy endpoint
@@ -6829,46 +6108,15 @@ function updateFooterCommit() {
   }
 }
 
-// Update footer branch name from meta tag
-function updateFooterBranch() {
-  const branchNameEl = document.getElementById('branch-name');
-  const footerBranchEl = document.getElementById('footer-branch');
-  
-  console.log('🔍 updateFooterBranch called');
-  console.log('  branchNameEl:', branchNameEl);
-  console.log('  footerBranchEl:', footerBranchEl);
-  
-  if (!branchNameEl) {
-    console.warn('⚠️ branch-name element not found');
-    return;
-  }
-  
-  // Get branch name from meta tag
-  const branchMetaTag = document.querySelector('meta[name="deployment-branch"]');
-  console.log('  branchMetaTag:', branchMetaTag);
-  console.log('  branchMetaTag.content:', branchMetaTag ? branchMetaTag.content : 'null');
-  
-  if (branchMetaTag && branchMetaTag.content) {
-    branchNameEl.textContent = branchMetaTag.content;
-    console.log('✅ Branch name set to:', branchMetaTag.content);
-  } else {
-    // Fallback: use 'dev' for local development
-    branchNameEl.textContent = 'dev';
-    console.log('⚠️ No branch meta tag found, using fallback: dev');
-  }
-}
-
-// Initialize footer shortcut, commit hash, and branch on page load
+// Initialize footer shortcut and commit hash on page load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     updateFooterShortcut();
     updateFooterCommit();
-    updateFooterBranch();
   });
 } else {
   updateFooterShortcut();
   updateFooterCommit();
-  updateFooterBranch();
 }
 
 // Initialize mobile search bar
@@ -7357,12 +6605,6 @@ async function initializeCarousel(productId) {
   // Create carousel items
   console.log(`🎠 Creating ${carouselItems.length} carousel items...`);
   carouselItems.forEach((asset, index) => {
-    // Skip assets without valid URLs to prevent empty containers
-    if (!asset.url || asset.url.trim() === '') {
-      console.warn(`⚠️ Skipping carousel item ${index} (${asset.name}): missing or empty URL`);
-      return;
-    }
-
     console.log(`🎠 Creating carousel item ${index}: ${asset.name} (type: ${asset.type})`);
     const item = document.createElement('div');
     item.className = 'carousel-item';
@@ -7374,10 +6616,6 @@ async function initializeCarousel(productId) {
       img.src = asset.url;
       img.alt = asset.name;
       img.loading = index === 0 ? 'eager' : 'lazy';
-      // Add fetchpriority hint for first image to improve LCP
-      if (index === 0) {
-        img.fetchPriority = 'high';
-      }
       img.onerror = function() {
         this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDMyMCAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjU2IiBmaWxsPSIjRThFOEU4Ii8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4=';
       };
@@ -7628,11 +6866,7 @@ window.debugCarousel = function() {
 };
 
 // ============================================================================
-// ============================================================================
-// WELCOME POP-UP MODAL (Onboarding Pop-up)
-// Name: "Welcome Pop-up" or "Onboarding Pop-up"
-// Purpose: Welcomes new users and explains the two shopping options
-// (individual purchases vs. subscription membership)
+// LANDING POP-UP MODAL
 // ============================================================================
 
 const LANDING_POPUP_STORAGE_KEY = 'no3d-tools-landing-popup-dismissed';
@@ -7651,16 +6885,6 @@ function shouldShowLandingPopup() {
     // Clear the dismissal flag if forcing show
     localStorage.removeItem(LANDING_POPUP_STORAGE_KEY);
     return true;
-  }
-  
-  // Date-based logic: Disable welcome pop-up until after December 28
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const dec28 = new Date(currentYear, 11, 28); // Month is 0-indexed, so 11 = December
-  
-  // If before or on December 28, don't show welcome pop-up (gift card pop-up will show instead)
-  if (now <= dec28) {
-    return false;
   }
   
   // Check localStorage to see if user has dismissed the pop-up
@@ -7794,9 +7018,7 @@ if (document.readyState === 'loading') {
 }
 
 /* ============================================================================
-   GIFT CARD POP-UP MODAL (Holiday Promo Pop-up)
-   Name: "Gift Card Pop-up" or "Holiday Promo Pop-up"
-   Purpose: Promotes gift card options during holiday season (December)
+   CHRISTMAS GIFT CARD POPUP - PETRI UI DESIGN
    ============================================================================ */
 
 // Get Christmas popup elements
@@ -7808,28 +7030,16 @@ const christmasCardButtons = document.querySelectorAll('.christmas-card-button')
 
 // Check if Christmas popup should be shown
 function shouldShowChristmasPopup() {
-  // DISABLED: Christmas popup is disabled
-  return false;
-  
   // Check if user has already dismissed it
   const dismissed = sessionStorage.getItem('christmas_popup_dismissed');
   if (dismissed) {
     return false;
   }
   
-  // Date-based logic: Only show until December 28
+  // Check if it's Christmas season (December)
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const dec28 = new Date(currentYear, 11, 28); // Month is 0-indexed, so 11 = December
-  
-  // Only show if it's December AND before or on December 28
   const month = now.getMonth(); // 0-11, where 11 = December
-  if (month !== 11) {
-    return false; // Not December
-  }
-  
-  // Show only until December 28 (inclusive)
-  return now <= dec28;
+  return month === 11; // Only show in December
 }
 
 // Show Christmas popup
@@ -7858,36 +7068,25 @@ function hideChristmasPopup() {
 // Handle Christmas popup purchase
 async function handleChristmasPurchase(productHandle) {
   console.log('Christmas gift card purchase:', productHandle);
-
+  
   // Get Polar product data
   const polarProduct = getPolarProductData(productHandle);
-
-  if (!polarProduct) {
+  
+  if (!polarProduct || !polarProduct.productId) {
     console.error('Polar product data not found for:', productHandle);
     alert(`Gift card "${productHandle}" is not available for checkout. Please try again later.`);
     return;
   }
-
+  
   // Hide popup
   hideChristmasPopup();
-
-  // If we have a direct checkout URL, use it (works in local dev and production)
-  if (polarProduct.checkoutUrl) {
-    console.log('Redirecting to checkout URL:', polarProduct.checkoutUrl);
-    window.open(polarProduct.checkoutUrl, '_blank');
-    return;
-  }
-
-  // Fallback to modal checkout if no direct URL but have productId
-  if (polarProduct.productId) {
-    try {
-      await openCheckoutModal([polarProduct.productId]);
-    } catch (error) {
-      console.error('Failed to open checkout:', error);
-      alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
-    }
-  } else {
-    alert(`Gift card "${productHandle}" is not available for checkout. Please try again later.`);
+  
+  // Open checkout
+  try {
+    await openCheckoutModal([polarProduct.productId]);
+  } catch (error) {
+    console.error('Failed to open checkout:', error);
+    alert(`Checkout failed: ${error.message}\n\nPlease try again or contact support.`);
   }
 }
 
@@ -8232,44 +7431,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeThemeToggle);
 } else {
   initializeThemeToggle();
-}
-
-/* ============================================================================
-   HOME CTA BANNER
-   ============================================================================ */
-
-function initializeHomeCTABanner() {
-  const dismissButton = document.getElementById('christmas-cta-dismiss');
-  const ctaBanner = document.getElementById('christmas-cta-banner');
-
-  if (!dismissButton || !ctaBanner) return;
-
-  // DISABLED: Christmas banner is disabled - hide it immediately
-  ctaBanner.classList.add('hidden');
-  return;
-
-  // Allow reset via query parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('resetBanner') === 'true') {
-    sessionStorage.removeItem('christmas-cta-dismissed');
-  }
-
-  // Check if banner was previously dismissed (session storage)
-  const isDismissed = sessionStorage.getItem('christmas-cta-dismissed');
-  if (isDismissed === 'true') {
-    ctaBanner.classList.add('hidden');
-    return;
-  }
-
-  dismissButton.addEventListener('click', function() {
-    ctaBanner.classList.add('hidden');
-    sessionStorage.setItem('christmas-cta-dismissed', 'true');
-  });
-}
-
-// Initialize CTA banner when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeHomeCTABanner);
-} else {
-  initializeHomeCTABanner();
 }
