@@ -464,7 +464,21 @@ async function refreshPricesFromPolar() {
 // Load Products from JSON Files (from GitHub repository)
 async function loadProductsFromJSON() {
   try {
-    const productFiles = [
+    // Dynamically fetch list of all product JSON files
+    let productFiles = [];
+    try {
+      const listResponse = await fetch('/api/list-products');
+      if (listResponse.ok) {
+        const listData = await listResponse.json();
+        productFiles = listData.files || [];
+        console.log(`📦 Found ${productFiles.length} product files via API`);
+      } else {
+        throw new Error('Failed to fetch product list');
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not fetch product list from API, using fallback hardcoded list:', error);
+      // Fallback to hardcoded list if API fails
+      productFiles = [
       'Dojo Bolt Gen v05.json',
       'Dojo Bolt Gen v05_Obj.json',
       'Dojo Bool v5.json',
@@ -476,8 +490,18 @@ async function loadProductsFromJSON() {
       'Dojo Mesh Repair.json',
       'Dojo Print Viz_V4.5.json',
       'Dojo Squircle v4.5_obj.json',
-      'Dojo_Squircle v4.5.json'
-    ];
+      'Dojo_Squircle v4.5.json',
+      'Chrome Crayon.json',
+      'NODE CHROME.json',
+      'Print Bed Preview_obj.json',
+      '3 Month Membership Gift.json',
+      'Dojo Christmas Gift Card $33.json',
+      'Dojo Christmas Gift Card $55.json',
+      'Dojo Christmas Gift Card $77.json',
+      'Dojo Christmas gift card 33.json',
+      'Dojo Caliper.json'
+      ];
+    }
     
     products = {};
     
@@ -5338,14 +5362,28 @@ function showDownloadModal(purchasedProductIds, downloads, customerEmail, isPend
 
     if (downloadInfo) {
       downloadBtn.addEventListener('click', (e) => {
-        // #region agent log
-        // #endregion
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        // #region agent log
-        // #endregion
-        downloadProductFile(productId, customerEmail, downloadInfo.filename);
+        
+        // Use the pre-authenticated direct download URL from Polar
+        // This URL is already verified and time-limited (see downloadInfo.expiresAt)
+        if (downloadInfo.url) {
+          console.log('Starting download:', downloadInfo.filename, 'from direct URL');
+          
+          // Create a temporary link to trigger the download
+          const link = document.createElement('a');
+          link.href = downloadInfo.url;
+          link.download = downloadInfo.filename || 'product.blend';
+          link.target = '_blank'; // Open in new tab if browser blocks download
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          // Fallback to re-verification if no direct URL
+          console.log('No direct URL, falling back to downloadProductFile');
+          downloadProductFile(productId, customerEmail, downloadInfo.filename);
+        }
       }, true); // Use capture phase to ensure we handle the event first
     }
 
