@@ -40,7 +40,38 @@ export default async (req, res) => {
   }
 
   try {
-    const { email, productIds, checkoutSessionId } = req.body;
+    // Parse request body if it's a string
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        console.error('Failed to parse request body:', e);
+        return res.status(400).json({
+          error: 'Invalid request body: must be valid JSON',
+          ownedProducts: []
+        });
+      }
+    }
+
+    // Handle empty or missing body
+    if (!body || (typeof body === 'object' && Object.keys(body).length === 0)) {
+      console.error('Empty or missing request body');
+      return res.status(400).json({
+        error: 'Request body is required. Provide either { checkoutSessionId } or { email, productIds }',
+        ownedProducts: []
+      });
+    }
+
+    const { email, productIds, checkoutSessionId } = body || {};
+
+    // Log the request for debugging
+    console.log('verify-purchase request:', {
+      hasCheckoutSessionId: !!checkoutSessionId,
+      hasEmail: !!email,
+      hasProductIds: !!productIds,
+      productIdsLength: productIds?.length || 0
+    });
 
     // Mode 1: Verify via Checkout Session ID
     if (checkoutSessionId) {
@@ -109,17 +140,21 @@ export default async (req, res) => {
 
     // Mode 2: Verify via Email + Product IDs (Existing Logic)
     // Validate input
-    if (!email || typeof email !== 'string') {
+    if (!email || typeof email !== 'string' || email.trim() === '') {
+      console.error('Invalid email in request:', { email, type: typeof email });
       return res.status(400).json({
-        error: 'Invalid request: email required',
-        ownedProducts: []
+        error: 'Invalid request: email (string) is required',
+        ownedProducts: [],
+        received: { email, productIds, checkoutSessionId }
       });
     }
 
     if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      console.error('Invalid productIds in request:', { productIds, type: typeof productIds, isArray: Array.isArray(productIds) });
       return res.status(400).json({
-        error: 'Invalid request: productIds array required',
-        ownedProducts: []
+        error: 'Invalid request: productIds (non-empty array) is required',
+        ownedProducts: [],
+        received: { email, productIds, checkoutSessionId }
       });
     }
 
