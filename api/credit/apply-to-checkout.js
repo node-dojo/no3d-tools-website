@@ -113,7 +113,7 @@ export default async function handler(req, res) {
       const checkout = await polar.checkouts.create({
         productId,
         customerEmail: email,
-        successUrl: successUrl || 'https://no3d.tools/success?checkout_session_id={CHECKOUT_SESSION_ID}',
+        // No successUrl - let Polar use their native confirmation/download page
       });
 
       return res.status(200).json({
@@ -148,7 +148,7 @@ export default async function handler(req, res) {
       productId,
       customerEmail: email,
       discountId: discount.id,
-      successUrl: successUrl || 'https://no3d.tools/success?checkout_session_id={CHECKOUT_SESSION_ID}',
+      // No successUrl - let Polar use their native confirmation/download page
     });
 
     console.log(`🛒 Checkout created with credit: ${checkout.url}`);
