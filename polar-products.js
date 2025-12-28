@@ -90,31 +90,6 @@ const POLAR_PRODUCTS = {
     name: 'Chrome Crayon',
     url: 'https://polar.sh/no3d-tools'
   },
-  // Christmas Gift Cards & Membership Gifts
-  '3-month-membership-gift': {
-    productId: '153df206-7d4e-4ec2-8044-87c4eeb5cceb',
-    priceId: 'bfcd229f-2958-4e35-b52c-c80e7ce24878',
-    name: '3 Month Membership Gift',
-    url: 'https://polar.sh/no3d-tools'
-  },
-  'christmas-gift-card-33': {
-    productId: 'c36ce649-f55f-4901-a8a0-339ca41deb27',
-    priceId: 'e7747c8e-9aed-4db1-be08-7cae7cde52c7',
-    name: 'Christmas Gift Card $33',
-    url: 'https://polar.sh/no3d-tools'
-  },
-  'christmas-gift-card-55': {
-    productId: '7d677970-f244-48fa-aba9-e1e91c977a88',
-    priceId: 'e8a535f5-d5d9-4075-9365-7a6d681203b3',
-    name: 'Christmas Gift Card $111',
-    url: 'https://polar.sh/no3d-tools'
-  },
-  'christmas-gift-card-77': {
-    productId: 'ea5c5645-eea2-46b0-ae23-86061fd432a7',
-    priceId: '7ef63691-9ada-4845-8c23-36f6513f8807',
-    name: 'Christmas Gift Card $222',
-    url: 'https://polar.sh/no3d-tools'
-  },
 };
 
 // Polar organization base URL (checkout links)

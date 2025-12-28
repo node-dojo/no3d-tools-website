@@ -1,14 +1,9 @@
 /**
- * Products API Endpoint
- *
- * GET /api/products - List all active products
- *
- * Query Parameters:
- *   - type: Filter by product_type
- *   - search: Full-text search on title/description
- *   - limit: Number of results (default: 50, max: 100)
- *   - page: Page number (default: 1)
- *
+ * Get All Products API Endpoint
+ * 
+ * GET /api/get-all-products - Returns all active products as an array
+ * 
+ * This endpoint is used by the frontend to fetch all products at once.
  * Returns products in a format compatible with the existing website.
  */
 
@@ -34,16 +29,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // If Supabase not enabled, fall back to legacy behavior
+  // If Supabase not enabled, return empty array
   if (!USE_SUPABASE) {
-    return res.status(200).json({
-      message: 'Supabase integration not enabled. Set USE_SUPABASE=true',
-      products: []
-    })
+    console.warn('⚠️ Supabase integration not enabled. Set USE_SUPABASE=true')
+    return res.status(200).json([])
   }
 
   // Validate environment
   if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('❌ Supabase configuration missing')
     return res.status(500).json({
       error: 'Supabase configuration missing',
       details: 'SUPABASE_URL and SUPABASE_ANON_KEY must be set'
@@ -53,80 +47,51 @@ export default async function handler(req, res) {
   try {
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    // Parse query parameters
-    const {
-      type,
-      search,
-      limit = '50',
-      page = '1'
-    } = req.query
-
-    const pageNum = Math.max(1, parseInt(page, 10))
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)))
-    const from = (pageNum - 1) * limitNum
-    const to = from + limitNum - 1
-
-    // Build query
-    let query = supabase
+    // Fetch all active products (no pagination for this endpoint)
+    const { data, error } = await supabase
       .from('products')
-      .select('*', { count: 'exact' })
+      .select('*')
       .eq('status', 'active')
-
-    // Filter by product type
-    if (type) {
-      query = query.eq('product_type', type)
-    }
-
-    // Full-text search
-    if (search) {
-      query = query.textSearch('title', search, {
-        type: 'websearch',
-        config: 'english'
-      })
-    }
-
-    // Pagination and ordering
-    query = query
       .order('created_at', { ascending: false })
-      .range(from, to)
-
-    const { data, error, count } = await query
 
     if (error) {
-      console.error('Supabase query error:', error)
+      console.error('❌ Supabase query error:', error)
       throw error
     }
 
-    // Map Supabase product_type to website productType
-    // Website expects: 'tools', 'tutorials', 'prints', 'apps', 'docs'
-    const mapProductType = (productType) => {
-      if (!productType) return 'tools';
-      const lower = productType.toLowerCase();
-      // Map Supabase types to website types
-      if (lower === 'tools' || lower.includes('blender') || lower.includes('add-on') || lower.includes('geometry node')) {
-        return 'tools';
-      }
-      if (lower.includes('tutorial')) return 'tutorials';
-      if (lower.includes('print')) return 'prints';
-      if (lower.includes('app')) return 'apps';
-      if (lower.includes('doc') || lower.includes('blog')) return 'docs';
-      // Default to tools for unknown types
-      return 'tools';
-    };
+    if (!data || data.length === 0) {
+      console.warn('⚠️ No active products found in Supabase')
+      return res.status(200).json([])
+    }
 
-    // Transform to match existing website format
-    const products = (data || []).map((p) => ({
+    // Map Supabase product_type to website productType
+    const mapProductType = (productType) => {
+      if (!productType) return 'tools'
+      const lower = productType.toLowerCase()
+      if (lower === 'tools' || lower.includes('blender') || lower.includes('add-on') || lower.includes('geometry node')) {
+        return 'tools'
+      }
+      if (lower.includes('tutorial')) return 'tutorials'
+      if (lower.includes('print')) return 'prints'
+      if (lower.includes('app')) return 'apps'
+      if (lower.includes('doc') || lower.includes('blog')) return 'docs'
+      return 'tools'
+    }
+
+    // Transform to match website format - return as array (not wrapped in object)
+    const productsRaw = (data || []).map((p) => ({
       id: p.id,
       handle: p.handle,
       title: p.title,
       description: p.description,
       price: p.price,
+      product_type: mapProductType(p.product_type), // Map to website productType
       image: p.icon_url,
       preview: p.preview_image_url,
       video: p.video_url,
-      type: mapProductType(p.product_type), // Map to website productType
-      tags: p.tags,
-      polarProductId: p.polar_product_id,
+      tags: p.tags || [],
+      polar_product_id: p.polar_product_id,
+      polar_price_id: p.polar_price_id,
       sku: p.sku,
       vendor: p.vendor,
       metafields: p.metafields || [],
@@ -142,17 +107,28 @@ export default async function handler(req, res) {
       } : null
     }))
 
-    res.status(200).json({
-      products,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limitNum)
+    // Deduplicate by handle (keep first occurrence, which is newest due to ordering)
+    const seenHandles = new Set()
+    const products = productsRaw.filter(p => {
+      if (!p.handle) return false
+      const normalizedHandle = p.handle.toLowerCase().trim()
+      if (seenHandles.has(normalizedHandle)) {
+        console.warn(`⚠️ Duplicate handle detected and filtered: "${p.handle}" (title: "${p.title}")`)
+        return false
       }
+      seenHandles.add(normalizedHandle)
+      return true
     })
+
+    if (productsRaw.length !== products.length) {
+      console.warn(`⚠️ Filtered out ${productsRaw.length - products.length} duplicate products`)
+    }
+
+    console.log(`✅ Returning ${products.length} products from /api/get-all-products`)
+    res.status(200).json(products) // Return array directly, not wrapped
+
   } catch (error) {
-    console.error('Error fetching products:', error)
+    console.error('❌ Error fetching products:', error)
     res.status(500).json({
       error: 'Failed to fetch products',
       message: error.message

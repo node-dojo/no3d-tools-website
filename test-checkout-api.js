@@ -10,9 +10,9 @@ async function testCheckout() {
     console.log('API Token:', process.env.POLAR_API_TOKEN ? 'Set' : 'Not set');
     console.log('Org ID:', process.env.POLAR_ORG_ID);
 
-    // Test with Dojo Bool v5 PRODUCT ID (not price ID!)
+    // Test with Dojo Bolt Gen v05_Obj PRODUCT ID
     // SDK expects array of product ID strings
-    const products = ['e8452fe5-58ea-4788-ab0b-fc4c4e26f320'];
+    const products = ['eb28f590-e6eb-463a-830d-95243e51de89'];
 
     console.log('\nAttempting to create checkout with:');
     console.log(JSON.stringify({ products }, null, 2));

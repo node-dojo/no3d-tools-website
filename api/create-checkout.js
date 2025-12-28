@@ -112,9 +112,20 @@ export default async (req, res) => {
     let checkout;
     try {
       // Get origin from request headers (for embedOrigin validation)
-      const origin = req.headers.origin || req.headers.host 
-        ? `https://${req.headers.host}` 
-        : 'https://no3d-tools-website.vercel.app';
+      // Polar requires the exact origin (protocol + host)
+      let origin = req.headers.origin;
+      
+      if (!origin && req.headers.host) {
+        const isLocal = req.headers.host.includes('localhost') || req.headers.host.includes('127.0.0.1');
+        const protocol = isLocal ? 'http' : 'https';
+        origin = `${protocol}://${req.headers.host}`;
+      }
+      
+      if (!origin) {
+        origin = 'https://no3dtools.com';
+      }
+
+      console.log(`Using embedOrigin: ${origin}`);
       
       const checkoutData = {
         products: validProductIds, // Only non-archived products

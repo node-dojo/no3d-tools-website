@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="deployment-version" content="a6b83d4">
-    <meta name="deployment-branch" content="main">
+    <meta name="deployment-version" content="6cc04fa">
+    <meta name="deployment-branch" content="feature/script-refactor">
     <title>NO3D TOOLS</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,11 +19,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Marked.js for markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
-    <!-- Three.js for 3D object viewing (low priority feature) -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <!-- Three.js for 3D object viewing (using ES modules - r150+ compatible) -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+    </script>
     <!-- Polar Embedded Checkout -->
-    <!-- Using official Polar CDN - exposes window.Polar.EmbedCheckout -->
-    <script src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@latest/dist/embed.global.js" defer></script>
+    <!-- Using official Polar CDN - pinning version for stability -->
+    <script src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@0.1.14/dist/embed.global.js" defer></script>
     <!-- Supabase Client for Realtime subscriptions -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0/dist/umd/supabase.min.js"></script>
     <script>
@@ -171,22 +177,6 @@
         <main class="product-card">
             <!-- Home Grid (shown when no product selected) -->
             <div class="home-grid-container visible" id="home-grid-container">
-                <!-- Christmas Gift Card CTA Banner -->
-                <div class="home-cta-banner" id="christmas-cta-banner">
-                    <div class="home-cta-content">
-                        <div class="home-cta-text">
-                            <span class="home-cta-label">LAST MINUTE GIFT</span>
-                            <h2 class="home-cta-title">GIFT CARDS AVAILABLE</h2>
-                            <p class="home-cta-description">Give the gift of raw geometry power</p>
-                        </div>
-                        <div class="home-cta-actions">
-                            <button class="home-cta-button home-cta-button-primary" onclick="handleChristmasPurchase('3-month-membership-gift')">3 MONTH MEMBERSHIP</button>
-                            <button class="home-cta-button home-cta-button-secondary" onclick="handleChristmasPurchase('christmas-gift-card-55')">$111 GIFT CARD</button>
-                        </div>
-                    </div>
-                    <button class="home-cta-dismiss" id="christmas-cta-dismiss" aria-label="Dismiss banner">&times;</button>
-                </div>
-
                 <div class="home-grid" id="home-grid">
                     <!-- Product thumbnails will be populated by JavaScript -->
                 </div>
@@ -226,7 +216,7 @@
                             <div class="product-price-wrapper">
                                 <div class="product-price" id="product-price">PRICE: $7.99</div>
                                 <button class="download-button" id="download-button" style="display: none;">DOWNLOAD</button>
-                                <button class="buy-now-button" id="buy-now-button">BUY NOW</button>
+                                <a href="#" class="buy-now-button" id="buy-now-button">BUY NOW</a>
                             </div>
                         </div>
                         
@@ -403,60 +393,6 @@
         </div>
     </div>
 
-    <!-- Christmas Gift Card Popup Modal -->
-    <div class="christmas-popup-backdrop" id="christmas-popup-backdrop"></div>
-    <div class="christmas-popup-modal" id="christmas-popup-modal">
-        <div class="christmas-popup-container">
-            <div class="christmas-popup-content">
-                <!-- Close Button -->
-                <button class="christmas-popup-close" id="christmas-popup-close" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
-                
-                <!-- Header -->
-                <div class="christmas-popup-header">
-                    <h2 class="christmas-popup-title">MERRY CHRISTMAS</h2>
-                    <p class="christmas-popup-subtitle">Give the (last minute) gift of raw geometry power</p>
-                </div>
-                
-                <!-- Gift Card Options -->
-                <div class="christmas-popup-cards">
-                    <div class="christmas-card-option" data-product-handle="3-month-membership-gift">
-                        <div class="christmas-card-value">3</div>
-                        <div class="christmas-card-label">MONTHS MEMBERSHIP</div>
-                        <button class="christmas-card-button" data-product-handle="3-month-membership-gift">
-                            PURCHASE
-                        </button>
-                    </div>
-                    
-                    <div class="christmas-card-option christmas-card-popular" data-product-handle="christmas-gift-card-55">
-                        <div class="christmas-card-badge">MOST POPULAR</div>
-                        <div class="christmas-card-value">$111</div>
-                        <div class="christmas-card-label">GIFT CARD</div>
-                        <button class="christmas-card-button" data-product-handle="christmas-gift-card-55">
-                            PURCHASE
-                        </button>
-                    </div>
-                    
-                    <div class="christmas-card-option" data-product-handle="christmas-gift-card-77">
-                        <div class="christmas-card-value">$222</div>
-                        <div class="christmas-card-label">GIFT CARD</div>
-                        <button class="christmas-card-button" data-product-handle="christmas-gift-card-77">
-                            PURCHASE
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Footer -->
-                <div class="christmas-popup-footer">
-                    <button class="christmas-popup-dismiss" id="christmas-popup-dismiss">
-                        CONTINUE BROWSING
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Landing Pop-up Modal -->
     <div class="landing-popup-backdrop" id="landing-popup-backdrop"></div>
     <div class="landing-popup-modal" id="landing-popup-modal">
@@ -526,7 +462,7 @@
 
     <!-- Vercel Analytics -->
     <script defer src="https://cdn.vercel-insights.com/script.js"></script>
-    <script src="polar-products.js"></script>
-    <script type="module" src="script.js"></script>
+
+    <script type="module" src="script.js?v=1.0.10"></script>
 </body>
 </html>

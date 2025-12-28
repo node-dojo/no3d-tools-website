@@ -1,91 +1,100 @@
 /**
- * Vercel Serverless Function: Get Products from Supabase
+ * Products API Endpoint
  *
- * Endpoint: /api/products
- * Method: GET
+ * GET /api/products - List all active products
  *
  * Query Parameters:
- *   - limit: Number of products per page (default: 50, max: 100)
- *   - offset: Number of products to skip (default: 0)
- *   - type: Filter by product_type (optional)
- *   - search: Search in title (optional)
+ *   - type: Filter by product_type
+ *   - search: Full-text search on title/description
+ *   - limit: Number of results (default: 50, max: 100)
+ *   - page: Page number (default: 1)
  *
- * Returns: { products: [...], total: number, limit: number, offset: number }
- * Falls back to empty array if Supabase is not configured
+ * Returns products in a format compatible with the existing website.
  */
 
 import { createClient } from '@supabase/supabase-js'
 
-export default async function handler(req, res) {
-  // Always set JSON content type
-  res.setHeader('Content-Type', 'application/json')
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
 
-  // Enable CORS
+// Feature flag for gradual rollout
+const USE_SUPABASE = process.env.USE_SUPABASE === 'true'
+
+export default async function handler(req, res) {
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  // Handle preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).json({ ok: true })
+    return res.status(200).end()
   }
 
-  // Only allow GET
   if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // If Supabase not enabled, fall back to legacy behavior
+  if (!USE_SUPABASE) {
+    return res.status(200).json({
+      message: 'Supabase integration not enabled. Set USE_SUPABASE=true',
       products: []
     })
   }
 
+  // Validate environment
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return res.status(500).json({
+      error: 'Supabase configuration missing',
+      details: 'SUPABASE_URL and SUPABASE_ANON_KEY must be set'
+    })
+  }
+
   try {
-    // Parse pagination params
-    const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 100)
-    const offset = Math.max(parseInt(req.query.offset) || 0, 0)
-    const productType = req.query.type || null
-    const search = req.query.search || null
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    // Check if Supabase is configured
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-      console.warn('Supabase not configured, returning empty array')
-      return res.status(200).json({ products: [], total: 0, limit, offset })
-    }
+    // Parse query parameters
+    const {
+      type,
+      search,
+      limit = '50',
+      page = '1'
+    } = req.query
 
-    // Initialize Supabase client
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
-    )
+    const pageNum = Math.max(1, parseInt(page, 10))
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)))
+    const from = (pageNum - 1) * limitNum
+    const to = from + limitNum - 1
 
-    // Build query with filters
+    // Build query
     let query = supabase
       .from('products')
       .select('*', { count: 'exact' })
       .eq('status', 'active')
 
-    // Apply optional filters
-    if (productType) {
-      query = query.eq('product_type', productType)
+    // Filter by product type
+    if (type) {
+      query = query.eq('product_type', type)
     }
 
+    // Full-text search
     if (search) {
-      query = query.ilike('title', `%${search}%`)
+      query = query.textSearch('title', search, {
+        type: 'websearch',
+        config: 'english'
+      })
     }
 
-    // Apply pagination and ordering
-    const { data, error, count } = await query
+    // Pagination and ordering
+    query = query
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+      .range(from, to)
+
+    const { data, error, count } = await query
 
     if (error) {
-      console.error('Supabase error:', error)
-      return res.status(500).json({
-        error: error.message,
-        products: [],
-        total: 0,
-        limit,
-        offset
-      })
+      console.error('Supabase query error:', error)
+      throw error
     }
 
     // Map Supabase product_type to website productType
@@ -105,55 +114,48 @@ export default async function handler(req, res) {
       return 'tools';
     };
 
-    // Transform to website format
-    const products = (data || []).map(p => ({
+    // Transform to match existing website format
+    const products = (data || []).map((p) => ({
       id: p.id,
       handle: p.handle,
       title: p.title,
       description: p.description,
-      price: p.price ? `$${parseFloat(p.price).toFixed(2)}` : '$0.00',
+      price: p.price,
       image: p.icon_url,
+      preview: p.preview_image_url,
       video: p.video_url,
       type: mapProductType(p.product_type), // Map to website productType
-      tags: p.tags || [],
-      polar_product_id: p.polar_product_id,
-      polar_price_id: p.polar_price_id,
-      // Include metadata for backward compatibility
-      changelog: p.metadata?.changelog || [],
-      hosted_media: p.metadata?.hosted_media || {},
-      // Additional fields from metadata
-      thumbnail_image: p.metadata?.thumbnail_image,
-      carousel_media: p.metadata?.carousel_media || [],
-      main_image: p.metadata?.main_image,
-      excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
+      tags: p.tags,
+      polarProductId: p.polar_product_id,
+      sku: p.sku,
+      vendor: p.vendor,
       metafields: p.metafields || [],
-      variants: [{
-        price: p.price ? parseFloat(p.price).toFixed(2) : '0.00',
-        sku: p.sku || ''
-      }],
+      hosted_media: p.metadata?.hosted_media || {},
+      thumbnail_image: p.metadata?.thumbnail_image || null,
+      carousel_media: p.metadata?.carousel_media || [],
+      excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
+      main_image: p.metadata?.main_image || null,
+      changelog: p.metadata?.changelog || [],
       polar: p.polar_product_id ? {
         product_id: p.polar_product_id,
         price_id: p.polar_price_id
       } : null
     }))
 
-    console.log(`✅ Fetched ${products.length} of ${count} products from Supabase (offset: ${offset}, limit: ${limit})`)
-
-    return res.status(200).json({
+    res.status(200).json({
       products,
-      total: count || 0,
-      limit,
-      offset
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limitNum)
+      }
     })
   } catch (error) {
     console.error('Error fetching products:', error)
-    return res.status(500).json({
-      error: error.message || 'Failed to fetch products',
-      products: [],
-      total: 0,
-      limit: 50,
-      offset: 0
+    res.status(500).json({
+      error: 'Failed to fetch products',
+      message: error.message
     })
   }
 }
-

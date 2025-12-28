@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Successful - NO3D TOOLS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <style>
+      @font-face {
+        font-family: 'Visitor';
+        src: url('./fonts/visitor.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Visitor TT1 BRK';
+        src: url('./fonts/visitor.woff2') format('woff2');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+      /* Success Page Specific Styles */
+      .success-page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: var(--space-large);
+        background-color: var(--color-stone-gray);
+      }
+
+      .success-card {
+        background-color: var(--color-paper-white);
+        border: 1px solid var(--color-void-black);
+        max-width: 600px;
+        width: 100%;
+        padding: var(--space-xlarge);
+        text-align: center;
+      }
+
+      .success-icon {
+        width: 80px;
+        height: 80px;
+        background-color: var(--color-lello);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-large);
+        border: 2px solid var(--color-void-black);
+      }
+
+      .success-icon i {
+        font-size: 40px;
+        color: var(--color-void-black);
+      }
+
+      .success-title {
+        font-family: var(--font-visitor);
+        font-size: 28px;
+        letter-spacing: var(--letter-spacing-wide);
+        margin-bottom: var(--space-medium);
+        color: var(--color-void-black);
+      }
+
+      .success-message {
+        font-family: var(--font-mono);
+        font-size: var(--font-size-base);
+        line-height: 1.6;
+        color: var(--color-dark-gray);
+        margin-bottom: var(--space-large);
+      }
+
+      .order-details {
+        background-color: var(--color-stone-gray);
+        border: 1px solid var(--color-void-black);
+        padding: var(--space-medium);
+        margin-bottom: var(--space-large);
+        text-align: left;
+      }
+
+      .order-details-title {
+        font-family: var(--font-visitor);
+        font-size: 14px;
+        letter-spacing: var(--letter-spacing-wide);
+        margin-bottom: var(--space-small);
+        color: var(--color-void-black);
+      }
+
+      .order-detail-row {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        margin-bottom: 4px;
+        color: var(--color-dark-gray);
+      }
+
+      .order-detail-row .label {
+        color: var(--color-void-black);
+      }
+
+      .primary-cta {
+        display: inline-block;
+        background-color: var(--color-lello);
+        color: var(--color-void-black);
+        font-family: var(--font-visitor);
+        font-size: 16px;
+        letter-spacing: var(--letter-spacing-wide);
+        padding: var(--space-medium) var(--space-xlarge);
+        border: 1px solid var(--color-void-black);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        cursor: pointer;
+        margin-bottom: var(--space-medium);
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .primary-cta:hover {
+        background-color: var(--color-void-black);
+        color: var(--color-lello);
+      }
+
+      .secondary-link {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--color-dark-gray);
+        text-decoration: underline;
+        transition: color var(--transition-fast);
+      }
+
+      .secondary-link:hover {
+        color: var(--color-void-black);
+      }
+
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-medium);
+      }
+
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--color-stone-gray);
+        border-top: 3px solid var(--color-lello);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .error-state {
+        color: #c00;
+      }
+
+      .help-text {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--color-dark-gray);
+        margin-top: var(--space-large);
+        padding-top: var(--space-medium);
+        border-top: 1px solid var(--color-stone-gray);
+      }
+
+      .help-text a {
+        color: var(--color-dark-gray);
+      }
+
+      /* Logo styling */
+      .success-logo {
+        margin-bottom: var(--space-large);
+      }
+
+      .success-logo img {
+        height: 40px;
+        width: auto;
+      }
+    </style>
+</head>
+<body>
+    <div class="success-page-container">
+        <div class="success-card">
+            <!-- Logo -->
+            <div class="success-logo">
+                <a href="/">
+                    <img src="assets/light/no3d-tools.png" alt="NO3D TOOLS" id="logo-image">
+                </a>
+            </div>
+
+            <!-- Dynamic Content Container -->
+            <div id="success-content">
+                <!-- Loading State (default) -->
+                <div class="loading-state" id="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p class="success-message">Processing your order...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Success page logic
+        const POLAR_CUSTOMER_PORTAL_URL = 'https://no3dtools.polar.sh/purchases';
+
+        async function initSuccessPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const checkoutId = urlParams.get('checkout_id');
+            const customerSessionToken = urlParams.get('customer_session_token');
+            const checkoutSuccess = urlParams.get('checkout_success');
+
+            console.log('Success page params:', { checkoutId, hasToken: !!customerSessionToken, checkoutSuccess });
+
+            // Priority 1: If we have a checkout ID, fetch order details
+            if (checkoutId) {
+                await fetchAndDisplayOrderDetails(checkoutId);
+                return;
+            }
+            
+            // Priority 2: If we have a customer session token, try to get downloadable info
+            if (customerSessionToken) {
+                await fetchAndDisplayWithToken(customerSessionToken);
+                return;
+            }
+            
+            // Priority 3: Generic success (checkout_success=true without more info)
+            if (checkoutSuccess === 'true') {
+                showSuccessState({});
+                return;
+            }
+            
+            // No valid params - might be direct visit, show generic success
+            showSuccessState({});
+        }
+
+        async function fetchAndDisplayWithToken(token) {
+            try {
+                // Use our backend proxy to avoid CORS
+                const response = await fetch(`/api/get-downloads-by-token?token=${encodeURIComponent(token)}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch with token');
+                }
+
+                const data = await response.json();
+                
+                // Show success with download count info if available
+                showSuccessState({
+                    downloadCount: data.downloads?.length || 0,
+                    hasToken: true
+                });
+            } catch (error) {
+                console.error('Error fetching with token:', error);
+                showSuccessState({ hasToken: true });
+            }
+        }
+
+        async function fetchAndDisplayOrderDetails(checkoutId) {
+            try {
+                const response = await fetch(`/api/get-checkout-details?checkout_id=${checkoutId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch order details');
+                }
+
+                const data = await response.json();
+                showSuccessState(data);
+            } catch (error) {
+                console.error('Error fetching order details:', error);
+                // Still show success, just without specific details
+                showSuccessState({ error: true });
+            }
+        }
+
+        function showSuccessState(data = {}) {
+            const contentContainer = document.getElementById('success-content');
+            
+            // Build order details HTML if we have product info
+            let orderDetailsHtml = '';
+            if (data.products && data.products.length > 0) {
+                const productNames = data.products.map(p => p.name).join(', ');
+                orderDetailsHtml = `
+                    <div class="order-details">
+                        <div class="order-details-title">ORDER SUMMARY</div>
+                        <div class="order-detail-row">
+                            <span class="label">Product:</span>
+                            <span>${productNames}</span>
+                        </div>
+                        ${data.customerEmail ? `
+                        <div class="order-detail-row">
+                            <span class="label">Email:</span>
+                            <span>${data.customerEmail}</span>
+                        </div>
+                        ` : ''}
+                        ${data.total ? `
+                        <div class="order-detail-row">
+                            <span class="label">Total:</span>
+                            <span>${(data.total / 100).toFixed(2)}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Build download count message if we have it
+            let downloadMessage = 'Your download is ready in your customer portal.';
+            if (data.downloadCount && data.downloadCount > 0) {
+                downloadMessage = `${data.downloadCount} file${data.downloadCount > 1 ? 's are' : ' is'} ready for download in your customer portal.`;
+            }
+
+            // Build the portal URL
+            const portalUrl = POLAR_CUSTOMER_PORTAL_URL;
+            
+            contentContainer.innerHTML = `
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                
+                <h1 class="success-title">PURCHASE SUCCESSFUL!</h1>
+                
+                <p class="success-message">
+                    Thank you for your order!<br>
+                    ${downloadMessage}
+                </p>
+
+                ${orderDetailsHtml}
+
+                <a href="${portalUrl}" class="primary-cta" target="_blank" rel="noopener">
+                    ACCESS YOUR DOWNLOADS →
+                </a>
+
+                <br><br>
+
+                <a href="/" class="secondary-link">← Back to Store</a>
+
+                <div class="help-text">
+                    <strong>Need help?</strong> Your download links are also sent to your email. 
+                    If you don't see them, check your spam folder or 
+                    <a href="mailto:support@no3dtools.com">contact support</a>.
+                </div>
+            `;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initSuccessPage);
+    </script>
+</body>
+</html>

@@ -3,16 +3,12 @@
  *
  * Receives and processes webhook events from Polar.sh
  * Handles subscription lifecycle events: created, updated, canceled, revoked
- * Handles gift card purchases: generates codes and sends emails
  */
 
 import { Polar } from '@polar-sh/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
-import { isGiftCardProduct, createGiftCardDiscount } from '../../gift-cards/generate.js';
-import { sendGiftCardEmail } from '../../gift-cards/email.js';
-import { consumePendingDebit, debitCredit } from '../../../lib/credit.js';
 import { sendWelcomeEmail } from '../../lib/email.js';
 
 const POLAR_API_TOKEN = process.env.POLAR_API_TOKEN;
@@ -281,62 +277,110 @@ async function handleCheckoutCreated(data) {
 
 /**
  * Handle order.created event
- * Checks if order contains gift card products and processes them
- * Also handles credit debit confirmation for orders using store credit
+ * Stores order AND fetches/caches download URLs
  */
 async function handleOrderCreated(data) {
-  console.log(`   📦 Order created`);
-  console.log(`   Order ID: ${data.id}`);
-  console.log(`   Customer ID: ${data.customer_id}`);
-
-  // Get customer email from order data
-  const customerEmail = data.customer?.email || data.billing_address?.email;
-  if (!customerEmail) {
-    console.warn('   ⚠️  No customer email found in order');
+  console.log(`   📦 Order created: ${data.id}`);
+  
+  const db = getSupabase();
+  if (!db) {
+    console.warn('   ⚠️  Supabase not configured');
     return;
   }
 
-  // Store order in database
-  const db = getSupabase();
-  if (db) {
-    try {
-      const items = data.items || data.line_items || [];
-      const primaryProductId = items[0]?.product_id || items[0]?.product?.id || null;
+  const customerEmail = data.customer?.email || data.billing_address?.email;
+  const customerId = data.customer_id || data.user_id;
+  
+  // Extract product IDs from order
+  const items = data.items || data.line_items || [];
+  const productIds = items.map(item => item.product_id || item.product?.id).filter(Boolean);
 
-      const { error } = await db
-        .from('orders')
-        .upsert({
-          polar_order_id: data.id,
-          customer_id: data.customer_id || data.user_id,
-          customer_email: customerEmail,
-          product_id: primaryProductId,
-          amount: data.amount || data.total || 0,
-          currency: data.currency || 'usd',
-          status: 'completed',
-          metadata: {
-            polar_data: data,
-            items: items.map(item => ({
-              product_id: item.product_id || item.product?.id,
-              product_name: item.product?.name || item.name,
-              amount: item.amount || item.price
-            })),
-            discount: data.discount,
-            billing_address: data.billing_address
-          }
-        }, {
-          onConflict: 'polar_order_id'
-        });
+  // Initialize order_downloads record as pending
+  const { error: insertError } = await db
+    .from('order_downloads')
+    .upsert({
+      polar_order_id: data.id,
+      polar_checkout_id: data.checkout_id || null,
+      customer_id: customerId,
+      customer_email: customerEmail,
+      product_ids: productIds,
+      status: 'pending',
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'polar_order_id' });
 
-      if (error) {
-        console.error(`   ❌ Error storing order:`, error);
-      } else {
-        console.log(`   ✅ Order stored in database`);
-      }
-    } catch (error) {
-      console.error(`   ❌ Error in order storage:`, error);
+  if (insertError) {
+    console.error(`   ❌ Error creating order_downloads record:`, insertError);
+  }
+
+  // Fetch actual download URLs from Polar
+  try {
+    const downloads = await fetchDownloadsForCustomer(customerId);
+    
+    // Update record with download data
+    const { error: updateError } = await db
+      .from('order_downloads')
+      .update({
+        downloads: downloads,
+        status: downloads.length > 0 ? 'ready' : 'failed',
+        error_message: downloads.length === 0 ? 'No downloadables found' : null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('polar_order_id', data.id);
+
+    if (updateError) {
+      console.error(`   ❌ Error updating downloads:`, updateError);
+    } else {
+      console.log(`   ✅ Cached ${downloads.length} downloads for order ${data.id}`);
     }
-  } else {
-    console.warn('   ⚠️  Supabase not configured, skipping order storage');
+  } catch (fetchError) {
+    console.error(`   ❌ Error fetching downloads:`, fetchError);
+    
+    // Mark as failed but don't lose the order
+    await db
+      .from('order_downloads')
+      .update({
+        status: 'failed',
+        error_message: fetchError.message,
+        updated_at: new Date().toISOString()
+      })
+      .eq('polar_order_id', data.id);
+  }
+
+  // Store order in database
+  try {
+    const primaryProductId = productIds[0] || null;
+
+    const { error } = await db
+      .from('orders')
+      .upsert({
+        polar_order_id: data.id,
+        customer_id: customerId,
+        customer_email: customerEmail,
+        product_id: primaryProductId,
+        amount: data.amount || data.total || 0,
+        currency: data.currency || 'usd',
+        status: 'completed',
+        metadata: {
+          polar_data: data,
+          items: items.map(item => ({
+            product_id: item.product_id || item.product?.id,
+            product_name: item.product?.name || item.name,
+            amount: item.amount || item.price
+          })),
+          discount: data.discount,
+          billing_address: data.billing_address
+        }
+      }, {
+        onConflict: 'polar_order_id'
+      });
+
+    if (error) {
+      console.error(`   ❌ Error storing order:`, error);
+    } else {
+      console.log(`   ✅ Order stored in database`);
+    }
+  } catch (error) {
+    console.error(`   ❌ Error in order storage:`, error);
   }
 
   // --- WELCOME EMAIL & ACCOUNT SETUP ---
@@ -344,11 +388,11 @@ async function handleOrderCreated(data) {
     // Generate a magic link token for account setup
     const token = crypto.randomUUID();
     const customerName = data.customer?.name || data.billing_address?.name || 'Initiate';
-    
+
     // Store token in Redis
     await redis.set(AUTH_TOKEN_KEY(token), {
       email: customerEmail.toLowerCase().trim(),
-      customerId: data.customer_id || data.user_id,
+      customerId: customerId,
       createdAt: new Date().toISOString(),
       source: 'welcome_email'
     }, { ex: MAGIC_LINK_TTL });
@@ -359,62 +403,74 @@ async function handleOrderCreated(data) {
   } catch (authError) {
     console.error(`   ❌ Error triggering welcome email:`, authError);
   }
-  // --------------------------------------
+}
 
-  // Check if a credit discount was used (by checking discount metadata)
-  const discount = data.discount;
-  if (discount && discount.id) {
-    // Check if this was a credit discount by looking for pending debit
+/**
+ * Fetch downloadables for a customer with retry logic
+ */
+async function fetchDownloadsForCustomer(customerId, maxRetries = 3) {
+  const POLAR_API_BASE = 'https://api.polar.sh';
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const pendingDebit = await consumePendingDebit(discount.id);
-      if (pendingDebit) {
-        console.log(`   💳 Credit discount detected: ${discount.code || discount.id}`);
+      // Create customer session
+      const sessionResponse = await fetch(`${POLAR_API_BASE}/v1/customer-sessions/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.POLAR_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ customer_id: customerId }),
+      });
 
-        // Debit the credit from customer balance
-        await debitCredit(
-          pendingDebit.email,
-          pendingDebit.amountCents,
-          'purchase',
-          data.id
-        );
-
-        console.log(`   ✅ Credit debited: $${pendingDebit.amountCents / 100} from ${pendingDebit.email}`);
+      if (!sessionResponse.ok) {
+        throw new Error(`Session creation failed: ${sessionResponse.status}`);
       }
-    } catch (error) {
-      console.error(`   ❌ Error processing credit debit:`, error);
-    }
-  }
 
-  // Check if order contains gift card products
-  const items = data.items || data.line_items || [];
-  for (const item of items) {
-    const productId = item.product_id || item.product?.id;
+      const { token } = await sessionResponse.json();
 
-    if (productId && isGiftCardProduct(productId)) {
-      console.log(`   🎁 Gift card product detected: ${productId}`);
-
-      try {
-        // Create gift card and store in KV
-        const giftCard = await createGiftCardDiscount(productId, data.id, customerEmail);
-        console.log(`   ✅ Gift card created: ${giftCard.code} for $${giftCard.value}`);
-
-        // Track this gift card code as purchased by this email
-        const purchasedSetKey = `purchaser:${customerEmail.toLowerCase()}:giftcards`;
-        await redis.sadd(purchasedSetKey, giftCard.code);
-        console.log(`   ✅ Gift card tracked for purchaser: ${customerEmail}`);
-
-        // Send email with gift card code
-        const emailResult = await sendGiftCardEmail(giftCard, customerEmail);
-        if (emailResult.success) {
-          console.log(`   📧 Gift card email sent to ${customerEmail}`);
-        } else {
-          console.error(`   ❌ Failed to send gift card email:`, emailResult.error);
+      // Fetch downloadables
+      const downloadablesResponse = await fetch(
+        `${POLAR_API_BASE}/v1/customer-portal/downloadables/?limit=100`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
-      } catch (error) {
-        console.error(`   ❌ Error processing gift card:`, error);
+      );
+
+      if (!downloadablesResponse.ok) {
+        throw new Error(`Downloadables fetch failed: ${downloadablesResponse.status}`);
+      }
+
+      const { items = [] } = await downloadablesResponse.json();
+
+      // Map to download format
+      return items
+        .filter(d => d.file?.download?.url)
+        .map(d => ({
+          benefitId: d.benefit_id,
+          url: d.file.download.url,
+          filename: d.file.name || 'download.blend',
+          expiresAt: d.file.download.expires_at,
+          size: d.file.size,
+          sizeReadable: d.file.size_readable
+        }));
+
+    } catch (error) {
+      console.warn(`   ⚠️  Download fetch attempt ${attempt} failed:`, error.message);
+      
+      if (attempt < maxRetries) {
+        // Exponential backoff: 2s, 4s, 8s
+        await new Promise(r => setTimeout(r, 2000 * Math.pow(2, attempt - 1)));
+      } else {
+        throw error;
       }
     }
   }
+  
+  return [];
 }
 
 /**
