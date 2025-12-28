@@ -107,16 +107,37 @@ export default async function handler(req, res) {
       } : null
     }))
 
-    // Deduplicate by handle (keep first occurrence, which is newest due to ordering)
+    // Deduplicate by BOTH handle AND title (prioritize products with polar_product_id)
+    // First, sort to prioritize products with polar_product_id
+    productsRaw.sort((a, b) => {
+      // Products with polar_product_id come first
+      const aHasPolar = a.polar_product_id ? 1 : 0
+      const bHasPolar = b.polar_product_id ? 1 : 0
+      return bHasPolar - aHasPolar // descending - polar products first
+    })
+
     const seenHandles = new Set()
+    const seenTitles = new Set()
     const products = productsRaw.filter(p => {
       if (!p.handle) return false
+      
       const normalizedHandle = p.handle.toLowerCase().trim()
+      const normalizedTitle = (p.title || '').toLowerCase().trim()
+      
+      // Check for duplicate handle
       if (seenHandles.has(normalizedHandle)) {
         console.warn(`⚠️ Duplicate handle detected and filtered: "${p.handle}" (title: "${p.title}")`)
         return false
       }
+      
+      // Check for duplicate title (catches products with same name but different handles)
+      if (seenTitles.has(normalizedTitle)) {
+        console.warn(`⚠️ Duplicate title detected and filtered: "${p.title}" (handle: "${p.handle}")`)
+        return false
+      }
+      
       seenHandles.add(normalizedHandle)
+      seenTitles.add(normalizedTitle)
       return true
     })
 
