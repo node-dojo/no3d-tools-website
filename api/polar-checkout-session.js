@@ -1,14 +1,6 @@
 // no3d-tools-website/api/polar-checkout-session.js
 
-import { fileURLToPath } from 'url';
-import path from 'path';
-import dotenv from 'dotenv';
 import { Polar } from '@polar-sh/sdk';
-
-// Load environment variables from .env file
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../../.env') }); // Adjust path to root .env
 
 const POLAR_API_TOKEN = process.env.POLAR_API_TOKEN;
 const POLAR_ORG_ID = process.env.POLAR_ORG_ID;
@@ -69,10 +61,14 @@ export default async function (req, res) {
     // Clean origin: ensure it has NO trailing slash
     origin = origin.replace(/\/$/, '');
 
-    // SUCCESS URL: Redirect to dedicated success page
-    // Polar will automatically append ?checkout_id={CHECKOUT_ID} to this URL
-    // Using the {CHECKOUT_ID} placeholder ensures we get the checkout ID for order lookup
-    const successUrl = `${origin}/success.html?checkout_id={CHECKOUT_ID}`;
+    // Construct success URL (redirect back to our site after checkout)
+    // Even if using the embedded modal, Polar needs a valid success URL for session routing
+    let successUrl = referer ? referer : `${origin}/index.html`;
+    // Ensure successUrl doesn't have double slashes if origin already has one (unlikely with our cleaning)
+    successUrl = successUrl.split('?')[0]; // Strip query params for stability
+    
+    // Add a flag so we know it's a redirect from checkout
+    successUrl += '?checkout_success=true';
 
     console.log(`[Polar API] Creating session for ${productId}. Origin: ${origin}, SuccessURL: ${successUrl}`);
 
@@ -90,9 +86,6 @@ export default async function (req, res) {
       }
     };
 
-    // If we have a specific price ID, the Polar SDK/API usually picks it automatically 
-    // if it's the only active price or if we use the productPriceId field directly.
-    // However, for standard products, passing the productId in the products array is most stable.
     const checkout = await polar.checkouts.create(checkoutData);
 
     if (checkout && checkout.url) {
