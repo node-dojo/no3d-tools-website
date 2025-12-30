@@ -8,92 +8,92 @@ const POLAR_PRODUCTS = {
     productId: '2fbe03f5-f6bc-4d53-a309-1b9aa7fa010c',
     priceId: '4327c838-2b24-42c4-a3fe-134859b8ca6c',
     name: 'Dojo Bolt Gen v05',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-bolt-gen-v05-obj': {
     productId: 'eb28f590-e6eb-463a-830d-95243e51de89',
     priceId: 'a8776e49-6584-406a-84ad-dc915f9db0a7',
     name: 'Dojo Bolt Gen v05_Obj',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-bool-v5': {
     productId: '9e9925e7-788f-4ca1-81ec-9c1b5ae61e43',
     priceId: 'f2ecbf98-3ac8-44c5-a0f5-d34039067ee8',
     name: 'Dojo Bool v5',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-calipers': {
     productId: '2092d69f-a243-468c-b1ca-48f7cea19e68',
     priceId: '10e42589-0b20-4551-988c-207efbd062d9',
     name: 'Dojo Calipers',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-crv-wrapper-v4': {
     productId: '5d70352c-a1fa-4f2f-8729-6eec35126387',
     priceId: 'aa50b6c4-cc4d-4103-942c-41371dd3d5eb',
     name: 'Dojo Crv Wrapper v4',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-gluefinity-grid-obj': {
     productId: 'b3c265a8-272d-41b7-930d-529538b41f8a',
     priceId: '7bbb0735-b298-4f62-a8f6-c91e2a984a00',
     name: 'Dojo Gluefinity Grid_obj',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-knob': {
     productId: 'c17384fb-dee6-4d86-891c-ed02bbb2e5d7',
     priceId: '00198a0e-919f-40d2-9560-167d34b49fc1',
     name: 'Dojo Knob',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-knob-obj': {
     productId: '53bbe0f8-7f9f-4d40-8387-473355277ece',
     priceId: '9cd6cd33-472b-46f7-9021-d7fa0ad41100',
     name: 'Dojo Knob_obj',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-mesh-repair': {
     productId: '714ffbe4-b381-4884-a1da-7c2e8f8b2a91',
     priceId: 'b45f405c-3923-46ac-95d1-67a9cfeddb63',
     name: 'Dojo Mesh Repair',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-print-viz-v45': {
     productId: 'c668211b-f0ac-4b54-82ac-5f97c8f4adcc',
     priceId: 'd4b10740-360f-4086-816d-e1388aa66be6',
     name: 'Dojo Print Viz_V4.5',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-squircle-v45': {
     productId: 'fec65858-a3d7-47dc-987c-487a239ea94c',
     priceId: '32f399be-247c-4999-96e2-c08b1a24f1d1',
     name: 'Dojo_Squircle v4.5',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   'dojo-squircle-v45-obj': {
     productId: '67c6c182-8a09-4687-914e-2fbb01eff5dc',
     priceId: '911bae7d-57f8-4d61-b801-e0ad28584d7d',
     name: 'Dojo Squircle v4.5_obj',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   // Print Bed Preview
   'print-bed-preview-obj': {
     productId: '781af697-970b-45ec-bc96-645b02580e92',
     priceId: 'cddf4dc4-54eb-49da-a29c-6a18bec25444',
     name: 'Print Bed Preview_obj',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
   // Chrome Crayon
   'chrome-crayon': {
     productId: 'c601a3ab-536c-455e-975a-839f759a7e90',
     priceId: 'e72865d3-8b2f-4453-9d14-7dd378df814b',
     name: 'Chrome Crayon',
-    url: 'https://polar.sh/no3d-tools'
+    url: 'https://polar.sh/no3d-tools/portal'
   },
 };
 
 // Polar organization base URL (checkout links)
-const POLAR_ORG_URL = 'https://polar.sh/no3d-tools';
+const POLAR_ORG_URL = 'https://polar.sh/no3d-tools/portal';
 
 // Export for use in website
 if (typeof module !== 'undefined' && module.exports) {

@@ -12,7 +12,7 @@
  *   fileName: "Product Name.zip"
  * }
  *
- * Verifies customer owns the product and provides a download URL.
+ * Verifies customer owns the product and provides a download URL using the Polar Customer State API.
  */
 
 import { Polar } from '@polar-sh/sdk';
@@ -22,124 +22,6 @@ import { validateSession } from '../lib/session.js';
 const polar = new Polar({
   accessToken: process.env.POLAR_API_TOKEN,
 });
-
-/**
- * Check if customer owns product via orders
- * @param {string} customerId - Polar customer ID
- * @param {string} productId - Product ID to check
- * @returns {Promise<boolean>} True if customer owns product
- */
-async function checkProductOwnership(customerId, productId) {
-  try {
-    // Check orders
-    const orders = await polar.orders.list({
-      customerId: customerId,
-      limit: 100, // Get all orders
-    });
-
-    if (orders && orders.items) {
-      for (const order of orders.items) {
-        // Only check paid orders
-        if (order.status !== 'paid') continue;
-
-        // Check order items for product
-        if (order.orderItems && Array.isArray(order.orderItems)) {
-          for (const item of order.orderItems) {
-            if (item.product && item.product.id === productId) {
-              console.log(`✅ Customer owns product via order ${order.id}`);
-              return true;
-            }
-          }
-        }
-      }
-    }
-
-    // Check subscriptions
-    const subscriptions = await polar.subscriptions.list({
-      customerId: customerId,
-      limit: 100,
-    });
-
-    if (subscriptions && subscriptions.items) {
-      for (const subscription of subscriptions.items) {
-        // Check active subscriptions
-        if (subscription.status !== 'active' && subscription.status !== 'trialing') continue;
-
-        // Check if subscription product matches
-        if (subscription.product && subscription.product.id === productId) {
-          console.log(`✅ Customer owns product via subscription ${subscription.id}`);
-          return true;
-        }
-      }
-    }
-
-    return false;
-  } catch (error) {
-    console.error('Error checking product ownership:', error);
-    return false;
-  }
-}
-
-/**
- * Get download URL for product
- * @param {object} product - Polar product object
- * @param {string} customerId - Customer ID
- * @returns {Promise<object>} Download info
- */
-async function getDownloadInfo(product, customerId) {
-  // In Polar, downloadable files are attached as benefits to products
-  // We need to get the benefit grants for this customer
-
-  try {
-    // Get customer entitlements (benefit grants)
-    const entitlements = await polar.entitlements.list({
-      customerId: customerId,
-      limit: 100,
-    });
-
-    if (!entitlements || !entitlements.items) {
-      throw new Error('No entitlements found for customer');
-    }
-
-    // Find entitlement for this product
-    for (const entitlement of entitlements.items) {
-      if (entitlement.product && entitlement.product.id === product.id) {
-        // Check if this entitlement has downloadable files
-        if (entitlement.benefit && entitlement.benefit.type === 'downloadables') {
-          // Get the downloadable files
-          const files = entitlement.benefit.files || [];
-
-          if (files.length > 0) {
-            // For simplicity, return the first file
-            // In production, you might want to support multiple files
-            const file = files[0];
-
-            return {
-              downloadUrl: file.downloadUrl || file.url,
-              expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-              fileName: file.name || `${product.name}.zip`,
-            };
-          }
-        }
-      }
-    }
-
-    // If no downloadable benefit found, try to get product download URLs
-    // This is a fallback - in practice, Polar may have different mechanisms
-    throw new Error('No downloadable files found for this product');
-  } catch (error) {
-    console.error('Error getting download info:', error);
-
-    // Fallback: Create a placeholder response
-    // In production, you would integrate with your actual file storage
-    return {
-      downloadUrl: null,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      fileName: `${product.name}.zip`,
-      error: 'Download URL generation not yet implemented',
-    };
-  }
-}
 
 /**
  * Main handler
@@ -192,8 +74,47 @@ export default async function handler(req, res) {
 
     console.log(`📥 Download request for product ${productId} by customer ${customerId}`);
 
-    // Verify ownership
-    const hasAccess = await checkProductOwnership(customerId, productId);
+    // Get Customer State from Polar
+    const response = await fetch(`https://api.polar.sh/v1/customers/${customerId}/state`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${process.env.POLAR_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Polar API error: ${response.status} ${response.statusText}`);
+    }
+
+    const state = await response.json();
+    let hasAccess = false;
+    let downloadInfo = null;
+
+    // Check for ownership and find the downloadable benefit in a single pass
+    const allBenefits = [...(state.active_subscriptions || []), ...(state.granted_benefits || [])];
+
+    for (const item of allBenefits) {
+      // The item could be a subscription or a granted benefit (entitlement-like)
+      const product = item.product;
+      
+      if (product && product.id === productId) {
+        hasAccess = true;
+        
+        // If it's a benefit and has downloadable files, extract the download info
+        const benefit = item.benefit || item; // A subscription has a benefit, a granted_benefit *is* the benefit
+        if (benefit && benefit.type === 'downloadables' && benefit.properties?.files?.length > 0) {
+          const file = benefit.properties.files[0];
+          downloadInfo = {
+            downloadUrl: file.download_url, // Note: snake_case from direct API response
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+            fileName: file.name || `${product.name}.zip`,
+          };
+          // We found the file, no need to keep looping for this product
+          break;
+        }
+      }
+    }
 
     if (!hasAccess) {
       console.log(`❌ Customer does not own product ${productId}`);
@@ -202,23 +123,15 @@ export default async function handler(req, res) {
       });
     }
 
-    // Get product details
-    let product;
-    try {
-      product = await polar.products.get(productId);
-    } catch (error) {
-      console.error('Error fetching product:', error);
-      return res.status(404).json({
-        error: 'Product not found',
-      });
+    if (!downloadInfo) {
+      // The user has access, but we couldn't find a downloadable file.
+      // This could happen for non-downloadable products or configuration issues.
+      throw new Error('No downloadable files found for this product.');
     }
 
-    // Get download information
-    const downloadInfo = await getDownloadInfo(product, customerId);
-
     console.log(`✅ Download info generated for product ${productId}`);
-
     return res.status(200).json(downloadInfo);
+
   } catch (error) {
     console.error('Download request failed:', error);
     console.error('Error details:', {

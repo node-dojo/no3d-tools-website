@@ -114,14 +114,14 @@ const POLAR_PRODUCTS = {\n`;
       fileContent += `    productId: '${entry.productId}',\n`;
       fileContent += `    priceId: '${entry.priceId}',\n`;
       fileContent += `    name: '${entry.name}',\n`;
-      fileContent += `    url: 'https://polar.sh/no3d-tools'\n`;
+      fileContent += `    url: 'https://polar.sh/no3d-tools/portal'\n`;
       fileContent += `  },\n`;
     }
 
     fileContent += `};
 
-// Polar organization base URL (checkout links)
-const POLAR_ORG_URL = 'https://polar.sh/no3d-tools';
+// Polar organization base URL (customer portal)
+const POLAR_ORG_URL = 'https://polar.sh/no3d-tools/portal';
 
 // Export for use in website
 if (typeof module !== 'undefined' && module.exports) {

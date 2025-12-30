@@ -166,10 +166,6 @@
         100% { transform: rotate(360deg); }
       }
 
-      .error-state {
-        color: #c00;
-      }
-
       .help-text {
         font-family: var(--font-mono);
         font-size: 9px;
@@ -216,78 +212,95 @@
     </div>
 
     <script>
-        // Success page logic
-        const POLAR_CUSTOMER_PORTAL_URL = 'https://no3dtools.polar.sh/purchases';
+        /**
+         * SUCCESS PAGE - REFACTORED PER POLAR DOCUMENTATION
+         * 
+         * Flow (per Polar docs):
+         * 1. Checkout completes → success event fires
+         * 2. Redirect here with checkout_id
+         * 3. Fetch basic checkout details (optional, for nice UX)
+         * 4. Show confirmation + link to Polar Customer Portal
+         * 
+         * NO custom download fetching - Polar's Customer Portal handles that!
+         * NO Supabase caching - not needed!
+         * NO polling for downloads - Polar handles delivery!
+         */
+
+        // Polar Customer Portal URL for NO3D Tools organization
+        const POLAR_CUSTOMER_PORTAL_URL = 'https://polar.sh/no3d-tools/portal';
 
         async function initSuccessPage() {
             const urlParams = new URLSearchParams(window.location.search);
             const checkoutId = urlParams.get('checkout_id');
-            const customerSessionToken = urlParams.get('customer_session_token');
             const checkoutSuccess = urlParams.get('checkout_success');
 
-            console.log('Success page params:', { checkoutId, hasToken: !!customerSessionToken, checkoutSuccess });
+            console.log('🎉 Success page loaded:', { checkoutId, checkoutSuccess });
 
-            // Priority 1: If we have a checkout ID, fetch order details
+            // If we have a checkout ID, try to get order details for a nicer display
             if (checkoutId) {
-                await fetchAndDisplayOrderDetails(checkoutId);
+                await fetchOrderDetailsAndShow(checkoutId);
                 return;
             }
             
-            // Priority 2: If we have a customer session token, try to get downloadable info
-            if (customerSessionToken) {
-                await fetchAndDisplayWithToken(customerSessionToken);
-                return;
-            }
-            
-            // Priority 3: Generic success (checkout_success=true without more info)
+            // Fallback: Just show generic success
             if (checkoutSuccess === 'true') {
                 showSuccessState({});
                 return;
             }
             
-            // No valid params - might be direct visit, show generic success
+            // Direct visit with no params - still show success (maybe bookmarked)
             showSuccessState({});
         }
 
-        async function fetchAndDisplayWithToken(token) {
+        /**
+         * Fetch checkout details from Polar (via our simple API proxy)
+         * Then show success state with those details
+         */
+        async function fetchOrderDetailsAndShow(checkoutId) {
             try {
-                // Use our backend proxy to avoid CORS
-                const response = await fetch(`/api/get-downloads-by-token?token=${encodeURIComponent(token)}`);
+                console.log('📦 Fetching checkout details for:', checkoutId);
                 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch with token');
-                }
-
-                const data = await response.json();
-                
-                // Show success with download count info if available
-                showSuccessState({
-                    downloadCount: data.downloads?.length || 0,
-                    hasToken: true
-                });
-            } catch (error) {
-                console.error('Error fetching with token:', error);
-                showSuccessState({ hasToken: true });
-            }
-        }
-
-        async function fetchAndDisplayOrderDetails(checkoutId) {
-            try {
                 const response = await fetch(`/api/get-checkout-details?checkout_id=${checkoutId}`);
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch order details');
+                    console.warn('Could not fetch checkout details, showing generic success');
+                    showSuccessState({});
+                    return;
                 }
 
                 const data = await response.json();
-                showSuccessState(data);
+                console.log('✅ Checkout details received:', data);
+                
+                // Try to get an authenticated portal link for direct access
+                let portalUrl = POLAR_CUSTOMER_PORTAL_URL;
+                
+                if (data.customerId) {
+                    try {
+                        const portalResponse = await fetch(`/api/get-customer-portal-url?checkout_id=${checkoutId}`);
+                        if (portalResponse.ok) {
+                            const portalData = await portalResponse.json();
+                            if (portalData.portalUrl) {
+                                portalUrl = portalData.portalUrl;
+                                console.log('✅ Got authenticated portal URL');
+                            }
+                        }
+                    } catch (portalError) {
+                        console.warn('Could not get authenticated portal URL, using default');
+                    }
+                }
+
+                showSuccessState({ ...data, portalUrl });
+
             } catch (error) {
                 console.error('Error fetching order details:', error);
                 // Still show success, just without specific details
-                showSuccessState({ error: true });
+                showSuccessState({});
             }
         }
 
+        /**
+         * Display the success state with order details
+         */
         function showSuccessState(data = {}) {
             const contentContainer = document.getElementById('success-content');
             
@@ -311,21 +324,15 @@
                         ${data.total ? `
                         <div class="order-detail-row">
                             <span class="label">Total:</span>
-                            <span>${(data.total / 100).toFixed(2)}</span>
+                            <span>$${(data.total / 100).toFixed(2)}</span>
                         </div>
                         ` : ''}
                     </div>
                 `;
             }
 
-            // Build download count message if we have it
-            let downloadMessage = 'Your download is ready in your customer portal.';
-            if (data.downloadCount && data.downloadCount > 0) {
-                downloadMessage = `${data.downloadCount} file${data.downloadCount > 1 ? 's are' : ' is'} ready for download in your customer portal.`;
-            }
-
-            // Build the portal URL
-            const portalUrl = POLAR_CUSTOMER_PORTAL_URL;
+            // Use authenticated portal URL if available, otherwise fallback to default
+            const portalUrl = data.portalUrl || POLAR_CUSTOMER_PORTAL_URL;
             
             contentContainer.innerHTML = `
                 <div class="success-icon">
@@ -336,7 +343,7 @@
                 
                 <p class="success-message">
                     Thank you for your order!<br>
-                    ${downloadMessage}
+                    Your downloads are ready in your customer portal.
                 </p>
 
                 ${orderDetailsHtml}

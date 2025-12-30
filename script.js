@@ -1,6 +1,12 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
+// Break out of iframe if we're redirected back from checkout
+if (window.self !== window.top && window.location.search.includes('checkout_success=true')) {
+  console.log('🔄 [Iframe Breakout] Success detected, redirecting parent window...');
+  window.top.location.href = window.location.href;
+}
+
 // Configure marked (loaded from CDN) with security options
 if (typeof marked !== 'undefined') {
   marked.setOptions({
@@ -359,12 +365,13 @@ async function updateProductDisplay(productId) {
                   const eventData = event.detail || {};
                   const checkoutId = eventData.id || eventData.checkoutId || createdCheckoutId;
                   
-                  console.log('💰 Redirecting to success page with checkout ID:', checkoutId);
+                  console.log('💰 [SUCCESS] Checkout completed. ID:', checkoutId);
+                  console.log('💰 Redirecting parent to success page...');
                   
                   // REDIRECT TO SUCCESS PAGE
                   // This is the cleanest flow - let success.html handle the order display
                   // and provide the link to Polar's Customer Portal for downloads
-                  window.location.href = `/success.html?checkout_id=${checkoutId}`;
+                  window.location.href = `/success.html?checkout_id=${checkoutId}&checkout_success=true`;
                 });
                 
                 // Also listen for close event to clean up state
@@ -1266,23 +1273,31 @@ async function handlePurchaseSuccess(data) {
   });
 
   if (result.success && result.downloads.length > 0) {
+    let matchedOurProduct = null;
+
     // Mark products as purchased
     if (result.productIds) {
       result.productIds.forEach(polarId => {
-        const ourProduct = Object.values(products).find(p => p.polarProductId === polarId);
+        // Robust matching: Check by polarProductId OR try to match name if polarProductId is missing
+        const ourProduct = Object.values(products).find(p => 
+          p.polarProductId === polarId || 
+          (p.name && result.downloads.some(d => d.filename.toLowerCase().includes(p.name.toLowerCase())))
+        );
+        
         if (ourProduct) {
           purchasedProducts.add(ourProduct.id);
           console.log(`✅ Marked as owned: ${ourProduct.name}`);
+          if (!matchedOurProduct) matchedOurProduct = ourProduct;
         }
       });
     }
     
-    // Select the first purchased product to show the context
-    if (result.productIds && result.productIds.length > 0) {
-      const firstPolarId = result.productIds[0];
-      const ourProduct = Object.values(products).find(p => p.polarProductId === firstPolarId);
-      if (ourProduct && currentProduct !== ourProduct.id) {
-        await selectProduct(ourProduct.id);
+    // Transition to the product card if not already there
+    if (matchedOurProduct) {
+      if (currentProduct !== matchedOurProduct.id) {
+        await selectProduct(matchedOurProduct.id);
+      } else {
+        updateButtonVisibility();
       }
     }
     

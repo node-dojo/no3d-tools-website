@@ -113,7 +113,7 @@ body {
   position: relative;
   width: 100%;
   overflow-x: hidden;
-  padding-top: 40px; /* Account for fixed header height */
+  padding-top: 78px; /* Account for fixed header height */
   padding-bottom: 70px; /* Account for fixed footer height */
   /* Prevent unwanted scrolling when keyboard appears */
   overscroll-behavior: contain;
@@ -130,7 +130,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 3px var(--space-medium);
-  background-color: var(--color-stone-gray);
+  background-color: transparent;
   border: none; /* Removed border */
   border-top: none;
   border-bottom: none;
@@ -140,7 +140,7 @@ body {
   border-image: none;
   box-shadow: none;
   z-index: 200;
-  height: 61px;
+  height: 78px;
   gap: 0px;
 }
 
@@ -181,10 +181,10 @@ body {
 }
 
 .site-header .logo {
-  height: 51px;
-  width: 333px;
-  min-width: 333px;
-  max-width: 700px;
+  height: 66px;
+  width: 433px;
+  min-width: 433px;
+  max-width: 910px;
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
@@ -555,10 +555,10 @@ body {
   overflow-x: hidden;
   position: fixed;
   left: 0;
-  top: 56px; /* Account for fixed header height (56px) */
+  top: 78px; /* Account for fixed header height (78px) */
   width: var(--sidebar-width);
-  height: calc(100vh - 56px); /* Adjust height to account for header (56px) */
-  max-height: calc(100vh - 56px); /* Ensure it doesn't exceed viewport */
+  height: calc(100vh - 78px); /* Adjust height to account for header (78px) */
+  max-height: calc(100vh - 78px); /* Ensure it doesn't exceed viewport */
   z-index: 150;
   transition: transform var(--transition-normal);
   /* Smooth scrolling */
@@ -614,8 +614,8 @@ body {
   background-color: unset;
   background: unset;
   box-shadow: none;
-  height: calc(100vh - 56px); /* Match sidebar height */
-  max-height: calc(100vh - 56px); /* Ensure it doesn't exceed viewport */
+  height: calc(100vh - 78px); /* Match sidebar height */
+  max-height: calc(100vh - 78px); /* Ensure it doesn't exceed viewport */
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -1718,6 +1718,13 @@ h2 {
   line-height: 1;
 }
 
+.carousel-arrow-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .carousel-arrow-left {
   left: 0.5rem;
 }
@@ -1726,9 +1733,9 @@ h2 {
   right: 0.5rem;
 }
 
-/* Legacy img styling - kept for backwards compatibility */
+/* Carousel arrow image styling */
 .carousel-arrow img {
-  display: none;
+  display: block;
 }
 
 .product-image-container:hover .carousel-arrow.visible {
@@ -2119,7 +2126,7 @@ h2 {
     position: relative;
     width: 100%;
     height: auto;
-    top: 40px;
+    top: 78px;
     background-color: var(--color-stone-gray);
   }
 

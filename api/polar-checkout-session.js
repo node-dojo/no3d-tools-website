@@ -41,40 +41,31 @@ export default async function (req, res) {
 
   try {
     // Get origin from request headers (for embedOrigin validation)
-    // Polar requires the exact origin (protocol + host) without trailing slash
-    let origin = req.headers.origin;
-    const referer = req.headers.referer;
+    // Polar requires the exact origin (protocol + host + port) without trailing slash
+    let origin = req.headers.origin || req.headers.referer;
     
-    if (!origin) {
-      if (req.headers.host) {
-        const host = req.headers.host;
-        let protocol = 'https';
-        if (referer && referer.startsWith('http://')) protocol = 'http';
-        else if (host.includes('localhost') || host.includes('127.0.0.1')) protocol = 'http';
-        
-        origin = `${protocol}://${host}`;
-      } else {
+    if (origin) {
+      try {
+        const originUrl = new URL(origin);
+        origin = `${originUrl.protocol}//${originUrl.host}`;
+      } catch (e) {
         origin = 'https://no3dtools.com';
       }
+    } else {
+      origin = 'https://no3dtools.com';
     }
 
     // Clean origin: ensure it has NO trailing slash
     origin = origin.replace(/\/$/, '');
 
     // Construct success URL (redirect back to our site after checkout)
-    // Even if using the embedded modal, Polar needs a valid success URL for session routing
-    let successUrl = referer ? referer : `${origin}/index.html`;
-    // Ensure successUrl doesn't have double slashes if origin already has one (unlikely with our cleaning)
-    successUrl = successUrl.split('?')[0]; // Strip query params for stability
-    
-    // Add a flag so we know it's a redirect from checkout
-    successUrl += '?checkout_success=true';
+    // Even if using the embedded modal, Polar needs a valid success URL.
+    // We add checkout_success=true so our script.js can detect it and break out of the iframe.
+    const successUrl = `${origin}/index.html?checkout_id={CHECKOUT_ID}&checkout_success=true`;
 
     console.log(`[Polar API] Creating session for ${productId}. Origin: ${origin}, SuccessURL: ${successUrl}`);
 
     // Create checkout session using Polar SDK
-    // CRITICAL: The 'products' array expects PRODUCT IDs, not Price IDs.
-    // If you pass a Price ID into the 'products' array, Polar will return "Product does not exist".
     const checkoutData = {
       products: [productId],
       embedOrigin: origin,

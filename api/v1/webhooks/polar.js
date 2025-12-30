@@ -385,21 +385,24 @@ async function handleOrderCreated(data) {
 
   // --- WELCOME EMAIL & ACCOUNT SETUP ---
   try {
+    console.log(`   🚀 Triggering welcome email for ${customerEmail}...`);
     // Generate a magic link token for account setup
     const token = crypto.randomUUID();
     const customerName = data.customer?.name || data.billing_address?.name || 'Initiate';
 
     // Store token in Redis
-    await redis.set(AUTH_TOKEN_KEY(token), {
+    const redisResult = await redis.set(AUTH_TOKEN_KEY(token), {
       email: customerEmail.toLowerCase().trim(),
       customerId: customerId,
       createdAt: new Date().toISOString(),
       source: 'welcome_email'
     }, { ex: MAGIC_LINK_TTL });
+    
+    console.log(`   🔑 Token stored in Redis: ${redisResult}`);
 
     // Send Welcome Email
-    await sendWelcomeEmail(customerEmail, customerName, token);
-    console.log(`   📧 Welcome & Setup email triggered for ${customerEmail}`);
+    const emailResult = await sendWelcomeEmail(customerEmail, customerName, token);
+    console.log(`   📧 Welcome & Setup email response:`, JSON.stringify(emailResult));
   } catch (authError) {
     console.error(`   ❌ Error triggering welcome email:`, authError);
   }

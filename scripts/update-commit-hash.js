@@ -19,48 +19,48 @@ try {
   // Get the current git commit hash (short version)
   let commitHash;
   
-  // 1. Prioritize Vercel environment variables
-  if (process.env.VERCEL_GIT_COMMIT_SHA) {
-    commitHash = process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7);
-    console.log(`✅ Found Vercel commit hash: ${commitHash}`);
+  // 1. Prioritize Vercel and CI environment variables
+  const envSha = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.COMMIT_REF;
+  
+  if (envSha) {
+    commitHash = envSha.substring(0, 7);
+    console.log(`✅ Found commit hash from environment: ${commitHash}`);
   } else {
     // 2. Fallback to git command if Vercel vars are not available (e.g., local dev)
     try {
       commitHash = execSync('git rev-parse --short HEAD', {
         cwd: rootDir,
         encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'pipe'] // Capture stdout, ignore stdin/stderr to prevent direct printing
+        stdio: ['ignore', 'pipe', 'ignore'] // Completely hide stderr
       }).trim();
       console.log(`✅ Found git commit hash: ${commitHash}`);
     } catch (error) {
-      // Log the error message from stderr if git command fails
-      console.warn('⚠️ Could not get git commit hash:', error.message || String(error));
-      commitHash = 'dev';
-      console.log(`   Using fallback: ${commitHash}`);
+      commitHash = 'latest';
+      console.log(`ℹ️  Git not available or not a repository, using fallback: ${commitHash}`);
     }
   }
 
   // Get the current git branch name
   let branchName;
   
-  // 1. Prioritize Vercel environment variables
-  if (process.env.VERCEL_GIT_COMMIT_REF) {
-    branchName = process.env.VERCEL_GIT_COMMIT_REF;
-    console.log(`✅ Found Vercel branch: ${branchName}`);
+  // 1. Prioritize Vercel and CI environment variables
+  const envRef = process.env.VERCEL_GIT_COMMIT_REF || process.env.GITHUB_REF_NAME || process.env.BRANCH;
+  
+  if (envRef) {
+    branchName = envRef;
+    console.log(`✅ Found branch from environment: ${branchName}`);
   } else {
     // 2. Fallback to git command
     try {
       branchName = execSync('git rev-parse --abbrev-ref HEAD', {
         cwd: rootDir,
         encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'pipe'] // Capture stdout, ignore stdin/stderr
+        stdio: ['ignore', 'pipe', 'ignore'] // Completely hide stderr
       }).trim();
       console.log(`✅ Found git branch: ${branchName}`);
     } catch (error) {
-      // Log the error message from stderr if git command fails
-      console.warn('⚠️ Could not get git branch:', error.message || String(error));
-      branchName = 'dev';
-      console.log(`   Using fallback: ${branchName}`);
+      branchName = 'main';
+      console.log(`ℹ️  Git not available or not a repository, using fallback: ${branchName}`);
     }
   }
 

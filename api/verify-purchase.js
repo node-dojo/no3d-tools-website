@@ -205,72 +205,60 @@ export default async (req, res) => {
       throw new Error(`Failed to find customer: ${error.message || 'Unknown error'}`);
     }
 
-    // Get customer entitlements
-    let entitlements;
+    // Get customer entitlements using the Customer State endpoint
     try {
-      entitlements = await polar.entitlements.list({
-        customerId: customer.id,
-        limit: 100
+      const response = await fetch(`https://api.polar.sh/v1/customers/${customer.id}/state`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.POLAR_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      console.log(`Found ${entitlements?.items?.length || 0} entitlements for customer`);
-    } catch (error) {
-      console.error('Error fetching entitlements:', {
-        message: error.message,
-        status: error.status,
-        statusCode: error.statusCode
-      });
+      if (!response.ok) {
+        throw new Error(`Polar API error: ${response.status} ${response.statusText}`);
+      }
 
-      // If entitlements API fails, try alternative approach
-      // Check subscriptions instead
-      try {
-        const subscriptions = await polar.subscriptions.list({
-          customerId: customer.id,
-          limit: 100
-        });
+      const state = await response.json();
+      const ownedProductIds = new Set();
 
-        console.log(`Found ${subscriptions?.items?.length || 0} subscriptions for customer`);
-
-        // Extract product IDs from subscriptions
-        const subscribedProductIds = new Set();
-        if (subscriptions?.items) {
-          for (const sub of subscriptions.items) {
-            if (sub.product && sub.product.id) {
-              subscribedProductIds.add(sub.product.id);
-            }
+      // Add product IDs from active subscriptions
+      if (state.active_subscriptions) {
+        for (const sub of state.active_subscriptions) {
+          if (sub.product?.id) {
+            ownedProductIds.add(sub.product.id);
           }
         }
-
-        const ownedProducts = productIds.filter(id => subscribedProductIds.has(id));
-        return res.status(200).json({
-          ownedProducts,
-          error: null
-        });
-      } catch (subError) {
-        console.error('Error fetching subscriptions:', subError);
-        throw new Error(`Failed to verify ownership: ${error.message || 'Unknown error'}`);
       }
-    }
 
-    // Extract product IDs from entitlements
-    const ownedProductIds = new Set();
-    if (entitlements?.items) {
-      for (const entitlement of entitlements.items) {
-        if (entitlement.product && entitlement.product.id) {
-          ownedProductIds.add(entitlement.product.id);
+      // Add product IDs from granted benefits
+      // This assumes one-time purchases grant a benefit that is linked to a product.
+      if (state.granted_benefits) {
+        for (const benefit of state.granted_benefits) {
+          if (benefit.product?.id) {
+            ownedProductIds.add(benefit.product.id);
+          }
         }
       }
+      
+      // Filter requested products to only those owned
+      const ownedProducts = productIds.filter(id => ownedProductIds.has(id));
+
+      console.log(`Customer owns ${ownedProducts.length} of ${productIds.length} requested products via Customer State`);
+
+      return res.status(200).json({
+        ownedProducts,
+        error: null
+      });
+
+    } catch (error) {
+      console.error('Error fetching customer state:', {
+        message: error.message,
+        status: error.status,
+      });
+      throw new Error(`Failed to verify ownership via Customer State: ${error.message || 'Unknown error'}`);
     }
 
-    // Filter requested products to only those owned
-    const ownedProducts = productIds.filter(id => ownedProductIds.has(id));
-
-    console.log(`Customer owns ${ownedProducts.length} of ${productIds.length} requested products`);
-
-    return res.status(200).json({
-      ownedProducts,
-      error: null
-    });
 
   } catch (error) {
     console.error('Verification failed:', error);
