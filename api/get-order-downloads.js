@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   return res.status(410).json({
     error: 'This endpoint is deprecated',
     message: 'Downloads are now handled through Polar Customer Portal',
-    portalUrl: 'https://polar.sh/no3d-tools/portal',
+    portalUrl: 'https://polar.sh/no3d-tools/portal/request',
     alternativeEndpoint: '/api/get-customer-portal-url'
   });
 }

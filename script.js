@@ -782,7 +782,6 @@ function initializeSidebarEventListeners() {
 }
 function initializeDevCustomerId() {}
 function getPolarProductData() { return null; }
-function initializeAccountMenu() {}
 function updateFooterShortcut() {}
 function updateFooterCommit() {}
 function initializeMobileSearch() {
@@ -1079,6 +1078,7 @@ function initializeMobileSearch() {
   
   console.log('✅ Mobile search initialized');
 }
+
 function updateHorizontalIconGrid() {}
 function switchTab() {}
 function downloadProduct() {}

@@ -515,7 +515,14 @@ body {
   filter: brightness(0.8);
 }
 
-.account-menu-button:hover .account-icon-image {
+/* Account link styling */
+.account-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-link:hover .account-icon-image {
   filter: brightness(1.2) saturate(1.5);
 }
 

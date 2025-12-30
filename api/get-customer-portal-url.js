@@ -13,7 +13,7 @@
  *   });
  *   redirect(result.customerPortalUrl);
  * 
- * Returns: { portalUrl: "https://polar.sh/no3d-tools/portal?token=..." }
+ * Returns: { portalUrl: "https://polar.sh/no3d-tools/portal/..." } (authenticated URL)
  */
 
 import { Polar } from '@polar-sh/sdk';
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
       if (!customerId) {
         console.warn('No customer_id in checkout response');
         return res.status(200).json({ 
-          portalUrl: 'https://polar.sh/no3d-tools/portal',
+          portalUrl: 'https://polar.sh/no3d-tools/portal/request',
           note: 'Customer ID not found, using default portal URL'
         });
       }
@@ -97,7 +97,7 @@ export default async function handler(req, res) {
     if (!session || !portalUrl) {
       console.warn('No customerPortalUrl in session response:', JSON.stringify(session));
       return res.status(200).json({ 
-        portalUrl: 'https://polar.sh/no3d-tools/portal',
+        portalUrl: 'https://polar.sh/no3d-tools/portal/request',
         note: 'Could not create authenticated session'
       });
     }
@@ -114,7 +114,7 @@ export default async function handler(req, res) {
     
     // Return fallback URL - customer can still access portal, just needs to log in
     return res.status(200).json({
-      portalUrl: 'https://polar.sh/no3d-tools/portal',
+      portalUrl: 'https://polar.sh/no3d-tools/portal/request',
       error: error.message,
       note: 'Using fallback portal URL'
     });

@@ -181,11 +181,227 @@ export async function validateSessionWithCustomer(req) {
   }
 }
 
+// ============================================================================
+// POLAR CUSTOMER SESSION UTILITIES
+// ============================================================================
+// Polar uses a separate "Customer Session" token for Customer Portal APIs.
+// This is different from our custom Redis sessions.
+// See: POLAR_DOWNLOADABLES_API.md for full documentation
+// ============================================================================
+
+// Polar API base URL
+const POLAR_API_BASE = 'https://api.polar.sh';
+
+// Cache for Polar sessions (they last 1 hour, we cache for 50 minutes)
+const polarSessionCache = new Map();
+const POLAR_SESSION_CACHE_TTL = 50 * 60 * 1000; // 50 minutes in ms
+
+/**
+ * Create a Polar Customer Session for accessing Customer Portal APIs
+ * 
+ * This creates a temporary token that can be used to access:
+ * - GET /v1/customer-portal/downloadables/
+ * - GET /v1/customer-portal/orders/
+ * - GET /v1/customer-portal/subscriptions/
+ * 
+ * @param {string} customerId - Polar customer ID
+ * @param {object} options - Options
+ * @param {boolean} options.useCache - Whether to use cached sessions (default: true)
+ * @returns {Promise<object>} Polar session with token, expiresAt, customerPortalUrl
+ */
+export async function createPolarSession(customerId, options = {}) {
+  const { useCache = true } = options;
+  
+  // Check cache first
+  if (useCache) {
+    const cached = polarSessionCache.get(customerId);
+    if (cached && cached.expiresAt > Date.now()) {
+      console.log(`♻️ Using cached Polar session for ${customerId}`);
+      return cached.session;
+    }
+  }
+  
+  try {
+    console.log(`🔑 Creating new Polar customer session for ${customerId}`);
+    
+    const response = await fetch(`${POLAR_API_BASE}/v1/customer-sessions/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.POLAR_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ customer_id: customerId }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create Polar session: ${response.status} ${errorText}`);
+    }
+    
+    const session = await response.json();
+    
+    // Normalize response (API returns snake_case, SDK might return camelCase)
+    const normalizedSession = {
+      id: session.id,
+      token: session.token,
+      expiresAt: session.expires_at || session.expiresAt,
+      customerPortalUrl: session.customer_portal_url || session.customerPortalUrl,
+      customerId: session.customer_id || session.customerId,
+      customer: session.customer,
+    };
+    
+    // Cache the session
+    if (useCache) {
+      polarSessionCache.set(customerId, {
+        session: normalizedSession,
+        expiresAt: Date.now() + POLAR_SESSION_CACHE_TTL,
+      });
+    }
+    
+    console.log(`✅ Created Polar session, expires: ${normalizedSession.expiresAt}`);
+    return normalizedSession;
+    
+  } catch (error) {
+    console.error('Failed to create Polar customer session:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a Polar Customer Session using the SDK
+ * @param {string} customerId - Polar customer ID
+ * @returns {Promise<object>} Polar session
+ */
+export async function createPolarSessionSDK(customerId) {
+  try {
+    const session = await polar.customerSessions.create({
+      customerId: customerId,
+    });
+    
+    // Normalize response
+    return {
+      id: session.id,
+      token: session.token,
+      expiresAt: session.expiresAt || session.expires_at,
+      customerPortalUrl: session.customerPortalUrl || session.customer_portal_url,
+      customerId: session.customerId || session.customer_id,
+      customer: session.customer,
+    };
+  } catch (error) {
+    console.error('Failed to create Polar session via SDK:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch customer downloadables using a Polar session token
+ * @param {string} polarSessionToken - Polar customer session token
+ * @param {object} options - Query options
+ * @param {string} options.benefitId - Filter by benefit ID
+ * @param {number} options.limit - Max results (default 100)
+ * @returns {Promise<object>} Downloadables response with items array
+ */
+export async function fetchCustomerDownloadables(polarSessionToken, options = {}) {
+  const { benefitId, limit = 100 } = options;
+  
+  let url = `${POLAR_API_BASE}/v1/customer-portal/downloadables/?limit=${limit}`;
+  if (benefitId) {
+    url += `&benefit_id=${benefitId}`;
+  }
+  
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${polarSessionToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch downloadables: ${response.status} ${errorText}`);
+  }
+  
+  return response.json();
+}
+
+/**
+ * Fetch customer state (subscriptions, benefits, etc.) using org token
+ * @param {string} customerId - Polar customer ID
+ * @returns {Promise<object>} Customer state
+ */
+export async function fetchCustomerState(customerId) {
+  const response = await fetch(`${POLAR_API_BASE}/v1/customers/${customerId}/state`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${process.env.POLAR_API_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch customer state: ${response.status} ${errorText}`);
+  }
+  
+  return response.json();
+}
+
+/**
+ * Get downloadable files for a customer
+ * Combines session creation and downloadables fetching
+ * @param {string} customerId - Polar customer ID
+ * @param {object} options - Options
+ * @param {string} options.benefitId - Filter by benefit ID
+ * @returns {Promise<Array>} Array of downloadable file objects
+ */
+export async function getCustomerDownloadables(customerId, options = {}) {
+  // Create Polar session
+  const polarSession = await createPolarSession(customerId);
+  
+  // Fetch downloadables
+  const downloadables = await fetchCustomerDownloadables(polarSession.token, options);
+  
+  // Transform to simplified format
+  return (downloadables.items || []).map(item => ({
+    id: item.id,
+    benefitId: item.benefit_id,
+    downloadUrl: item.file?.download?.url,
+    expiresAt: item.file?.download?.expires_at,
+    fileName: item.file?.name,
+    fileSize: item.file?.size,
+    fileSizeReadable: item.file?.size_readable,
+    mimeType: item.file?.mime_type,
+    checksum: item.file?.checksum_sha256_hex,
+  })).filter(d => d.downloadUrl); // Only include items with valid download URLs
+}
+
+/**
+ * Clear cached Polar sessions
+ * @param {string} customerId - Optional customer ID to clear specific cache
+ */
+export function clearPolarSessionCache(customerId = null) {
+  if (customerId) {
+    polarSessionCache.delete(customerId);
+  } else {
+    polarSessionCache.clear();
+  }
+}
+
 export default {
+  // Our custom session management
   createSession,
   validateSession,
   getSession,
   deleteSession,
   refreshSession,
   validateSessionWithCustomer,
+  
+  // Polar customer session utilities
+  createPolarSession,
+  createPolarSessionSDK,
+  fetchCustomerDownloadables,
+  fetchCustomerState,
+  getCustomerDownloadables,
+  clearPolarSessionCache,
 };
