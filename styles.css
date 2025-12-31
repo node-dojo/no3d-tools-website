@@ -398,6 +398,8 @@ body {
 
 .mobile-search-bar.keyboard-open {
   /* Position will be set dynamically by JavaScript when keyboard is open */
+  /* Position managed by JS - styles applied inline */
+  position: fixed; /* Base position, JS will override bottom value */
 }
 
 .mobile-search-input {
@@ -459,7 +461,7 @@ body {
 /* Show mobile search bar on mobile only */
 @media (max-width: 768px) {
   .mobile-search-bar {
-    display: flex;
+    display: flex !important; /* Ensure mobile search bar is visible */
   }
   
   /* Adjust product card padding to account for mobile search bar */
@@ -1170,6 +1172,15 @@ body {
   overflow-y: auto;
   padding: var(--space-medium);
   box-sizing: border-box;
+}
+
+/* Mobile: 3 columns for home grid */
+@media (max-width: 768px) {
+  .home-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-small);
+    padding: var(--space-small);
+  }
 }
 
 .home-grid-item {
@@ -2297,7 +2308,7 @@ h2 {
   /* Site container - minimal padding on mobile */
   .site-container {
     padding-bottom: var(--space-medium);
-    padding-top: 40px; /* Exactly match fixed header height - zero gap */
+    padding-top: 54px; /* Header height (24px) + header top padding (30px) */
     display: flex;
     flex-direction: column;
     align-items: flex-start; /* Align content to top */
@@ -2306,8 +2317,9 @@ h2 {
   
   /* Ensure header doesn't add extra spacing */
   .site-header {
-    padding: 0; /* Remove all padding on mobile */
-    height: 40px; /* Exact height */
+    padding: 0;
+    padding-top: 30px; /* 30px padding from top of page */
+    height: 24px; /* Reduced by 40% from 40px */
     display: flex;
     align-items: center; /* Vertically center content */
   }
@@ -2327,7 +2339,7 @@ h2 {
 
   .site-header .logo {
     font-size: 24px; /* Slightly smaller on mobile */
-    max-width: 250px; /* Limit logo width to 250px on mobile */
+    max-width: 222px; /* Limit logo width to 222px on mobile */
     width: auto;
     height: auto;
     text-align: center; /* Center text within logo */
@@ -2345,13 +2357,18 @@ h2 {
     display: flex; /* Ensure flex display for centering */
   }
 
+  /* Hide header membership CTA on mobile */
+  .member-cta-button {
+    display: none !important;
+  }
+
   /* Sidebar becomes hamburger dropdown menu */
   .sidebar {
     width: 280px; /* Wider on mobile for better touch targets */
-    height: calc(100vh - 40px);
-    max-height: calc(100vh - 40px); /* Ensure it doesn't exceed viewport */
+    height: calc(100vh - 54px);
+    max-height: calc(100vh - 54px); /* Ensure it doesn't exceed viewport */
     transform: translateX(-100%); /* Hidden by default */
-    top: 40px;
+    top: 54px; /* Header height (24px) + header top padding (30px) */
     z-index: 200;
     box-shadow: var(--shadow-strong);
     overflow-y: auto; /* Enable vertical scrolling */
@@ -2359,8 +2376,8 @@ h2 {
   }
   
   #sidebar {
-    height: calc(100vh - 40px);
-    max-height: calc(100vh - 40px);
+    height: calc(100vh - 54px);
+    max-height: calc(100vh - 54px);
     overflow-y: auto;
     overflow-x: hidden;
   }
@@ -2387,7 +2404,7 @@ h2 {
   /* Product card - positioned exactly at header bottom using absolute positioning */
   .product-card {
     position: absolute !important;
-    top: 40px !important; /* Exactly at header bottom */
+    top: 54px !important; /* Header height (24px) + header top padding (30px) */
     left: 0;
     right: 0;
     margin: 0 !important;
@@ -2420,7 +2437,7 @@ h2 {
   /* Site container - minimal padding on mobile */
   .site-container {
     padding-bottom: var(--space-medium);
-    padding-top: 40px; /* Exactly match fixed header height - zero gap */
+    padding-top: 54px; /* Header height (24px) + header top padding (30px) */
     display: flex;
     flex-direction: column;
     align-items: flex-start; /* Align content to top */
