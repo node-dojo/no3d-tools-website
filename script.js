@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeChristmasPopup();
     initializeThemeToggle();
     initializeMobileSearch();
+    initializeMemberCTA();
     updateFooterShortcut();
     updateFooterCommit();
     console.log('✅ Website initialized successfully');
@@ -1093,7 +1094,52 @@ function getDevMemberToggle() { return false; }
 function setDevMemberToggle() {}
 function getDevCustomerId() { return null; }
 function updateMemberCTAVisibility() {}
-function initializeMemberCTA() {}
+function initializeMemberCTA() {
+  const memberCTAButton = document.getElementById('member-cta-button');
+  const mobileMemberCTAButton = document.getElementById('mobile-member-cta-button');
+  
+  const handleMemberCTAClick = (e) => {
+    e.preventDefault();
+    
+    // Find the NO3D Membership product by handle
+    const membershipHandle = 'no3d-membership';
+    let membershipProduct = null;
+    
+    // Search through products to find the one with matching handle
+    for (const productId in products) {
+      if (products[productId].handle === membershipHandle) {
+        membershipProduct = products[productId];
+        break;
+      }
+    }
+    
+    if (membershipProduct) {
+      console.log('✅ Found membership product, selecting:', membershipProduct.name);
+      selectProduct(membershipProduct.id);
+    } else {
+      console.warn('⚠️ Membership product not found with handle:', membershipHandle);
+      // Fallback: try to find by name if handle doesn't match
+      for (const productId in products) {
+        if (products[productId].name.toLowerCase().includes('membership') || 
+            products[productId].name.toLowerCase().includes('no3d membership')) {
+          membershipProduct = products[productId];
+          console.log('✅ Found membership product by name, selecting:', membershipProduct.name);
+          selectProduct(membershipProduct.id);
+          return;
+        }
+      }
+      console.error('❌ Could not find membership product');
+    }
+  };
+  
+  if (memberCTAButton) {
+    memberCTAButton.addEventListener('click', handleMemberCTAClick);
+  }
+  
+  if (mobileMemberCTAButton) {
+    mobileMemberCTAButton.addEventListener('click', handleMemberCTAClick);
+  }
+}
 function performSearch() {}
 function handleProductTypeToggle() {}
 function handleProductGroupToggle() {}

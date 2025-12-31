@@ -153,7 +153,7 @@ body {
 .hamburger-menu-button {
   display: none; /* Hidden on desktop, shown on mobile */
   background: none;
-  border: 1px solid var(--color-void-black);
+  border: none;
   padding: 0;
   cursor: pointer;
   color: var(--color-void-black);
@@ -168,7 +168,6 @@ body {
 
 .hamburger-menu-button:hover {
   background-color: var(--color-lello);
-  border-color: var(--color-void-black);
 }
 
 .hamburger-menu-button.active {
@@ -188,7 +187,10 @@ body {
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
-  padding: 6px;
+  padding-top: 23px;
+  padding-bottom: 23px;
+  padding-left: 97px;
+  padding-right: 97px;
   margin-top: 0px;
   margin-bottom: 0px;
   margin-left: 0px;
@@ -304,7 +306,8 @@ body {
   right: 0;
   width: 100%;
   z-index: 199; /* Below footer, above content */
-  padding: var(--space-small) var(--space-medium);
+  padding: 0;
+  height: 40px;
   background-color: var(--color-stone-gray);
   border-top: 1px solid var(--color-void-black);
   box-sizing: border-box;
@@ -388,7 +391,10 @@ body {
   z-index: 200; /* Above footer, below modals and footer logo */
   background-color: var(--color-stone-gray);
   border-top: 2px solid var(--color-void-black);
-  padding: var(--space-small) var(--space-medium);
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: var(--space-medium);
+  padding-right: var(--space-medium);
   box-sizing: border-box;
   align-items: center;
   gap: var(--space-small);
@@ -469,9 +475,9 @@ body {
     padding-bottom: 80px !important; /* Space for mobile search bar */
   }
   
-  /* Position footer logo above mobile search bar */
+  /* Hide footer logo (stone logo) on mobile */
   .footer-logo {
-    bottom: 70px; /* Above mobile search bar (search bar is ~60px + padding) */
+    display: none !important;
   }
 }
 
@@ -522,6 +528,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#account-link {
+  width: 35px;
+  height: 34px;
 }
 
 .account-link:hover .account-icon-image {
@@ -963,6 +974,8 @@ body {
   flex-direction: column;
   box-sizing: border-box;
   flex: 1;
+  align-items: stretch; /* Allow grid to fill width */
+  justify-content: flex-start; /* Align to top */
 }
 
 .home-grid-container.hidden {
@@ -1153,6 +1166,38 @@ body {
   }
 }
 
+/* Mobile CTA Banner - Remove padding, full-width button */
+@media (max-width: 768px) {
+  .home-cta-banner {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    border: none !important;
+  }
+
+  .home-cta-content {
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+  }
+
+  .home-cta-actions {
+    width: 100%;
+    height: 100%;
+  }
+
+  .home-cta-button-primary {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
 @media (max-width: 500px) {
   .home-cta-actions {
     flex-direction: column;
@@ -1166,20 +1211,41 @@ body {
 .home-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--space-large);
+  row-gap: 0px;
+  column-gap: 0px;
   width: 100%;
+  max-width: 100%;
   height: 100%;
   overflow-y: auto;
-  padding: var(--space-medium);
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
   box-sizing: border-box;
+  margin: 0 auto; /* Center the grid */
 }
 
-/* Mobile: 3 columns for home grid */
+/* Mobile: 3 columns for home grid - centered with equal spacing on both sides */
 @media (max-width: 768px) {
+  .home-grid-container {
+    align-items: center; /* Center the grid horizontally */
+    justify-content: flex-start; /* Align to top */
+    width: 100%;
+  }
+  
   .home-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-small);
-    padding: var(--space-small);
+    row-gap: 0px;
+    column-gap: 0px;
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin: 0 auto; /* Center the grid */
+    box-sizing: border-box;
+    justify-items: center; /* Center grid items within their cells */
   }
 }
 
@@ -1188,11 +1254,16 @@ body {
   border: none;
   border-radius: 8px;
   padding: var(--space-medium);
+  padding-top: 35px;
   cursor: pointer;
   transition: transform var(--transition-fast), background-color var(--transition-fast);
   display: flex;
   flex-direction: column;
   gap: var(--space-medium);
+  justify-content: flex-end;
+  align-items: center;
+  height: 155px;
+  width: 135px;
 }
 
 .home-grid-item:hover {
@@ -1210,13 +1281,16 @@ body {
 
 .home-grid-item-title {
   font-family: var(--font-visitor);
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: var(--letter-spacing-normal);
   text-transform: lowercase;
   color: var(--color-void-black);
   margin: 0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .home-grid-item-price {
@@ -2320,26 +2394,36 @@ h2 {
     padding: 0;
     padding-top: 30px; /* 30px padding from top of page */
     height: 24px; /* Reduced by 40% from 40px */
+    width: 100%; /* Full width for even distribution */
     display: flex;
+    justify-content: space-between; /* Evenly distribute hamburger, logo, and account button */
     align-items: center; /* Vertically center content */
+    padding-left: var(--space-small); /* Equal spacing from left edge */
+    padding-right: var(--space-small); /* Equal spacing from right edge */
+    box-sizing: border-box; /* Include padding in width calculation */
   }
 
   .site-header .header-left {
     padding: 0; /* Remove padding to allow precise alignment */
+    flex: 1; /* Take up available space */
+    display: flex;
+    justify-content: center; /* Center logo horizontally */
+    align-items: center; /* Center logo vertically */
+    width: auto !important; /* Override any inline width styles */
+    min-width: 0; /* Allow flex shrinking */
   }
 
   .hamburger-menu-button {
     display: flex; /* Show hamburger on mobile */
-    position: absolute; /* Position absolutely */
-    top: 50%; /* Position at vertical center of header */
-    left: var(--space-small); /* 10px from left */
-    transform: translateY(-50%); /* Center vertically */
+    position: relative; /* Remove absolute positioning */
+    flex: 0 0 auto; /* Don't grow or shrink */
     z-index: 201; /* Above header */
+    margin-left: 0; /* No additional margin - padding handled by header */
   }
 
   .site-header .logo {
     font-size: 24px; /* Slightly smaller on mobile */
-    max-width: 222px; /* Limit logo width to 222px on mobile */
+    max-width: 100%; /* Responsive width */
     width: auto;
     height: auto;
     text-align: center; /* Center text within logo */
@@ -2347,14 +2431,24 @@ h2 {
     text-overflow: ellipsis; /* Show ellipsis for long text */
     white-space: nowrap; /* Keep text on one line */
     line-height: 1; /* Prevent extra line height spacing */
-    margin: 0 auto; /* Center the logo */
+    margin: 0; /* Remove auto margin */
   }
 
-  .site-header .header-left {
-    flex: 1; /* Take up available space */
-    justify-content: center; /* Center logo horizontally */
-    align-items: center; /* Center logo vertically */
-    display: flex; /* Ensure flex display for centering */
+  .site-header .header-icons {
+    position: relative; /* Remove absolute positioning */
+    flex: 0 0 auto; /* Don't grow or shrink */
+    display: flex;
+    align-items: center;
+    gap: var(--space-small); /* Smaller gap on mobile */
+    z-index: 201; /* Above header */
+    margin-right: 0; /* No additional margin - padding handled by header */
+    padding-right: 0; /* No additional padding - padding handled by header */
+  }
+
+  /* Account icon spacing handled by header padding */
+  .site-header .account-link {
+    margin-right: 0;
+    padding-right: 0;
   }
 
   /* Hide header membership CTA on mobile */
