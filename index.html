@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="deployment-version" content="dfbd221">
+    <meta name="deployment-version" content="b9510fe">
     <meta name="deployment-branch" content="main">
     <title>NO3D TOOLS</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mobile.css" media="screen and (max-width: 768px)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Preconnect to Cloudinary CDN for faster image loading -->
@@ -199,7 +200,6 @@
                         
                         <div class="product-header-row">
                             <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
-                            <button class="product-close-button" id="product-close-button" aria-label="Close product view">×</button>
                             <div class="product-price-wrapper">
                                 <div class="product-price" id="product-price">PRICE: $7.99</div>
                                 <button class="download-button" id="download-button" style="display: none;">DOWNLOAD</button>
@@ -234,27 +234,49 @@
                             </div>
                             <div class="tab" data-tab="docs">DOCS</div>
                         </div>
-                    </div>
-
-                    <!-- Product Description -->
-                    <div class="product-description" id="product-description">
-                        <p>Professional mesh repair and optimization tool designed for 3D artists and engineers. Dojo Mesh Repair automatically detects and fixes common mesh issues including holes, non-manifold edges, overlapping faces, and inverted normals.</p>
-                        <p>&nbsp;</p>
-                        <p>With its intelligent algorithms, the tool preserves the original geometry while ensuring watertight meshes suitable for 3D printing, rendering, and simulation. Save hours of manual cleanup with automated repair processes that maintain the artistic integrity of your models.</p>
-                    </div>
-
-                    <!-- Changelog Section -->
-                    <div class="changelog-section">
-                        <div class="changelog-header">
-                            <div class="changelog-icon expanded">
-                                <div class="changelog-arrow">▼</div>
+                        <div class="tab-container"> <!-- New tab for Changelog -->
+                            <div class="tab-icon collapsed" data-tab="changelog">
+                                <div class="tab-arrow">▶</div>
                             </div>
-                            <span class="changelog-title" id="changelog-title">CHANGELOG</span>
+                            <div class="tab" data-tab="changelog">CHANGELOG</div>
                         </div>
-                        <div class="changelog-content">
-                            <ul id="changelog-list">
-                                <!-- Changelog items will be populated from product JSON data -->
-                            </ul>
+                    </div>
+
+                    <!-- Tab Content Containers -->
+                    <div class="product-tab-content-wrapper">
+                        <!-- Product Description -->
+                        <div class="product-tab-content active" id="product-description-content" data-tab-id="description">
+                            <div class="product-description" id="product-description">
+                                <p>Professional mesh repair and optimization tool designed for 3D artists and engineers. Dojo Mesh Repair automatically detects and fixes common mesh issues including holes, non-manifold edges, overlapping faces, and inverted normals.</p>
+                                <p>&nbsp;</p>
+                                <p>With its intelligent algorithms, the tool preserves the original geometry while ensuring watertight meshes suitable for 3D printing, rendering, and simulation. Save hours of manual cleanup with automated repair processes that maintain the artistic integrity of your models.</p>
+                            </div>
+                        </div>
+
+                        <!-- Product Docs -->
+                        <div class="product-tab-content" id="product-docs-content" data-tab-id="docs">
+                            <div class="product-docs" id="product-docs">
+                                <!-- Docs content will be loaded here dynamically or from product data -->
+                                <h2>Product Documentation</h2>
+                                <p>This section will contain detailed documentation for the product.</p>
+                            </div>
+                        </div>
+
+                        <!-- Changelog Section -->
+                        <div class="product-tab-content" id="changelog-content" data-tab-id="changelog">
+                            <div class="changelog-section">
+                                <div class="changelog-header">
+                                    <div class="changelog-icon expanded">
+                                        <div class="changelog-arrow">▼</div>
+                                    </div>
+                                    <span class="changelog-title" id="changelog-title">CHANGELOG</span>
+                                </div>
+                                <div class="changelog-content">
+                                    <ul id="changelog-list">
+                                        <!-- Changelog items will be populated from product JSON data -->
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

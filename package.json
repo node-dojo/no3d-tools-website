@@ -6,8 +6,6 @@
   "scripts": {
     "build": "node scripts/update-commit-hash.js",
     "start": "vercel dev --listen 3001 --yes",
-    "test-mobile": "node test-mobile-server.js",
-    "test-mobile:8000": "node test-mobile-server.js 8000",
     "update-commit": "node scripts/update-commit-hash.js",
     "fix-vercel": "node scripts/fix-vercel-settings.js",
     "fix-vercel:doppler": "doppler run -- node scripts/fix-vercel-settings.js",

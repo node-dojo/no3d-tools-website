@@ -129,7 +129,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 3px var(--space-medium);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: var(--space-small); /* Changed from var(--space-medium) */
+  padding-right: var(--space-small); /* Changed from var(--space-medium) */
   background-color: transparent;
   border: none; /* Removed border */
   border-top: none;
@@ -146,7 +149,8 @@ body {
 
 .site-header .header-left {
   display: flex;
-  align-items: center;
+  justify-content: flex-start; /* Aligns logo to the left */
+  align-items: flex-start;
   gap: var(--space-medium);
 }
 
@@ -180,23 +184,35 @@ body {
 }
 
 .site-header .logo {
-  height: 66px;
-  width: 433px;
+  height: 100%;
+  width: 558px;
   min-width: 433px;
   max-width: 910px;
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
-  padding-top: 23px;
-  padding-bottom: 23px;
-  padding-left: 97px;
-  padding-right: 97px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
   margin-top: 0px;
   margin-bottom: 0px;
   margin-left: 0px;
   margin-right: 0px;
   cursor: pointer;
   transition: opacity var(--transition-fast);
+}
+
+/* Specific styles for header-logo ID */
+#header-logo {
+  height: auto;
+  width: auto;
+  max-height: 45px; /* Limit logo height */
+  object-fit: contain; /* Maintain aspect ratio */
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px; /* Remove explicit padding */
+  padding-right: 0px; /* Remove explicit padding */
 }
 
 .site-header .logo:hover {
@@ -374,11 +390,7 @@ body {
 }
 
 /* Show mobile footer CTA on mobile only */
-@media (max-width: 768px) {
-  .mobile-footer-cta {
-    display: block;
-  }
-}
+
 
 /* Mobile Search Bar */
 .mobile-search-bar {
@@ -465,21 +477,7 @@ body {
 }
 
 /* Show mobile search bar on mobile only */
-@media (max-width: 768px) {
-  .mobile-search-bar {
-    display: flex !important; /* Ensure mobile search bar is visible */
-  }
-  
-  /* Adjust product card padding to account for mobile search bar */
-  .product-card {
-    padding-bottom: 80px !important; /* Space for mobile search bar */
-  }
-  
-  /* Hide footer logo (stone logo) on mobile */
-  .footer-logo {
-    display: none !important;
-  }
-}
+
 
 /* Cart Icon with Badge */
 .cart-icon-wrapper {
@@ -765,7 +763,7 @@ body {
 
 .product-name {
   font-family: var(--font-visitor);
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: var(--letter-spacing-normal);
   text-transform: uppercase;
@@ -902,7 +900,7 @@ body {
 .group-product-list {
   display: none;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   margin-left: var(--space-medium);
   padding-left: var(--space-small);
   line-height: 12px;
@@ -919,7 +917,7 @@ body {
   display: flex;
   margin-left: 0; /* Remove extra margin since groups-container already has margin */
   padding-left: 0; /* Remove extra padding since groups-container already has padding */
-  gap: 7px; /* Ensure consistent gap between items */
+  gap: 4px; /* Ensure consistent gap between items */
 }
 
 .coming-soon-message {
@@ -939,7 +937,7 @@ body {
   padding: 0;
   padding-top: 10px;
   padding-left: 30px; /* Space between sidebar and product card */
-  margin-top: 22px;
+  margin-top: 0px;
   margin-left: var(--sidebar-width);
   margin-right: 0;
   background-color: var(--color-stone-gray);
@@ -951,6 +949,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0; /* Allow flex children to shrink below content size */
+  gap: 0px;
 }
 
 .product-card-container {
@@ -969,13 +968,17 @@ body {
 /* Home Grid Styles */
 .home-grid-container {
   display: flex; /* Default to visible */
-  width: 100%;
-  height: 100%;
+  width: fit-content;
+  height: fit-content;
   flex-direction: column;
   box-sizing: border-box;
   flex: 1;
   align-items: stretch; /* Allow grid to fill width */
   justify-content: flex-start; /* Align to top */
+  padding-top: 0px;
+  padding-bottom: 100px; /* Extra space to scroll past footer (70px footer + 30px buffer) */
+  padding-left: 33px;
+  padding-right: 33px;
 }
 
 .home-grid-container.hidden {
@@ -1167,36 +1170,7 @@ body {
 }
 
 /* Mobile CTA Banner - Remove padding, full-width button */
-@media (max-width: 768px) {
-  .home-cta-banner {
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    border: none !important;
-  }
 
-  .home-cta-content {
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
-  }
-
-  .home-cta-actions {
-    width: 100%;
-    height: 100%;
-  }
-
-  .home-cta-button-primary {
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 100% !important;
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-}
 
 @media (max-width: 500px) {
   .home-cta-actions {
@@ -1211,11 +1185,11 @@ body {
 .home-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  row-gap: 0px;
-  column-gap: 0px;
-  width: 100%;
+  row-gap: 33px;
+  column-gap: 33px;
+  width: fit-content;
   max-width: 100%;
-  height: 100%;
+  height: fit-content;
   overflow-y: auto;
   padding-left: 0px;
   padding-right: 0px;
@@ -1225,29 +1199,10 @@ body {
   margin: 0 auto; /* Center the grid */
 }
 
+
+
 /* Mobile: 3 columns for home grid - centered with equal spacing on both sides */
-@media (max-width: 768px) {
-  .home-grid-container {
-    align-items: center; /* Center the grid horizontally */
-    justify-content: flex-start; /* Align to top */
-    width: 100%;
-  }
-  
-  .home-grid {
-    grid-template-columns: repeat(3, 1fr);
-    row-gap: 0px;
-    column-gap: 0px;
-    width: 100%;
-    max-width: 100%;
-    padding-left: 0px;
-    padding-right: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    margin: 0 auto; /* Center the grid */
-    box-sizing: border-box;
-    justify-items: center; /* Center grid items within their cells */
-  }
-}
+
 
 .home-grid-item {
   background-color: transparent;
@@ -1262,8 +1217,8 @@ body {
   gap: var(--space-medium);
   justify-content: flex-end;
   align-items: center;
-  height: 155px;
-  width: 135px;
+  height: 100%;
+  width: 100%;
 }
 
 .home-grid-item:hover {
@@ -1273,6 +1228,7 @@ body {
 
 .home-grid-item-thumbnail {
   width: 100%;
+  height: 100%;
   aspect-ratio: 1;
   object-fit: contain;
   border-radius: 4px;
@@ -1280,14 +1236,17 @@ body {
 }
 
 .home-grid-item-title {
+  width: 100%;
+  height: 100%;
   font-family: var(--font-visitor);
-  font-size: 13px;
+  font-size: 27px;
+  line-height: 19px;
   font-weight: 700;
   letter-spacing: var(--letter-spacing-normal);
   text-transform: lowercase;
   color: var(--color-void-black);
   margin: 0;
-  text-align: center;
+  text-align: left;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1302,6 +1261,66 @@ body {
   text-align: center;
 }
 
+/* Desktop: Responsive grid with evenly spaced square thumbnails */
+@media (min-width: 769px) {
+  .home-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    row-gap: 40px;
+    column-gap: 8px; /* Minimal space between thumbnails */
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    width: 100%;
+    height: fit-content;
+    justify-items: stretch;
+    align-items: stretch;
+  }
+  
+  .home-grid-container {
+    align-items: stretch;
+    justify-content: flex-start;
+    padding-top: 0px;
+    padding-bottom: 100px; /* Extra space to scroll past footer (70px footer + 30px buffer) */
+    padding-left: 33px;
+    padding-right: 33px;
+  }
+  
+  .home-grid-item {
+    padding: 0px !important;
+    margin: 0px !important;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Space between image and title */
+    justify-content: flex-start;
+    align-items: center; /* Center the title block within the grid item */
+    position: relative;
+    border-radius: 0px;
+    aspect-ratio: auto; /* Remove aspect ratio from container to allow title expansion */
+  }
+  
+  .home-grid-item-thumbnail {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover; /* Fill the square space */
+    display: block;
+    height: auto;
+  }
+  
+  .home-grid-item-title {
+    width: 100%;
+    max-width: 50%; /* Ensure title wraps if it exceeds 50% width */
+    height: auto;
+    font-size: 19px;
+    line-height: 15px;
+    margin: 0px;
+    text-align: center; /* Center justify the title text */
+    font-weight: 700;
+  }
+}
+
 .product-card-container.hidden {
   display: none !important;
 }
@@ -1312,7 +1331,7 @@ body {
   border-radius: 4px;
   width: 24px;
   height: 24px;
-  display: none;
+  display: none !important;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -1507,11 +1526,11 @@ body {
 
 .changelog-content {
   font-family: var(--font-mono);
-  font-size: var(--font-size-micro);
+  font-size: var(--font-size-base); /* Match product-description */
   font-weight: var(--font-mono-weight);
-  line-height: 1.05;
+  line-height: var(--line-height-base); /* Match product-description */
   color: var(--color-void-black);
-  letter-spacing: -0.08px;
+  letter-spacing: -0.11px; /* Match product-description */
 }
 
 .changelog-content ul {
@@ -1524,6 +1543,7 @@ body {
   margin-bottom: 0.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  line-height: var(--line-height-base); /* Match other content sections */
 }
 
 .changelog-content li:last-child {
@@ -1539,8 +1559,9 @@ body {
   margin-right: 0.5rem;
 }
 
-/* Markdown Documentation Styles */
-.product-description {
+/* Markdown Documentation Styles - Shared for Description and Docs */
+.product-description,
+.product-docs-content {
   font-family: var(--font-mono);
   font-size: var(--font-size-base);
   font-weight: var(--font-mono-weight);
@@ -1550,13 +1571,36 @@ body {
   margin-bottom: var(--space-small);
 }
 
-/* Markdown content styling */
+/* Reset and normalize all markdown elements */
+.product-description > *:first-child,
+.product-docs-content > *:first-child {
+  margin-top: 0;
+}
+
+.product-description > *:last-child,
+.product-docs-content > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Markdown content styling - Shared for Description, Docs, and Changelog */
 .product-description h1,
 .product-description h2,
 .product-description h3,
 .product-description h4,
 .product-description h5,
-.product-description h6 {
+.product-description h6,
+.product-docs-content h1,
+.product-docs-content h2,
+.product-docs-content h3,
+.product-docs-content h4,
+.product-docs-content h5,
+.product-docs-content h6,
+.changelog-content h1,
+.changelog-content h2,
+.changelog-content h3,
+.changelog-content h4,
+.changelog-content h5,
+.changelog-content h6 {
   font-family: var(--font-visitor);
   font-weight: 700;
   margin-top: 1rem;
@@ -1572,22 +1616,41 @@ h2 {
   margin-bottom: 6px;
 }
 
-.product-description p {
-  margin-bottom: 0.75rem;
-  line-height: 1.6;
+.product-description p,
+.product-docs-content p,
+.changelog-content p {
+  margin-bottom: 0.5rem; /* Reduced from 0.75rem for consistency */
+  line-height: var(--line-height-base); /* Match container line-height instead of 1.6 */
+  margin-top: 0; /* Ensure consistent top margin */
+}
+
+.product-description p:last-child,
+.product-docs-content p:last-child,
+.changelog-content p:last-child {
+  margin-bottom: 0; /* Remove bottom margin from last paragraph */
 }
 
 .product-description ul,
-.product-description ol {
+.product-description ol,
+.product-docs-content ul,
+.product-docs-content ol,
+.changelog-content ul,
+.changelog-content ol {
   margin-left: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem; /* Reduced for consistency */
+  margin-top: 0;
 }
 
-.product-description li {
+.product-description li,
+.product-docs-content li,
+.changelog-content li {
   margin-bottom: 0.25rem;
+  line-height: var(--line-height-base); /* Match container line-height */
 }
 
-.product-description code {
+.product-description code,
+.product-docs-content code,
+.changelog-content code {
   background: #f5f5f5;
   padding: 0.125rem 0.25rem;
   border-radius: 2px;
@@ -1595,7 +1658,9 @@ h2 {
   font-size: 0.9em;
 }
 
-.product-description pre {
+.product-description pre,
+.product-docs-content pre,
+.changelog-content pre {
   background: #f5f5f5;
   padding: 1rem;
   border-radius: 4px;
@@ -1603,12 +1668,16 @@ h2 {
   margin-bottom: 1rem;
 }
 
-.product-description pre code {
+.product-description pre code,
+.product-docs-content pre code,
+.changelog-content pre code {
   background: none;
   padding: 0;
 }
 
-.product-description img {
+.product-description img,
+.product-docs-content img,
+.changelog-content img {
   max-width: 100%;
   height: auto;
   border-radius: 4px;
@@ -1706,6 +1775,8 @@ h2 {
   height: 100%;
   overflow: hidden;
   position: relative;
+  touch-action: pan-y; /* Allow vertical scrolling but prevent horizontal panning (handled by JS) */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 .carousel-track {
@@ -1713,6 +1784,10 @@ h2 {
   height: 100%;
   transition: transform 0.3s ease;
   will-change: transform;
+  user-select: none; /* Prevent text selection during swipe */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .carousel-item {
@@ -1868,11 +1943,11 @@ h2 {
 }
 
 .product-header-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two equal columns */
+  align-items: end;
   gap: var(--space-small);
+  width: 100%;
 }
 
 .product-header {
@@ -1887,7 +1962,7 @@ h2 {
 
 .product-title {
   font-family: var(--font-visitor);
-  font-size: 37.533px;
+  font-size: 55px;
   font-weight: normal;
   letter-spacing: var(--letter-spacing-normal);
   text-transform: uppercase;
@@ -1896,6 +1971,7 @@ h2 {
   text-align: left;
   margin: 0;
   padding: 0;
+  height: fit-content;
 }
 
 .product-title h2 {
@@ -1916,26 +1992,30 @@ h2 {
 .product-price-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center; /* Align children to center */
+  justify-content: flex-end; /* Push content to bottom */
   gap: 10px;
-  text-align: right;
+  /* text-align: right; removed */
+  width: 100%; /* Fill available space in its column */
 }
 
 .product-price {
   font-family: var(--font-visitor);
-  font-size: 19px;
+  font-size: 22px;
   font-weight: normal;
   letter-spacing: var(--letter-spacing-normal);
   text-transform: uppercase;
   color: var(--color-void-black);
   line-height: 0.582; /* 58.2% as per design specs */
-  text-align: right;
+  text-align: center; /* Center align text */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
-  padding: 0;
+  padding: 2px 0;
   white-space: nowrap;
+  height: 100%;
+  width: 100%; /* Take 100% width */
 }
 
 .product-tags {
@@ -1979,8 +2059,8 @@ h2 {
   cursor: pointer;
   transition: all var(--transition-normal);
   border-radius: 0;
-  width: 145.429px;
-  height: 20px;
+  width: 100%; /* Take 100% width */
+  height: 35.2px; /* Set height to match product title letter height */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2016,8 +2096,8 @@ h2 {
   cursor: pointer;
   transition: all var(--transition-normal);
   border-radius: 0;
-  width: 145.429px;
-  height: 20px;
+  width: 100%;
+  height: 35.2px; /* Set height to match product title letter height */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2179,12 +2259,7 @@ h2 {
 }
 
 /* Ensure commit hash and branch are visible even when footer-text is hidden on mobile */
-@media (max-width: 768px) {
-  .footer-text#footer-commit,
-  .footer-text#footer-branch {
-    display: block !important;
-  }
-}
+
 
 .footer-logo {
   position: fixed;
@@ -2206,9 +2281,9 @@ h2 {
 
   .product-card {
     padding-left: 30px; /* Space between sidebar and product card */
-    margin-left: 120px;
+    margin-left: 0px;
     margin-right: 0;
-    width: calc(100% - 120px - 30px); /* Account for left padding */
+    width: 100%;
   }
 }
 
@@ -2236,316 +2311,8 @@ h2 {
   }
 }
 
-@media (max-width: 768px) {
-  .product-card-container {
-    width: 100%;
-    max-width: none;
-    height: auto;
-    flex-direction: column;
-    align-items: flex-start; /* Align to top */
-    justify-content: flex-start; /* Start from top */
-    gap: 0; /* Remove gap on mobile to eliminate spacing */
-    margin-top: 0; /* Ensure no top margin */
-    padding-top: 0; /* Explicitly remove top padding */
-    padding: 0; /* Remove all padding */
-  }
-
-  .product-left-section {
-    width: 100%;
-    height: auto;
-    margin-bottom: 20px;
-    margin-top: 0; /* No top margin - start immediately */
-    padding-top: 0; /* Explicitly remove top padding */
-    padding: 0 var(--space-medium) 0; /* No top padding - aligns with header bottom */
-  }
-
-  .product-details {
-    width: 100%;
-    padding-top: var(--space-medium);
-    align-items: stretch;
-    box-sizing: border-box;
-  }
-
-  .product-title {
-    font-size: 28px; /* Slightly smaller on mobile */
-    text-align: left;
-    padding-right: 0;
-    margin: 0;
-    width: auto;
-    flex: 1;
-  }
-
-  .product-price {
-    text-align: right; /* Right-justify price on mobile */
-    padding-right: 0;
-    margin: 0;
-    margin-left: auto; /* Push to right edge */
-    width: auto;
-    flex-shrink: 0;
-  }
-
-  /* Container for title and price on same line */
-  .product-header-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    width: 100%;
-    gap: var(--space-small);
-    margin-bottom: var(--space-medium);
-  }
-
-  /* Tabs - fill width on mobile */
-  .product-tabs {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    gap: 0;
-    padding: 0;
-  }
-
-  .tab-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: var(--space-tiny);
-  }
-
-  .tab-icon {
-    flex-shrink: 0;
-  }
-
-  .tab {
-    font-size: 13px; /* Slightly smaller on mobile */
-    padding: var(--space-tiny) var(--space-small);
-    flex: 1;
-    text-align: center;
-    min-width: 0; /* Allow text to shrink if needed */
-  }
-
-  /* Buy button - centered and taller for mobile touch */
-  .download-button,
-  .buy-now-button {
-    width: 100%;
-    max-width: 300px;
-    margin-right: 0;
-    margin-left: auto;
-    margin-right: auto;
-    height: 48px; /* Increased height for mobile touch */
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .product-right-section {
-    width: 100%;
-    height: auto;
-    padding: 0; /* Remove padding so tabs can fill full width */
-  }
-
-  /* Product description and changelog - full width with padding */
-  .product-description {
-    width: 100%;
-    max-width: 100%;
-    padding: 0 var(--space-medium);
-  }
-
-  .changelog-section {
-    width: 100%;
-    max-width: 100%;
-    padding: 0 var(--space-medium);
-  }
-
-  .product-image {
-    height: 250px;
-    margin-top: 0; /* No top margin */
-    padding-top: 0; /* No top padding */
-  }
-
-  .product-image-container {
-    margin-top: 0; /* No top margin on mobile - start immediately */
-    padding-top: 0; /* Explicitly remove top padding */
-    justify-content: flex-start; /* Align to top instead of center */
-  }
-
-  /* Hide icon grid on mobile */
-  .icon-grid {
-    display: none !important;
-  }
-
-  /* Hide footer shortcut text on mobile */
-  .footer-text {
-    display: none;
-  }
-
-  /* Site container - minimal padding on mobile */
-  .site-container {
-    padding-bottom: var(--space-medium);
-    padding-top: 54px; /* Header height (24px) + header top padding (30px) */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Align content to top */
-    margin-top: 0; /* Ensure no top margin */
-  }
-  
-  /* Ensure header doesn't add extra spacing */
-  .site-header {
-    padding: 0;
-    padding-top: 30px; /* 30px padding from top of page */
-    height: 24px; /* Reduced by 40% from 40px */
-    width: 100%; /* Full width for even distribution */
-    display: flex;
-    justify-content: space-between; /* Evenly distribute hamburger, logo, and account button */
-    align-items: center; /* Vertically center content */
-    padding-left: var(--space-small); /* Equal spacing from left edge */
-    padding-right: var(--space-small); /* Equal spacing from right edge */
-    box-sizing: border-box; /* Include padding in width calculation */
-  }
-
-  .site-header .header-left {
-    padding: 0; /* Remove padding to allow precise alignment */
-    flex: 1; /* Take up available space */
-    display: flex;
-    justify-content: center; /* Center logo horizontally */
-    align-items: center; /* Center logo vertically */
-    width: auto !important; /* Override any inline width styles */
-    min-width: 0; /* Allow flex shrinking */
-  }
-
-  .hamburger-menu-button {
-    display: flex; /* Show hamburger on mobile */
-    position: relative; /* Remove absolute positioning */
-    flex: 0 0 auto; /* Don't grow or shrink */
-    z-index: 201; /* Above header */
-    margin-left: 0; /* No additional margin - padding handled by header */
-  }
-
-  .site-header .logo {
-    font-size: 24px; /* Slightly smaller on mobile */
-    max-width: 100%; /* Responsive width */
-    width: auto;
-    height: auto;
-    text-align: center; /* Center text within logo */
-    overflow: hidden; /* Hide overflow if text is too long */
-    text-overflow: ellipsis; /* Show ellipsis for long text */
-    white-space: nowrap; /* Keep text on one line */
-    line-height: 1; /* Prevent extra line height spacing */
-    margin: 0; /* Remove auto margin */
-  }
-
-  .site-header .header-icons {
-    position: relative; /* Remove absolute positioning */
-    flex: 0 0 auto; /* Don't grow or shrink */
-    display: flex;
-    align-items: center;
-    gap: var(--space-small); /* Smaller gap on mobile */
-    z-index: 201; /* Above header */
-    margin-right: 0; /* No additional margin - padding handled by header */
-    padding-right: 0; /* No additional padding - padding handled by header */
-  }
-
-  /* Account icon spacing handled by header padding */
-  .site-header .account-link {
-    margin-right: 0;
-    padding-right: 0;
-  }
-
-  /* Hide header membership CTA on mobile */
-  .member-cta-button {
-    display: none !important;
-  }
-
-  /* Sidebar becomes hamburger dropdown menu */
-  .sidebar {
-    width: 280px; /* Wider on mobile for better touch targets */
-    height: calc(100vh - 54px);
-    max-height: calc(100vh - 54px); /* Ensure it doesn't exceed viewport */
-    transform: translateX(-100%); /* Hidden by default */
-    top: 54px; /* Header height (24px) + header top padding (30px) */
-    z-index: 200;
-    box-shadow: var(--shadow-strong);
-    overflow-y: auto; /* Enable vertical scrolling */
-    overflow-x: hidden;
-  }
-  
-  #sidebar {
-    height: calc(100vh - 54px);
-    max-height: calc(100vh - 54px);
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  
-  .sidebar-content {
-    width: 100%;
-    /* Content can grow naturally, scrolling handled by parent .sidebar */
-  }
-
-  .sidebar.open {
-    transform: translateX(0); /* Slide in when open */
-  }
-
-  .sidebar-backdrop {
-    display: block; /* Show backdrop on mobile */
-    width: 100vw;
-    height: 100vh;
-  }
-
-  .sidebar-backdrop.active {
-    pointer-events: auto; /* Allow clicks when active */
-  }
-
-  /* Product card - positioned exactly at header bottom using absolute positioning */
-  .product-card {
-    position: absolute !important;
-    top: 54px !important; /* Header height (24px) + header top padding (30px) */
-    left: 0;
-    right: 0;
-    margin: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: var(--space-small);
-    padding-left: var(--space-small);
-    padding-right: var(--space-small);
-    width: 100%;
-  }
-
-  .product-item {
-    padding: var(--space-small) var(--space-medium);
-    min-height: 44px; /* iOS touch target minimum */
-  }
-
-  .product-name {
-    font-size: 12px; /* Slightly larger for readability */
-  }
-
-  .category-name {
-    font-size: 13px; /* Slightly larger for readability */
-  }
-
-  /* Footer */
-  .footer {
-    position: relative; /* Change from fixed on mobile */
-    margin-top: var(--space-large);
-  }
-
-  /* Site container - minimal padding on mobile */
-  .site-container {
-    padding-bottom: var(--space-medium);
-    padding-top: 54px; /* Header height (24px) + header top padding (30px) */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Align content to top */
-    margin-top: 0; /* Ensure no top margin */
-  }
-
-  /* Product card container - start from top */
-  .product-card-container {
-    align-items: flex-start;
-    justify-content: flex-start;
-    margin-top: 0;
-    padding-top: 0;
-  }
-}
+/* Mobile styles are now handled in mobile.css for modularity */
+/* See mobile.css for all mobile-specific layout adjustments */
 
 /* ============================================================================
    MODAL STYLES - Hidden by default, shown via JavaScript
@@ -3090,34 +2857,7 @@ h2 {
 }
 
 /* Responsive styles for landing pop-up */
-@media (max-width: 768px) {
-  .landing-popup-modal {
-    width: 95%;
-    max-width: none;
-  }
 
-  .landing-popup-content {
-    padding: var(--space-large);
-    gap: var(--space-medium);
-  }
-
-  .landing-popup-title {
-    font-size: var(--font-size-h2);
-  }
-
-  .landing-popup-benefits {
-    gap: var(--space-tiny);
-  }
-
-  .landing-popup-shopping-options {
-    grid-template-columns: 1fr;
-    gap: var(--space-medium);
-  }
-
-  .landing-popup-option-header {
-    font-size: var(--font-size-base);
-  }
-}
 
 /* ============================================================================
    PURCHASE SUCCESS STYLES
