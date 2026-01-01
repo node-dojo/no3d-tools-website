@@ -1,0 +1,156 @@
+{
+  "title": "Dojo Bolt Gen v05_Obj",
+  "handle": "dojo-bolt-gen-v05-obj",
+  "description": "Blender asset: Dojo Bolt Gen v05_Obj",
+  "vendor": "The Well Tarot",
+  "product_type": "Blender Add-on",
+  "tags": [
+    "blender",
+    "addon",
+    "3d",
+    "asset"
+  ],
+  "status": "active",
+  "variants": [
+    {
+      "price": "7.77",
+      "sku": "NO3D-TOOLS-DOJO-BOLT-GEN-V05-OBJ",
+      "inventory_policy": "continue",
+      "inventory_management": "polar"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "MESH",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blender_version",
+      "value": "5.0.0+",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-12-13",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "source_file",
+      "value": "NO3D TOOLS workbench_29NOV2025.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "vertices",
+      "value": "1",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "faces",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "materials",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_m3",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"M3\", address=0x600004b328b0>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_mm",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"MM\", address=0x600004b32960>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "custom_hops",
+      "value": "<bpy id prop: owner=\"OBDojo Bolt Gen v05_Obj\", name=\"hops\", address=0x600004b32a10>",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "All Catalogs",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blend_file",
+      "value": "Dojo Bolt Gen v05_Obj.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_Dojo Bolt Gen v05_Obj.png",
+      "type": "single_line_text_field",
+      "hosted_url": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1765693693/no3d-tools/dojo-bolt-gen-v05_obj/icon_Dojo-Bolt-Gen-v05_Obj.png"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_download_url",
+      "value": "https://polar.sh/the-well-tarot/products/dojo-bolt-gen-v05-obj",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_size_bytes",
+      "value": "104830",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_type",
+      "value": "blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "download_count",
+      "value": "0",
+      "type": "number_integer"
+    },
+    {
+      "namespace": "polar",
+      "key": "license_type",
+      "value": "commercial",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "compatibility",
+      "value": "Blender 5.0+",
+      "type": "single_line_text_field"
+    }
+  ],
+  "hosted_media": {
+    "icon_Dojo Bolt Gen v05_Obj.png": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766458610/no3d-tools/-media-upload-status/icon_Dojo-Bolt-Gen-v05_Obj.png",
+    "bolt gen OBJ demo.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766449275/no3d-tools/dojo-bolt-gen-v05_obj/bolt-gen-OBJ-demo.gif",
+    "bolt gen demo 3.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766449278/no3d-tools/dojo-bolt-gen-v05_obj/bolt-gen-demo-3.gif",
+    "bolt gen demo 3.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766449283/no3d-tools/dojo-bolt-gen-v05_obj/bolt-gen-demo-3.mov",
+    "bolt gen demo 5.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766449316/no3d-tools/dojo-bolt-gen-v05_obj/bolt-gen-demo-5.mov",
+    "bolt gen demo.mov": "https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766449328/no3d-tools/dojo-bolt-gen-v05_obj/bolt-gen-demo.mov",
+    "bolt gen demo 5.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766456540/no3d-tools/dojo-bolt-gen-v05_obj/bolt-gen-demo-5.gif",
+    "bolt disassemble thumb.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766456541/no3d-tools/dojo-bolt-gen-v05_obj/bolt-disassemble-thumb.gif",
+    "bolt disassemble thumb_compressed.gif": "https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto,w_auto/v1766451200/no3d-tools/-media-upload-status/bolt-disassemble-thumb_compressed.gif"
+  },
+  "carousel_media": [
+    "bolt disassemble thumb.gif",
+    "bolt gen demo 3.gif",
+    "bolt gen demo 5.gif",
+    "icon_Dojo Bolt Gen v05_Obj.png"
+  ]
+}

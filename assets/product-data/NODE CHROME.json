@@ -1,0 +1,56 @@
+{
+  "title": "NODE CHROME",
+  "handle": "node-chrome",
+  "description": "",
+  "vendor": "The Well Tarot",
+  "product_type": "Blender Add-on",
+  "tags": [],
+  "status": "active",
+  "variants": [
+    {
+      "price": "0.00",
+      "sku": "NO3D-TOOLS-NODE-CHROME",
+      "inventory_policy": "continue",
+      "inventory_management": "shopify"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "GEOMETRY",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blender_version",
+      "value": "5.0.0+",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-12-14",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "source_file",
+      "value": "",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blend_file",
+      "value": "NODE CHROME.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_NODE CHROME.png",
+      "type": "single_line_text_field"
+    }
+  ],
+  "changelog": []
+}

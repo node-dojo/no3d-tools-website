@@ -47,9 +47,14 @@ body {
 
 .site-header .logo {
   max-width: 50% !important; /* Enforce 50% window width rule */
+  max-height: 23px !important; /* Limit logo height on mobile */
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+#header-logo {
+  max-height: 23px !important; /* Limit logo height on mobile */
 }
 
 .site-header .header-icons {

@@ -1190,7 +1190,7 @@ body {
   width: fit-content;
   max-width: 100%;
   height: fit-content;
-  overflow-y: auto;
+  overflow: visible; /* Allow grid to expand to fit content without scrolling */
   padding-left: 0px;
   padding-right: 0px;
   padding-top: 0px;
@@ -1273,6 +1273,7 @@ body {
     padding-bottom: 0px;
     width: 100%;
     height: fit-content;
+    overflow: visible; /* Ensure no scroll on desktop - grid expands to fit content */
     justify-items: stretch;
     align-items: stretch;
   }
