@@ -10,7 +10,22 @@ import {
   fetchSubscriptionByLicenseKey
 } from './lib/subscriptionAccess.js';
 import { getLicenseKeyFromRequest } from './lib/licenseRequest.js';
+import https from 'node:https';
 import { getManifestObjectKey, isR2Configured, presignGetObject } from './lib/r2.js';
+
+/** Fetch a URL using node:https with zero auto-added headers (avoids undici/fetch
+ *  adding accept-encoding etc. that break R2 presigned URL signature validation). */
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, { headers: {} }, (resp) => {
+      const chunks = [];
+      resp.on('data', (c) => chunks.push(c));
+      resp.on('end', () => resolve({ status: resp.statusCode, body: Buffer.concat(chunks).toString('utf-8') }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -73,38 +88,20 @@ export default async function handler(req, res) {
     }
   }
 
-  let presignedUrl;
   try {
-    presignedUrl = await presignGetObject(key, 60);
-    // Validate URL before passing to fetch
-    const parsed = new URL(presignedUrl);
-    console.log('manifest presign ok, host:', parsed.host, 'path:', parsed.pathname);
-  } catch (e) {
-    console.error('manifest presign/parse error:', e?.name, e?.message, e?.code);
-    console.error('R2_ENDPOINT starts with:', (process.env.R2_ENDPOINT || '').slice(0, 30));
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(500).json({ error: 'Failed to create manifest presigned URL' });
-  }
-
-  try {
-    // Use minimal headers to avoid presigned signature mismatch on Vercel
-    const resp = await fetch(presignedUrl, {
-      method: 'GET',
-      headers: {},
-      redirect: 'follow',
-    });
-    if (!resp.ok) {
-      const body = await resp.text().catch(() => '');
-      console.error('manifest R2 resp:', resp.status, resp.statusText);
-      console.error('manifest R2 body:', body.slice(0, 500));
+    // Use presigned URL + node:https (not fetch) to avoid undici adding
+    // unsigned headers (accept-encoding, etc.) that R2 rejects with 400.
+    const url = await presignGetObject(key, 60);
+    const { status, body } = await httpsGet(url);
+    if (status < 200 || status >= 300) {
+      console.error('manifest R2 resp:', status, body.slice(0, 500));
       res.setHeader('Content-Type', 'application/json');
-      return res.status(502).json({ error: `R2 returned ${resp.status}` });
+      return res.status(502).json({ error: `R2 returned ${status}` });
     }
-    const raw = await resp.text();
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    return res.status(200).send(raw);
+    return res.status(200).send(body);
   } catch (e) {
-    console.error('manifest fetch network error:', e?.name, e?.message, e?.cause);
+    console.error('manifest fetch error:', e?.message || e);
     res.setHeader('Content-Type', 'application/json');
     return res.status(500).json({ error: 'Failed to read manifest from storage' });
   }
