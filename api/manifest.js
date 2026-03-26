@@ -73,19 +73,32 @@ export default async function handler(req, res) {
     }
   }
 
+  let presignedUrl;
   try {
-    // Use presigned URL + fetch instead of direct SDK stream reading,
-    // which has compatibility issues in Vercel's serverless runtime.
-    const url = await presignGetObject(key, 60);
-    const resp = await fetch(url);
+    presignedUrl = await presignGetObject(key, 60);
+    // Validate URL before passing to fetch
+    const parsed = new URL(presignedUrl);
+    console.log('manifest presign ok, host:', parsed.host, 'path:', parsed.pathname);
+  } catch (e) {
+    console.error('manifest presign/parse error:', e?.name, e?.message, e?.code);
+    console.error('R2_ENDPOINT starts with:', (process.env.R2_ENDPOINT || '').slice(0, 30));
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(500).json({ error: 'Failed to create manifest presigned URL' });
+  }
+
+  try {
+    const resp = await fetch(presignedUrl);
     if (!resp.ok) {
-      throw new Error(`R2 fetch failed: ${resp.status} ${resp.statusText}`);
+      const body = await resp.text().catch(() => '');
+      console.error('manifest R2 resp:', resp.status, resp.statusText, body.slice(0, 300));
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(502).json({ error: `R2 returned ${resp.status}` });
     }
     const raw = await resp.text();
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.status(200).send(raw);
   } catch (e) {
-    console.error('manifest fetch error:', e?.message || e);
+    console.error('manifest fetch network error:', e?.name, e?.message, e?.cause);
     res.setHeader('Content-Type', 'application/json');
     return res.status(500).json({ error: 'Failed to read manifest from storage' });
   }
