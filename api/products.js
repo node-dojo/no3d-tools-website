@@ -126,7 +126,6 @@ export default async function handler(req, res) {
       video: p.video_url,
       type: mapProductType(p.product_type), // Map to website productType
       tags: p.tags,
-      polarProductId: p.polar_product_id,
       sku: p.sku,
       vendor: p.vendor,
       metafields: p.metafields || [],
@@ -136,10 +135,8 @@ export default async function handler(req, res) {
       excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
       main_image: p.metadata?.main_image || null,
       changelog: p.metadata?.changelog || [],
-      polar: p.polar_product_id ? {
-        product_id: p.polar_product_id,
-        price_id: p.polar_price_id
-      } : null
+      file_url: p.file_url ?? null,
+      checksum: p.checksum ?? null
     }))
 
     res.status(200).json({

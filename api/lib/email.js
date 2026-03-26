@@ -822,9 +822,153 @@ export async function sendWelcomeEmail(email, name, token) {
   }
 }
 
+/**
+ * Generate HTML for license key email (Stripe invoice.paid).
+ * @param {string} licenseKey
+ * @param {string} addonDownloadUrl
+ */
+export function getLicenseKeyEmail(licenseKey, addonDownloadUrl) {
+  const url = addonDownloadUrl || `${SITE_URL}/no3d-tools-addon`;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your NO3D Tools License Key</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border: 2px solid #000;
+      padding: 40px;
+      margin: 20px 0;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      font-family: monospace;
+      font-size: 24px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #000;
+      letter-spacing: 2px;
+    }
+    .key {
+      font-family: monospace;
+      font-size: 20px;
+      font-weight: bold;
+      border: 2px solid #000;
+      padding: 14px 18px;
+      display: inline-block;
+      background: #f0ff00;
+      word-break: break-all;
+      margin: 10px 0 20px;
+      letter-spacing: 1px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #f0ff00;
+      color: #000;
+      text-decoration: none;
+      padding: 16px 32px;
+      border: 2px solid #000;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 20px 0;
+      text-align: center;
+      cursor: pointer;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">NO3D TOOLS</div>
+    </div>
+
+    <h1 style="font-size: 24px; margin-bottom: 10px;">Your License Key</h1>
+    <p style="margin-top: 0;">Use the key below in Blender preferences to activate full library access.</p>
+
+    <div class="key">${licenseKey}</div>
+
+    <p>Download the subscriber add-on here:</p>
+    <div style="text-align:center; margin: 20px 0;">
+      <a href="${url}" class="button">Download Add-on</a>
+    </div>
+
+    <div class="footer">
+      <p>If you did not make this purchase, you can safely ignore this email.</p>
+      <p>&copy; 2025 NO3D Tools. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Generate plain text version of license key email.
+ * @param {string} licenseKey
+ * @param {string} addonDownloadUrl
+ */
+export function getLicenseKeyEmailText(licenseKey, addonDownloadUrl) {
+  const url = addonDownloadUrl || `${SITE_URL}/no3d-tools-addon`;
+
+  return `
+NO3D TOOLS
+
+Your License Key:
+${licenseKey}
+
+Download the subscriber add-on:
+${url}
+
+If you did not make this purchase, you can safely ignore this email.
+  `.trim();
+}
+
+/**
+ * Send license key email.
+ * @param {string} email
+ * @param {string} licenseKey
+ * @param {string=} addonDownloadUrl
+ */
+export async function sendLicenseKeyEmail(email, licenseKey, addonDownloadUrl) {
+  const addonUrl = addonDownloadUrl || `${SITE_URL}/no3d-tools-addon`;
+
+  return sendEmail({
+    to: email,
+    subject: 'Your NO3D Tools License Key',
+    html: getLicenseKeyEmail(licenseKey, addonUrl),
+    text: getLicenseKeyEmailText(licenseKey, addonUrl),
+  });
+}
+
 export default {
   sendMagicLinkEmail,
   sendWelcomeEmail,
+  sendLicenseKeyEmail,
   sendEmail,
   getMagicLinkEmail,
   getMagicLinkEmailText,
