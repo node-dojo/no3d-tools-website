@@ -87,10 +87,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Log URL shape (without signature) for debugging
-    const debugUrl = new URL(presignedUrl);
-    console.log('manifest fetch URL:', debugUrl.origin + debugUrl.pathname);
-    const resp = await fetch(presignedUrl);
+    // Use minimal headers to avoid presigned signature mismatch on Vercel
+    const resp = await fetch(presignedUrl, {
+      method: 'GET',
+      headers: {},
+      redirect: 'follow',
+    });
     if (!resp.ok) {
       const body = await resp.text().catch(() => '');
       console.error('manifest R2 resp:', resp.status, resp.statusText);
