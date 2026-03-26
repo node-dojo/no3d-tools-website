@@ -87,10 +87,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Log URL shape (without signature) for debugging
+    const debugUrl = new URL(presignedUrl);
+    console.log('manifest fetch URL:', debugUrl.origin + debugUrl.pathname);
     const resp = await fetch(presignedUrl);
     if (!resp.ok) {
       const body = await resp.text().catch(() => '');
-      console.error('manifest R2 resp:', resp.status, resp.statusText, body.slice(0, 300));
+      console.error('manifest R2 resp:', resp.status, resp.statusText);
+      console.error('manifest R2 body:', body.slice(0, 500));
       res.setHeader('Content-Type', 'application/json');
       return res.status(502).json({ error: `R2 returned ${resp.status}` });
     }
