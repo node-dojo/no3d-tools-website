@@ -10,7 +10,7 @@ import {
   fetchSubscriptionByLicenseKey
 } from './lib/subscriptionAccess.js';
 import { getLicenseKeyFromRequest } from './lib/licenseRequest.js';
-import { getManifestObjectKey, getObjectUtf8String, isR2Configured, presignGetObject } from './lib/r2.js';
+import { getManifestObjectKey, isR2Configured, presignGetObject } from './lib/r2.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -74,7 +74,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const raw = await getObjectUtf8String(key);
+    // Use presigned URL + fetch instead of direct SDK stream reading,
+    // which has compatibility issues in Vercel's serverless runtime.
+    const url = await presignGetObject(key, 60);
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      throw new Error(`R2 fetch failed: ${resp.status} ${resp.statusText}`);
+    }
+    const raw = await resp.text();
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.status(200).send(raw);
   } catch (e) {
