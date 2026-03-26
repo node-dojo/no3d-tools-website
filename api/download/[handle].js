@@ -4,13 +4,13 @@
  * Returns a short-lived presigned URL for the product .blend on R2 (products.file_url).
  */
 
-import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
+import { getSupabaseServiceClient } from '../lib/supabaseAdmin.js';
 import {
   computeAccessState,
   fetchSubscriptionByLicenseKey
-} from './lib/subscriptionAccess.js';
-import { getLicenseKeyFromRequest } from './lib/licenseRequest.js';
-import { isR2Configured, presignGetObject } from './lib/r2.js';
+} from '../lib/subscriptionAccess.js';
+import { getLicenseKeyFromRequest } from '../lib/licenseRequest.js';
+import { isR2Configured, presignGetObject } from '../lib/r2.js';
 
 const PRESIGN_TTL_SECONDS = 900;
 

@@ -57,10 +57,14 @@ export async function getObjectUtf8String(objectKey) {
   const client = getR2Client();
   const bucket = getR2Bucket();
   const out = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }));
+  const body = out.Body;
+  if (!body) throw new Error('Empty R2 object body');
+  // Use transformToString if available (AWS SDK v3), fall back to stream concat
+  if (typeof body.transformToString === 'function') {
+    return body.transformToString('utf-8');
+  }
   const chunks = [];
-  const stream = out.Body;
-  if (!stream) throw new Error('Empty R2 object body');
-  for await (const chunk of stream) {
+  for await (const chunk of body) {
     chunks.push(chunk);
   }
   return Buffer.concat(chunks).toString('utf8');
