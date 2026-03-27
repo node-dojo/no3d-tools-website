@@ -330,7 +330,7 @@ Hi {name or "there"},
 Here's what's new in the No3d Tools library since your last update:
 
 ## New Products
-- Dojo Bracket Generator — Parametric bracket tool with 5 adjustable inputs
+- Dojo Support Bracket — Parametric support bracket with 5 adjustable inputs
 - T-Slot Utilities — T-slot profile generation and assembly tools
 
 ## Updated Products

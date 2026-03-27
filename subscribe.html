@@ -55,6 +55,13 @@
             color: var(--color-void-black);
             line-height: var(--line-height-base);
         }
+
+        .top-subscribe-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: var(--space-medium);
+            margin-bottom: var(--space-large);
+        }
         
         .product-count {
             font-family: var(--font-mono);
@@ -226,6 +233,46 @@
             color: var(--color-void-black);
             transform: translateY(-1px);
         }
+
+        @media (max-width: 768px) {
+            html,
+            body {
+                min-height: 100%;
+                height: auto;
+                overflow-x: hidden;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .site-container {
+                min-height: auto;
+                overflow: visible;
+                overscroll-behavior: auto;
+                padding-top: 88px;
+                padding-bottom: 90px;
+            }
+
+            .subscribe-container {
+                margin-top: var(--space-medium);
+                padding: var(--space-medium);
+            }
+
+            .top-subscribe-wrap {
+                position: sticky;
+                top: 80px;
+                z-index: 150;
+                background: var(--color-stone-gray);
+                padding: var(--space-tiny) 0;
+            }
+
+            .top-subscribe-wrap .subscribe-button {
+                width: 100%;
+                max-width: 320px;
+                text-align: center;
+                font-size: var(--font-size-h3);
+                margin: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -248,6 +295,11 @@
                 <p>Unlock the entire library of premium Blender assets, nodes, and tools</p>
                 <div class="product-count" id="product-count">
                     Loading product count...
+                </div>
+                <div class="top-subscribe-wrap">
+                    <a href="#" class="subscribe-button" id="subscribe-button" onclick="handleSubscribe(event); return false;">
+                        Subscribe Now
+                    </a>
                 </div>
             </div>
 
@@ -279,12 +331,9 @@
 
             <div class="pricing-section">
                 <h2>Simple Monthly Pricing</h2>
-                <div class="pricing-amount" id="monthly-price">$19.99</div>
-                <div class="pricing-period">per month</div>
-                <p class="product-count-detail" id="product-count-detail">Access to <span id="product-count-number">100+</span> products and growing</p>
-                <a href="#" class="subscribe-button" id="subscribe-button" onclick="handleSubscribe(event); return false;">
-                    Subscribe Now
-                </a>
+                <div class="pricing-amount" id="monthly-price">--</div>
+                <div class="pricing-period" id="pricing-period">per month</div>
+                <p class="product-count-detail" id="product-count-detail">Access to <span id="product-count-number">...</span> products and growing</p>
                 <p class="subscribe-footer-note">
                     Cancel anytime • No hidden fees • Full access while subscribed
                 </p>
@@ -298,19 +347,70 @@
 
     <script>
         // Fetch product count from our own API
-        async function fetchProductCount() {
+        function renderProductCount(count) {
+            const safeCount = Number.isFinite(count) && count > 0 ? Math.floor(count) : null;
             const productCountEl = document.getElementById('product-count');
             const productCountNumber = document.getElementById('product-count-number');
+
+            if (!safeCount) {
+                productCountEl.textContent = 'Products available';
+                productCountNumber.textContent = 'all';
+                return;
+            }
+
+            const noun = safeCount === 1 ? 'product' : 'products';
+            productCountEl.textContent = `${safeCount} ${noun} available`;
+            productCountNumber.textContent = `${safeCount}`;
+        }
+
+        async function fetchProductCount() {
             try {
-                const response = await fetch('/api/get-all-products');
-                const data = await response.json();
-                const count = Array.isArray(data) ? data.length : Object.keys(data).length;
-                productCountEl.textContent = `${count}+ products available`;
-                productCountNumber.textContent = `${count}+`;
+                // Preferred source: paginated products endpoint exposes total count.
+                const pagedResponse = await fetch('/api/products?limit=1&page=1');
+                if (pagedResponse.ok) {
+                    const pagedData = await pagedResponse.json();
+                    const total = pagedData?.pagination?.total;
+                    if (Number.isFinite(total) && total >= 0) {
+                        renderProductCount(total);
+                        return;
+                    }
+                }
+
+                // Fallback for older environments: count from get-all-products.
+                const fallbackResponse = await fetch('/api/get-all-products');
+                const fallbackData = await fallbackResponse.json();
+                if (Array.isArray(fallbackData)) {
+                    renderProductCount(fallbackData.length);
+                    return;
+                }
+
+                renderProductCount(null);
             } catch (err) {
                 console.error('Error fetching product count:', err);
-                productCountEl.textContent = '25+ products available';
-                productCountNumber.textContent = '25+';
+                renderProductCount(null);
+            }
+        }
+
+        async function fetchSubscriptionPrice() {
+            const priceEl = document.getElementById('monthly-price');
+            const periodEl = document.getElementById('pricing-period');
+            try {
+                const response = await fetch('/api/subscription-price');
+                if (!response.ok) throw new Error('Failed to load subscription price');
+                const data = await response.json();
+
+                if (data.formattedAmount) {
+                    priceEl.textContent = data.formattedAmount;
+                }
+
+                if (data.interval) {
+                    periodEl.textContent = `per ${data.interval}`;
+                }
+            } catch (err) {
+                console.error('Error fetching subscription price:', err);
+                // Keep neutral fallback text to avoid stale hardcoded pricing.
+                priceEl.textContent = 'See checkout';
+                periodEl.textContent = '';
             }
         }
 
@@ -343,6 +443,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchProductCount();
+            fetchSubscriptionPrice();
         });
     </script>
 </body>
