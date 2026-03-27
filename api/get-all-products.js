@@ -90,8 +90,6 @@ export default async function handler(req, res) {
       preview: p.preview_image_url,
       video: p.video_url,
       tags: p.tags || [],
-      polar_product_id: p.polar_product_id,
-      polar_price_id: p.polar_price_id,
       sku: p.sku,
       vendor: p.vendor,
       metafields: p.metafields || [],
@@ -100,21 +98,8 @@ export default async function handler(req, res) {
       carousel_media: p.metadata?.carousel_media || [],
       excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
       main_image: p.metadata?.main_image || null,
-      changelog: p.metadata?.changelog || [],
-      polar: p.polar_product_id ? {
-        product_id: p.polar_product_id,
-        price_id: p.polar_price_id
-      } : null
+      changelog: p.metadata?.changelog || []
     }))
-
-    // Deduplicate by BOTH handle AND title (prioritize products with polar_product_id)
-    // First, sort to prioritize products with polar_product_id
-    productsRaw.sort((a, b) => {
-      // Products with polar_product_id come first
-      const aHasPolar = a.polar_product_id ? 1 : 0
-      const bHasPolar = b.polar_product_id ? 1 : 0
-      return bHasPolar - aHasPolar // descending - polar products first
-    })
 
     const seenHandles = new Set()
     const seenTitles = new Set()

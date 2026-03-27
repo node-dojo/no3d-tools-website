@@ -1,23 +1,15 @@
 /**
- * Get Checkout Details - SIMPLIFIED
- * 
- * Endpoint: GET /api/get-checkout-details?checkout_id=xxx
- * 
- * Per Polar documentation, this endpoint simply fetches checkout session details
- * to display on the success/confirmation page. It does NOT handle downloads -
- * that's what Polar's Customer Portal is for.
- * 
- * Returns: { checkoutId, status, customerEmail, customerId, total, currency, products }
+ * GET /api/get-checkout-details
+ *
+ * Query: session_id (Stripe Checkout Session id, e.g. cs_...)
+ * Legacy: checkout_id — treated as session_id for backwards compatibility.
+ *
+ * Returns summary fields for the success page.
  */
 
-import { Polar } from '@polar-sh/sdk';
-
-const polar = new Polar({
-  accessToken: process.env.POLAR_API_TOKEN
-});
+import Stripe from 'stripe';
 
 export default async function handler(req, res) {
-  // CORS headers
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -31,84 +23,59 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { checkout_id } = req.query;
+  const sessionId = req.query.session_id || req.query.checkout_id;
 
-  if (!checkout_id) {
-    return res.status(400).json({ error: 'checkout_id parameter required' });
+  if (!sessionId || typeof sessionId !== 'string') {
+    return res.status(400).json({ error: 'session_id parameter required' });
   }
 
-  if (!process.env.POLAR_API_TOKEN) {
-    console.error('POLAR_API_TOKEN not configured');
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('STRIPE_SECRET_KEY not configured');
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
   try {
-    console.log(`🔍 Fetching checkout details for: ${checkout_id}`);
-    
-    // Fetch checkout session from Polar
-    const checkout = await polar.checkouts.get({ id: checkout_id });
-    
-    if (!checkout) {
-      return res.status(404).json({ error: 'Checkout not found' });
-    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    console.log('✅ Checkout fetched:', {
-      id: checkout.id,
-      status: checkout.status,
-      customerId: checkout.customer_id
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items', 'line_items.data.price.product']
     });
 
-    // Build response with available data
+    const customerId =
+      typeof session.customer === 'string'
+        ? session.customer
+        : session.customer?.id || null;
+
+    const lineItems = session.line_items?.data || [];
+    const products = lineItems.map((line) => {
+      const price = line.price;
+      const product = price?.product;
+      const productObj = typeof product === 'object' && product && !product.deleted ? product : null;
+      return {
+        id: productObj?.id || price?.id || line.id,
+        name: productObj?.name || line.description || 'Subscription',
+        description: productObj?.description || null
+      };
+    });
+
     const response = {
-      checkoutId: checkout.id,
-      status: checkout.status,
-      customerId: checkout.customer_id,
-      customerEmail: checkout.customer_email || checkout.customer?.email,
-      total: checkout.total_amount || checkout.totalAmount || 0,
-      currency: checkout.currency || 'usd',
-      products: []
+      checkoutId: session.id,
+      sessionId: session.id,
+      status: session.status,
+      customerId,
+      customerEmail: session.customer_details?.email || session.customer_email || null,
+      total: session.amount_total ?? 0,
+      currency: session.currency || 'usd',
+      products
     };
 
-    // Try to get product details if we have a product ID
-    const productId = checkout.product_id || checkout.productId;
-    if (productId) {
-      try {
-        const product = await polar.products.get({ id: productId });
-        if (product) {
-          response.products.push({
-            id: product.id,
-            name: product.name,
-            description: product.description
-          });
-        }
-      } catch (productError) {
-        console.warn('Could not fetch product details:', productError.message);
-      }
-    }
-
-    // Also check if checkout has embedded products array
-    if (checkout.products && Array.isArray(checkout.products)) {
-      for (const p of checkout.products) {
-        const existingIds = response.products.map(x => x.id);
-        if (!existingIds.includes(p.id)) {
-          response.products.push({
-            id: p.id,
-            name: p.name || 'Product',
-            description: p.description
-          });
-        }
-      }
-    }
-
     return res.status(200).json(response);
-
   } catch (error) {
-    console.error('❌ Error fetching checkout details:', error.message);
-    
-    // Return graceful error - success page will still work
+    console.error('Error fetching Stripe checkout session:', error?.message || error);
     return res.status(200).json({
-      checkoutId: checkout_id,
-      status: 'completed',
+      checkoutId: sessionId,
+      sessionId: sessionId,
+      status: 'complete',
       products: [],
       note: 'Could not fetch full details'
     });

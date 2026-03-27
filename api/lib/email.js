@@ -965,10 +965,74 @@ export async function sendLicenseKeyEmail(email, licenseKey, addonDownloadUrl) {
   });
 }
 
+/**
+ * Send payment failure notification email.
+ * @param {string} email - Recipient email
+ * @param {string|Date} graceUntil - Grace period end date
+ * @returns {Promise<object>} Resend response
+ */
+export async function sendPaymentFailedEmail(email, graceUntil) {
+  const graceDate = new Date(graceUntil).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const html = `
+    <div style="font-family: 'Courier New', monospace; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="text-transform: uppercase; letter-spacing: 2px;">Payment Failed</h1>
+      <p>Your No3d Tools subscription payment could not be processed.</p>
+      <p>You have until <strong>${graceDate}</strong> to update your payment method before access is revoked.</p>
+      <div style="margin: 20px 0;">
+        <a href="https://no3dtools.com/account.html" style="background: #f0ff00; color: #222; padding: 10px 24px; text-decoration: none; font-family: monospace; text-transform: uppercase; font-weight: bold;">UPDATE PAYMENT METHOD</a>
+      </div>
+      <p style="color: #666; font-size: 12px;">If you believe this is an error, please contact support.</p>
+    </div>
+  `;
+
+  const text = `Payment Failed\n\nYour No3d Tools subscription payment could not be processed.\nYou have until ${graceDate} to update your payment method.\n\nUpdate payment: https://no3dtools.com/account.html`;
+
+  return sendEmail({
+    to: email,
+    subject: 'No3d Tools — Payment Failed',
+    html,
+    text,
+  });
+}
+
+/**
+ * Send subscription cancelled notification email.
+ * @param {string} email - Recipient email
+ * @param {string|Date} expiresAt - Date access expires
+ * @returns {Promise<object>} Resend response
+ */
+export async function sendSubscriptionCancelledEmail(email, expiresAt) {
+  const expiryDate = new Date(expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const html = `
+    <div style="font-family: 'Courier New', monospace; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="text-transform: uppercase; letter-spacing: 2px;">Subscription Cancelled</h1>
+      <p>Your No3d Tools subscription has been cancelled.</p>
+      <p>You will have access until <strong>${expiryDate}</strong>.</p>
+      <p>If you change your mind, you can re-subscribe at any time.</p>
+      <div style="margin: 20px 0;">
+        <a href="https://no3dtools.com/subscribe.html" style="background: #f0ff00; color: #222; padding: 10px 24px; text-decoration: none; font-family: monospace; text-transform: uppercase; font-weight: bold;">RE-SUBSCRIBE</a>
+      </div>
+    </div>
+  `;
+
+  const text = `Subscription Cancelled\n\nYour No3d Tools subscription has been cancelled.\nYou will have access until ${expiryDate}.\n\nRe-subscribe: https://no3dtools.com/subscribe.html`;
+
+  return sendEmail({
+    to: email,
+    subject: 'No3d Tools — Subscription Cancelled',
+    html,
+    text,
+  });
+}
+
 export default {
   sendMagicLinkEmail,
   sendWelcomeEmail,
   sendLicenseKeyEmail,
+  sendPaymentFailedEmail,
+  sendSubscriptionCancelledEmail,
   sendEmail,
   getMagicLinkEmail,
   getMagicLinkEmailText,

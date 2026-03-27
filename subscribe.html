@@ -237,7 +237,7 @@
         </div>
         <div class="header-icons">
             <a href="subscribe.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium); background: var(--color-lello);">Subscribe</a>
-            <a href="https://polar.sh/no3d-tools/portal/request" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);" target="_blank" rel="noopener">Account</a>
+            <a href="account.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Account</a>
         </div>
     </header>
 
@@ -282,7 +282,7 @@
                 <div class="pricing-amount" id="monthly-price">$19.99</div>
                 <div class="pricing-period">per month</div>
                 <p class="product-count-detail" id="product-count-detail">Access to <span id="product-count-number">100+</span> products and growing</p>
-                <a href="#" class="subscribe-button" id="subscribe-button" onclick="handleSubscribe(event)">
+                <a href="#" class="subscribe-button" id="subscribe-button" onclick="handleSubscribe(event); return false;">
                     Subscribe Now
                 </a>
                 <p class="subscribe-footer-note">
@@ -297,63 +297,51 @@
     </footer>
 
     <script>
-        // Load subscription configuration
-        let subscriptionConfig = null;
-
-        async function loadSubscriptionConfig() {
-            try {
-                const response = await fetch('/config/subscription-config.json');
-                if (response.ok) {
-                    subscriptionConfig = await response.json();
-                    if (subscriptionConfig.checkoutUrl) {
-                        document.getElementById('subscribe-button').href = subscriptionConfig.checkoutUrl;
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading subscription config:', error);
-            }
-        }
-
-        // Fetch product count from GitHub API
+        // Fetch product count from our own API
         async function fetchProductCount() {
+            const productCountEl = document.getElementById('product-count');
+            const productCountNumber = document.getElementById('product-count-number');
             try {
-                const response = await fetch('https://api.github.com/repos/node-dojo/no3d-tools-library/contents');
-                if (response.ok) {
-                    const contents = await response.json();
-                    // Count product folders
-                    const productFolders = contents.filter(item =>
-                        item.type === 'dir'
-                    );
-                    const count = productFolders.length;
-                    
-                    // Update UI
-                    document.getElementById('product-count').textContent = `${count}+ products available`;
-                    document.getElementById('product-count-number').textContent = `${count}+`;
-                } else {
-                    document.getElementById('product-count').textContent = '100+ products available';
-                    document.getElementById('product-count-number').textContent = '100+';
-                }
-            } catch (error) {
-                console.error('Error fetching product count:', error);
-                document.getElementById('product-count').textContent = '100+ products available';
-                document.getElementById('product-count-number').textContent = '100+';
+                const response = await fetch('/api/get-all-products');
+                const data = await response.json();
+                const count = Array.isArray(data) ? data.length : Object.keys(data).length;
+                productCountEl.textContent = `${count}+ products available`;
+                productCountNumber.textContent = `${count}+`;
+            } catch (err) {
+                console.error('Error fetching product count:', err);
+                productCountEl.textContent = '25+ products available';
+                productCountNumber.textContent = '25+';
             }
         }
 
-        function handleSubscribe(event) {
+        async function handleSubscribe(event) {
+            event.preventDefault();
             const button = document.getElementById('subscribe-button');
-            if (!subscriptionConfig || !subscriptionConfig.checkoutUrl) {
-                event.preventDefault();
-                alert('Subscription checkout is not configured. Please contact support.');
-                return false;
+            if (button.classList.contains('loading')) return;
+            button.classList.add('loading');
+            button.textContent = 'LOADING...';
+            try {
+                const response = await fetch('/api/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json();
+                const url = data.checkout_url || data.url;
+                if (response.ok && url) {
+                    window.location.href = url;
+                    return;
+                }
+                alert('Subscription checkout is not available. Please try again later.');
+            } catch (e) {
+                alert('Subscription checkout is not available. Please try again later.');
+            } finally {
+                button.classList.remove('loading');
+                button.textContent = 'Subscribe Now';
             }
-            // Button href will handle navigation
-            return true;
         }
 
-        // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
-            loadSubscriptionConfig();
             fetchProductCount();
         });
     </script>

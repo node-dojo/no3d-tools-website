@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
-import { sendLicenseKeyEmail } from './lib/email.js';
+import { sendLicenseKeyEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail } from './lib/email.js';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
@@ -128,6 +128,14 @@ async function handleInvoicePaymentFailed({ supabase, invoice, stripeCustomerId,
     expiresAt: existingRow?.expires_at ? new Date(existingRow.expires_at) : null,
     graceUntil
   });
+
+  // Notify user about payment failure — wrapped in try/catch so email
+  // failure does not break the webhook response.
+  try {
+    await sendPaymentFailedEmail(finalEmail, graceUntil);
+  } catch (emailErr) {
+    console.error('Failed to send payment-failed email:', emailErr?.message || emailErr);
+  }
 }
 
 async function handleSubscriptionDeleted({ supabase, subscription, stripeCustomerId, stripeSubId }) {
@@ -151,6 +159,8 @@ async function handleSubscriptionDeleted({ supabase, subscription, stripeCustome
     throw new Error('Missing customer email for subscription deletion');
   }
 
+  const expiresAt = new Date();
+
   await upsertSubscription({
     supabase,
     stripeCustomerId,
@@ -158,9 +168,17 @@ async function handleSubscriptionDeleted({ supabase, subscription, stripeCustome
     email: finalEmail,
     licenseKey,
     status: 'expired',
-    expiresAt: new Date(),
+    expiresAt,
     graceUntil: null
   });
+
+  // Notify user about subscription cancellation — wrapped in try/catch so
+  // email failure does not break the webhook response.
+  try {
+    await sendSubscriptionCancelledEmail(finalEmail, expiresAt);
+  } catch (emailErr) {
+    console.error('Failed to send subscription-cancelled email:', emailErr?.message || emailErr);
+  }
 }
 
 async function handleSubscriptionUpdated({ supabase, subscription, stripeCustomerId, stripeSubId }) {

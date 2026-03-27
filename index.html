@@ -20,51 +20,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Marked.js for markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
-    <!-- Three.js for 3D object viewing (using ES modules - r150+ compatible) -->
-    <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
-      }
-    }
-    </script>
-    <!-- Polar Embedded Checkout -->
-    <!-- Using official Polar CDN - pinning version for stability -->
-    <script src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@0.1.14/dist/embed.global.js" defer></script>
-    <!-- Supabase Client for Realtime subscriptions -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0/dist/umd/supabase.min.js"></script>
-    <script>
-      // Debug: Check when Polar SDK loads
-      (function() {
-        function checkPolarSDK() {
-          // The SDK exposes window.Polar.EmbedCheckout
-          if (window.Polar && window.Polar.EmbedCheckout) {
-            console.log('✅ Polar SDK loaded!', window.Polar.EmbedCheckout);
-            return true;
-          }
-
-          // Log what's available for debugging
-          console.log('Checking for Polar SDK...');
-          console.log('window.Polar:', window.Polar);
-          console.log('All window keys with "polar":', Object.keys(window).filter(k => k.toLowerCase().includes('polar')));
-          return false;
-        }
-
-        // Check after script loads
-        window.addEventListener('load', function() {
-          if (!checkPolarSDK()) {
-            // Retry a few times in case script loads after window.load
-            let attempts = 0;
-            const retryInterval = setInterval(() => {
-              attempts++;
-              if (checkPolarSDK() || attempts > 10) {
-                clearInterval(retryInterval);
-              }
-            }, 200);
-          }
-        });
-      })();
-    </script>
     <!-- Visitor font - self-hosted WOFF2 webfont -->
     <!-- Preload Visitor font for better performance -->
     <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
@@ -106,18 +61,11 @@
                 <img src="assets/light/no3d-tools.png" alt="NO3D TOOLS" class="logo" id="header-logo">
             </div>
             <div class="header-icons">
-                <button class="header-icon theme-toggle-button" id="theme-toggle-button" aria-label="Toggle dark mode">
-                    <i class="fas fa-moon" id="theme-toggle-icon"></i>
-                </button>
                 <a href="#" class="member-cta-button" id="member-cta-button">
                     <img src="assets/blender_bit_icon.png" alt="Blender" class="member-cta-icon">
                     <span class="member-cta-text">BECOME A MEMBER / GET ALL TOOLS, TUTORIALS, ASSETS</span>
                 </a>
-                <div class="cart-icon-wrapper" id="cart-icon-wrapper">
-                    <img src="assets/light/cart-icon.png" alt="Shopping Cart" class="cart-icon-image" id="cart-icon">
-                    <span class="cart-badge" id="cart-badge">0</span>
-                </div>
-                <a href="https://polar.sh/no3d-tools/portal/request" class="header-icon account-link" id="account-link" target="_blank" rel="noopener" aria-label="Account">
+                <a href="account.html" class="header-icon account-link" id="account-link" aria-label="Account and billing">
                     <img src="assets/light/account-icon.png" alt="Account" class="account-icon-image">
                 </a>
             </div>
@@ -203,7 +151,7 @@
                             <div class="product-price-wrapper">
                                 <div class="product-price" id="product-price">PRICE: $7.99</div>
                                 <button class="download-button" id="download-button" style="display: none;">DOWNLOAD</button>
-                                <a href="#" class="buy-now-button" id="buy-now-button">BUY NOW</a>
+                                <a href="#" class="buy-now-button" id="buy-now-button">SUBSCRIBE</a>
                             </div>
                         </div>
                         
@@ -319,155 +267,6 @@
         <span class="footer-text" id="footer-branch">Branch: <span id="branch-name">-</span></span>
         <img src="assets/light/stone-logo.png" alt="Stone Logo" class="footer-logo">
     </footer>
-
-    <!-- Command Palette Search Modal -->
-    <div class="search-modal-backdrop" id="search-modal-backdrop"></div>
-    <div class="search-modal" id="search-modal">
-        <div class="search-modal-container">
-            <div class="search-modal-header">
-                <input 
-                    type="text" 
-                    class="search-input" 
-                    id="search-input" 
-                    placeholder="Search products, descriptions, categories..."
-                    autocomplete="off"
-                >
-            </div>
-            <div class="search-results-container" id="search-results-container">
-                <div class="search-results-empty" id="search-results-empty">
-                    <span>No results found</span>
-                </div>
-            </div>
-            <div class="search-modal-footer">
-                <span class="search-hint">
-                    <span class="search-key">↑↓</span> Navigate
-                    <span class="search-key">↵</span> Select
-                    <span class="search-key">Esc</span> Close
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Shopping Cart Modal -->
-    <div class="cart-modal-backdrop" id="cart-modal-backdrop"></div>
-    <div class="cart-modal" id="cart-modal">
-        <div class="cart-modal-container">
-            <div class="cart-modal-header">
-                <h2 class="cart-title">SHOPPING CART</h2>
-                <button class="cart-close-button" id="cart-close-button" aria-label="Close cart">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="cart-items-container" id="cart-items-container">
-                <div class="cart-empty" id="cart-empty">
-                    <span class="cart-empty-text">Your cart is empty</span>
-                    <span class="cart-empty-hint">Add products to your cart to get started</span>
-                </div>
-            </div>
-            <div class="cart-modal-footer" id="cart-footer">
-                <div class="cart-total-container">
-                    <span class="cart-total-label">TOTAL:</span>
-                    <span class="cart-total-amount" id="cart-total-amount">$0.00</span>
-                </div>
-                <div class="cart-action-buttons">
-                    <button class="cart-continue-shopping-button" id="cart-continue-shopping-button">
-                        CONTINUE SHOPPING
-                    </button>
-                    <button class="cart-checkout-button" id="cart-checkout-button" disabled>
-                        CHECK OUT
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Checkout Modal -->
-    <div class="checkout-modal-backdrop" id="checkout-modal-backdrop"></div>
-    <div class="checkout-modal" id="checkout-modal">
-        <div class="checkout-modal-container">
-            <div class="checkout-modal-header">
-                <h2 class="checkout-title">CHECKOUT</h2>
-                <button class="checkout-close-button" id="checkout-close-button" aria-label="Close checkout">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="checkout-content-container" id="checkout-content-container">
-                <div class="checkout-loading" id="checkout-loading">
-                    <span class="checkout-loading-text">Loading checkout...</span>
-                </div>
-                <div class="checkout-error" id="checkout-error" style="display: none;">
-                    <span class="checkout-error-text">Unable to load checkout modal. Redirecting to checkout page...</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Landing Pop-up Modal -->
-    <div class="landing-popup-backdrop" id="landing-popup-backdrop"></div>
-    <div class="landing-popup-modal" id="landing-popup-modal">
-        <div class="landing-popup-container">
-            <div class="landing-popup-content">
-                <!-- Main Content -->
-                <div class="landing-popup-body">
-                    <h2 class="landing-popup-title">WELCOME TO<br>NO3D TOOLS</h2>
-                    <h3 class="landing-popup-subheader">There are 2 ways to shop!</h3>
-                    
-                    <!-- Two Column Shopping Options -->
-                    <div class="landing-popup-shopping-options">
-                        <!-- Individual Purchase Column -->
-                        <div class="landing-popup-option-column">
-                            <h4 class="landing-popup-option-header">Get each asset you want individually</h4>
-                            <ul class="landing-popup-option-benefits">
-                                <li class="landing-popup-option-benefit">
-                                    <span class="landing-popup-benefit-icon">✓</span>
-                                    <span class="landing-popup-benefit-text">Purchase only what you need</span>
-                                </li>
-                                <li class="landing-popup-option-benefit">
-                                    <span class="landing-popup-benefit-icon">✓</span>
-                                    <span class="landing-popup-benefit-text">Own assets forever</span>
-                                </li>
-                                <li class="landing-popup-option-benefit">
-                                    <span class="landing-popup-benefit-icon">✓</span>
-                                    <span class="landing-popup-benefit-text">No recurring fees</span>
-                                </li>
-                            </ul>
-                            <p class="landing-popup-option-price">Average cost of individual assets = <span class="landing-popup-price-value landing-popup-price-grey">$7.77</span></p>
-                        </div>
-                        
-                        <!-- Subscription Column -->
-                        <div class="landing-popup-option-column">
-                            <h4 class="landing-popup-option-header">Join Now to get unlimited access to all assets, tutorials, tools and updates</h4>
-                            <ul class="landing-popup-option-benefits">
-                                <li class="landing-popup-option-benefit">
-                                    <span class="landing-popup-benefit-icon">✓</span>
-                                    <span class="landing-popup-benefit-text">Full library access</span>
-                                </li>
-                                <li class="landing-popup-option-benefit">
-                                    <span class="landing-popup-benefit-icon">✓</span>
-                                    <span class="landing-popup-benefit-text">All tutorials included</span>
-                                </li>
-                                <li class="landing-popup-option-benefit">
-                                    <span class="landing-popup-benefit-icon">✓</span>
-                                    <span class="landing-popup-benefit-text">Regular updates and new products</span>
-                                </li>
-                            </ul>
-                            <p class="landing-popup-option-price">Average cost of assets as a member = <span class="landing-popup-price-value landing-popup-price-green">$1.77</span></p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="landing-popup-actions">
-                    <button class="landing-popup-button landing-popup-button-primary" id="landing-popup-subscribe-button">
-                        JOIN NOW
-                    </button>
-                    <button class="landing-popup-button landing-popup-button-secondary" id="landing-popup-browse-button">
-                        CONTINUE BROWSING
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Vercel Analytics -->
     <script defer src="https://cdn.vercel-insights.com/script.js"></script>

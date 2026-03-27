@@ -10,10 +10,12 @@
 
 ## Environment Variables
 
-✅ Configured:
+✅ Configured (typical):
 - `GITHUB_TOKEN` (Production, Preview, Development)
-- `POLAR_API_TOKEN` (Production, Preview, Development)
-- `POLAR_ORG_ID` (Production, Preview, Development)
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID` (billing)
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY` (catalog)
+
+Remove legacy `POLAR_*` variables from Vercel once Stripe is live; they are no longer used by this codebase.
 
 ## GitHub Integration Setup
 

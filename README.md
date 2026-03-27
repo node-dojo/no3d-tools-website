@@ -10,23 +10,9 @@ This branch operates independently from solvet-global automation. Products are m
 
 ### Adding a New Product
 
-1. **Create product in Polar** (polar.sh/no3d-tools):
-   - Add name, description, price
-   - Upload downloadable file (.blend, .zip)
-   - Copy product ID from URL: `https://polar.sh/no3d-tools/products/{productId}`
-   - Copy price ID from product settings
+Catalog data is managed in **Supabase** (`products` table) via the CO-AUG Dashboard. The storefront reads active products from `/api/get-all-products` (Supabase). Subscriptions use **Stripe** (`/api/create-checkout`, webhooks, Billing Portal). Legacy Polar integration has been removed; old Polar docs and scripts live under `archive/polar/`.
 
-2. **Update `polar-products.js`**:
-   ```javascript
-   'product-slug': {
-     productId: 'uuid-from-polar',
-     priceId: 'price-uuid-from-polar',
-     name: 'Product Name',
-     url: 'https://polar.sh/no3d-tools'
-   },
-   ```
-
-3. **Create `assets/product-data/Product Name.json`**:
+1. **Create `assets/product-data/Product Name.json`** (for static fallbacks or marketing assets, if used):
    ```json
    {
      "title": "Product Name",

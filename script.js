@@ -1,12 +1,6 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
-// Break out of iframe if we're redirected back from checkout
-if (window.self !== window.top && window.location.search.includes('checkout_success=true')) {
-  console.log('🔄 [Iframe Breakout] Success detected, redirecting parent window...');
-  window.top.location.href = window.location.href;
-}
-
 // Configure marked (loaded from CDN) with security options
 if (typeof marked !== 'undefined') {
   marked.setOptions({
@@ -62,18 +56,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateHeaderLogo('tools');
     expandProductType('tools');
     renderHomeGrid();
+    initializeDeepLinks();
     updateViewState(false); // Start with home grid visible
     await checkUrlParameters(); // Check for checkout success from redirect
-    initializeCart();
-    initializeCheckoutModal();
-    initializeLandingPopup();
-    initializeChristmasPopup();
-    initializeThemeToggle();
-    initializeMobileSearch();
     initializeMemberCTA();
-    updateFooterShortcut();
-    updateFooterCommit();
-    console.log('✅ Website initialized successfully');
+    initializeDownloadButton();
+    console.log('Website initialized successfully');
   } catch (error) {
     console.error('❌ Error initializing website:', error);
     const mainContent = document.getElementById('main-content');
@@ -124,8 +112,6 @@ async function fetchUnifiedProducts() {
           productType: product.product_type || 'tools',
           groups: product.tags || [], // Tags for product groups
           handle: product.handle,
-          polarProductId: product.polar_product_id,
-          polarPriceId: product.polar_price_id, // Capture price ID
           folderName: product.handle,
           hosted_media: product.hosted_media || {},
           carousel_media: product.carousel_media || [],
@@ -278,12 +264,22 @@ async function selectProduct(productId) {
   await updateProductDisplay(productId);
   updateActiveStates(productId);
   updateViewState(true); // Show product card
+
+  // Update browser history for back/forward navigation
+  const url = new URL(window.location);
+  url.searchParams.set('product', productId);
+  window.history.pushState({ product: productId }, '', url);
 }
 
 function deselectProduct() {
   currentProduct = null;
   updateActiveStates(null);
   updateViewState(false); // Show home grid
+
+  // Update browser history
+  const url = new URL(window.location);
+  url.searchParams.delete('product');
+  window.history.pushState({ product: null }, '', url);
 }
 
 async function updateProductDisplay(productId) {
@@ -312,62 +308,33 @@ async function updateProductDisplay(productId) {
   updateButtonVisibility();
   resetTabs(); // Reset tabs to description when product changes
 
-  // BUY NOW button handler
-  if (buyNowButton && product.polarProductId) {
-    buyNowButton.classList.remove('loading');
-    buyNowButton.removeAttribute('data-polar-checkout'); 
-    buyNowButton.onclick = null; 
-    
+  // Subscribe button handler
+  if (buyNowButton) {
     buyNowButton.onclick = async (e) => {
       e.preventDefault();
       if (buyNowButton.classList.contains('loading')) return;
       buyNowButton.classList.add('loading');
-      
+      buyNowButton.textContent = 'LOADING...';
       try {
-        const response = await fetch('/api/polar-checkout-session', {
+        const response = await fetch('/api/create-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            productId: product.polarProductId,
-            productPriceId: product.polarPriceId 
-          })
+          body: JSON.stringify({})
         });
-
         if (!response.ok) throw new Error('API error');
         const data = await response.json();
-        const { checkout_url, clientSecret } = data;
-        
-        if (checkout_url) {
-          if (window.Polar && window.Polar.EmbedCheckout) {
-            try {
-              let checkout;
-              if (clientSecret) {
-                checkout = await window.Polar.EmbedCheckout.create({
-                  clientSecret: clientSecret,
-                  theme: "light"
-                });
-              } else {
-                checkout = await window.Polar.EmbedCheckout.create(checkout_url, "light");
-              }
-              
-              if (checkout) {
-                checkout.addEventListener("success", (event) => {
-                  const checkoutId = event.detail?.id || data.id;
-                  window.location.href = `/success.html?checkout_id=${checkoutId}&checkout_success=true`;
-                });
-              }
-            } catch (embedError) {
-              window.location.href = checkout_url;
-            }
-          } else {
-            window.location.href = checkout_url;
-          }
+        const url = data.checkout_url || data.url;
+        if (url) {
+          window.location.href = url;
+        } else {
+          throw new Error('No checkout URL');
         }
       } catch (error) {
         console.error('Checkout failed:', error);
-        alert('Unable to start checkout.');
+        alert('Unable to start checkout. Please try again.');
       } finally {
         buyNowButton.classList.remove('loading');
+        buyNowButton.textContent = 'SUBSCRIBE';
       }
     };
   }
@@ -644,13 +611,51 @@ function updateCarouselArrows() {
 
 function updateButtonVisibility() {
   const product = products[currentProduct];
-  if (!product || !buyNowButton || !downloadButton) return;
+  if (!product) return;
   const hasAccess = purchasedProducts.has(currentProduct) || checkSubscriptionStatus();
-  buyNowButton.style.display = hasAccess ? 'none' : 'flex';
-  downloadButton.style.display = hasAccess ? 'flex' : 'none';
+  if (buyNowButton) {
+    buyNowButton.style.display = hasAccess ? 'none' : 'flex';
+    buyNowButton.textContent = 'SUBSCRIBE';
+  }
+  if (downloadButton) {
+    downloadButton.style.display = hasAccess ? 'flex' : 'none';
+    downloadButton.textContent = 'DOWNLOAD';
+  }
 }
 
-function checkSubscriptionStatus() { return false; }
+function checkSubscriptionStatus() {
+  const licenseKey = localStorage.getItem('no3d_license_key');
+  if (!licenseKey) return false;
+
+  const cachedValid = localStorage.getItem('no3d_license_valid');
+  const cachedTime = localStorage.getItem('no3d_license_checked');
+  const ONE_HOUR = 60 * 60 * 1000;
+
+  if (cachedValid === 'true' && cachedTime && (Date.now() - parseInt(cachedTime, 10)) < ONE_HOUR) {
+    return true;
+  }
+
+  // Trigger async validation (non-blocking)
+  validateLicenseAsync(licenseKey);
+  return cachedValid === 'true';
+}
+
+async function validateLicenseAsync(licenseKey) {
+  try {
+    const response = await fetch('/api/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ license_key: licenseKey }),
+    });
+    const data = await response.json();
+    const isValid = data.valid === true && (data.status === 'active' || data.status === 'grace');
+    localStorage.setItem('no3d_license_valid', isValid ? 'true' : 'false');
+    localStorage.setItem('no3d_license_checked', Date.now().toString());
+    if (currentProduct) updateButtonVisibility();
+  } catch (err) {
+    console.error('License validation failed:', err);
+  }
+}
 
 function initializeEventListeners() {
   const headerLogo = document.getElementById('header-logo');
@@ -659,11 +664,23 @@ function initializeEventListeners() {
       e.preventDefault();
       deselectProduct();
       renderHomeGrid();
-      if (window.location.search || window.location.hash) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
     });
   }
+
+  window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.product) {
+      if (products[e.state.product]) {
+        currentProduct = e.state.product;
+        updateProductDisplay(e.state.product);
+        updateActiveStates(e.state.product);
+        updateViewState(true);
+      }
+    } else {
+      currentProduct = null;
+      updateActiveStates(null);
+      updateViewState(false);
+    }
+  });
 
   document.addEventListener('click', e => {
     const productItem = e.target.closest('.product-item') || e.target.closest('.home-grid-item');
@@ -735,9 +752,71 @@ function initializeLandingPopup() {}
 function initializeChristmasPopup() {}
 function initializeThemeToggle() {}
 function initializeMobileSearch() {}
-function initializeMemberCTA() {}
+function initializeMemberCTA() {
+  document.querySelectorAll('.member-cta-button, .mobile-member-cta-button, [data-member-cta]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/subscribe.html';
+    });
+  });
+}
 function updateFooterShortcut() {}
 function updateFooterCommit() {}
+
+function initializeDownloadButton() {
+  if (!downloadButton) return;
+  downloadButton.onclick = async (e) => {
+    e.preventDefault();
+    const product = products[currentProduct];
+    if (!product) return;
+
+    const licenseKey = localStorage.getItem('no3d_license_key');
+    if (!licenseKey) {
+      alert('License key not found. Please enter your license key on the Account page.');
+      return;
+    }
+
+    downloadButton.classList.add('loading');
+    downloadButton.textContent = 'DOWNLOADING...';
+
+    try {
+      const response = await fetch(`/api/download/${product.handle}?license_key=${encodeURIComponent(licenseKey)}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403) {
+          localStorage.removeItem('no3d_license_valid');
+          alert('Your subscription has expired. Please re-subscribe to download.');
+          updateButtonVisibility();
+          return;
+        }
+        throw new Error(errorData.error || 'Download failed');
+      }
+      const data = await response.json();
+      if (data.url) {
+        const a = document.createElement('a');
+        a.href = data.url;
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Download failed. Please try again.');
+    } finally {
+      downloadButton.classList.remove('loading');
+      downloadButton.textContent = 'DOWNLOAD';
+    }
+  };
+}
+
+function initializeDeepLinks() {
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get('product');
+  if (productId && products[productId]) {
+    selectProduct(productId);
+  }
+}
 async function checkUrlParameters() {}
 function showPurchaseProcessing() {}
 async function pollForDownloads() {}

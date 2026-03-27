@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started - NO3D Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: var(--color-stone-gray); }
+
+        .guide-wrap {
+            max-width: 720px;
+            margin: var(--space-xlarge) auto;
+            padding: var(--space-large);
+        }
+
+        .guide-card {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-xlarge) var(--space-xlarge) var(--space-large);
+        }
+
+        .guide-card h1 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h1);
+            text-transform: uppercase;
+            margin-bottom: var(--space-tiny);
+            color: var(--color-void-black);
+            line-height: 1.0;
+        }
+
+        .guide-card .subtitle {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: 300;
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-xlarge);
+        }
+
+        .guide-card h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-top: var(--space-xlarge);
+            margin-bottom: var(--space-small);
+            padding-bottom: var(--space-micro);
+            border-bottom: 2px solid var(--color-lello);
+        }
+
+        .guide-card h3 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-top: var(--space-large);
+            margin-bottom: var(--space-tiny);
+        }
+
+        .guide-card p, .guide-card li {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: 300;
+            line-height: 1.6;
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-small);
+        }
+
+        .guide-card ul, .guide-card ol {
+            padding-left: 20px;
+            margin-bottom: var(--space-medium);
+        }
+
+        .guide-card li {
+            margin-bottom: var(--space-tiny);
+        }
+
+        .guide-card strong {
+            font-weight: 500;
+            color: var(--color-void-black);
+        }
+
+        .guide-card a {
+            color: var(--color-void-black);
+            text-decoration: underline;
+        }
+
+        .guide-card a:hover {
+            background: var(--color-lello);
+            text-decoration: none;
+        }
+
+        .step-box {
+            background: var(--color-stone-gray);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-medium) var(--space-large);
+            margin: var(--space-small) 0 var(--space-medium);
+        }
+
+        .step-box p {
+            margin-bottom: var(--space-tiny);
+        }
+
+        .step-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .key-format {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+            background: var(--color-lello);
+            color: var(--color-dark-gray);
+            padding: 8px 16px;
+            display: inline-block;
+            margin: var(--space-tiny) 0;
+            user-select: all;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: var(--color-lello);
+            color: var(--color-medium-gray);
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            text-transform: uppercase;
+            text-decoration: none;
+            padding: 10px 32px;
+            border: none;
+            cursor: pointer;
+            margin: var(--space-small) 0;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(240, 255, 0, 0.4);
+            background: var(--color-lello);
+        }
+
+        .status-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--space-small) 0 var(--space-medium);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: 300;
+        }
+
+        .status-table th {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-small);
+            text-transform: uppercase;
+            text-align: left;
+            padding: var(--space-tiny) var(--space-small);
+            border-bottom: 2px solid var(--color-void-black);
+            color: var(--color-void-black);
+        }
+
+        .status-table td {
+            padding: var(--space-tiny) var(--space-small);
+            border-bottom: 1px solid var(--color-stone-gray);
+            color: var(--color-dark-gray);
+        }
+
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--space-small) 0;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            font-weight: 300;
+        }
+
+        .ref-table td {
+            padding: var(--space-tiny) var(--space-small);
+            border-bottom: 1px solid var(--color-stone-gray);
+            color: var(--color-dark-gray);
+            vertical-align: top;
+        }
+
+        .ref-table td:first-child {
+            font-weight: 500;
+            color: var(--color-void-black);
+            white-space: nowrap;
+            width: 40%;
+        }
+
+        .back-link {
+            display: inline-block;
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-small);
+            text-transform: uppercase;
+            color: var(--color-dark-gray);
+            text-decoration: none;
+            margin-bottom: var(--space-medium);
+        }
+
+        .back-link:hover {
+            color: var(--color-void-black);
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-medium);
+        }
+
+        @media (max-width: 768px) {
+            .guide-wrap {
+                padding: var(--space-small);
+            }
+            .guide-card {
+                padding: var(--space-large) var(--space-medium);
+            }
+            .guide-card h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-wrap">
+        <div class="nav-header">
+            <a href="/" class="back-link">← Back to Store</a>
+            <a href="/account.html" class="back-link">Account →</a>
+        </div>
+
+        <div class="guide-card">
+            <h1>Getting Started</h1>
+            <p class="subtitle">Install the No3d Tools addon and sync your asset library into Blender.</p>
+
+            <!-- ==================== -->
+            <h2>What You Get</h2>
+            <p>Your No3d Tools subscription gives you a synced asset library inside Blender's Asset Browser. Geometry node tools, materials, mesh objects — all drag-and-drop ready. New assets are synced automatically when you open Blender.</p>
+
+            <!-- ==================== -->
+            <h2>Requirements</h2>
+            <ul>
+                <li>Blender 4.5 or newer</li>
+                <li>An active subscription — <a href="/subscribe.html">subscribe here</a></li>
+                <li>Your license key (emailed after subscribing)</li>
+            </ul>
+
+            <!-- ==================== -->
+            <h2>Install the Addon</h2>
+
+            <h3>Step 1: Download</h3>
+            <p>Download <strong>no3d_tools_membership.zip</strong> from the link in your license key email.</p>
+
+            <h3>Step 2: Install in Blender</h3>
+            <div class="step-box">
+                <p>1. Open Blender</p>
+                <p>2. Go to <strong>Edit → Preferences → Add-ons</strong></p>
+                <p>3. Click <strong>Install...</strong> (top right)</p>
+                <p>4. Select the downloaded <strong>.zip</strong> file</p>
+                <p>5. Click <strong>Install Add-on</strong></p>
+            </div>
+
+            <h3>Step 3: Enable</h3>
+            <div class="step-box">
+                <p>1. Search for <strong>"No3d Tools Membership"</strong> in the add-ons list</p>
+                <p>2. Check the box to enable it</p>
+                <p>3. The preferences panel will expand</p>
+            </div>
+
+            <!-- ==================== -->
+            <h2>Activate Your License</h2>
+
+            <p>In the addon preferences panel (Edit → Preferences → Add-ons → No3d Tools Membership):</p>
+
+            <div class="step-box">
+                <p>1. Paste your license key into the <strong>Key</strong> field</p>
+                <p>2. Click <strong>Validate</strong></p>
+                <p>3. Status should show: <strong>Active ✓</strong></p>
+            </div>
+
+            <p>Your license key format:</p>
+            <div class="key-format">NO3D-XXXX-XXXX-XXXX-XXXX</div>
+
+            <p>Don't have your key? <a href="/account.html">Look it up here</a> or check your email for "No3d Tools — Your License Key".</p>
+
+            <!-- ==================== -->
+            <h2>Sync Your Library</h2>
+
+            <div class="step-box">
+                <p>1. Click <strong>Sync Now</strong> in the addon preferences</p>
+                <p>2. First sync downloads the entire library</p>
+                <p>3. Future syncs only download what's changed</p>
+            </div>
+
+            <p>Enable <strong>"Sync on startup"</strong> to sync automatically whenever Blender opens. It runs in the background — won't slow you down.</p>
+
+            <!-- ==================== -->
+            <h2>Using Your Assets</h2>
+
+            <h3>Open the Asset Browser</h3>
+            <div class="step-box">
+                <p>1. In any Blender workspace, open the <strong>Asset Browser</strong></p>
+                <p>2. In the dropdown (top left), select <strong>NO3D Tools</strong></p>
+                <p>3. All your synced assets appear</p>
+            </div>
+
+            <h3>Drag and Drop</h3>
+            <table class="status-table">
+                <thead>
+                    <tr>
+                        <th>Asset Type</th>
+                        <th>How to Use</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Geometry Node tools</td>
+                        <td>Drag onto a mesh object → adds as modifier</td>
+                    </tr>
+                    <tr>
+                        <td>Materials</td>
+                        <td>Drag onto any object → applies material</td>
+                    </tr>
+                    <tr>
+                        <td>Mesh objects</td>
+                        <td>Drag into viewport → adds to scene</td>
+                    </tr>
+                    <tr>
+                        <td>Collections</td>
+                        <td>Drag into viewport → instances the collection</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== -->
+            <h2>Subscription Status</h2>
+
+            <table class="status-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Active ✓</strong></td>
+                        <td>Subscription current. Full access.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Grace Period ⚠</strong></td>
+                        <td>Payment failed. 7 days to update payment method.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Expired ✗</strong></td>
+                        <td>Subscription ended. <a href="/subscribe.html">Re-subscribe</a> to restore access.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>Manage your subscription, update payment, or cancel: <a href="/account.html">Account page</a></p>
+
+            <!-- ==================== -->
+            <h2>Troubleshooting</h2>
+
+            <h3>"Invalid license key"</h3>
+            <ul>
+                <li>Include the <strong>NO3D-</strong> prefix</li>
+                <li>Check for extra spaces</li>
+                <li>Verify your subscription at <a href="/account.html">account page</a></li>
+            </ul>
+
+            <h3>"Sync failed"</h3>
+            <ul>
+                <li>Check your internet connection</li>
+                <li>Click <strong>Validate</strong> first, then <strong>Sync Now</strong></li>
+                <li>If it persists, try again in a few minutes</li>
+            </ul>
+
+            <h3>Assets not showing in Asset Browser</h3>
+            <ul>
+                <li>Select <strong>NO3D Tools</strong> in the Asset Browser dropdown (top left)</li>
+                <li>Close and reopen the Asset Browser</li>
+                <li>Run <strong>Sync Now</strong> to refresh</li>
+            </ul>
+
+            <h3>Lost your license key</h3>
+            <ul>
+                <li>Check email for "No3d Tools — Your License Key"</li>
+                <li>Visit <a href="/account.html">account page</a> and enter your email</li>
+            </ul>
+
+            <!-- ==================== -->
+            <h2>Quick Reference</h2>
+
+            <table class="ref-table">
+                <tbody>
+                    <tr>
+                        <td>Install addon</td>
+                        <td>Edit → Preferences → Add-ons → Install → select .zip</td>
+                    </tr>
+                    <tr>
+                        <td>Enter license key</td>
+                        <td>Addon preferences → License → Key → Validate</td>
+                    </tr>
+                    <tr>
+                        <td>Sync assets</td>
+                        <td>Addon preferences → Sync Now</td>
+                    </tr>
+                    <tr>
+                        <td>Browse assets</td>
+                        <td>Asset Browser → NO3D Tools library</td>
+                    </tr>
+                    <tr>
+                        <td>Use a tool</td>
+                        <td>Drag from Asset Browser onto a mesh</td>
+                    </tr>
+                    <tr>
+                        <td>Manage subscription</td>
+                        <td><a href="/account.html">no3dtools.com/account</a></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: var(--space-xlarge); text-align: center;">
+                <a href="/subscribe.html" class="cta-button">Subscribe Now</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
