@@ -65,7 +65,7 @@
                     <img src="assets/blender_bit_icon.png" alt="Blender" class="member-cta-icon">
                     <span class="member-cta-text">BECOME A MEMBER / GET ALL TOOLS, TUTORIALS, ASSETS</span>
                 </a>
-                <a href="/guide.html" class="header-icon" id="download-addon-link" aria-label="Download Blender addon" title="Download NO3D Tools Blender Add-on" onclick="window.open('/api/download-addon','_blank');">
+                <a href="#" class="header-icon" id="download-addon-link" aria-label="Download Blender addon" title="Download NO3D Tools Blender Add-on" onclick="event.preventDefault(); openDownloadModal();">
                     <img src="assets/light/download-icon.png" alt="Download Add-on" style="height: 28px; width: 28px; object-fit: contain;">
                 </a>
                 <div class="account-dropdown" id="account-dropdown">
@@ -211,6 +211,40 @@
         </button>
     </div>
 
+    <!-- Download Email Capture Modal -->
+    <div class="search-modal-backdrop" id="download-modal-backdrop" style="display:none;"></div>
+    <div class="search-modal" id="download-modal" style="display:none;">
+        <div class="search-modal-container" style="text-align: center; padding: 30px;">
+            <h2 style="font-family: var(--font-visitor); font-size: var(--font-size-h2); text-transform: uppercase; margin-bottom: 8px; letter-spacing: var(--letter-spacing-wide);">Download Add-on</h2>
+            <p style="font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-medium-gray); margin-bottom: 20px; line-height: 1.5;">Enter your email to get your free license key<br>and download the NO3D Tools Blender add-on.</p>
+            <form id="download-email-form" style="display: flex; flex-direction: column; gap: 12px; max-width: 360px; margin: 0 auto;">
+                <input
+                    type="email"
+                    id="download-email-input"
+                    class="search-input"
+                    placeholder="your@email.com"
+                    required
+                    autocomplete="email"
+                    style="text-align: center;"
+                >
+                <button type="submit" id="download-submit-btn" style="font-family: var(--font-visitor); font-size: var(--font-size-h3); text-transform: uppercase; padding: 10px 24px; background: var(--color-void-black); color: var(--color-lello); border: 1px solid var(--color-void-black); cursor: pointer; letter-spacing: var(--letter-spacing-wide); transition: background 0.15s;">
+                    Get Add-on
+                </button>
+            </form>
+            <div id="download-modal-status" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-medium-gray); margin-top: 16px; display: none;"></div>
+            <div id="download-modal-success" style="display: none; margin-top: 16px;">
+                <p style="font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-dark-gray); margin-bottom: 8px;">Your license key:</p>
+                <div id="download-license-key" style="font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--color-void-black); background: var(--color-lello); padding: 10px 16px; letter-spacing: 0.15em; user-select: all; cursor: text; margin-bottom: 12px;"></div>
+                <p style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-medium-gray);">Check your email — we've sent this key to you too.</p>
+            </div>
+            <div class="search-modal-footer" style="margin-top: 16px;">
+                <span class="search-hint" style="cursor: pointer;" onclick="closeDownloadModal()">
+                    <span class="search-key">Esc</span> Close
+                </span>
+            </div>
+        </div>
+    </div>
+
     <!-- Search Modal (CMD+K) -->
     <div class="search-modal-backdrop" id="search-modal-backdrop"></div>
     <div class="search-modal" id="search-modal">
@@ -243,7 +277,7 @@
         <span class="footer-text" id="footer-text">Cmd/ctrl + K to Search</span>
         <span class="footer-text" id="footer-commit">Commit: <span id="commit-hash">-</span></span>
         <span class="footer-text" id="footer-branch">Branch: <span id="branch-name">-</span></span>
-        <a href="/guide.html" class="footer-download-btn" onclick="window.open('/api/download-addon','_blank');">DOWNLOAD FREE ADD-ON</a>
+        <a href="#" class="footer-download-btn" onclick="event.preventDefault(); openDownloadModal();">DOWNLOAD FREE ADD-ON</a>
         <img src="assets/light/stone-logo.png" alt="Stone Logo" class="footer-logo">
     </footer>
 

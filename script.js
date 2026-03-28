@@ -60,6 +60,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeMemberCTA();
     initializeAccountDropdown();
     initializeDownloadButton();
+    // Auto-open download modal if ?download=true
+    if (new URLSearchParams(window.location.search).get('download') === 'true') {
+      openDownloadModal();
+      history.replaceState(null, '', window.location.pathname);
+    }
     console.log('Website initialized successfully');
   } catch (error) {
     console.error('❌ Error initializing website:', error);
@@ -798,6 +803,103 @@ function initializeCheckoutModal() {}
 function initializeLandingPopup() {}
 function initializeChristmasPopup() {}
 function initializeThemeToggle() {}
+// ==================== DOWNLOAD EMAIL CAPTURE ====================
+
+function openDownloadModal() {
+  const backdrop = document.getElementById('download-modal-backdrop');
+  const modal = document.getElementById('download-modal');
+  if (!backdrop || !modal) return;
+  backdrop.style.display = '';
+  modal.style.display = '';
+  backdrop.classList.add('active');
+  modal.classList.add('active');
+  // Reset state
+  document.getElementById('download-email-form').style.display = '';
+  document.getElementById('download-modal-status').style.display = 'none';
+  document.getElementById('download-modal-success').style.display = 'none';
+  document.getElementById('download-submit-btn').disabled = false;
+  document.getElementById('download-submit-btn').textContent = 'Get Add-on';
+  const input = document.getElementById('download-email-input');
+  input.value = '';
+  setTimeout(() => input.focus(), 100);
+}
+
+function closeDownloadModal() {
+  const backdrop = document.getElementById('download-modal-backdrop');
+  const modal = document.getElementById('download-modal');
+  if (backdrop) { backdrop.classList.remove('active'); backdrop.style.display = 'none'; }
+  if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+}
+
+// Close on backdrop click or Esc
+document.addEventListener('DOMContentLoaded', () => {
+  const backdrop = document.getElementById('download-modal-backdrop');
+  if (backdrop) backdrop.addEventListener('click', closeDownloadModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('download-modal');
+      if (modal && modal.classList.contains('active')) closeDownloadModal();
+    }
+  });
+
+  const form = document.getElementById('download-email-form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('download-email-input').value.trim();
+      if (!email) return;
+
+      const btn = document.getElementById('download-submit-btn');
+      const status = document.getElementById('download-modal-status');
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      status.style.display = 'block';
+      status.textContent = '';
+
+      try {
+        const response = await fetch('/api/create-free-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          status.textContent = data.error || 'Something went wrong. Try again.';
+          btn.disabled = false;
+          btn.textContent = 'Get Add-on';
+          return;
+        }
+
+        // Show license key
+        document.getElementById('download-email-form').style.display = 'none';
+        status.style.display = 'none';
+        document.getElementById('download-modal-success').style.display = 'block';
+        document.getElementById('download-license-key').textContent = data.license_key;
+
+        // Save to localStorage
+        if (data.license_key) {
+          localStorage.setItem('no3d_license_key', data.license_key);
+        }
+
+        // Trigger addon download
+        window.open('/api/download-addon', '_blank');
+
+        // Redirect to guide after a moment
+        setTimeout(() => {
+          closeDownloadModal();
+          window.location.href = '/guide.html';
+        }, 4000);
+      } catch (err) {
+        status.textContent = 'Network error. Please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Get Add-on';
+      }
+    });
+  }
+});
+
 // ==================== CMD+K SEARCH FUNCTIONALITY ====================
 
 const searchModal = document.getElementById('search-modal');

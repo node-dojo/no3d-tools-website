@@ -39,6 +39,7 @@ async function upsertSubscription({ supabase, stripeCustomerId, stripeSubId, ema
       email,
       license_key: licenseKey,
       status,
+      tier: 'subscriber',
       expires_at: expiresAt || null,
       grace_until: graceUntil || null
     },

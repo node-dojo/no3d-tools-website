@@ -68,6 +68,7 @@ export default async function handler(req, res) {
   return res.status(200).json({
     valid: access.allowed,
     status: access.effectiveStatus === 'invalid' ? 'expired' : access.effectiveStatus,
+    tier: row?.tier || 'free',
     library_version,
     expires_at: access.expires_at,
     grace_until: access.grace_until,

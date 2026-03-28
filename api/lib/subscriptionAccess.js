@@ -73,7 +73,7 @@ export function computeAccessState(row, now = new Date()) {
 export async function fetchSubscriptionByLicenseKey(supabase, licenseKey) {
   const { data, error } = await supabase
     .from('subscriptions')
-    .select('stripe_customer_id, stripe_sub_id, email, license_key, status, expires_at, grace_until')
+    .select('stripe_customer_id, stripe_sub_id, email, license_key, status, expires_at, grace_until, tier')
     .eq('license_key', licenseKey)
     .maybeSingle();
 
