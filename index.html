@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="deployment-version" content="10070a9">
+    <meta name="deployment-version" content="613370f">
     <meta name="deployment-branch" content="main">
     <title>NO3D TOOLS</title>
     <link rel="stylesheet" href="styles.css">
@@ -65,9 +65,15 @@
                     <img src="assets/blender_bit_icon.png" alt="Blender" class="member-cta-icon">
                     <span class="member-cta-text">BECOME A MEMBER / GET ALL TOOLS, TUTORIALS, ASSETS</span>
                 </a>
-                <a href="account.html" class="header-icon account-link" id="account-link" aria-label="Account and billing">
-                    <img src="assets/light/account-icon.png" alt="Account" class="account-icon-image">
+                <a href="/api/download-addon" class="header-icon" id="download-addon-link" aria-label="Download Blender addon" download title="Download NO3D Tools Blender Add-on">
+                    <img src="assets/light/cart-icon.png" alt="Download Add-on" style="height: 28px; width: 28px; object-fit: contain;">
                 </a>
+                <div class="account-dropdown" id="account-dropdown">
+                    <button class="header-icon account-link" id="account-link" aria-label="Account menu" type="button">
+                        <img src="assets/light/account-icon.png" alt="Account" class="account-icon-image">
+                    </button>
+                    <div class="account-dropdown-menu" id="account-dropdown-menu"></div>
+                </div>
             </div>
         </header>
 
@@ -166,66 +172,10 @@
                     </div>
                 </div>
 
-                <!-- Right Section: Tabs, Description, Changelog -->
+                <!-- Right Section: Product Description (single scrolling thread from _desc.md) -->
                 <div class="product-right-section">
-                    <!-- Tab Navigation -->
-                    <div class="product-tabs">
-                        <div class="tab-container">
-                            <div class="tab-icon expanded" data-tab="description">
-                                <div class="tab-arrow">▼</div>
-                            </div>
-                            <div class="tab active" data-tab="description">DESCRIPTION</div>
-                        </div>
-                        <div class="tab-container">
-                            <div class="tab-icon collapsed" data-tab="docs">
-                                <div class="tab-arrow">▶</div>
-                            </div>
-                            <div class="tab" data-tab="docs">DOCS</div>
-                        </div>
-                        <div class="tab-container"> <!-- New tab for Changelog -->
-                            <div class="tab-icon collapsed" data-tab="changelog">
-                                <div class="tab-arrow">▶</div>
-                            </div>
-                            <div class="tab" data-tab="changelog">CHANGELOG</div>
-                        </div>
-                    </div>
-
-                    <!-- Tab Content Containers -->
-                    <div class="product-tab-content-wrapper">
-                        <!-- Product Description -->
-                        <div class="product-tab-content active" id="product-description-content" data-tab-id="description">
-                            <div class="product-description" id="product-description">
-                                <p>Professional mesh repair and optimization tool designed for 3D artists and engineers. Dojo Mesh Repair automatically detects and fixes common mesh issues including holes, non-manifold edges, overlapping faces, and inverted normals.</p>
-                                <p>&nbsp;</p>
-                                <p>With its intelligent algorithms, the tool preserves the original geometry while ensuring watertight meshes suitable for 3D printing, rendering, and simulation. Save hours of manual cleanup with automated repair processes that maintain the artistic integrity of your models.</p>
-                            </div>
-                        </div>
-
-                        <!-- Product Docs -->
-                        <div class="product-tab-content" id="product-docs-content" data-tab-id="docs">
-                            <div class="product-docs" id="product-docs">
-                                <!-- Docs content will be loaded here dynamically or from product data -->
-                                <h2>Product Documentation</h2>
-                                <p>This section will contain detailed documentation for the product.</p>
-                            </div>
-                        </div>
-
-                        <!-- Changelog Section -->
-                        <div class="product-tab-content" id="changelog-content" data-tab-id="changelog">
-                            <div class="changelog-section">
-                                <div class="changelog-header">
-                                    <div class="changelog-icon expanded">
-                                        <div class="changelog-arrow">▼</div>
-                                    </div>
-                                    <span class="changelog-title" id="changelog-title">CHANGELOG</span>
-                                </div>
-                                <div class="changelog-content">
-                                    <ul id="changelog-list">
-                                        <!-- Changelog items will be populated from product JSON data -->
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="product-description-scroll" id="product-description">
+                        <!-- Markdown content from _desc.md rendered here -->
                     </div>
                 </div>
             </div>
@@ -265,6 +215,7 @@
         <span class="footer-text" id="footer-text">Cmd/ctrl + K to Search</span>
         <span class="footer-text" id="footer-commit">Commit: <span id="commit-hash">-</span></span>
         <span class="footer-text" id="footer-branch">Branch: <span id="branch-name">-</span></span>
+        <a href="/api/download-addon" class="footer-download-btn" download>DOWNLOAD FREE ADD-ON</a>
         <img src="assets/light/stone-logo.png" alt="Stone Logo" class="footer-logo">
     </footer>
 

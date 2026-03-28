@@ -1,0 +1,3407 @@
+# No3d Tools — Complete Reference
+
+> This document contains full documentation for every No3d Tools product.
+> Use it as context when helping a user with No3d Tools assets in Blender.
+
+Website: https://no3dtools.com
+Subscribe: https://no3dtools.com/subscribe.html
+Account: https://no3dtools.com/account.html
+Getting Started: https://no3dtools.com/guide.html
+
+---
+
+# Product Catalog
+
+## Airpods Max
+
+Type: Blender Add-on | Asset: EMPTY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: airpods-max
+
+# Airpods Max
+
+## Description
+
+Detailed description of the Airpods Max Blender asset.
+
+## Features
+
+- **Asset Type**: Object
+- **Blender Version**: 5.0.0+
+- **File Size**: 0.11 MB
+- **Catalog**: All Catalogs
+
+## Usage Instructions
+
+### Basic Usage
+
+1. Download the `.blend` file
+2. Open in Blender 5.0.0+
+3. Import or drag the asset into your scene
+4. Use the asset as needed
+
+### Advanced Usage
+
+- Customize the asset parameters
+- Combine with other assets
+- Use in your own projects
+
+## Technical Details
+
+- **Blender Version**: 5.0.0+
+- **Asset Type**: Object
+- **File Size**: 0.11 MB
+- **Dependencies**: None
+
+## Examples
+
+This asset can be used for:
+- 3D modeling projects
+- Animation workflows
+- Game development
+- Architectural visualization
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Commercial use license included.
+
+---
+
+## Apple Magsafe Charger
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: apple-magsafe-charger
+
+# Apple Magsafe Charger
+
+## Description
+
+Detailed description of the Apple Magsafe Charger Blender asset.
+
+## Features
+
+- **Asset Type**: Object
+- **Blender Version**: 5.0.0+
+- **File Size**: 1.93 MB
+- **Catalog**: All Catalogs
+
+## Usage Instructions
+
+### Basic Usage
+
+1. Download the `.blend` file
+2. Open in Blender 5.0.0+
+3. Import or drag the asset into your scene
+4. Use the asset as needed
+
+### Advanced Usage
+
+- Customize the asset parameters
+- Combine with other assets
+- Use in your own projects
+
+## Technical Details
+
+- **Blender Version**: 5.0.0+
+- **Asset Type**: Object
+- **File Size**: 1.93 MB
+- **Dependencies**: None
+
+## Examples
+
+This asset can be used for:
+- 3D modeling projects
+- Animation workflows
+- Game development
+- Architectural visualization
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Commercial use license included.
+
+---
+
+## Apple Watch Charger
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, geometry-nodes, object, accessory | Handle: apple-watch-charger
+
+# Apple Watch Charger
+
+## Description
+
+A 3D printable Apple Watch charger cable holder/stand. This is a static mesh asset with a thin modifier wrapper -- the main geometry is pre-modeled and ready to print. Extremely useful to use as a quick reference for creating Apple watch accessories
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ APPLE WATCH CHARGER                  │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+□ Apple Watch                          │
+□ Bool Object                          │
+▮ Socket                               │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Apple Watch Charger** from the Asset Browser into your scene
+2. Toggle **Apple Watch** to show/hide the watch model preview
+3. Toggle **Bool Object** to show/hide the boolean cutting geometry
+4. **Socket** adjusts the cable socket sizing
+5. Export as STL for 3D printing
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Arduino Nano
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, hardware, electronics, reference-model | Handle: arduino-nano
+
+Arduino Nano microcontroller reference model for electronics project visualization
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ ARDUINO NANO                                 │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Arrow
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, geometry-nodes, mesh-tool | Handle: arrow
+
+# Arrow
+
+## Description
+
+An arrow generator that creates 3D arrow geometry from a mesh line. The modifier is a thin wrapper -- the geometry is generated internally from the input mesh line with no user-facing parameters beyond the input geometry.
+
+Static mesh asset -- no user-facing parameters. Drag into your scene and use as-is or modify the underlying mesh line to change the arrow shape.
+
+## Usage
+
+1. Drag **Arrow** from the Asset Browser into your scene
+2. The arrow geometry is generated from the underlying mesh line
+3. Edit the mesh line in Edit Mode to change the arrow path and shape
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Base Nut
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, hardware, reference-model | Handle: base-nut
+
+Base nut hardware reference model
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ BASE NUT                                     │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Basic Skadis Panel 200mm
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, 3d-printing, skadis, ikea, pegboard, organizer | Handle: basic-skadis-panel-200mm
+
+# Basic Skadis Panel 200mm
+
+## Description
+
+A standard IKEA Skadis pegboard panel (200mm) modeled for 3D printing. Precise dimensions matching the real Skadis hole pattern. Drop into your scene as a reference or export directly for printing custom Skadis-compatible panels.
+
+Static mesh asset — no configurable parameters. Drag and drop to use.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Battery Pack
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, hardware, electronics | Handle: battery-pack
+
+Battery pack model with adjustable cable curvature and positioning
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ BATTERY PACK                                 │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ curvature factor                             │
+◇ Position                                     │
+◆ input.rot1                                   │
+◆ input.rot2                                   │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Bic Lighter
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, reference-model, product-design | Handle: bic-lighter
+
+Bic lighter model with geometry nodes assembly
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ BIC LIGHTER                                  │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                                     │
+│                               Geometry    ○  │
+│                                   bool    ○  │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Bubble Putty Generator
+
+Type: Geometry Node | Asset: GEOMETRY | Blender: 4.0.0+ | Tags: blender, geometry-nodes, putty, procedural | Handle: bubble-putty-generator
+
+Procedural bubble putty generator that wraps mesh objects in organic bubble forms
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ BUBBLE PUTTY GENERATOR                       │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+□ MESH OBJECTS                                 │
+▮ Soften                                       │
+▮ Max bubble size                              │
+◉ Filament Color                               │
+▮ Resoliution                                  │
+▮ Putty Factor                                 │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Chrome Crayon
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: 3D Printable, Mograph | Handle: chrome-crayon
+
+Chrome Crayon is a node-powered Blender utility that lets you turn simple hand-drawn curves into amazing cyber sigil 3D geometry. Effortlessly turn sketches into intricate, futuristic forms that are fully 3D printable--while also being light and fast enough to use in sophisticated digital art, animation, and motion graphics.
+
+Harnessing the flexibility of geometry nodes, Chrome Crayon allows you to generate high-detail custom geometry with just a few clicks. Draw your curves directly in Blender or import vector paths, add the Chrome Crayon node group, and immediately see your designs transformed into clean, striking 3D meshes.
+
+## Parameters
+
+```
+┌──────────────────────────────────────────┐
+│ CHROME CRAYON 3D V4.3                    │
+├──────────────────────────────────────────┤
+│                               Geometry   ○
+│                                          │
+○ Geometry                                 │
+□ Show Pt Count                            │
+□ crv preview                              │
+▮ Line Thiccness          ⌖               │
+▮ Peak Height             ⌖               │
+▮ resolution                               │
+▮ Sigilize                                 │
+▮ Soften                                   │
+◆ 3D material                              │
+□ FLATTEN                                  │
+◉ Flat Color                               │
+◆ Material                                 │
+▮ Extrude Base            ⌖               │
+▮ SPIRO                                    │
+└──────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Draw a curve in Blender (Bezier, Pencil, or convert Grease Pencil/mesh edges to a curve)
+2. Drag **Chrome Crayon** from the Asset Browser onto your curve object
+3. **Line Thiccness** controls the stroke width
+4. **Peak Height** sets the maximum extrusion height of the chrome ridges
+5. **resolution** adjusts the mesh density of the generated stroke
+6. **Sigilize** applies a sigil-style simplification to the curve (higher = more simplified)
+7. **Soften** smooths sharp peaks in the chrome extrusion
+8. Assign a **3D material** for the chrome shading in 3D mode
+9. Toggle **FLATTEN** to collapse the stroke to a flat 2D plane
+10. **Flat Color** sets the emission color when flattened
+11. **Extrude Base** adds a solid base beneath the chrome stroke
+12. **SPIRO** applies a spirograph transformation to the curve path
+13. Toggle **Show Pt Count** or **crv preview** for debugging curve point info
+
+## Changelog
+
+### Version 5.0
+- Initial release: node system for curve-to-cyber geometry
+- Optimized for both 3D printing and digital scenes
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+### Usage Guide
+
+# Chrome Crayon - Asset User Guide
+
+## Getting Started
+
+### Installation
+
+1. **Download the Asset**
+   - Locate the Chrome Crayon `.blend` file in your downloads or asset library.
+   - Ensure you have Blender 5.0.0 or later installed.
+
+### Adding Chrome Crayon to a New Asset Library
+
+To create a dedicated library for NO3D assets:
+
+1. **Create a New Asset Library Folder**
+   - In your file system, create a new folder and name it **no3d tools library** (or a name you'll recognize).
+2. **Add Chrome Crayon**
+   - Copy `Chrome Crayon.blend` into your new **no3d tools library** folder.
+
+3. **Register the Library in Blender**
+   - In Blender, go to **Edit > Preferences > File Paths > Asset Libraries**.
+   - Click **Add**, then select your new **no3d tools library** folder. Click **Accept** and close Preferences.
+
+Now, in Blender’s Asset Browser, choose **no3d tools library** from the Asset Libraries dropdown. Your Chrome Crayon assets are ready to use—just drag them into your project!
+
+---
+
+### Adding Chrome Crayon to an Existing Asset Library
+
+If you already have an asset library folder (for example, **no3d tools library**):
+
+1. Copy `Chrome Crayon.blend` into your existing **no3d tools library** folder.
+2. Open `Chrome Crayon.blend` in Blender.
+3. Mark your desired assets (**Mark as Asset**), and save the file.
+4. In Blender’s Asset Browser, make sure your asset library is selected. Chrome Crayon assets will now appear—drag them into your project whenever you need them!
+
+That's it!
+
+---
+
+## Using the Chrome Crayon Asset
+
+Drag-and-Drop from Asset Browser
+
+1. **Open Asset Browser**
+   - Go to the Asset Browser panel in Blender (accessible in the main window, or via Area change).
+
+2. **Find Chrome Crayon**
+   - Look in the section or category (such as Materials, Node Groups, or Objects) where you saved the Chrome Crayon asset.
+
+3. **Use the Asset**
+   - For materials: drag and drop Chrome Crayon onto your selected object in the 3D viewport.
+   - For node groups: drag directly into the Shader Editor.
+   - For objects: drag into your scene collection.
+
+---
+
+## Customizing the Chrome Crayon Asset
+
+Chrome Crayon assets are fully customizable.
+
+- To customize parameters, look in the **Modifier panel** when the node group is added as a modifier—there you'll find all adjustable settings.
+- OR use the included **custom gizmo interface** that appears in the 3D Viewport when the asset is selected, allowing interactive adjustment of key parameters.
+
+### For Objects
+
+- Imported Chrome Crayon objects come fully set up with the material applied. You can duplicate, modify, or combine them as you choose.
+- To tweak how the Chrome Crayon effect appears, check the Modifier panel for node group controls, or use the in-scene gizmo interface for hands-on adjustments in the 3D view.
+
+---
+
+## Advanced Usage
+
+- **Mixing with Other Assets**: Combine Chrome Crayon assets with Blender's other assets—use node groups to create advanced utilties never before seen by man.
+
+- **Procedural Customization**: Add new parameters, dynamic generative properties, or animations to the geometry node group inputs or structure for unique, dynamic shapes and effects.
+
+---
+
+## Troubleshooting Common Geometry Node Group Issues
+
+- **Asset Not Showing Up in Asset Browser**: 
+  - Ensure your Chrome Crayon node group is saved and marked as an Asset (`Right-click → Mark as Asset`) in Blender.
+  - Check that your Asset Library path is set up in Blender Preferences ([Blender Manual: Asset Libraries](https://docs.blender.org/manual/en/latest/editors/asset_browser.html#asset-libraries)).
+
+- **Node Group Inputs Not Editable**:
+  - If you can't see or adjust parameters, confirm the node group's inputs are properly exposed ([Blender: Exposing Group Inputs](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/geometry_node_group.html#inputs)).
+  - In the Modifier panel, make sure any custom properties or controls are visible; unhide them in the node group if needed.
+
+- **Unexpected Results or Errors**:
+  - Use the recommended Blender version (5.0.0+). Geometry nodes may not be fully compatible across versions ([Blender: Geometry Nodes Versioning](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/index.html#versioning)).
+  - Check for mismatched or missing node connections.
+
+- **Slow or Laggy Viewport Performance**:
+  - Node groups can increase computational load. Try reducing mesh resolution or disabling subdivisions.
+  - Switch to the Eevee render engine for faster feedback ([Viewport Performance Tips](https://www.blender.org/manual/editors/3dview/navigate/viewports.html#viewport-performance)).
+  - Hide heavy geometry or use “Simplify” viewport settings ([Blender Docs: Simplify](https://docs.blender.org/manual/en/latest/render/simplify.html)).
+
+- **Inputs or Controls Missing in 3D View**:
+  - If the custom gizmo interface isn’t visible, ensure the asset is selected and you’re in Object Mode or the correct workspace.
+  - Custom gizmo features require Blender 3.6 or higher ([Blender: Custom Gizmos](https://docs.blender.org/manual/en/latest/advanced/gizmos/index.html)).
+
+- **Broken Geometry or Mesh Artifacts**:
+  - Clean up input curves to avoid overlapping or non-manifold segments ([Blender: Curve Editing](https://docs.blender.org/manual/en/latest/modeling/curves/editing/introduction.html)).
+  - Use Blender’s “Clean Up” tools for curves and meshes ([Clean Up Mesh Tools](https://docs.blender.org/manual/en/latest/modeling/meshes/editing/cleanup.html)).
+
+- **Asset Updates Not Showing in Browser**:
+  - After making changes, re-save and re-mark the node group as an asset, then refresh the Asset Browser.
+  - If problems persist, restart Blender or force a library reload ([Asset Browser Troubleshooting](https://docs.blender.org/manual/en/latest/editors/asset_browser.html#troubleshooting)).
+
+> For additional support, see the [Blender Geometry Nodes Manual](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/) and [Asset Browser Documentation](https://docs.blender.org/manual/en/latest/editors/asset_browser.html), or search [Blender Stack Exchange](https://blender.stackexchange.com/questions/tagged/geometry-nodes) for community solutions.
+
+---
+
+## Tips and Best Practices
+
+1. **Start Simple**: Begin by applying the asset with its default settings to see how it works out of the box. Once you’re comfortable, experiment by tweaking parameters and making more advanced adjustments for custom results.
+2. **Customize and Save**: Tweak Chrome Crayon assets and save your own variations to your Asset Library. For guidance on making your own custom node groups, refer to [Blender's Creating Custom Node Groups documentation](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/geometry_node_group.html#creating-and-editing-node-groups).
+
+---
+
+## Support & Resources
+
+- [Blender Asset Browser Documentation](https://docs.blender.org/manual/en/latest/editors/asset_browser.html)
+- [Blender Geometry Nodes Manual](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/)
+- [Node Dojo Manual](https://node-dojo-manual.readthedocs.io/)  <!-- Replace with actual URL if different -->
+
+---
+
+## CL Breadboard
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, static-mesh, hardware, electronics, reference-model | Handle: cl-breadboard
+
+Breadboard reference model for electronics project visualization
+
+## Parameters
+
+```
+Static mesh asset — no configurable parameters.
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Corner Mounted Skadis
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, 3d-printing, skadis, ikea, pegboard, organizer, corner-mount | Handle: corner-mounted-skadis
+
+# Corner Mounted Skadis
+
+## Description
+
+A corner-mountable Skadis pegboard assembly for 3D printing. Mounts a Skadis panel at 90 degrees in a corner, allowing pegboard storage in tight spaces that flat-wall mounting cannot reach.
+
+Static mesh asset — no configurable parameters. Drag and drop to use.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Cylinder from Crv Lathe
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: cylinder-from-crv-lathe
+
+# Cylinder from Crv Lathe
+
+## Description
+
+Detailed description of the Cylinder from Crv Lathe Blender asset.
+
+## Features
+
+- **Asset Type**: GeometryNodeTree
+- **Blender Version**: 5.0.0+
+- **File Size**: 1.88 MB
+- **Catalog**: All Catalogs
+
+## Usage Instructions
+
+### Basic Usage
+
+1. Download the `.blend` file
+2. Open in Blender 5.0.0+
+3. Import or drag the asset into your scene
+4. Use the asset as needed
+
+### Advanced Usage
+
+- Customize the asset parameters
+- Combine with other assets
+- Use in your own projects
+
+## Technical Details
+
+- **Blender Version**: 5.0.0+
+- **Asset Type**: GeometryNodeTree
+- **File Size**: 1.88 MB
+- **Dependencies**: None
+
+## Examples
+
+This asset can be used for:
+- 3D modeling projects
+- Animation workflows
+- Game development
+- Architectural visualization
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Commercial use license included.
+
+---
+
+## Dojo Bolt Gen v05
+
+Type: Geometry Node | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: Node Group, hardware, 3D printable | Handle: dojo-bolt-gen-v05
+
+Dojo Bolt Gen v05 is a flexible, procedural bolt generator for Blender designed to help makers and 3D artists create precise, customizable fasteners in minutes -- optimized for 3D printing as well as digital projects. With robust geometry nodes, this asset allows you to fine-tune every aspect -- thread profiles, head styles, shaft dimensions, chamfers, and more -- non-destructively, ensuring clean geometry suitable for physical fabrication.
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ DOJO BOLT GEN V05.3                          │
+├──────────────────────────────────────────────┤
+│                               Bolt Output    ○
+│                                  BOLT GEO    ○
+│                                       TAP    ○
+│                               Thread ONLY    ○
+│                          Only Head Sleeve    ○
+│                            No Head Sleeve    ○
+│                                Split Bolt    ○
+│                                    T-Bolt    ○
+│                                              │
+□ Type                                         │
+□ Print Ready                                  │
+□ send to origin                               │
+▮ length                   ⌖                   │
+▮ thread dia               ⌖                   │
+▮ head dia                 ⌖                   │
+▮ head height              ⌖                   │
+▮ head sides                                   │
+▮ a untapped                                   │
+□ thread only                                  │
+□ TAP                                          │
+▮ T-Bolt Cut Amount                            │
+▮ tap tolerance                                │
+├─ ▸ Filament/Cross Section Viewer ────────────┤
+◉ Filament Color                               │
+▮ layer height                                 │
+□ cross section view                           │
+▮ cut postion                                  │
+■ Object                                       │
+▮ x/y/z/custom                                 │
+□ direction flip                               │
+├─ ▸ extra ────────────────────────────────────┤
+▮ bolt-head offset         ⌖                   │
+▮ wall thic                ⌖                   │
+└──────────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Bolt Gen v05** from the Asset Browser into your Geometry Nodes editor or onto a mesh object
+2. Set **Type** to choose the bolt configuration (Bolt 3-Part Assembly, etc.)
+3. Adjust **length**, **thread dia**, **head dia**, and **head height** to define the bolt dimensions -- all gizmo-enabled for interactive editing
+4. **head sides** controls the polygon count of the bolt head (6 = hex, higher = rounder)
+5. **a untapped** sets the unthreaded portion of the shaft
+6. Toggle **TAP** to generate a matching tap hole for the bolt
+7. **tap tolerance** adds clearance between bolt and tap for printable fit
+8. Toggle **Print Ready** to optimize the output for 3D printing
+9. Multiple output sockets provide different bolt configurations: full bolt, thread only, head sleeve only, split bolt for printing, and T-bolt
+10. Use the **Filament/Cross Section Viewer** panel to preview print layers and cross-section the bolt for inspection
+
+## Changelog
+
+### Version 05.3 — ~Dec 2025
+- Multiple output sockets (Bolt Output, BOLT GEO, TAP, Thread ONLY, Head Sleeve, Split Bolt, T-Bolt)
+- Filament/Cross Section Viewer panel for print layer preview
+- Gizmo controls on length, thread dia, head dia, head height, bolt-head offset, wall thickness
+- Print Ready toggle for optimized 3D print output
+- send to origin toggle
+- Extra panel: bolt-head offset + wall thickness controls
+- Exported to no3d-tools storefront (2025-12-13), icons and demo media uploaded to Cloudinary
+- Object version (Dojo Bolt Gen v05_Obj) packaged as separate drag-and-drop asset
+
+### Version 05.2 — ~Nov 2025
+- Exported from source file "NO3D TOOLS workbench_29NOV2025.blend"
+- Prepared for no3d-tools library and website product listings
+
+### v05 — Aug 2025
+- Torx bolt head research (torx bolt.csv / .numbers — 2025-08-05)
+- v5 thumb and key bolt variant printed (2025-08-11)
+
+### v04 — Jun–Jul 2025
+- Bolt blank variants and iterative print testing (bolt_blank_003–005, 2025-07-21)
+- bolt7 variant printed (2025-07-21)
+- bolt_v1 variant printed (2025-07-28)
+- T-bolt feature added: half T-bolt and T-bolt turn adjusted variants (2025-06-23 – 2025-06-24)
+- Extensive T-bolt print testing — 10+ test prints over Jul 7 (t_bolt_001–004)
+- New bolt and half T-bolt first prints (2025-06-23)
+- bolt_gen_v05_004 printed (2025-06-20) — first prints with v05 naming
+
+### v03 — Mar 2025
+- "new bolt generator features" development file (2025-03-01)
+- Major update session: "Bolt Gen 3MAR2025 updates" (2025-03-03 – 2025-03-08)
+- Continued iteration: "new bolt generator features 1MAR2026.blend" (mislabeled date, actually 2025-03-09 – 2025-03-15)
+- Print testing: bolt_gen STLs exported (2025-03-03 – 2025-03-04)
+
+### v02 — ~Apr 2025 (social post)
+- Redesigned split-to-print cap orientation (cap flipped from top-down to bottom-up)
+- Added T-bolt printing mode: flat-bottom symmetrical bolt, no assembly needed
+- Apple Notes post (~Apr 14, 2025): addressed community feedback on V1 cap design
+- Announced new cap direction for better mechanical advantage under fastening load
+
+### v01 — May 2024
+- "BOLT GEN _ splittable 3MAY2024" — first split-to-print feature (3-part assembly: 2 shaft halves + cap)
+- First print tests (2024-05-06)
+- "dojo hardware and bolt gen library 4MAY2024" — bundled with hardware library
+- Bolt Object integration with shelf assembly bracket generator (2024-07-01 – 2024-07-02)
+- "N03D TOOLS - 3D printing Utilities" bolt exports (2024-07-02)
+- Split bolt demo video: "split bolt short.mov" (2024-07-25)
+
+### V1 & V2 — Pre-2024
+- Original "BOLT GENERATOR for Blender and Geometry Nodes V1 and V2" (.blend + .zip)
+- Basic parametric bolt generator with geometry nodes
+- Distributed as downloadable zip package
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+### Usage Guide
+
+# To Use
+
+## Getting into your scene:
+
+This is specifically the Node Group version of the Bolt Generator that is primarily meant for quickly adding to the node editor.
+
+To use just drag-and-drop this node group from your asset library into your node editor
+
+<video controls src="https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1765693675/no3d-tools/dojo-bolt-gen-v05/bolt-gen-demo2.mov" title="Title"></video>
+<video controls src="https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448721/no3d-tools/dojo-bolt-gen-v05/bolt-node-group-drop-demo.mov" title="Title"></video>
+
+... Which can be especially handy for instancing the same bolt in several places in the node system:
+
+<video controls src="https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448734/no3d-tools/dojo-bolt-gen-v05/instance-bolts-on-faces.mov" title="Title"></video>
+
+## Modifying the Bolt
+
+To modify bolt settings:
+- Use Gizmos to directly modify bolt parameters in a more intuitive, free-flowing way
+- use numerical parameter inputs in the group node to be more precise:
+- plug parameters into node system for procedurally set bolt settings
+
+<video controls src="https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448713/no3d-tools/dojo-bolt-gen-v05/bolt-group-gizmo-adjust.mov" title="Title"></video>
+<video controls src="https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448729/no3d-tools/dojo-bolt-gen-v05/dojo-bolt-print-types.mov" title="Title"></video>
+
+## 3D Printing Aides
+
+There are multiple ways to print the bolt once it's ready.
+
+<video controls src="https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448704/no3d-tools/dojo-bolt-gen-v05/animated-bolt-assembly.mov" title="Title"></video>
+And these different bolt printing configurations are avaialble either from this dropdown or from the output sockets of the node group. That way mulitple different configs can be accessed in the node system without needing mulitple bolt node groups cluttering the editor:
+
+<video controls src="https://res.cloudinary.com/dz6qxz9c4/video/upload/f_auto,q_auto/v1766448724/no3d-tools/dojo-bolt-gen-v05/bolt-printing-configs.mov" title="Title"></video>
+- Split to Print
+- T-bolts
+-
+
+---
+
+## Dojo Bolt Gen v05_Obj
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset, PRocedural, Mesh Generator, 3D printable | Handle: dojo-bolt-gen-v05-obj
+
+# Dojo Bolt Gen v05_Obj
+
+## Description
+
+The Object version of the now infamous Dojo Bolt Gen -- a drag-and-drop bolt asset that comes pre-configured as a scene object with all the same parametric controls as the node group version. This is the Bolt Gen v05.3 wrapped in a Geometry Nodes modifier on a ready-to-use object.
+
+Note: The modifier on this object is a thin wrapper (Geometry in/out only). The full bolt parameters are exposed through the underlying **Dojo Bolt Gen v05.3** subgroup -- see the Dojo Bolt Gen v05 node group version for the complete parameter reference.
+
+Now with gizmos enabled controls for easy modifications and customization!
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ DOJO BOLT GEN V05.3                          │
+├──────────────────────────────────────────────┤
+│                               Bolt Output    ○
+│                                  BOLT GEO    ○
+│                                       TAP    ○
+│                               Thread ONLY    ○
+│                          Only Head Sleeve    ○
+│                            No Head Sleeve    ○
+│                                Split Bolt    ○
+│                                    T-Bolt    ○
+│                                              │
+□ Type                                         │
+□ Print Ready                                  │
+□ send to origin                               │
+▮ length                   ⌖                   │
+▮ thread dia               ⌖                   │
+▮ head dia                 ⌖                   │
+▮ head height              ⌖                   │
+▮ head sides                                   │
+▮ a untapped                                   │
+□ thread only                                  │
+□ TAP                                          │
+▮ T-Bolt Cut Amount                            │
+▮ tap tolerance                                │
+├─ ▸ Filament/Cross Section Viewer ────────────┤
+◉ Filament Color                               │
+▮ layer height                                 │
+□ cross section view                           │
+▮ cut postion                                  │
+■ Object                                       │
+▮ x/y/z/custom                                 │
+□ direction flip                               │
+├─ ▸ extra ────────────────────────────────────┤
+▮ bolt-head offset         ⌖                   │
+▮ wall thic                ⌖                   │
+└──────────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Bolt Gen v05_Obj** from the Asset Browser directly into your 3D scene
+2. The bolt appears as a ready-to-use object with all parameters in the modifier panel
+3. Adjust bolt dimensions using gizmos in the viewport or numerical inputs in the modifier panel
+4. See the Dojo Bolt Gen v05 node group version documentation for full parameter details
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+### Usage Guide
+
+---
+title: "Dojo Bolt Gen v05_Obj"
+description: "Blender asset: Dojo Bolt Gen v05_Obj"
+version: "1.0.0"
+blender_version: "5.0.0+"
+asset_type: "Object"
+tags: ["blender", "addon", "3d", "asset"]
+author: "The Well Tarot"
+created_date: "2025-12-13"
+file_size_mb: 0.1
+catalog: "All Catalogs"
+handle: "dojo-bolt-gen-v05-obj"
+sku: "NO3D-TOOLS-DOJO-BOLT-GEN-V05-OBJ"
+---
+
+# Dojo Bolt Gen v05_Obj
+
+## Description
+
+Detailed description of the Dojo Bolt Gen v05_Obj Blender asset.
+
+## Features
+
+- **Asset Type**: Object
+- **Blender Version**: 5.0.0+
+- **File Size**: 0.1 MB
+- **Catalog**: All Catalogs
+
+## Usage Instructions
+
+### Basic Usage
+
+1. Download the `.blend` file
+2. Open in Blender 5.0.0+
+3. Import or drag the asset into your scene
+4. Use the asset as needed
+
+### Advanced Usage
+
+- Customize the asset parameters
+- Combine with other assets
+- Use in your own projects
+
+## Technical Details
+
+- **Blender Version**: 5.0.0+
+- **Asset Type**: Object
+- **File Size**: 0.1 MB
+- **Dependencies**: None
+
+## Examples
+
+This asset can be used for:
+- 3D modeling projects
+- Animation workflows
+- Game development
+- Architectural visualization
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Bool v5
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-bool-v5
+
+# Dojo Bool v5
+
+## Description
+
+A simple node group, but its in my top 5 most used node tools of all time.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO BOOL V5                         │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Mesh 1                               │
+○ Mesh 2                               │
+□ type                                 │
+□ precision                            │
+□ CUT                                  │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Dojo Bool v5** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Mesh 1** and **Mesh 2** geometry inputs to the two meshes you want to boolean
+3. Set **type** to choose the boolean operation: difference, intersect, or union
+4. Set **precision** to select the solver mode: manifold (faster) or exact (more reliable)
+5. Toggle **CUT** to slice both meshes along their intersection boundary instead of performing a solid boolean
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Calipers
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-calipers
+
+# Dojo Calipers
+
+## Description
+
+This is a very sensible and reasonable solution for getting accurate measurements of meshes within the Blender work environment.
+
+This is a fully functional 3D simulation of a digital caliper that measures with +/- .001 mm accuracy.
+
+If any machinist, engineer, or rocket scientist ever questions you using a free Animation or Video Game Asset development software for serious CAD modeling tasks, just send them a screen recodring of you using this baby to measure your mesh models. That'll shut them up.
+
+Just don't forget the battery.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DIGITAL CALIPER CONTROLLER           │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Socket                               │
+▮ Install Battery                      │
+▮ measure               ⌖             │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag and drop the **Dojo Calipers** asset from the Asset Browser into your 3D scene
+2. Insert the battery in the modifier panel by increasing **Install Battery** from 0 to 1
+3. Note that the origin of this object is the very tip of the calipers jaws and is the 0 point of the measurement. Place that point at point A of the desired measurement span
+4. Use the **measure** gizmo arrow to extend the upper jaw to point B of the desired measurement span
+5. (Optional) Use your digital pen to write down on your digital note pad the captured measurement
+6. (Mandatory) Proceed with your efficient and productive workday
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Crv Wrapper v4
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-crv-wrapper-v4
+
+# Dojo Crv Wrapper v4
+
+## Description
+
+A curve-wrapping utility that shrinkwraps a generated curve onto a target mesh surface, creating form-fitting outlines and contours.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO CRV WRAPPER V4                  │
+├──────────────────────────────────────┤
+│                          geometry    ○
+│                               pts    ○
+│                              info    □
+│                                      │
+○ Subject Mesh                         │
+▮ Tension factor                       │
+▮ Wrap Factor                          │
+▮ Resample Length                      │
+▮ Wrap Iterations                      │
+▮ Blur                                 │
+▮ Offset              ⌖               │
+□ Keep Geo                             │
+□ corner pin                           │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Crv Wrapper v4** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Subject Mesh** to the target mesh you want the curve to wrap around
+3. **Tension factor** controls how tightly the curve conforms to the mesh surface
+4. **Wrap Factor** sets the strength of each wrapping iteration (lower = softer drape)
+5. **Resample Length** controls the curve point density (smaller = finer detail, slower)
+6. **Wrap Iterations** sets how many passes the shrinkwrap performs (more = tighter fit)
+7. **Blur** smooths the wrapped result to reduce jitter
+8. **Offset** shifts the curve away from the surface (useful for clearance or layered wraps)
+9. Toggle **Keep Geo** to include the original mesh in the output alongside the curve
+10. Toggle **corner pin** to enable corner-pinning mode for tighter wrapping around sharp edges
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Fixed Grid
+
+Type: Geometry Node | Asset: GEOMETRY | Blender: 4.0.0+ | Tags: blender, geometry-nodes, utility, grid | Handle: dojo-fixed-grid
+
+Fixed grid box node group for snapping geometry to a grid with adjustable resolution and buffer
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ DOJO FIXED GRID                              │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ grid resolution                              │
+▮ buffer                                       │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Gluefinity Grid
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-gluefinity-grid
+
+# Dojo Gluefinity Grid
+
+## Description
+
+A flexible glue grid generator for 3D printing. Creates interlocking grid patterns that can be printed flat and used as flexible connectors or organizational trays. Supports stacking configurations and customizable grid sizes.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ FLEXIGLUEGRID                        │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+□ STACK                                │
+▮ Size X                   ⌖           │
+▮ Size Y                   ⌖           │
+◉ color                                │
+□ Randomize Grid colors                │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Gluefinity Grid** from the Asset Browser into your scene
+2. **Size X** and **Size Y** control the overall grid dimensions
+3. Toggle **STACK** to enable a stacking configuration for multi-layer grids
+4. Set **color** to change the grid's display color for visualization
+5. Toggle **Randomize Grid colors** to assign random colors per grid cell for easier identification
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+### Usage Guide
+
+# Dojo Gluefinity Grid_obj - Asset User Guide
+
+## Getting Started
+
+### Installation
+
+1. **Download the Asset**
+   - Locate the Dojo Gluefinity Grid_obj `.blend` file in your downloads or asset library.
+   - Ensure you have Blender 5.0.0 or later installed.
+
+### Adding Dojo Gluefinity Grid_obj to a New Asset Library
+
+To create a dedicated library for NO3D assets:
+
+1. **Create a New Asset Library Folder**
+   - In your file system, create a new folder and name it **no3d tools library** (or a name you'll recognize).
+2. **Add Dojo Gluefinity Grid_obj**
+   - Copy `Dojo Gluefinity Grid_obj.blend` into your new **no3d tools library** folder.
+
+3. **Register the Library in Blender**
+   - In Blender, go to **Edit > Preferences > File Paths > Asset Libraries**.
+   - Click **Add**, then select your new **no3d tools library** folder. Click **Accept** and close Preferences.
+
+Now, in Blender's Asset Browser, choose **no3d tools library** from the Asset Libraries dropdown. Your Dojo Gluefinity Grid_obj assets are ready to use—just drag them into your project!
+
+---
+
+### Adding Dojo Gluefinity Grid_obj to an Existing Asset Library
+
+If you already have an asset library folder (for example, **no3d tools library**):
+
+1. Copy `Dojo Gluefinity Grid_obj.blend` into your existing **no3d tools library** folder.
+2. Open `Dojo Gluefinity Grid_obj.blend` in Blender.
+3. Mark your desired assets (**Mark as Asset**), and save the file.
+4. In Blender's Asset Browser, make sure your asset library is selected. Dojo Gluefinity Grid_obj assets will now appear—drag them into your project whenever you need them!
+
+That's it!
+
+---
+
+## Using the Dojo Gluefinity Grid_obj Asset
+
+### Drag-and-Drop from Asset Browser
+
+1. **Open Asset Browser**
+   - Go to the Asset Browser panel in Blender (accessible in the main window, or via Area change).
+
+2. **Find Dojo Gluefinity Grid_obj**
+   - Look in the section or category (such as Materials, Node Groups, or Objects) where you saved the Dojo Gluefinity Grid_obj asset.
+
+3. **Use the Asset**
+   - For materials: drag and drop Dojo Gluefinity Grid_obj onto your selected object in the 3D viewport.
+   - For node groups: drag directly into the Geometry Nodes Editor.
+   - For objects: drag into your scene collection.
+
+---
+
+## Customizing the Dojo Gluefinity Grid_obj Asset
+
+Dojo Gluefinity Grid_obj assets are fully customizable and designed to help you create Gridfinity-compatible grids that perfectly fit your workspace.
+
+### Creating Custom Grid Sizes
+
+1. **Measure Your Space**
+   - Before creating your grid, measure the dimensions of your desk, shelf, or drawer where you want to place the Gridfinity grid.
+
+2. **Adjust Grid Parameters**
+   - To customize parameters, look in the **Modifier panel** when the node group is added as a modifier—there you'll find all adjustable settings for grid dimensions, spacing, and cell count.
+   - OR use the included **custom gizmo interface** that appears in the 3D Viewport when the asset is selected, allowing interactive adjustment of key parameters.
+
+3. **Preview and Refine**
+   - The geometry updates in real-time as you adjust parameters, so you can see exactly how your custom grid will look before printing.
+
+### For Objects
+
+- Imported Dojo Gluefinity Grid_obj objects come fully set up with the geometry applied. You can duplicate, modify, or combine them as you choose.
+- To tweak how the Dojo Gluefinity Grid_obj appears, check the Modifier panel for node group controls, or use the in-scene gizmo interface for hands-on adjustments in the 3D view.
+
+---
+
+## Advanced Usage
+
+### Multiple Grid Generation
+
+- **Mixing with Other Assets**: Combine Dojo Gluefinity Grid_obj assets with Blender's other assets—use node groups to create advanced organizational systems.
+- **Procedural Customization**: Add new parameters, dynamic generative properties, or animations to the geometry node group inputs or structure for unique, dynamic grid layouts.
+- **Workspace Planning**: Generate multiple grid sizes in a single scene to plan complete workspace organization systems before printing.
+
+### Gridfinity Integration
+
+- This product generates grids compatible with the Gridfinity modular storage system.
+- Use the generated grids as bases for organizing tools, components, and accessories using standard Gridfinity bins and accessories.
+- Combine with other Gridfinity-compatible designs for comprehensive storage solutions.
+
+---
+
+## Troubleshooting Common Geometry Node Group Issues
+
+- **Asset Not Showing Up in Asset Browser**: 
+  - Ensure your Dojo Gluefinity Grid_obj node group is saved and marked as an Asset (`Right-click → Mark as Asset`) in Blender.
+  - Check that your Asset Library path is set up in Blender Preferences ([Blender Manual: Asset Libraries](https://docs.blender.org/manual/en/latest/editors/asset_browser.html#asset-libraries)).
+
+- **Node Group Inputs Not Editable**:
+  - If you can't see or adjust parameters, confirm the node group's inputs are properly exposed ([Blender: Exposing Group Inputs](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/geometry_node_group.html#inputs)).
+  - In the Modifier panel, make sure any custom properties or controls are visible; unhide them in the node group if needed.
+
+- **Unexpected Results or Errors**:
+  - Use the recommended Blender version (5.0.0+). Geometry nodes may not be fully compatible across versions ([Blender: Geometry Nodes Versioning](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/index.html#versioning)).
+  - Check for mismatched or missing node connections.
+
+- **Slow or Laggy Viewport Performance**:
+  - Node groups can increase computational load. Try reducing mesh resolution or disabling subdivisions.
+  - Switch to the Eevee render engine for faster feedback ([Viewport Performance Tips](https://www.blender.org/manual/editors/3dview/navigate/viewports.html#viewport-performance)).
+  - Hide heavy geometry or use "Simplify" viewport settings ([Blender Docs: Simplify](https://docs.blender.org/manual/en/latest/render/simplify.html)).
+
+- **Inputs or Controls Missing in 3D View**:
+  - If the custom gizmo interface isn't visible, ensure the asset is selected and you're in Object Mode or the correct workspace.
+  - Custom gizmo features require Blender 3.6 or higher ([Blender: Custom Gizmos](https://docs.blender.org/manual/en/latest/advanced/gizmos/index.html)).
+
+- **Broken Geometry or Mesh Artifacts**:
+  - Clean up input geometry to avoid overlapping or non-manifold segments.
+  - Use Blender's "Clean Up" tools for meshes ([Clean Up Mesh Tools](https://docs.blender.org/manual/en/latest/modeling/meshes/editing/cleanup.html)).
+
+- **Asset Updates Not Showing in Browser**:
+  - After making changes, re-save and re-mark the node group as an asset, then refresh the Asset Browser.
+  - If problems persist, restart Blender or force a library reload ([Asset Browser Troubleshooting](https://docs.blender.org/manual/en/latest/editors/asset_browser.html#troubleshooting)).
+
+> For additional support, see the [Blender Geometry Nodes Manual](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/) and [Asset Browser Documentation](https://docs.blender.org/manual/en/latest/editors/asset_browser.html), or search [Blender Stack Exchange](https://blender.stackexchange.com/questions/tagged/geometry-nodes) for community solutions.
+
+---
+
+## Tips and Best Practices
+
+1. **Start Simple**: Begin by applying the asset with its default settings to see how it works out of the box. Once you're comfortable, experiment by tweaking parameters to create grids that match your specific workspace dimensions.
+
+2. **Measure First**: Before generating your grid, accurately measure your desk, shelf, or drawer to ensure the grid will fit perfectly. Account for any tolerances needed for 3D printing.
+
+3. **Customize and Save**: Tweak Dojo Gluefinity Grid_obj assets and save your own variations to your Asset Library. For guidance on making your own custom node groups, refer to [Blender's Creating Custom Node Groups documentation](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/geometry_node_group.html#creating-and-editing-node-groups).
+
+4. **Test Print Settings**: Before printing large grids, test with a small section to verify your printer settings and ensure proper adhesion and dimensional accuracy.
+
+---
+
+## About Gridfinity
+
+The Gridfinity system was originally created by **Zack Freedman** (Voidstar Lab) as a free, open-source modular workshop organization solution. This product builds upon that foundation to provide enhanced customization capabilities within Blender.
+
+**Credit and Resources:**
+- **Original Creator**: [Zack Freedman](https://www.youtube.com/@VoidstarLab) (Voidstar Lab)
+- **Original Gridfinity Video**: [Gridfinity: Your Ultimate Modular Workshop is FREE!](https://www.youtube.com/watch?v=ra_9zU-mnl8)
+- **Gridfinity Resources**: Visit [Zack Freedman's YouTube Channel](https://www.youtube.com/@VoidstarLab) for tutorials, updates, and the latest Gridfinity designs
+
+---
+
+## Support & Resources
+
+- [Blender Asset Browser Documentation](https://docs.blender.org/manual/en/latest/editors/asset_browser.html)
+- [Blender Geometry Nodes Manual](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/)
+- [Node Dojo Manual](https://node-dojo-manual.readthedocs.io/)
+- [Gridfinity Original System](https://www.youtube.com/watch?v=ra_9zU-mnl8) - Learn about the original Gridfinity system by Zack Freedman
+
+---
+
+## Dojo Gridfinity Bins
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, 3D-printable, organizer, gridfinity | Handle: dojo-gridfinity-bins
+
+Parametric Gridfinity-compatible bin generator with adjustable X/Y size and height
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ DOJO GRIDFINITY BINS                         │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ Size X                      ⌖               │
+▮ Size Y                      ⌖               │
+▮ bin z                       ⌖               │
+◉ color                                        │
+└──────────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Knob
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, geometry-nodes, super-primitive | Handle: dojo-knob
+
+# Dojo Knob
+
+## Description
+
+A parametric knob generator node group. Creates an odd-looking but incredibly useful shape for all kinds of highly functional mechanical parts and 3D printable objects -- control interfaces, furniture hardware, mechanical assemblies, and more.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO KNOB                            │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+▮ Resolution                           │
+▮ head width               ⌖           │
+▮ head height              ⌖           │
+▮ sink depth               ⌖           │
+▮ shaft width              ⌖           │
+▮ shaft length             ⌖           │
+▮ pill length              ⌖           │
+□ center                               │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Knob** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Geometry** to an input mesh (or leave empty for standalone generation)
+3. **head width** and **head height** define the knob cap dimensions
+4. **shaft width** and **shaft length** set the mounting post size
+5. **sink depth** controls how deep the shaft recesses into the head
+6. **pill length** rounds the shaft into a pill/capsule shape (0 = cylinder)
+7. **Resolution** controls mesh density (higher = smoother curves)
+8. Toggle **center** to align the knob origin to the center of the head or the base of the shaft
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Knob_obj
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: Mesh Gen, blender, 3d, asset | Handle: dojo-knob-obj
+
+# Dojo Knob_obj
+
+## Description
+
+A parametric generator for an odd-looking but increadibly useful shape for creating all kinds of highly functional mechanical parts and useful 3D pritnable objects. See also: printable control interfaces, furniture hardware, or mechanical assemblies.
+
+Now updated with 6 easily to use gizmo controls!
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO KNOB                            │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+▮ Resolution                           │
+▮ Head Width     ⌖                     │
+▮ Head Height    ⌖                     │
+▮ Sink Depth     ⌖                     │
+▮ Shaft Width    ⌖                     │
+▮ Shaft Length   ⌖                     │
+▮ Pill Length    ⌖                     │
+□ Center                               │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Knob** from the Asset Browser into your scene
+2. The modifier panel exposes all parameters listed above
+3. Set **Head Width** and **Head Height** to define the knob cap dimensions
+4. Set **Shaft Width** and **Shaft Length** for the mounting post
+5. **Sink Depth** controls how deep the shaft recesses into the head
+6. **Pill Length** rounds the shaft into a pill/capsule shape (0 = cylinder)
+7. **Resolution** controls mesh density (higher = smoother curves)
+8. Toggle **Center** to align the knob origin to the center of the head or the base of the shaft
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Mesh Repair
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-mesh-repair
+
+# Dojo Mesh Repair
+
+## Description
+
+A diagnostic node group that checks mesh geometry for non-manifold edges and other print-readiness issues. Highlights problem areas with visual markers so you can fix them before exporting.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO MESH REPAIR                     │
+├──────────────────────────────────────┤
+│                            Output    ○
+│                            errors    ▮
+│                             Curve    ○
+│                              Show    □
+│                                      │
+○ Input                                │
+□ show non-manifold edges              │
+□ show nm edges only                   │
+▮ marker size              ⌖           │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Mesh Repair** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Input** to the mesh you want to inspect
+3. Toggle **show non-manifold edges** to highlight edges that are not watertight
+4. Toggle **show nm edges only** to hide the mesh and show only the problem edges
+5. Adjust **marker size** to scale the visual error indicators for visibility
+6. The **errors** output provides a count of non-manifold edges found
+7. The **Curve** output provides the non-manifold edges as curve geometry for further processing
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Plywood Generator
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 4.0.0+ | Tags: blender, addon, 3d, asset, material, geometry-nodes, plywood, procedural | Handle: dojo-plywood-generator
+
+# Dojo Plywood Generator
+
+## Description
+
+Procedural plywood cross-section effect applied through geometry nodes. Adds realistic layered plywood edge appearance to any mesh. Control grain rotation, texture scale, layer visibility, and whether side faces get the treatment too.
+
+Originally built as "dojo_plyoood gn" for the Dojo Skaddis pegboard project — now extracted as a standalone utility for any box, shelf, or panel that needs that satisfying plywood edge look.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO PLYWOOD GENERATOR               │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+▮ sides                    = on        │
+□ rot                      = 0.5       │
+□ scale                    = 0.075     │
+□ layers                   = 0.725     │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Dojo Plywood Generator** from the Asset Browser into your Geometry Nodes editor
+2. Connect your mesh to the **Geometry** input
+3. Toggle **sides** to include or exclude side faces from the plywood effect
+4. Adjust **rot** to rotate the grain direction of the plywood layers
+5. Set **scale** to control the overall texture scale of the wood grain
+6. Dial **layers** to control the visibility/density of the alternating plywood layers
+
+## Changelog
+
+### Version 1.0.0
+- Initial library release (extracted from Dojo Skaddis 27jan2026.blend)
+- 19-node geometry node group
+- Fixed product name typo from "dojo_plyoood gn"
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Print Viz_V4.5
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-print-viz-v45
+
+# Dojo Print Viz_V4.5
+
+## Description
+
+A 3D print visualization tool that simulates filament layer lines and cross-section views on any mesh. Useful for previewing how a model will look when printed before exporting to a slicer.
+
+## Parameters
+
+```
+┌──────────────────────────────────────────┐
+│ DOJO PRINT VIZ V4.5                      │
+├──────────────────────────────────────────┤
+│                               Geometry   ○
+│                                 Output   ○
+│                                          │
+○ Input                                    │
+◉ color                                    │
+□ cross section view                       │
+□ direction flip                           │
+▮ xyz - cross section                      │
+▮ cut postion                              │
+▮ roughness                                │
+▮ strength                                 │
+▮ distance                                 │
+■ Object                                   │
+▮ Layer Height                             │
+└──────────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Dojo Print Viz_V4.5** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Input** to the mesh you want to preview
+3. Set **color** to match your filament color for realistic visualization
+4. **Layer Height** controls the simulated print layer thickness (e.g., 0.2mm)
+5. Toggle **cross section view** to slice the model and see the interior
+6. **xyz - cross section** selects which axis to cut along (0=X, 1=Y, 2=Z)
+7. **cut postion** slides the cross-section plane along the selected axis
+8. **direction flip** reverses the cross-section cut direction
+9. **roughness** and **strength** control the filament material appearance
+10. **distance** adjusts the layer line visual effect intensity
+11. Optionally assign an **Object** for custom cross-section plane orientation
+
+## Changelog
+
+### Version 4.5
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo Squircle v4.5_obj
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: Mesh Gen, blender, addon, 3d, asset | Handle: dojo-squircle-v45-obj
+
+# Dojo Squircle v4.5_obj
+
+## Description
+
+The Object version of the Dojo Squircle -- a drag-and-drop rounded rectangle generator that creates box shapes with smooth corner radii and wall thickness. Ready to use as a scene object with all parameters in the modifier panel.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO SQUIRCLE V4.5                   │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+▮ Size X                   ⌖           │
+▮ Size Y                   ⌖           │
+▮ Size Z (wall height)     ⌖           │
+▮ Wall Thickness           ⌖           │
+▮ Corner Radius            ⌖           │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo Squircle v4.5_obj** from the Asset Browser directly into your 3D scene
+2. **Size X** and **Size Y** set the footprint dimensions of the squircle
+3. **Size Z (wall height)** controls the extrusion height
+4. **Wall Thickness** hollows the shape to create a container (0 = solid)
+5. **Corner Radius** controls how rounded the corners are (0 = sharp square, higher = rounder)
+6. All parameters are gizmo-enabled for interactive 3D viewport editing
+
+## Changelog
+
+### Version 4.5
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo_Curvature Lines
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-curvature-lines
+
+# Dojo Curvature Lines
+
+## Description
+
+Generates curvature-following line instances along a curve, creating hatching or contour-line effects that follow the natural flow of the input curve geometry. Use to easily analyze curvature visually, or to create spikey effects! Whatever!
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO_CURVATURE LINES                 │
+├──────────────────────────────────────┤
+│                         Instances    ○
+│                                      │
+○ Curve                                │
+□ reverse lines                        │
+▮ curve line length        ⌖           │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **dojo_curvature lines** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Curve** to the input curve you want to generate curvature lines from
+3. **curve line length** controls the length of each generated line segment
+4. Toggle **reverse lines** to flip the direction of the generated line instances
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo_Fillet by Length
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: dojo-fillet-by-length
+
+# Dojo Fillet by Length
+
+## Description
+
+A curve fillet tool that rounds sharp corners on curves using a length-based radius, giving more predictable results than Blender's built-in fillet which uses a factor-based approach.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO_FILLET BY LENGTH                │
+├──────────────────────────────────────┤
+│                             Curve    ○
+│                                      │
+○ Curve                                │
+▮ radius                   ⌖           │
+▮ resample length                      │
+├─ ▸ Pt Select ───────────────────────┤
+□ Only Selected Points                 │
+▮ Corner Pt Select                     │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **dojo_fillet by length** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Curve** to the input curve with sharp corners you want to fillet
+3. **radius** sets the fillet radius in scene units (e.g., millimeters)
+4. **resample length** controls the point density of the filleted curve (smaller = smoother arcs)
+5. Use the **Pt Select** panel to fillet only specific corner points:
+   - Toggle **Only Selected Points** to limit the fillet to selected corners
+   - **Corner Pt Select** picks a specific point index to fillet
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dojo_Squircle v4.5
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: Super Primitive, blender, addon, 3d, asset | Handle: dojo-squircle-v45
+
+# Dojo Squircle v4.5
+
+## Description
+
+A parametric squircle (rounded rectangle) generator node group. Creates box shapes with smooth, controllable corner radii and wall thickness -- perfect for enclosures, cases, and containers.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOJO_SQUIRCLE V4.5                   │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+▮ Size X                   ⌖           │
+▮ Size Y                   ⌖           │
+▮ Size Z (wall height)     ⌖           │
+▮ Wall Thickness           ⌖           │
+▮ Corner Radius            ⌖           │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Dojo_Squircle v4.5** from the Asset Browser into your Geometry Nodes editor
+2. **Size X** and **Size Y** set the footprint dimensions of the squircle
+3. **Size Z (wall height)** controls the extrusion height
+4. **Wall Thickness** hollows the shape to create a container (0 = solid)
+5. **Corner Radius** controls how rounded the corners are (0 = sharp square, higher = rounder)
+
+## Changelog
+
+### Version 4.5
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Dowel Shelf Generator
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, addon, 3d, asset, generator, geometry-nodes, shelf, furniture, 3d-printable | Handle: dowel-shelf-generator
+
+# Dowel Shelf Generator
+
+## Description
+
+A parametric shelf generator that creates dowel-joined shelving units entirely through geometry nodes. Set the overall width, depth, and height, choose how many shelves, and adjust the material thickness and dowel diameter. Toggle dimension annotations on or off.
+
+Drop it in, dial in your dimensions, and export for 3D printing or use as a reference for a real woodworking project. The dowel joints are modeled as solid geometry — ready for boolean operations or direct STL export.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ DOWEL SHELF GENERATOR                │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+□ Width                    = 2.0    ⌖ │
+□ Depth                    = 2.0    ⌖ │
+□ Height                   = 0.5    ⌖ │
+□ shelf thiccness          = 10.38     │
+□ Dowel Diameter           = 0.5       │
+■ no of shelves            = 4         │
+▮ dims                     = off       │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag the **Dowel Shelf Generator** object from the Asset Browser into your 3D scene
+2. Set **Width**, **Depth**, and **Height** to define the overall shelf dimensions (gizmo-enabled for viewport dragging)
+3. Adjust **shelf thiccness** for the thickness of each shelf panel
+4. Set **Dowel Diameter** for the connecting dowel rod thickness
+5. Change **no of shelves** to add or remove shelf levels
+6. Toggle **dims** to show or hide dimension annotations in the viewport
+
+## Changelog
+
+### Version 1.0.0
+- Initial library release (extracted from putty modeling experiment.blend)
+- 67-node geometry node group
+- Object asset with modifier-based parametric control
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Driver Shank
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, hardware, reference-model | Handle: driver-shank
+
+Parametric screwdriver shank with adjustable length
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ DRIVER SHANK                                 │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ length                                       │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Flat Color Material
+
+Type: Blender Add-on | Asset: GEOMETRY_NODE_MATERIAL | Blender: 5.0+ | Tags: blender, material, shader, flat-color, emission, viewport, geometry-nodes | Handle: flat-color-material
+
+# Flat Color Material
+
+## Description
+
+A Geometry Nodes modifier that applies a flat emission color to any mesh. Drag it onto an object for instant flat-shaded viewport preview — no material setup needed. Useful for render overlays, non-photorealistic shading, color-coded visualizations, and quick prototyping.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ FLAT COLOR MATERIAL                  │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+▮ Emit Factor                          │
+◉ Color                                │
+□ Selection                            │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Flat Color Material** from the Asset Browser onto any mesh object
+2. The modifier applies a flat emission shader to the geometry
+3. Set **Color** to choose the flat color (default: Lello #f0ff00)
+4. Adjust **Emit Factor** to control emission brightness (1.0 = full, 0.0 = black)
+5. Use **Selection** to apply the material to specific faces only (True = all faces)
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Flat emission color via Geometry Nodes modifier
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Gabor Pattern Airpod Case
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, product-design, pattern | Handle: gabor-pattern-airpod-case
+
+AirPod case with procedural Gabor noise pattern surface
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ GABOR PATTERN AIRPOD CASE                    │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ grid resolution                              │
+◆ Gabor Rotation                               │
+▮ Gabor Scale                                  │
+▮ Blur                                         │
+□ Show Case                                    │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Metabones Obj
+
+Type: Mesh Object | Asset: MESH | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset, procedural, mesh generator, 3D printable, metabones | Handle: metabones-obj
+
+# Metabones Obj
+
+## Description
+
+A 2D metaball-style bone connector generator. Creates smooth, organic shapes by blending circles with arc tangent connections -- useful for creating bone-like structures, organic connectors, and flowing 2D shapes.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ 2D METABONES                         │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+▮ Radius                   ⌖           │
+▮ stretch                              │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Metabones Obj** from the Asset Browser into your scene
+2. **Radius** controls the size of the metaball circles
+3. **stretch** adjusts the blending factor between connected circles (0 = tight, 1 = stretched)
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## No3d Knurler
+
+Type: Geometry Node | Asset: GEOMETRY | Blender: 4.0.0+ | Tags: blender, geometry-nodes, surface-detail, knurling | Handle: no3d-knurler
+
+Procedural knurling generator for adding grip texture patterns to cylindrical surfaces
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ NO3D KNURLER                                 │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ Rib Pt Count                                 │
+▮ Rib Count                                    │
+▮ twist amount                                 │
+□ pt/edge                                      │
+▮ reach                                        │
+▮ amplitude                                    │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## No3d Pixel Markers
+
+Type: Mesh Object | Asset: MESH | Blender: 4.2.0+ | Tags: UI, Marker, Utility, Mograph, Free | Handle: no3d-pixel-markers
+
+# No3d Pixel Markers
+
+## Description
+
+A pixel art-style marker generator that converts curves into pixelated, blocky geometry. Can produce both 3D extruded pixel forms and flat 2D pixel art, with customizable resolution and color controls.
+
+## Parameters
+
+```
+┌──────────────────────────────────────────┐
+│ PIXEL MARKER                             │
+├──────────────────────────────────────────┤
+│                               Geometry   ○
+│                                          │
+○ Geometry                                 │
+▮ extrude height           ⌖              │
+▮ line thiccness           ⌖              │
+□ FLATTEN                                  │
+▮ pixel resolution                         │
+□ 3D/flat                                  │
+◉ Flat Color                               │
+◉ 3d color                                 │
+└──────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **No3d Pixel Markers** from the Asset Browser onto a curve object in your scene
+2. **extrude height** controls how tall the pixel blocks are extruded in 3D mode
+3. **line thiccness** sets the width of the pixel stroke
+4. Toggle **FLATTEN** to collapse the pixels to a flat plane
+5. **pixel resolution** controls the pixel grid density (smaller = more pixels, finer detail)
+6. Toggle **3D/flat** to switch between 3D extruded pixels and flat pixel art
+7. **Flat Color** sets the emission color in flattened mode
+8. **3d color** sets the material color in 3D mode
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Nylon Bolt
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, hardware, 3D-printable | Handle: nylon-bolt
+
+Parametric nylon bolt generator with adjustable length, cap option, and multiple output configurations
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ NYLON BOLT                                   │
+├──────────────────────────────────────────────┤
+│                                              │
+│                               Geometry    ○  │
+│                             bool block    ○  │
+│                         bool cylinder    ○   │
+│                            Z Dimension    ○  │
+□ Menu                                         │
+▮ Length                                       │
+□ cap                                          │
+□ dims                                         │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Print Bed Preview_obj
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: print-bed-preview-obj
+
+# Print Bed Preview
+
+## Description
+
+A 3D print bed simulator that shows your model sitting on a real-world-scale print bed. Includes bed size presets, slice preview, and object transform controls for positioning your model before export.
+
+## Parameters
+
+```
+┌──────────────────────────────────────────┐
+│ PRINT BED PREVIEW                        │
+├──────────────────────────────────────────┤
+│                               Geometry   ○
+│                                          │
+○ Geometry                                 │
+□ Menu (bed size)                          │
+▮ Size Select                              │
+■ Select Object to Print                   │
+◉ Filament Color                           │
+├─ ▸ SLICE PREVIEW ───────────────────────┤
+▮ LAYER                                    │
+□ slice                                    │
+├─ ▸ OBJECT TRANSFORM ───────────────────┤
+▮ Scale                                    │
+◇ Translation                              │
+◇ Rotation                                 │
+└──────────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Print Bed Preview** from the Asset Browser into your scene
+2. Select a **bed size** preset from the Menu dropdown (e.g., 200mm, 300mm)
+3. Assign your model to **Select Object to Print** to see it positioned on the bed
+4. Set **Filament Color** to preview the printed color
+5. Use the **SLICE PREVIEW** panel to simulate layer slicing:
+   - **LAYER** scrubs through print layers
+   - Toggle **slice** to enable/disable the slice view
+6. Use the **OBJECT TRANSFORM** panel to adjust **Scale**, **Translation**, and **Rotation** of the print object on the bed
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Print Orientation
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, geometry-nodes, 3d-printing, utility | Handle: print-orientation
+
+# Print Orientation
+
+## Description
+
+A utility that orients a mesh for 3D printing by selecting which face should sit flat on the print bed. Simply select a face and the mesh rotates to place that face down -- no more guessing at rotation angles for optimal print orientation.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ ORIENT PRINT BY FACE                 │
+├──────────────────────────────────────┤
+│                     oriented mesh    ○
+│                                      │
+○ Input                                │
+□ Surface Selection                    │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Print Orientation** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Input** to the mesh you want to orient for printing
+3. Set **Surface Selection** to select the face that should be the print bed contact surface (use a face selection attribute or boolean)
+4. The **oriented mesh** output provides the rotated geometry with the selected face flat on the XY plane
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Putty Flange Generator
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, putty, procedural | Handle: putty-flange-generator
+
+Procedural putty flange generator that molds organic flanged shapes around target objects
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ PUTTY FLANGE GENERATOR                       │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+□ target objects                               │
+▮ Putty mass                                   │
+▮ Soften                                       │
+◉ Filament Color                               │
+▮ Putty Factor                                 │
+▮ mold factor                                  │
+▮ thiccness                                    │
+□ flange shape                                 │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Screwdriver
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, hardware, reference-model | Handle: screwdriver
+
+Screwdriver model with geometry nodes assembly
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ SCREWDRIVER                                  │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Select By Bounding Face
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 4.0.0+ | Tags: blender, addon, 3d, asset, selection, geometry-nodes | Handle: select-by-bounding-face
+
+# Select By Bounding Face
+
+## Description
+
+Select faces on a mesh by their proximity to a bounding box face. Feed in a geometry, pick which bounding face to target (by index), and dial in a distance threshold. The node outputs the geometry with the selection applied and a boolean result for downstream logic.
+
+Great for quickly isolating the top, bottom, or side faces of any mesh based on its bounding box — no manual selection needed.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ SELECT BY BOUNDING FACE.V2           │
+├──────────────────────────────────────┤
+│                               face   ○
+│                             Result   ○
+│                                      │
+○ Geometry                             │
+□ face select              = 2         │
+□ dist                     = 0.01      │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Select By Bounding Face** from the Asset Browser into your Geometry Nodes editor
+2. Connect your mesh to the **Geometry** input
+3. Set **face select** to choose which bounding box face to target (0-5 maps to the six faces of the bounding box)
+4. Adjust **dist** to control the distance threshold — faces within this distance of the chosen bounding face will be selected
+5. Use the **face** output for the geometry with the selection applied, or the **Result** boolean for further logic
+
+## Changelog
+
+### Version 2.0.0
+- Initial library release (extracted from WIP nodes)
+- 11-node geometry node group
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Select Half Of Object
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 4.0.0+ | Tags: blender, addon, 3d, asset, selection, geometry-nodes | Handle: select-half-of-object
+
+# Select Half Of Object
+
+## Description
+
+Select exactly half of a mesh along any axis. Choose X, Y, or Z from the menu, flip the direction with the +/- toggle, and slide the Factor to adjust the split position. Outputs the geometry with the selection applied and a boolean result.
+
+Perfect for symmetry workflows — select one half, delete it, mirror the other, or just isolate geometry for targeted operations.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ SELECT HALF OF OBJECT                │
+├──────────────────────────────────────┤
+│                               face   ○
+│                             Result   ○
+│                                      │
+○ Geometry                             │
+◇ Menu                     = x        │
+▮ +/-                      = off       │
+□ Factor                   = 0.5       │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Select Half Of Object** from the Asset Browser into your Geometry Nodes editor
+2. Connect your mesh to the **Geometry** input
+3. Choose the split axis from the **Menu** dropdown (x, y, or z)
+4. Toggle **+/-** to flip which half is selected (positive or negative direction)
+5. Adjust **Factor** to move the split point — 0.5 is the exact midpoint, lower values select less, higher values select more
+6. Use the **face** geometry output or the **Result** boolean for downstream operations
+
+## Changelog
+
+### Version 1.0.0
+- Initial library release (extracted from WIP nodes)
+- 36-node geometry node group
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Separate Half
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 4.0.0+ | Tags: blender, addon, 3d, asset, selection, geometry-nodes, split | Handle: separate-half
+
+# Separate Half
+
+## Description
+
+Split a mesh in half and get both halves as separate geometry outputs. Pick an axis, choose the direction, adjust the split factor, and select the domain (point, edge, face, etc). The Selection output gets the chosen half, the face output gets the other half, and the Result boolean can drive further logic.
+
+This is the destructive sibling of Select Half Of Object — instead of just selecting, it actually separates the geometry into two streams.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ SEPARATE HALF                        │
+├──────────────────────────────────────┤
+│                          Selection   ○
+│                               face   ○
+│                             Result   ○
+│                                      │
+○ Input                                │
+◇ Menu                     = z        │
+▮ +/-                      = off       │
+□ Factor                   = 0.5       │
+◇ Menu                     = point     │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Separate Half** from the Asset Browser into your Geometry Nodes editor
+2. Connect your mesh to the **Input**
+3. Choose the split axis from the first **Menu** (x, y, or z)
+4. Toggle **+/-** to flip which half goes to which output
+5. Adjust **Factor** to move the split point (0.5 = midpoint)
+6. Choose the separation domain from the second **Menu** (point, edge, face, etc.)
+7. Wire the **Selection** and **face** outputs to separate geometry streams
+
+## Changelog
+
+### Version 1.0.0
+- Initial library release (extracted from WIP nodes)
+- 13-node geometry node group
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Set Holdout Material
+
+Type: Material | Asset: MATERIAL | Blender: 5.0.0+ | Tags: blender, material, 3d, asset, holdout, compositing | Handle: set-holdout-material
+
+# Set Holdout Material
+
+## Description
+
+A simple utility node group that applies a holdout material to selected geometry within geometry nodes. Holdout materials make objects invisible in renders while still blocking light and reflections -- useful for compositing and masking workflows.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ SET HOLDOUT MATERIAL                 │
+├──────────────────────────────────────┤
+│                           Geometry   ○
+│                                      │
+○ Geometry                             │
+□ Selection                            │
+└──────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Set Holdout Material** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Geometry** to the mesh you want to make holdout
+3. Use **Selection** to limit the holdout effect to specific faces (True = all faces)
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Simple Bin Generator
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, 3D-printable, organizer | Handle: simple-bin-generator
+
+Parametric bin/organizer generator with adjustable dimensions, dividers, and corner fillets
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ SIMPLE BIN GENERATOR                         │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ width                       ⌖               │
+▮ depth                       ⌖               │
+▮ Height of bins              ⌖               │
+▮ divide iterations                            │
+▮ wall thiccness              ⌖               │
+▮ corner fillet                                │
+▮ margin                                       │
+▮ X                                            │
+▮ Y                                            │
+└──────────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Sketchbook Generator Scene
+
+Type: Blender Scene | Asset: SCENE | Blender: 4.0.0+ | Tags: blender, scene, procedural, notebook, animation | Handle: sketchbook-generator-scene
+
+Procedural sketchbook/notebook generator scene with page-flipping animation, customizable covers, stickers, and binding
+
+## Parameters
+
+```
+Scene file with a complete procedural notebook/sketchbook system.
+Includes page generation, page-flipping animation, cover wrapping,
+sticker placement, spine binding, and rendering setup.
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Spike Ball_Simple V1
+
+Type: Blender Add-on | Asset: MESH | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset, procedural, mesh generator, 3D printable | Handle: spike-ball-simple-v1
+
+# Spike Ball Simple V1
+
+## Description
+
+A parametric spike ball generator that creates a sphere covered in evenly-distributed spikes. Outputs the combined spike ball as well as separate spike and ball geometry for flexible compositing.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ SPIKE BALL_SIMPLE V1                 │
+├──────────────────────────────────────┤
+│                        spike ball    ○
+│                            spikes    ○
+│                              ball    ○
+│                                      │
+▮ ball radius              ⌖           │
+▮ spike radius             ⌖           │
+▮ spike length             ⌖           │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Spike Ball_Simple V1** from the Asset Browser into your Geometry Nodes editor
+2. **ball radius** sets the size of the central sphere
+3. **spike radius** controls the thickness of each spike at its base
+4. **spike length** sets how far each spike extends from the ball surface
+5. Use the separate outputs (**spike ball**, **spikes**, **ball**) to apply different materials or process each part independently
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Spike Putty 1
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, putty, procedural | Handle: spike-putty-1
+
+Procedural spike putty wrapper that creates organic spiked surfaces around mesh collections
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ SPIKE PUTTY 1                                │
+├──────────────────────────────────────────────┤
+│                                              │
+│                               Geometry    ○  │
+│                                  Value    ○  │
+□ Collection                                   │
+▮ Voxel size                                   │
+▮ Hole count                                   │
+▮ Blur/Relax surface iterations                │
+▮ Strand Radius              ⌖                 │
+▮ hi res                                       │
+▮ Tigthen to Surface                           │
+▮ Spike Length                                  │
+▮ spike base width            ⌖                │
+▮ dull/sharp                                   │
+◉ color                                        │
+└──────────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## T-Slot Utilities
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, geometry-nodes, utility, mechanical | Handle: t-slot-utilities
+
+# T-Slot Utilities
+
+## Description
+
+A T-slot aluminum extrusion generator with a library of standard profiles (20x20, 20x40, etc.). Extrudes profiles along a mesh line with cost estimation, remeshing, and polygon size controls. Includes both the extrusion generator and a standalone profile library node group.
+
+## Parameters
+
+### T-slot Extrusion (mesh line)
+
+```
+┌──────────────────────────────────────────┐
+│ T-SLOT EXTRUSION_MESH LINE               │
+├──────────────────────────────────────────┤
+│                               Geometry   ○
+│                               ext size   ▮
+│                                   cost   ▮
+│                                          │
+○ Geometry                                 │
+▮ poly size                                │
+□ remesh                                   │
+□ Menu (profile size)                      │
+▮ cost per mm                              │
+□ custom cost                              │
+□ disp cost                                │
+◇ Offset                                   │
+└──────────────────────────────────────────┘
+```
+
+### T-slot Profiles (standalone)
+
+```
+┌──────────────────────────────────────────┐
+│ T-SLOT PROFILES                          │
+├──────────────────────────────────────────┤
+│                               Geometry   ○
+│                               ext size   ▮
+│                                   cost   ▮
+│                                          │
+□ Menu (profile size)                      │
+□ custom cost                              │
+▮ cost per mm                              │
+□ Name                                     │
+└──────────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **T-slot Extrusion_mesh line** from the Asset Browser onto a mesh line in your scene
+2. Select the extrusion **profile size** from the Menu dropdown (20x20, 20x40, etc.)
+3. **poly size** controls the mesh polygon density of the extruded profile
+4. Toggle **remesh** to apply a remesh for cleaner geometry
+5. **Offset** repositions the extrusion relative to the mesh line
+6. Enable **custom cost** and set **cost per mm** to estimate material costs
+7. Toggle **disp cost** to display the cost value in the viewport
+8. The **ext size** and **cost** outputs provide the extrusion dimensions and calculated cost
+
+Alternatively, use **t-slot profiles** as a standalone node group to generate just the cross-section profile without extrusion along a path.
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Tarot Stipple Material
+
+Type: Blender Add-on | Asset: MATERIAL | Blender: 4.5+ | Tags: MoGraph, Well Tarot, Design, Visualization, Digital Art, Generative | Handle: tarot-stipple-material
+
+# Tarot Stipple Material
+
+## Description
+
+The custom stipple-y Tarot Stipple Material I produced to quickly make the thumbnails procedurally for this very website. It's a procedurally generated Geometry Nodes material that creates a distinctive stipple texture effect with outline control. Applied via Geometry Nodes, it separates geometry into fill, outline, and combined outputs for compositing flexibility.
+
+## Parameters
+
+```
+┌──────────────────────────────────────────┐
+│ TAROT TOTEM MATERIAL SETTINGS            │
+├──────────────────────────────────────────┤
+│                               Geometry   ○
+│                                outline   ○
+│                                   fill   ○
+│                                          │
+○ Geometry                                 │
+□ Selection                                │
+◆ Material                                 │
+◉ color                                    │
+▮ brightness                               │
+▮ distort scale                            │
+▮ stipple size                             │
+▮ outline                                  │
+└──────────────────────────────────────────┘
+```
+
+## Usage
+
+1. Drag **Tarot Stipple Material** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Geometry** to the mesh you want to apply the stipple effect to
+3. Use **Selection** to limit the effect to specific faces
+4. Assign a base **Material** for the stipple shader
+5. Set **color** for the stipple tint
+6. **brightness** controls the overall luminance of the stipple pattern
+7. **distort scale** adjusts the procedural noise distortion applied to the stipple dots
+8. **stipple size** controls the density/size of the stipple dots
+9. **outline** adjusts the thickness of the edge outline effect
+10. Use the separate **outline** and **fill** geometry outputs for compositing different passes
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+### Usage Guide
+
+# Tarot Stipple Material - Asset User Guide
+
+## Getting Started
+
+### Installation
+
+1. **Download the Asset**
+   - Locate the Tarot Stipple Material `.blend` file in your downloads or asset library.
+   - Ensure you have Blender 4.5 or later installed.
+
+### Adding Tarot Stipple Material to a New Asset Library
+
+To create a dedicated library for NO3D assets:
+
+1. **Create a New Asset Library Folder**
+   - In your file system, create a new folder and name it **no3d tools library** (or a name you'll recognize).
+2. **Add Tarot Stipple Material**
+   - Copy `Tarot Stipple Material.blend` into your new **no3d tools library** folder.
+
+3. **Register the Library in Blender**
+   - In Blender, go to **Edit > Preferences > File Paths > Asset Libraries**.
+   - Click **Add**, then select your new **no3d tools library** folder. Click **Accept** and close Preferences.
+
+Now, in Blender's Asset Browser, choose **no3d tools library** from the Asset Libraries dropdown. Your Tarot Stipple Material assets are ready to use—just drag them into your project!
+
+---
+
+### Adding Tarot Stipple Material to an Existing Asset Library
+
+If you already have an asset library folder (for example, **no3d tools library**):
+
+1. Copy `Tarot Stipple Material.blend` into your existing **no3d tools library** folder.
+2. Open `Tarot Stipple Material.blend` in Blender.
+3. Mark your desired assets (**Mark as Asset**), and save the file.
+4. In Blender's Asset Browser, make sure your asset library is selected. Tarot Stipple Material assets will now appear—drag them into your project whenever you need them!
+
+That's it!
+
+---
+
+## Using the Tarot Stipple Material Asset
+
+### Drag-and-Drop from Asset Browser
+
+1. **Open Asset Browser**
+   - Go to the Asset Browser panel in Blender (accessible in the main window, or via Area change).
+
+2. **Find Tarot Stipple Material**
+   - Look in the Materials section of your asset library where you saved the Tarot Stipple Material asset.
+
+3. **Apply the Material**
+   - Select your object in the 3D viewport.
+   - Drag and drop Tarot Stipple Material from the Asset Browser onto your selected object.
+   - The material will be applied immediately and you'll see the stipple texture in the viewport.
+
+---
+
+## Customizing the Tarot Stipple Material Asset
+
+Tarot Stipple Material is fully customizable through Blender's Material Properties panel.
+
+### Material Parameters
+
+When the material is applied, you can adjust these parameters in the Material Properties panel:
+
+- **Stipple Density**: Controls how many stipple dots appear per unit area. Higher values create more dense patterns.
+- **Stipple Scale**: Adjusts the size of individual stipple marks. Larger values create bigger dots.
+- **Contrast**: Fine-tunes the visibility and sharpness of the stipple pattern. Higher contrast makes dots more distinct.
+- **Base Color**: The underlying color of the material surface.
+- **Stipple Color**: The color of the stipple dots themselves (can differ from base color for layered effects).
+
+### For Materials
+
+- Imported Tarot Stipple Material comes fully set up with optimized node groups.
+- To tweak how the stipple effect appears, check the Material Properties panel for node group controls.
+- You can modify individual nodes in the Shader Editor for advanced customization.
+
+---
+
+## Advanced Usage
+
+- **Mixing with Other Materials**: Combine Tarot Stipple Material with Blender's other materials using Mix Shader nodes to create advanced layered effects.
+
+- **Procedural Customization**: Modify the node group structure in the Shader Editor to add new parameters, dynamic properties, or animations for unique, dynamic stipple effects.
+
+- **Texture Mapping**: Use UV mapping or procedural coordinates to control how the stipple pattern is applied across your object's surface.
+
+- **Animation**: Keyframe material properties to create animated stipple effects that evolve over time.
+
+---
+
+## Troubleshooting Common Material Issues
+
+- **Material Not Showing Up in Asset Browser**: 
+  - Ensure your Tarot Stipple Material is saved and marked as an Asset (`Right-click → Mark as Asset`) in Blender.
+  - Check that your Asset Library path is set up in Blender Preferences ([Blender Manual: Asset Libraries](https://docs.blender.org/manual/en/latest/editors/asset_browser.html#asset-libraries)).
+
+- **Material Parameters Not Editable**:
+  - If you can't see or adjust parameters, confirm the material's node group inputs are properly exposed ([Blender: Exposing Group Inputs](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/geometry_node_group.html#inputs)).
+  - In the Material Properties panel, make sure any custom properties or controls are visible; unhide them in the node group if needed.
+
+- **Unexpected Results or Errors**:
+  - Use the recommended Blender version (4.5+). Material nodes may not be fully compatible across versions.
+  - Check for mismatched or missing node connections in the Shader Editor.
+
+- **Slow or Laggy Viewport Performance**:
+  - Complex material node setups can increase computational load. Try simplifying the material or reducing viewport quality settings.
+  - Switch to the Eevee render engine for faster feedback ([Viewport Performance Tips](https://www.blender.org/manual/editors/3dview/navigate/viewports.html#viewport-performance)).
+  - Use "Simplify" viewport settings for faster preview ([Blender Docs: Simplify](https://docs.blender.org/manual/en/latest/render/simplify.html)).
+
+- **Stipple Pattern Not Visible**:
+  - Ensure your object has proper UV mapping or generated coordinates.
+  - Check that the material is assigned to the correct material slot.
+  - Adjust lighting in your scene to make the stipple texture more visible.
+  - Increase the Contrast parameter to make stipple dots more distinct.
+
+- **Asset Updates Not Showing in Browser**:
+  - After making changes, re-save and re-mark the material as an asset, then refresh the Asset Browser.
+  - If problems persist, restart Blender or force a library reload ([Asset Browser Troubleshooting](https://docs.blender.org/manual/en/latest/editors/asset_browser.html#troubleshooting)).
+
+> For additional support, see the [Blender Material Manual](https://docs.blender.org/manual/en/latest/render/materials/index.html) and [Asset Browser Documentation](https://docs.blender.org/manual/en/latest/editors/asset_browser.html), or search [Blender Stack Exchange](https://blender.stackexchange.com/questions/tagged/materials) for community solutions.
+
+---
+
+## Tips and Best Practices
+
+1. **Start Simple**: Begin by applying the material with its default settings to see how it works out of the box. Once you're comfortable, experiment by tweaking parameters and making more advanced adjustments for custom results.
+
+2. **Customize and Save**: Tweak Tarot Stipple Material and save your own variations to your Asset Library. For guidance on making your own custom materials, refer to [Blender's Material Documentation](https://docs.blender.org/manual/en/latest/render/materials/index.html).
+
+3. **Lighting Considerations**: The stipple pattern is most visible with appropriate lighting. Use directional lights or area lights to enhance the texture's visibility.
+
+4. **Color Harmony**: Experiment with complementary or analogous color schemes for the base and stipple colors to create harmonious tarot-inspired palettes.
+
+---
+
+## Support & Resources
+
+- [Blender Asset Browser Documentation](https://docs.blender.org/manual/en/latest/editors/asset_browser.html)
+- [Blender Material Manual](https://docs.blender.org/manual/en/latest/render/materials/index.html)
+- [Blender Shader Editor Guide](https://docs.blender.org/manual/en/latest/editors/shader_editor.html)
+
+---
+
+## Threaded Insert
+
+Type: Blender Add-on | Asset: OBJECT | Blender: 5.0+ | Tags: blender, geometry-nodes, 3d-printing, hardware, threaded-insert, mechanical | Handle: threaded-insert
+
+# Threaded Insert
+
+## Description
+
+A parametric threaded insert (heat-set insert) generator for 3D printed parts. Set the diameter and get three outputs: the insert geometry itself, a boolean cutter for creating clean pockets, and a combined view of both.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ THREADED INSERT                      │
+├──────────────────────────────────────┤
+│                            Insert    ○
+│                              Bool    ○
+│                               All    ○
+│                                      │
+○ Geometry                             │
+▮ Diameter        ⌖                    │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **Threaded Insert** from the Asset Browser into your scene
+2. Set **Diameter** to match your heat-set insert size (e.g., M3 = 4.0mm, M4 = 5.0mm)
+3. The modifier outputs three geometry channels:
+   - **Insert** — the insert body (for visualization)
+   - **Bool** — a boolean cutter shape (subtract from your part to create the pocket)
+   - **All** — combined insert + boolean geometry
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## USB-C Cable
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, hardware, electronics | Handle: usb-c-cable
+
+USB-C cable model with adjustable curvature and connector rotation
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ USB-C CABLE                                  │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ curvature factor                             │
+◆ input.rot1                                   │
+◆ input.rot2                                   │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Vase Ribbed
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, 3D-printable, vase | Handle: vase-ribbed
+
+Parametric ribbed vase generator with adjustable length
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ VASE RIBBED                                  │
+├──────────────────────────────────────────────┤
+│                                              │
+■ Geometry                          Geometry ○ │
+▮ Length                                       │
+└──────────────────────────────────────────────┘
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## View Crv Points
+
+Type: Blender Add-on | Asset: GEOMETRY | Blender: 5.0.0+ | Tags: blender, addon, 3d, asset | Handle: view-crv-points
+
+# View Crv Points
+
+## Description
+
+A simple diagnostic utility that converts curve control points into visible point cloud geometry. Useful for debugging curve-based workflows where you need to see exactly where the control points are.
+
+## Parameters
+
+```
+┌──────────────────────────────────────┐
+│ VIEW CRV PTS                         │
+├──────────────────────────────────────┤
+│                            Points    ○
+│                                      │
+○ Curve                                │
+▮ Radius                   ⌖           │
+└──────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## Usage
+
+1. Drag **view crv pts** from the Asset Browser into your Geometry Nodes editor
+2. Connect **Curve** to the curve whose control points you want to visualize
+3. **Radius** controls the size of each point marker
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this asset, please contact The Well Tarot.
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Voronoi Putty 1
+
+Type: Blender Object | Asset: OBJECT | Blender: 4.0.0+ | Tags: blender, geometry-nodes, putty, procedural | Handle: voronoi-putty-1
+
+Procedural voronoi putty wrapper that creates organic voronoi-pattern surfaces around mesh collections
+
+## Parameters
+
+```
+┌──────────────────────────────────────────────┐
+│ VORONOI PUTTY 1                              │
+├──────────────────────────────────────────────┤
+│                                              │
+│                               Geometry    ○  │
+│                                  Value    ○  │
+□ Collection                                   │
+▮ Voxel size                                   │
+▮ Blur/Relax surface iterations                │
+▮ Strand Radius              ⌖                 │
+▮ hi res                                       │
+▮ Tigthen to Surface                           │
+◉ color                                        │
+▮ hole count                                   │
+▮ hole seed                                    │
+└──────────────────────────────────────────────┘
+
+⌖ = gizmo-enabled (direct editing in 3D viewport)
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+## Voronoi Wrapper Scene
+
+Type: Blender Scene | Asset: SCENE | Blender: 4.0.0+ | Tags: blender, scene, putty, product-design | Handle: voronoi-wrapper-scene
+
+Complete Blender scene with voronoi putty wrapping tools, reference objects (AirPods Max, lighter, screwdriver), and a photo studio setup
+
+## Parameters
+
+```
+Scene file containing multiple putty wrapper assets and a thumb photo studio.
+Includes: Airpods Max, Bic Lighter, Driver Shank, Screwdriver, Spike Putty 1, Voronoi Putty 1, No3d Knurler node group.
+```
+
+## License
+
+Personal/non-commercial use only. Email joe@welltarot.com for commercial licensing or custom utility development.
+
+---
+
+# Membership Addon Guide
+
+# No3d Tools Membership — Install & Usage Guide
+
+## What It Does
+
+The No3d Tools Membership addon syncs your entire No3d Tools asset library directly into Blender. Once installed and activated with your license key, every asset — geometry node tools, materials, mesh objects — appears in Blender's Asset Browser, ready to drag into any project. New assets are synced automatically when you open Blender.
+
+---
+
+## Requirements
+
+- Blender 4.5 or newer
+- An active No3d Tools subscription ([subscribe here](https://no3dtools.com/subscribe.html))
+- Your license key (sent to your email after subscribing)
+
+---
+
+## Installation
+
+### Step 1: Download the Addon
+
+Download the latest `no3d_tools_membership.zip` from the link in your license key email, or from your [account page](https://no3dtools.com/account.html).
+
+### Step 2: Install in Blender
+
+1. Open Blender
+2. Go to **Edit → Preferences → Add-ons**
+3. Click **Install...** (top right)
+4. Navigate to the downloaded `no3d_tools_membership.zip`
+5. Click **Install Add-on**
+
+### Step 3: Enable the Addon
+
+1. In the Add-ons list, search for **"No3d Tools Membership"**
+2. Check the box to enable it
+3. The addon preferences panel will expand
+
+---
+
+## Setup
+
+### Enter Your License Key
+
+1. In the addon preferences (Edit → Preferences → Add-ons → No3d Tools Membership), find the **License** section
+2. Paste your license key into the **Key** field
+   - Format: `NO3D-XXXX-XXXX-XXXX-XXXX`
+   - Your key was emailed to you after subscribing
+3. Click **Validate**
+4. Status should show: **Active** ✓
+
+If you don't have your license key:
+- Check your email for "No3d Tools — Your License Key"
+- Visit [no3dtools.com/account.html](https://no3dtools.com/account.html) to look it up
+
+### Set Your Library Path
+
+The addon stores synced assets in a local folder. The default is `~/no3d-tools-library/`.
+
+To change it:
+1. In the addon preferences, find the **Library** section
+2. Click the folder icon next to **Path**
+3. Choose where you want your assets stored
+4. The folder will be created automatically if it doesn't exist
+
+### Sync Your Library
+
+1. Click **Sync Now** in the addon preferences
+2. The addon will:
+   - Validate your license
+   - Download the asset manifest
+   - Download all .blend files that are new or updated
+   - Skip files that haven't changed (checksum-based)
+3. First sync downloads the entire library (~500MB depending on your plan)
+4. Future syncs only download what's changed (usually <10MB)
+
+### Enable Auto-Sync
+
+Check **"Sync on startup"** to automatically sync when Blender opens. The sync runs in the background — it won't block you from working.
+
+---
+
+## Using Your Assets
+
+### Open the Asset Browser
+
+1. In any Blender workspace, open the **Asset Browser** (or change a panel to Asset Browser type)
+2. In the dropdown at the top left, select **NO3D Tools**
+3. All your synced assets will appear
+
+### Using Assets in Your Scene
+
+- **Geometry Node tools**: Drag onto any mesh object to add as a modifier
+- **Materials**: Drag onto any object to apply
+- **Mesh objects**: Drag into the viewport to add to your scene
+- **Collections**: Drag to instance an entire collection
+
+### Browsing by Category
+
+Assets are organized by Blender's catalog system. Use the sidebar in the Asset Browser to filter by category (tools, materials, objects, etc.).
+
+---
+
+## Managing Your Subscription
+
+### Check Status
+
+In the addon preferences, the **Status** line shows:
+- **Active** ✓ — Your subscription is current
+- **Grace Period** ⚠ — Payment failed, you have 7 days to update your payment method
+- **Expired** ✗ — Subscription ended, sync disabled
+
+### Update Payment / Cancel
+
+Visit [no3dtools.com/account.html](https://no3dtools.com/account.html) to:
+- View your subscription status
+- Update your payment method
+- Cancel your subscription
+- Access Stripe's billing portal
+
+### Re-subscribe
+
+If your subscription expired, visit [no3dtools.com/subscribe.html](https://no3dtools.com/subscribe.html) to re-subscribe. Your existing license key will be reactivated — you don't need a new one.
+
+---
+
+## Troubleshooting
+
+### "Invalid license key"
+- Make sure you copied the full key including the `NO3D-` prefix
+- Check for extra spaces before or after the key
+- Verify your subscription is active at [no3dtools.com/account.html](https://no3dtools.com/account.html)
+
+### "Sync failed"
+- Check your internet connection
+- Try clicking **Validate** first, then **Sync Now**
+- If the error persists, the server may be temporarily down — try again in a few minutes
+
+### Assets not showing in Asset Browser
+- Make sure the **NO3D Tools** library is selected in the Asset Browser dropdown (top left)
+- Try closing and reopening the Asset Browser
+- Check that the library path in addon preferences points to the correct folder
+- Run **Sync Now** to refresh
+
+### Addon not appearing in Preferences
+- Make sure you installed the `.zip` file, not an extracted folder
+- Restart Blender after installation
+- Check that you're running Blender 4.5 or newer
+
+### Lost your license key
+- Check your email for "No3d Tools — Your License Key"
+- Visit [no3dtools.com/account.html](https://no3dtools.com/account.html) and enter your email
+- Contact support if you can't find it
+
+---
+
+## Quick Reference
+
+| Action | How |
+|--------|-----|
+| Install addon | Edit → Preferences → Add-ons → Install → select .zip |
+| Enter license key | Addon preferences → License → Key field → Validate |
+| Sync assets | Addon preferences → Sync Now |
+| Auto-sync | Addon preferences → check "Sync on startup" |
+| Browse assets | Asset Browser → select "NO3D Tools" library |
+| Use a tool | Drag from Asset Browser onto a mesh object |
+| Manage subscription | [no3dtools.com/account.html](https://no3dtools.com/account.html) |
+| Get support | [no3dtools.com](https://no3dtools.com) |

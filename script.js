@@ -19,7 +19,6 @@ let productDataByType = {};
 let activeProductType = 'tools';
 let expandedProductGroups = new Set();
 let activeToolFilters = new Set(['all']);
-let originalDescriptionContent = '';
 const purchasedProducts = new Set(); // To track purchased products
 
 // Carousel-specific global variables
@@ -49,7 +48,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     organizeProductsByType();
     renderSidebar();
     initializeEventListeners();
-    initializeTabs(); // Initialize the tab system
     initializeMobileMenu();
     initializeSidebarEventListeners();
     initializeSidebarScrollbar();
@@ -60,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateViewState(false); // Start with home grid visible
     await checkUrlParameters(); // Check for checkout success from redirect
     initializeMemberCTA();
+    initializeAccountDropdown();
     initializeDownloadButton();
     console.log('Website initialized successfully');
   } catch (error) {
@@ -182,13 +181,16 @@ function renderSidebar() {
     const productTypeDiv = document.createElement('div');
     productTypeDiv.className = 'product-type';
     productTypeDiv.dataset.type = type.key;
-    if (type.key === activeProductType) {
+    if (!hasProducts) {
+      productTypeDiv.classList.add('empty');
+    } else if (type.key === activeProductType) {
       productTypeDiv.classList.add('expanded');
     }
     
     const typeHeader = document.createElement('div');
     typeHeader.className = 'type-header';
-    typeHeader.innerHTML = `<span class="carrot expanded">▼</span><span class="category-name">${type.label}</span>`;
+    const isExpanded = type.key === activeProductType;
+    typeHeader.innerHTML = `<span class="carrot ${isExpanded ? 'expanded' : 'collapsed'}">${isExpanded ? '▼' : '▶'}</span><span class="category-name">${type.label}</span>`;
     
     const groupsContainer = document.createElement('div');
     groupsContainer.className = 'product-groups-container';
@@ -217,6 +219,28 @@ function renderSidebar() {
     productTypeDiv.appendChild(groupsContainer);
     sidebarContent.appendChild(productTypeDiv);
   });
+
+  // Add Help section below product list
+  const helpSection = document.createElement('div');
+  helpSection.className = 'product-type';
+  helpSection.dataset.type = 'help';
+
+  const helpHeader = document.createElement('div');
+  helpHeader.className = 'type-header';
+  helpHeader.innerHTML = '<span class="carrot collapsed">▶</span><span class="category-name">HELP</span>';
+
+  const helpList = document.createElement('div');
+  helpList.className = 'product-groups-container';
+  helpList.innerHTML = `
+    <div class="group-product-list">
+      <a href="/guide.html" class="product-item sidebar-help-link"><span class="product-name">Getting Started</span></a>
+      <a href="/ai-help.html" class="product-item sidebar-help-link"><span class="product-name">AI Help</span></a>
+    </div>
+  `;
+
+  helpSection.appendChild(helpHeader);
+  helpSection.appendChild(helpList);
+  sidebarContent.appendChild(helpSection);
 }
 
 function renderHomeGrid() {
@@ -290,23 +314,20 @@ async function updateProductDisplay(productId) {
   productPrice.textContent = `PRICE: ${product.price}`;
   
   if (product.description) {
-    const descriptionText = typeof product.description === 'string' 
-      ? product.description 
+    const descriptionText = typeof product.description === 'string'
+      ? product.description
       : String(product.description || '');
-    
+
     if (typeof marked !== 'undefined') {
       productDescription.innerHTML = marked.parse(descriptionText);
     } else {
       productDescription.innerHTML = `<p>${descriptionText.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
     }
-    originalDescriptionContent = productDescription.innerHTML;
   } else {
     productDescription.innerHTML = '';
-    originalDescriptionContent = '';
   }
 
   updateButtonVisibility();
-  resetTabs(); // Reset tabs to description when product changes
 
   // Subscribe button handler
   if (buyNowButton) {
@@ -652,9 +673,17 @@ async function validateLicenseAsync(licenseKey) {
     localStorage.setItem('no3d_license_valid', isValid ? 'true' : 'false');
     localStorage.setItem('no3d_license_checked', Date.now().toString());
     if (currentProduct) updateButtonVisibility();
+    if (isValid) updateMemberCTA(true);
   } catch (err) {
     console.error('License validation failed:', err);
   }
+}
+
+function updateMemberCTA(isMember) {
+  if (!isMember) return;
+  document.querySelectorAll('.member-cta-button, .mobile-member-cta-button, [data-member-cta]').forEach(btn => {
+    replaceCTAWithWelcome(btn);
+  });
 }
 
 function initializeEventListeners() {
@@ -683,6 +712,22 @@ function initializeEventListeners() {
   });
 
   document.addEventListener('click', e => {
+    // Sidebar section collapse/expand
+    const typeHeader = e.target.closest('.type-header');
+    if (typeHeader) {
+      const section = typeHeader.closest('.product-type');
+      if (section && !section.classList.contains('empty')) {
+        section.classList.toggle('expanded');
+        const carrot = typeHeader.querySelector('.carrot');
+        if (carrot) {
+          carrot.classList.toggle('expanded');
+          carrot.classList.toggle('collapsed');
+          carrot.textContent = section.classList.contains('expanded') ? '▼' : '▶';
+        }
+      }
+      return;
+    }
+
     const productItem = e.target.closest('.product-item') || e.target.closest('.home-grid-item');
     if (productItem) {
       const productId = productItem.dataset.product || productItem.dataset.productId;
@@ -691,40 +736,6 @@ function initializeEventListeners() {
   });
 }
 
-function initializeTabs() {
-  const tabButtons = document.querySelectorAll('.product-tabs .tab');
-  tabButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      const targetTab = e.target.dataset.tab;
-      if (targetTab) switchTab(targetTab);
-    });
-  });
-}
-
-function switchTab(targetTabId) {
-  const tabButtons = document.querySelectorAll('.product-tabs .tab');
-  const tabIcons = document.querySelectorAll('.product-tabs .tab-icon');
-  const contentElements = [
-    document.getElementById('product-description-content'),
-    document.getElementById('product-docs-content'),
-    document.getElementById('changelog-content')
-  ];
-
-  tabButtons.forEach(button => button.classList.toggle('active', button.dataset.tab === targetTabId));
-  tabIcons.forEach(icon => {
-    const isTarget = icon.dataset.tab === targetTabId;
-    icon.classList.toggle('expanded', isTarget);
-    icon.classList.toggle('collapsed', !isTarget);
-    const arrow = icon.querySelector('.tab-arrow');
-    if (arrow) arrow.textContent = isTarget ? '▼' : '▶';
-  });
-
-  contentElements.forEach(content => {
-    if (content) content.classList.toggle('active', content.dataset.tabId === targetTabId);
-  });
-}
-
-function resetTabs() { switchTab('description'); }
 
 function initializeMobileMenu() {
   const hamburgerButton = document.getElementById('hamburger-menu-button');
@@ -753,13 +764,92 @@ function initializeChristmasPopup() {}
 function initializeThemeToggle() {}
 function initializeMobileSearch() {}
 function initializeMemberCTA() {
+  const isMember = checkSubscriptionStatus();
   document.querySelectorAll('.member-cta-button, .mobile-member-cta-button, [data-member-cta]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = '/subscribe.html';
-    });
+    if (isMember) {
+      replaceCTAWithWelcome(btn);
+    } else {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/subscribe.html';
+      });
+    }
   });
 }
+
+function replaceCTAWithWelcome(btn) {
+  // Hide the mobile footer CTA bar entirely for members
+  const mobileFooter = document.getElementById('mobile-footer-cta');
+  if (mobileFooter && mobileFooter.contains(btn)) {
+    mobileFooter.style.display = 'none';
+    return;
+  }
+  const welcome = document.createElement('span');
+  welcome.className = 'member-welcome-text';
+  welcome.textContent = 'WELCOME, YOUNG INITIATE';
+  welcome.addEventListener('click', () => { window.location.href = '/account.html'; });
+  btn.replaceWith(welcome);
+}
+function initializeAccountDropdown() {
+  const toggle = document.getElementById('account-link');
+  const menu = document.getElementById('account-dropdown-menu');
+  if (!toggle || !menu) return;
+
+  const isMember = checkSubscriptionStatus();
+
+  // Build menu items based on auth state
+  menu.innerHTML = '';
+  if (isMember) {
+    menu.innerHTML = `
+      <a href="account.html" class="account-dropdown-item">ACCOUNT</a>
+      <a href="/api/download-addon" class="account-dropdown-item" download>DOWNLOAD ADD-ON</a>
+      <button class="account-dropdown-item" id="copy-license-key">COPY LICENSE KEY</button>
+      <button class="account-dropdown-item" id="logout-button">LOGOUT</button>
+    `;
+  } else {
+    menu.innerHTML = `
+      <a href="account.html" class="account-dropdown-item">LOGIN</a>
+      <a href="subscribe.html" class="account-dropdown-item">SUBSCRIBE</a>
+    `;
+  }
+
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    menu.classList.toggle('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.account-dropdown')) {
+      menu.classList.remove('open');
+    }
+  });
+
+  const copyBtn = document.getElementById('copy-license-key');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const key = localStorage.getItem('no3d_license_key');
+      if (key) {
+        navigator.clipboard.writeText(key);
+        copyBtn.textContent = 'COPIED!';
+        setTimeout(() => { copyBtn.textContent = 'COPY LICENSE KEY'; }, 2000);
+      }
+      menu.classList.remove('open');
+    });
+  }
+
+  const logoutBtn = document.getElementById('logout-button');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('no3d_license_key');
+      localStorage.removeItem('no3d_license_valid');
+      localStorage.removeItem('no3d_license_checked');
+      menu.classList.remove('open');
+      window.location.reload();
+    });
+  }
+}
+
 function updateFooterShortcut() {}
 function updateFooterCommit() {}
 

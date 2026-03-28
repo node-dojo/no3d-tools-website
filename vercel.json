@@ -21,6 +21,32 @@
   },
   "headers": [
     {
+      "source": "/llms.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/llms-full.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/assets/product-images/(.*)\\.(png|jpg|jpeg|gif|webp|svg)",
       "headers": [
         {
@@ -45,74 +71,6 @@
     {
       "source": "/assets/(.*)\\.(png|jpg|jpeg|gif|webp|svg|ico)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/assets/product-docs/(.*)\\.mp4",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "video/mp4"
-        },
-        {
-          "key": "Accept-Ranges",
-          "value": "bytes"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/assets/product-docs/(.*)\\.webm",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "video/webm"
-        },
-        {
-          "key": "Accept-Ranges",
-          "value": "bytes"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/assets/product-docs/(.*)\\.mov",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "video/quicktime"
-        },
-        {
-          "key": "Accept-Ranges",
-          "value": "bytes"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/assets/product-docs/(.*)\\.ogg",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "video/ogg"
-        },
-        {
-          "key": "Accept-Ranges",
-          "value": "bytes"
-        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"

@@ -16,16 +16,21 @@
   /* Typography */
   --font-mono: 'JetBrains Mono', 'Courier New', 'Courier', 'Monaco', 'Consolas', monospace;
   --font-mono-weight: 300; /* Light weight to match Silka Mono Light */
+  --font-silka-mono: var(--font-mono);
   --font-visitor: 'Visitor TT1 BRK', 'Visitor', 'Space Mono', monospace;
-  --font-size-base: 11px; /* Base font size as per design specs */
-  --font-size-h1: 37.533px; /* Keep headers same size */
-  --font-size-h2: 19px; /* Keep headers same size */
-  --font-size-h3: 15px; /* Keep headers same size */
-  --font-size-small: 9px; /* As per design specs */
-  --font-size-micro: 8px; /* As per design specs */
-  --line-height-base: 1.05;
+  --font-size-base: 13px;
+  --font-size-h1: 37.533px;
+  --font-size-h2: 21px;
+  --font-size-h3: 16px;
+  --font-size-small: 11px;
+  --font-size-micro: 9px;
+  --line-height-base: 1.35;
   --letter-spacing-wide: 0.15em;
-  --letter-spacing-normal: 0.02em;
+  --letter-spacing-normal: 0.1em;
+  --text-body-size: 14px;
+  --text-body-line-height: 22px;
+  --text-body-letter-spacing: 0.5px;
+  --text-body-opacity: 0.95;
   
   /* Spacing */
   --space-unit: 10px;
@@ -66,7 +71,7 @@ body {
   font-family: var(--font-mono);
   font-size: var(--font-size-base);
   line-height: 14px;
-  color: var(--color-void-black);
+  color: var(--color-dark-gray);
   background-color: var(--color-stone-gray);
   overflow-x: hidden;
   margin: 0;
@@ -237,6 +242,58 @@ body {
   color: var(--color-lello);
 }
 
+/* Account Dropdown */
+.account-dropdown {
+  position: relative;
+}
+
+.account-dropdown .account-link {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.account-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: var(--color-stone-gray);
+  border: 1px solid var(--color-void-black);
+  z-index: 300;
+  min-width: 160px;
+  flex-direction: column;
+}
+
+.account-dropdown-menu.open {
+  display: flex;
+}
+
+.account-dropdown-item {
+  font-family: var(--font-visitor);
+  font-size: 13px;
+  color: var(--color-void-black);
+  text-transform: uppercase;
+  padding: 10px 16px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-stone-gray);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.account-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.account-dropdown-item:hover {
+  background-color: var(--color-lello);
+}
+
 /* Theme Toggle Button */
 .theme-toggle-button {
   display: none !important; /* Temporarily hide */
@@ -311,6 +368,19 @@ body {
   background-color: #d4e600;
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(240, 255, 0, 0.2);
+}
+
+.member-welcome-text {
+  font-family: var(--font-visitor);
+  font-size: 15px;
+  color: var(--color-void-black);
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  line-height: 1;
+  text-decoration: none;
 }
 
 /* Mobile Footer CTA (mobile only) */
@@ -783,6 +853,11 @@ body {
   color: var(--color-void-black);
 }
 
+a.sidebar-help-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* 3-Tier Sidebar Navigation Styles */
 .product-type {
   display: flex;
@@ -811,6 +886,15 @@ body {
   letter-spacing: var(--letter-spacing-normal);
   text-transform: uppercase;
   color: var(--color-void-black);
+}
+
+.product-type.empty .type-header {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.product-type.empty .type-header:hover {
+  background-color: transparent;
 }
 
 .product-groups-container {
@@ -1053,13 +1137,15 @@ body {
 }
 
 .home-cta-description {
-  font-family: var(--font-silka-mono);
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: var(--text-body-size);
   font-weight: 600;
   color: var(--color-medium-gray);
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--text-body-line-height);
+  letter-spacing: var(--text-body-letter-spacing);
+  opacity: var(--text-body-opacity);
 }
 
 .home-cta-actions {
@@ -1363,74 +1449,10 @@ body {
   padding-right: 15px; /* Add padding between left and right sections */
 }
 
-.product-tabs {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.tab-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.tab-icon {
-  width: 12px;
-  height: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.tab-icon.expanded .tab-arrow {
-  transform: rotate(0deg);
-}
-
-.tab-icon.collapsed .tab-arrow {
-  transform: rotate(0deg); /* Don't rotate - use different symbols (▶ vs ▼) instead */
-}
-
-.tab-arrow {
-  font-size: var(--space-small);
-  color: var(--color-void-black);
-  transition: transform var(--transition-fast);
-  display: inline-block;
-  line-height: 1;
-  min-width: var(--space-small);
-  text-align: center;
-}
-
-.tab {
-  font-family: var(--font-visitor);
-  font-size: var(--font-size-h3);
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-normal);
-  text-transform: uppercase;
-  color: var(--color-void-black);
-  cursor: pointer;
-  padding: var(--space-tiny) 0;
-  position: relative;
-  transition: all var(--transition-fast);
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.tab.active {
-  font-weight: 700;
-}
-
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background-color: var(--color-lello);
+/* Product description — single scrolling thread from _desc.md */
+.product-description-scroll {
+  overflow-y: auto;
+  flex: 1;
 }
 
 .product-content {
@@ -1468,190 +1490,95 @@ body {
   object-position: center;
 }
 
-.product-description {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
-  line-height: var(--line-height-base);
-  color: var(--color-void-black);
-  letter-spacing: -0.11px;
-  margin-bottom: var(--space-small);
-}
-
-/* Changelog Section */
-.changelog-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-}
-
-.changelog-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.changelog-icon {
-  width: 12px;
-  height: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.changelog-icon.expanded .changelog-arrow {
-  transform: rotate(0deg);
-}
-
-.changelog-icon.collapsed .changelog-arrow {
-  transform: rotate(-90deg);
-}
-
-.changelog-arrow {
-  font-size: 8px;
-  color: var(--color-void-black);
-  transition: transform var(--transition-fast);
-}
-
-.changelog-title {
-  font-family: var(--font-visitor);
-  font-size: var(--font-size-h3);
-  font-weight: 400;
-  letter-spacing: var(--letter-spacing-normal);
-  text-transform: uppercase;
-  color: var(--color-void-black);
-  line-height: 1.0;
-}
-
-.changelog-content {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base); /* Match product-description */
-  font-weight: var(--font-mono-weight);
-  line-height: var(--line-height-base); /* Match product-description */
-  color: var(--color-void-black);
-  letter-spacing: -0.11px; /* Match product-description */
-}
-
-.changelog-content ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.changelog-content li {
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  line-height: var(--line-height-base); /* Match other content sections */
-}
-
-.changelog-content li:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.changelog-entry-header {
-  display: inline-block;
-  font-weight: 600;
-  color: var(--color-void-black);
-  margin-right: 0.5rem;
-}
-
-/* Markdown Documentation Styles - Shared for Description and Docs */
 .product-description,
-.product-docs-content {
+.product-description-scroll {
   font-family: var(--font-mono);
   font-size: var(--font-size-base);
   font-weight: var(--font-mono-weight);
   line-height: var(--line-height-base);
-  color: var(--color-void-black);
-  letter-spacing: -0.11px;
+  color: var(--color-dark-gray);
+  letter-spacing: var(--letter-spacing-normal);
   margin-bottom: var(--space-small);
+  max-width: 680px;
+  padding-left: 0.25rem;
+  padding-right: 1rem;
 }
 
-/* Reset and normalize all markdown elements */
 .product-description > *:first-child,
-.product-docs-content > *:first-child {
+.product-description-scroll > *:first-child {
   margin-top: 0;
 }
 
 .product-description > *:last-child,
-.product-docs-content > *:last-child {
+.product-description-scroll > *:last-child {
   margin-bottom: 0;
 }
 
-/* Markdown content styling - Shared for Description, Docs, and Changelog */
 .product-description h1,
 .product-description h2,
 .product-description h3,
 .product-description h4,
 .product-description h5,
 .product-description h6,
-.product-docs-content h1,
-.product-docs-content h2,
-.product-docs-content h3,
-.product-docs-content h4,
-.product-docs-content h5,
-.product-docs-content h6,
-.changelog-content h1,
-.changelog-content h2,
-.changelog-content h3,
-.changelog-content h4,
-.changelog-content h5,
-.changelog-content h6 {
+.product-description-scroll h1,
+.product-description-scroll h2,
+.product-description-scroll h3,
+.product-description-scroll h4,
+.product-description-scroll h5,
+.product-description-scroll h6 {
   font-family: var(--font-visitor);
   font-weight: 700;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
   color: var(--color-void-black);
   text-transform: uppercase;
 }
 
-/* Global h2 styles */
-h2 {
-  font-family: visitor;
-  margin-top: 6px;
-  margin-bottom: 6px;
+.product-description h2,
+.product-description-scroll h2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  border-top: 1px solid var(--color-stone-gray);
 }
 
+/* Keep heading/body spacing scoped to content areas to avoid cross-page conflicts. */
+
 .product-description p,
-.product-docs-content p,
-.changelog-content p {
-  margin-bottom: 0.5rem; /* Reduced from 0.75rem for consistency */
-  line-height: var(--line-height-base); /* Match container line-height instead of 1.6 */
-  margin-top: 0; /* Ensure consistent top margin */
+.product-description-scroll p {
+  margin-bottom: 1rem;
+  color: var(--color-medium-gray);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line-height);
+  letter-spacing: var(--text-body-letter-spacing);
+  opacity: var(--text-body-opacity);
+  margin-top: 0;
 }
 
 .product-description p:last-child,
-.product-docs-content p:last-child,
-.changelog-content p:last-child {
-  margin-bottom: 0; /* Remove bottom margin from last paragraph */
+.product-description-scroll p:last-child {
+  margin-bottom: 0;
 }
 
 .product-description ul,
 .product-description ol,
-.product-docs-content ul,
-.product-docs-content ol,
-.changelog-content ul,
-.changelog-content ol {
-  margin-left: 1.5rem;
-  margin-bottom: 0.5rem; /* Reduced for consistency */
-  margin-top: 0;
+.product-description-scroll ul,
+.product-description-scroll ol {
+  padding-left: 1.5rem;
+  margin-left: 0;
+  margin-bottom: 1rem;
+  margin-top: 0.5rem;
 }
 
 .product-description li,
-.product-docs-content li,
-.changelog-content li {
-  margin-bottom: 0.25rem;
-  line-height: var(--line-height-base); /* Match container line-height */
+.product-description-scroll li {
+  margin-bottom: 0.5rem;
+  line-height: var(--text-body-line-height);
 }
 
 .product-description code,
-.product-docs-content code,
-.changelog-content code {
+.product-description-scroll code {
   background: #f5f5f5;
   padding: 0.125rem 0.25rem;
   border-radius: 2px;
@@ -1660,25 +1587,22 @@ h2 {
 }
 
 .product-description pre,
-.product-docs-content pre,
-.changelog-content pre {
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
+.product-description-scroll pre {
+  background: transparent;
+  padding: 1rem 0;
+  border-radius: 0;
   overflow-x: auto;
   margin-bottom: 1rem;
 }
 
 .product-description pre code,
-.product-docs-content pre code,
-.changelog-content pre code {
+.product-description-scroll pre code {
   background: none;
   padding: 0;
 }
 
 .product-description img,
-.product-docs-content img,
-.changelog-content img {
+.product-description-scroll img {
   max-width: 100%;
   height: auto;
   border-radius: 4px;
@@ -1991,13 +1915,12 @@ h2 {
 }
 
 .product-price-wrapper {
-  display: flex;
+  display: none; /* Hidden — products are accessed via subscription addon, not individual download */
   flex-direction: column;
-  align-items: center; /* Align children to center */
-  justify-content: flex-end; /* Push content to bottom */
+  align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  /* text-align: right; removed */
-  width: 100%; /* Fill available space in its column */
+  width: 100%;
 }
 
 .product-price {
@@ -2261,6 +2184,33 @@ h2 {
 
 /* Ensure commit hash and branch are visible even when footer-text is hidden on mobile */
 
+
+.footer-download-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 80px;
+  z-index: 201;
+  display: inline-block;
+  background: var(--color-void-black);
+  color: var(--color-paper-white);
+  font-family: var(--font-visitor);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-normal);
+  text-decoration: none;
+  padding: 10px 20px;
+  border: 1px solid var(--color-void-black);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.footer-download-btn:hover {
+  background: var(--color-paper-white);
+  color: var(--color-void-black);
+}
 
 .footer-logo {
   position: fixed;

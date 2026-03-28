@@ -71,6 +71,7 @@ export default async function handler(req, res) {
     library_version,
     expires_at: access.expires_at,
     grace_until: access.grace_until,
+    email: row?.email ?? null,
     ...(machineId !== null ? { machine_id: machineId } : {})
   });
 }

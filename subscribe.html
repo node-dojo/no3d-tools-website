@@ -51,9 +51,11 @@
         
         .subscribe-header p {
             font-family: var(--font-mono);
-            font-size: var(--font-size-base);
-            color: var(--color-void-black);
-            line-height: var(--line-height-base);
+            font-size: var(--text-body-size);
+            color: var(--color-medium-gray);
+            line-height: var(--text-body-line-height);
+            letter-spacing: var(--text-body-letter-spacing);
+            opacity: var(--text-body-opacity);
         }
 
         .top-subscribe-wrap {
@@ -65,8 +67,11 @@
         
         .product-count {
             font-family: var(--font-mono);
-            font-size: var(--font-size-base);
-            color: var(--color-dark-gray);
+            font-size: var(--text-body-size);
+            color: var(--color-medium-gray);
+            line-height: var(--text-body-line-height);
+            letter-spacing: var(--text-body-letter-spacing);
+            opacity: var(--text-body-opacity);
             margin-top: var(--space-medium);
         }
         
@@ -85,7 +90,10 @@
             text-transform: uppercase;
             color: var(--color-void-black);
             letter-spacing: var(--letter-spacing-normal);
-            margin-bottom: var(--space-medium);
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding-top: 0;
+            padding-bottom: 0;
             line-height: 1.0;
         }
         
@@ -119,9 +127,11 @@
         
         .benefit-card p {
             font-family: var(--font-mono);
-            font-size: var(--font-size-base);
-            color: var(--color-void-black);
-            line-height: var(--line-height-base);
+            font-size: var(--text-body-size);
+            color: var(--color-medium-gray);
+            line-height: var(--text-body-line-height);
+            letter-spacing: var(--text-body-letter-spacing);
+            opacity: var(--text-body-opacity);
             margin: 0;
         }
         
@@ -157,15 +167,21 @@
         
         .pricing-period {
             font-family: var(--font-mono);
-            font-size: var(--font-size-base);
-            color: var(--color-dark-gray);
+            font-size: var(--text-body-size);
+            color: var(--color-medium-gray);
+            line-height: var(--text-body-line-height);
+            letter-spacing: var(--text-body-letter-spacing);
+            opacity: var(--text-body-opacity);
             margin-bottom: var(--space-medium);
         }
         
         .product-count-detail {
             font-family: var(--font-mono);
-            font-size: var(--font-size-base);
-            color: var(--color-dark-gray);
+            font-size: var(--text-body-size);
+            color: var(--color-medium-gray);
+            line-height: var(--text-body-line-height);
+            letter-spacing: var(--text-body-letter-spacing);
+            opacity: var(--text-body-opacity);
             margin: var(--space-medium) 0;
         }
         
@@ -208,8 +224,11 @@
         
         .subscribe-footer-note {
             font-family: var(--font-mono);
-            font-size: var(--font-size-small);
-            color: var(--color-dark-gray);
+            font-size: var(--text-body-size);
+            color: var(--color-medium-gray);
+            line-height: var(--text-body-line-height);
+            letter-spacing: var(--text-body-letter-spacing);
+            opacity: var(--text-body-opacity);
             margin-top: var(--space-medium);
         }
         
@@ -283,7 +302,8 @@
             </a>
         </div>
         <div class="header-icons">
-            <a href="subscribe.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium); background: var(--color-lello);">Subscribe</a>
+            <a href="/api/download-addon" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);" download>Download Addon</a>
+            <a href="index.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Library</a>
             <a href="account.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Account</a>
         </div>
     </header>
@@ -292,10 +312,15 @@
         <div class="subscribe-container">
             <div class="subscribe-header">
                 <h1>Get Full Access</h1>
+                <div class="pricing-amount" id="monthly-price">--</div>
+                <div class="pricing-period" id="pricing-period">per month</div>
                 <p>Unlock the entire library of premium Blender assets, nodes, and tools</p>
                 <div class="product-count" id="product-count">
                     Loading product count...
                 </div>
+                <p class="subscribe-footer-note">
+                    Cancel anytime • No hidden fees • Full access while subscribed
+                </p>
                 <div class="top-subscribe-wrap">
                     <a href="#" class="subscribe-button" id="subscribe-button" onclick="handleSubscribe(event); return false;">
                         Subscribe Now
@@ -329,20 +354,12 @@
                 </div>
             </div>
 
-            <div class="pricing-section">
-                <h2>Simple Monthly Pricing</h2>
-                <div class="pricing-amount" id="monthly-price">--</div>
-                <div class="pricing-period" id="pricing-period">per month</div>
-                <p class="product-count-detail" id="product-count-detail">Access to <span id="product-count-number">...</span> products and growing</p>
-                <p class="subscribe-footer-note">
-                    Cancel anytime • No hidden fees • Full access while subscribed
-                </p>
-            </div>
+            <p class="product-count-detail" id="product-count-detail" style="text-align: center; margin-top: var(--space-large);">Access to <span id="product-count-number">...</span> products and growing</p>
         </div>
     </main>
 
     <footer class="footer">
-        <p class="footer-text">&copy; 2025 NO3D Tools. All rights reserved.</p>
+        <p class="footer-text">&copy; 2026 NO3D Tools. All rights reserved.</p>
     </footer>
 
     <script>

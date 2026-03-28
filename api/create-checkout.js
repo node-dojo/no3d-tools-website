@@ -51,16 +51,18 @@ export default async function handler(req, res) {
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
     // Origin fallback for local/serverless execution.
-    const siteUrl =
-      SITE_URL ||
-      (req.headers.origin ? req.headers.origin : 'https://no3dtools.com');
+    const siteUrl = (
+      SITE_URL?.trim() ||
+      req.headers.origin?.trim() ||
+      'https://no3dtools.com'
+    );
 
     const successUrl =
-      STRIPE_SUCCESS_URL ||
+      STRIPE_SUCCESS_URL?.trim() ||
       `${siteUrl}/success.html?checkout_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
     const cancelUrl =
-      STRIPE_CANCEL_URL ||
+      STRIPE_CANCEL_URL?.trim() ||
       `${siteUrl}/subscribe.html?checkout_success=false&session_id={CHECKOUT_SESSION_ID}`;
 
     const body = req.method === 'POST' && req.body && typeof req.body === 'object' ? req.body : {};

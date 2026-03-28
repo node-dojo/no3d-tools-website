@@ -15,6 +15,17 @@
             margin: var(--space-xlarge) auto;
             padding: var(--space-large);
         }
+        .account-banner {
+            width: 100%;
+            margin-bottom: var(--space-large);
+            border: 1px solid var(--color-void-black);
+            display: block;
+        }
+        .account-banner img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
         .account-card {
             background: var(--color-paper-white);
             border: 1px solid var(--color-void-black);
@@ -165,85 +176,124 @@
     </header>
 
     <main class="account-wrap">
+        <div class="account-banner">
+            <img src="https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto/no3d-tools/website/workplace-crop-clip.gif" alt="No3d Tools Blender workspace">
+        </div>
         <div class="account-card">
             <h1>Account</h1>
 
-            <!-- Section A: License Key Management -->
-            <div class="account-section">
-                <h2>LICENSE KEY</h2>
-                <div id="license-key-section">
-                    <div id="stored-key-display" style="display: none;">
-                        <p>Your license key:</p>
-                        <div class="license-key-box" id="account-license-key"></div>
+            <!-- State: No key stored — show entry form -->
+            <div id="state-no-key">
+                <div class="account-section">
+                    <h2>LICENSE KEY</h2>
+                    <p>Enter your license key to view your account.</p>
+                    <input type="text" id="license-key-input" placeholder="NO3D-XXXX-XXXX-XXXX-XXXX">
+                    <button onclick="saveLicenseKey()">SAVE LICENSE KEY</button>
+                    <p id="save-error" class="account-msg"></p>
+                </div>
+                <div class="account-section">
+                    <p>Don't have your key? Check your email for <strong>"No3d Tools — Your License Key"</strong>.</p>
+                    <p><a href="subscribe.html">Subscribe</a> to get started.</p>
+                </div>
+            </div>
+
+            <!-- State: Key stored — show account info -->
+            <div id="state-has-key" style="display: none;">
+                <!-- License Key -->
+                <div class="account-section">
+                    <h2>LICENSE KEY</h2>
+                    <div class="license-key-box" id="account-license-key"></div>
+                    <div class="btn-row">
+                        <button onclick="copyAccountLicenseKey()">COPY</button>
+                        <button class="btn-secondary" onclick="validateStoredKey()">VALIDATE</button>
+                    </div>
+                </div>
+
+                <!-- Subscription Status -->
+                <div class="account-section">
+                    <h2>SUBSCRIPTION STATUS</h2>
+                    <div id="sub-status-text">Checking...</div>
+                </div>
+
+                <!-- Billing Portal -->
+                <div class="account-section" id="billing-section">
+                    <h2>BILLING PORTAL</h2>
+                    <p>Manage your subscription, update payment, or cancel.</p>
+                    <form id="portal-form">
+                        <input type="email" id="billing-email" name="email" autocomplete="email" required placeholder="you@example.com" style="display: none;">
+                        <button type="submit" id="portal-submit">OPEN BILLING PORTAL</button>
+                    </form>
+                    <p class="account-msg" id="portal-msg" aria-live="polite"></p>
+                </div>
+
+                <!-- Download Addon -->
+                <div class="account-section">
+                    <h2>BLENDER ADDON</h2>
+                    <p>Download and install in Blender to sync your asset library.</p>
+                    <a href="/api/download-addon" download style="display: inline-block; background: var(--color-void-black); color: var(--color-lello); border: 1px solid var(--color-void-black); padding: var(--space-small) var(--space-large); font-family: var(--font-visitor); font-size: var(--font-size-h3); text-transform: uppercase; text-decoration: none; cursor: pointer; width: 100%; box-sizing: border-box; text-align: center;">DOWNLOAD ADDON</a>
+                    <p class="account-msg"><a href="guide.html">Setup guide</a></p>
+                </div>
+
+                <!-- Change key link -->
+                <div class="account-section" style="border-bottom: none;">
+                    <a href="#" id="change-key-link" onclick="showChangeKey(event)" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-dark-gray);">Use a different license key</a>
+                    <div id="change-key-form" style="display: none; margin-top: var(--space-medium);">
+                        <input type="text" id="change-key-input" placeholder="NO3D-XXXX-XXXX-XXXX-XXXX">
                         <div class="btn-row">
-                            <button onclick="copyAccountLicenseKey()">COPY</button>
-                            <button class="btn-secondary" onclick="validateStoredKey()">VALIDATE</button>
+                            <button onclick="saveLicenseKey('change-key-input')">SAVE</button>
+                            <button class="btn-secondary" onclick="hideChangeKey()">CANCEL</button>
                         </div>
-                        <p id="key-status"></p>
-                    </div>
-                    <div id="enter-key-section">
-                        <p>Enter your license key:</p>
-                        <input type="text" id="license-key-input" placeholder="NO3D-XXXX-XXXX-XXXX-XXXX">
-                        <button onclick="saveLicenseKey()">SAVE LICENSE KEY</button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Section B: Subscription Status -->
-            <div class="account-section">
-                <h2>SUBSCRIPTION STATUS</h2>
-                <div id="subscription-status">
-                    <p id="sub-status-text">Save or validate your license key above to see subscription status.</p>
+                <div class="account-links">
+                    <a href="index.html">Library</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="subscribe.html">Subscribe</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="guide.html">Setup Guide</a>
                 </div>
-            </div>
-
-            <!-- Section C: Billing Portal (existing) -->
-            <div class="account-section">
-                <h2>BILLING PORTAL</h2>
-                <p>
-                    Manage your subscription in the Stripe customer portal. Enter the email you used at checkout.
-                </p>
-                <form id="portal-form">
-                    <label for="billing-email">Email</label>
-                    <input type="email" id="billing-email" name="email" autocomplete="email" required placeholder="you@example.com">
-                    <button type="submit" id="portal-submit">Open billing portal</button>
-                </form>
-                <p class="account-msg" id="portal-msg" aria-live="polite"></p>
-            </div>
-
-            <div class="account-links">
-                <a href="index.html">Store</a>
-                &nbsp;&middot;&nbsp;
-                <a href="subscribe.html">Subscribe</a>
             </div>
         </div>
     </main>
 
     <script>
-        // --- License Key Management ---
-
         function initAccountPage() {
             const storedKey = localStorage.getItem('no3d_license_key');
             if (storedKey) {
-                document.getElementById('stored-key-display').style.display = 'block';
-                document.getElementById('account-license-key').textContent = storedKey;
+                showKeyState(storedKey);
                 validateStoredKey();
+            } else {
+                document.getElementById('state-no-key').style.display = 'block';
+                document.getElementById('state-has-key').style.display = 'none';
             }
         }
 
-        function saveLicenseKey() {
-            const input = document.getElementById('license-key-input');
+        function showKeyState(key) {
+            document.getElementById('state-no-key').style.display = 'none';
+            document.getElementById('state-has-key').style.display = 'block';
+            document.getElementById('account-license-key').textContent = key;
+        }
+
+        function saveLicenseKey(inputId) {
+            const input = document.getElementById(inputId || 'license-key-input');
             const key = input.value.trim().toUpperCase();
             if (!key.match(/^NO3D-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
-                alert('Invalid license key format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX');
+                const errorEl = inputId ? null : document.getElementById('save-error');
+                if (errorEl) {
+                    errorEl.textContent = 'Invalid format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX';
+                    errorEl.style.color = '#cc0000';
+                } else {
+                    alert('Invalid format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX');
+                }
                 return;
             }
             localStorage.setItem('no3d_license_key', key);
             localStorage.removeItem('no3d_license_valid');
             localStorage.removeItem('no3d_license_checked');
-            document.getElementById('stored-key-display').style.display = 'block';
-            document.getElementById('account-license-key').textContent = key;
             input.value = '';
+            showKeyState(key);
+            hideChangeKey();
             validateStoredKey();
         }
 
@@ -251,10 +301,8 @@
             const key = localStorage.getItem('no3d_license_key');
             if (!key) return;
 
-            const statusEl = document.getElementById('key-status');
             const subStatusEl = document.getElementById('sub-status-text');
-            statusEl.textContent = 'Validating...';
-            statusEl.style.color = 'var(--color-dark-gray)';
+            subStatusEl.innerHTML = '<span style="color: var(--color-dark-gray);">Checking...</span>';
 
             try {
                 const response = await fetch('/api/validate', {
@@ -264,27 +312,35 @@
                 });
                 const data = await response.json();
 
+                // Auto-fill billing email
+                if (data.email) {
+                    const emailInput = document.getElementById('billing-email');
+                    emailInput.value = data.email;
+                }
+
                 if (data.valid && data.status === 'active') {
-                    statusEl.textContent = 'Active';
-                    statusEl.style.color = '#2d8c2d';
-                    subStatusEl.innerHTML = `Status: <strong>Active</strong><br>Expires: ${new Date(data.expires_at).toLocaleDateString()}`;
+                    subStatusEl.innerHTML = `
+                        <span style="color: #2d8c2d; font-weight: 500;">Active</span><br>
+                        Renews: ${new Date(data.expires_at).toLocaleDateString()}
+                    `;
                     localStorage.setItem('no3d_license_valid', 'true');
                     localStorage.setItem('no3d_license_checked', Date.now().toString());
                 } else if (data.valid && data.status === 'grace') {
-                    statusEl.textContent = 'Grace Period';
-                    statusEl.style.color = '#cc8800';
-                    subStatusEl.innerHTML = `Status: <strong>Grace Period</strong><br>Payment failed. Update your payment method in the billing portal below before access is revoked.`;
+                    subStatusEl.innerHTML = `
+                        <span style="color: #cc8800; font-weight: 500;">Grace Period</span><br>
+                        Payment failed. Update your payment method below before access is revoked.
+                    `;
                     localStorage.setItem('no3d_license_valid', 'true');
                     localStorage.setItem('no3d_license_checked', Date.now().toString());
                 } else {
-                    statusEl.textContent = 'Expired';
-                    statusEl.style.color = '#cc0000';
-                    subStatusEl.innerHTML = `Status: <strong>Expired</strong><br><a href="/subscribe.html">Re-subscribe</a> to regain access.`;
+                    subStatusEl.innerHTML = `
+                        <span style="color: #cc0000; font-weight: 500;">Expired</span><br>
+                        <a href="/subscribe.html">Re-subscribe</a> to regain access.
+                    `;
                     localStorage.setItem('no3d_license_valid', 'false');
                 }
             } catch (err) {
-                statusEl.textContent = 'Validation failed';
-                statusEl.style.color = '#cc0000';
+                subStatusEl.innerHTML = '<span style="color: #cc0000;">Could not check status. Try again.</span>';
                 console.error('License validation error:', err);
             }
         }
@@ -292,44 +348,63 @@
         function copyAccountLicenseKey() {
             const key = document.getElementById('account-license-key').textContent;
             navigator.clipboard.writeText(key).then(() => {
-                const btns = document.querySelectorAll('.btn-row button');
-                const copyBtn = btns[0];
+                const copyBtn = document.querySelector('#state-has-key .btn-row button');
                 const original = copyBtn.textContent;
                 copyBtn.textContent = 'COPIED!';
                 setTimeout(() => { copyBtn.textContent = original; }, 2000);
             });
         }
 
-        document.addEventListener('DOMContentLoaded', initAccountPage);
-
-        // --- Billing Portal ---
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('portal-form').addEventListener('submit', async (e) => {
+        function showChangeKey(e) {
             e.preventDefault();
-            const email = document.getElementById('billing-email').value.trim();
-            const btn = document.getElementById('portal-submit');
-            const msg = document.getElementById('portal-msg');
-            msg.textContent = '';
-            btn.disabled = true;
-            try {
-                const res = await fetch('/api/create-portal-session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-                if (res.ok && data.portalUrl) {
-                    window.location.href = data.portalUrl;
+            document.getElementById('change-key-link').style.display = 'none';
+            document.getElementById('change-key-form').style.display = 'block';
+            document.getElementById('change-key-input').focus();
+        }
+
+        function hideChangeKey() {
+            document.getElementById('change-key-link').style.display = 'inline';
+            document.getElementById('change-key-form').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initAccountPage();
+
+            // Enter key submits the license key input
+            document.getElementById('license-key-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); saveLicenseKey(); }
+            });
+
+            // Billing portal form
+            document.getElementById('portal-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('billing-email').value.trim();
+                if (!email) {
+                    document.getElementById('portal-msg').textContent = 'Email is required to open the billing portal.';
                     return;
                 }
-                msg.textContent = data.message || data.error || 'Could not open portal. Check your email or contact support.';
-            } catch (err) {
-                msg.textContent = 'Something went wrong. Please try again.';
-            } finally {
-                btn.disabled = false;
-            }
-        });
+                const btn = document.getElementById('portal-submit');
+                const msg = document.getElementById('portal-msg');
+                msg.textContent = '';
+                btn.disabled = true;
+                try {
+                    const res = await fetch('/api/create-portal-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.portalUrl) {
+                        window.location.href = data.portalUrl;
+                        return;
+                    }
+                    msg.textContent = data.message || data.error || 'Could not open portal. Contact support.';
+                } catch (err) {
+                    msg.textContent = 'Something went wrong. Please try again.';
+                } finally {
+                    btn.disabled = false;
+                }
+            });
         });
     </script>
 </body>

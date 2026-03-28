@@ -12,7 +12,7 @@
         body { background-color: var(--color-stone-gray); }
 
         .guide-wrap {
-            max-width: 720px;
+            max-width: 1200px;
             margin: var(--space-xlarge) auto;
             padding: var(--space-large);
         }
@@ -91,6 +91,72 @@
         .guide-card a:hover {
             background: var(--color-lello);
             text-decoration: none;
+        }
+
+        .guide-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-large);
+            align-items: start;
+            margin: var(--space-medium) 0;
+        }
+
+        .guide-split-text {
+            min-width: 0;
+        }
+
+        .guide-split-image {
+            position: sticky;
+            top: var(--space-large);
+        }
+
+        .guide-image {
+            width: 100%;
+            border: none;
+            cursor: zoom-in;
+        }
+
+        .guide-image-caption {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--color-dark-gray);
+            text-align: center;
+            margin-top: var(--space-tiny);
+            margin-bottom: 0;
+        }
+
+        /* Fullscreen image on click */
+        .guide-image-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.85);
+            cursor: zoom-out;
+            justify-content: center;
+            align-items: center;
+            padding: var(--space-large);
+        }
+
+        .guide-image-overlay.active {
+            display: flex;
+        }
+
+        .guide-image-overlay img {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+        }
+
+        @media (max-width: 768px) {
+            .guide-split {
+                grid-template-columns: 1fr;
+            }
+
+            .guide-split-image {
+                position: static;
+                order: -1;
+            }
         }
 
         .step-box {
@@ -224,12 +290,20 @@
     </style>
 </head>
 <body>
-    <div class="guide-wrap">
-        <div class="nav-header">
-            <a href="/" class="back-link">← Back to Store</a>
-            <a href="/account.html" class="back-link">Account →</a>
+    <header class="site-header">
+        <div class="header-left">
+            <a href="index.html" class="logo">
+                <img src="assets/light/no3d-tools.png" alt="NO3D Tools" class="logo">
+            </a>
         </div>
+        <div class="header-icons">
+            <a href="/api/download-addon" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);" download>Download Addon</a>
+            <a href="subscribe.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium); background: var(--color-lello);">Subscribe</a>
+            <a href="account.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Account</a>
+        </div>
+    </header>
 
+    <div class="guide-wrap">
         <div class="guide-card">
             <h1>Getting Started</h1>
             <p class="subtitle">Install the No3d Tools addon and sync your asset library into Blender.</p>
@@ -250,7 +324,7 @@
             <h2>Install the Addon</h2>
 
             <h3>Step 1: Download</h3>
-            <p>Download <strong>no3d_tools_membership.zip</strong> from the link in your license key email.</p>
+            <p><a href="/api/download-addon" download><strong>Download no3d_tools_membership.zip</strong></a> or use the link in your license key email.</p>
 
             <h3>Step 2: Install in Blender</h3>
             <div class="step-box">
@@ -269,69 +343,95 @@
             </div>
 
             <!-- ==================== -->
-            <h2>Activate Your License</h2>
+            <h2>Setup Sequence</h2>
 
-            <p>In the addon preferences panel (Edit → Preferences → Add-ons → No3d Tools Membership):</p>
+            <p>The addon preferences panel walks you through setup with numbered steps. Open it at <strong>Edit → Preferences → Add-ons → No3d Tools Membership</strong>.</p>
 
-            <div class="step-box">
-                <p>1. Paste your license key into the <strong>Key</strong> field</p>
-                <p>2. Click <strong>Validate</strong></p>
-                <p>3. Status should show: <strong>Active ✓</strong></p>
+            <div class="guide-split">
+                <div class="guide-split-text">
+                    <div class="step-box">
+                        <p><strong>Step 1. Enter your NO3D license key</strong></p>
+                        <p>Paste your key into the <strong>Key</strong> field. Format: <span class="key-format">NO3D-XXXX-XXXX-XXXX-XXXX</span></p>
+                    </div>
+
+                    <div class="step-box">
+                        <p><strong>Step 2. Validate and set startup sync</strong></p>
+                        <p>Click <strong>Validate License</strong>. Check <strong>Sync on startup</strong> to automatically sync when Blender opens.</p>
+                    </div>
+
+                    <div class="step-box">
+                        <p><strong>Step 3. Choose install location</strong></p>
+                        <p>The default location is <strong>~/Documents/No3d Tools</strong>. Change it if you want assets stored elsewhere.</p>
+                    </div>
+
+                    <div class="step-box">
+                        <p><strong>Step 4. Apply location</strong></p>
+                        <p>Click <strong>Apply Path</strong> to confirm the install folder. Assets are always stored in a "No3d Tools" subfolder.</p>
+                    </div>
+
+                    <div class="step-box">
+                        <p><strong>Step 5. Run initial sync</strong></p>
+                        <p>Click <strong>Sync Now</strong> to download the entire library. First sync pulls all assets; future syncs only download what's changed.</p>
+                    </div>
+
+                    <div class="step-box">
+                        <p><strong>Step 6. Refresh if library looks empty</strong></p>
+                        <p>Click <strong>Refresh Library</strong> to reload the Asset Browser if assets don't appear immediately.</p>
+                    </div>
+
+                    <p>Don't have your key? <a href="/account.html">Look it up here</a> or check your email for "No3d Tools — Your License Key".</p>
+                </div>
+                <div class="guide-split-image">
+                    <img src="assets/guide/addon-preferences.png" alt="No3d Tools addon preferences panel showing the 6-step setup sequence" class="guide-image">
+                    <p class="guide-image-caption">Addon preferences — setup steps</p>
+                </div>
             </div>
-
-            <p>Your license key format:</p>
-            <div class="key-format">NO3D-XXXX-XXXX-XXXX-XXXX</div>
-
-            <p>Don't have your key? <a href="/account.html">Look it up here</a> or check your email for "No3d Tools — Your License Key".</p>
-
-            <!-- ==================== -->
-            <h2>Sync Your Library</h2>
-
-            <div class="step-box">
-                <p>1. Click <strong>Sync Now</strong> in the addon preferences</p>
-                <p>2. First sync downloads the entire library</p>
-                <p>3. Future syncs only download what's changed</p>
-            </div>
-
-            <p>Enable <strong>"Sync on startup"</strong> to sync automatically whenever Blender opens. It runs in the background — won't slow you down.</p>
 
             <!-- ==================== -->
             <h2>Using Your Assets</h2>
 
-            <h3>Open the Asset Browser</h3>
-            <div class="step-box">
-                <p>1. In any Blender workspace, open the <strong>Asset Browser</strong></p>
-                <p>2. In the dropdown (top left), select <strong>NO3D Tools</strong></p>
-                <p>3. All your synced assets appear</p>
-            </div>
+            <div class="guide-split">
+                <div class="guide-split-text">
+                    <h3>Open the Asset Browser</h3>
+                    <div class="step-box">
+                        <p>1. In any Blender workspace, open the <strong>Asset Browser</strong></p>
+                        <p>2. In the dropdown (top left), select <strong>NO3D Tools</strong></p>
+                        <p>3. All your synced assets appear</p>
+                    </div>
 
-            <h3>Drag and Drop</h3>
-            <table class="status-table">
-                <thead>
-                    <tr>
-                        <th>Asset Type</th>
-                        <th>How to Use</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Geometry Node tools</td>
-                        <td>Drag onto a mesh object → adds as modifier</td>
-                    </tr>
-                    <tr>
-                        <td>Materials</td>
-                        <td>Drag onto any object → applies material</td>
-                    </tr>
-                    <tr>
-                        <td>Mesh objects</td>
-                        <td>Drag into viewport → adds to scene</td>
-                    </tr>
-                    <tr>
-                        <td>Collections</td>
-                        <td>Drag into viewport → instances the collection</td>
-                    </tr>
-                </tbody>
-            </table>
+                    <h3>Drag and Drop</h3>
+                    <table class="status-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Type</th>
+                                <th>How to Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Geometry Node tools</td>
+                                <td>Drag onto a mesh object → adds as modifier</td>
+                            </tr>
+                            <tr>
+                                <td>Materials</td>
+                                <td>Drag onto any object → applies material</td>
+                            </tr>
+                            <tr>
+                                <td>Mesh objects</td>
+                                <td>Drag into viewport → adds to scene</td>
+                            </tr>
+                            <tr>
+                                <td>Collections</td>
+                                <td>Drag into viewport → instances the collection</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="guide-split-image">
+                    <img src="assets/guide/asset-browser.png" alt="Blender Asset Browser showing NO3D Tools library with all synced assets" class="guide-image">
+                    <p class="guide-image-caption">Your synced assets in Blender's Asset Browser</p>
+                </div>
+            </div>
 
             <!-- ==================== -->
             <h2>Subscription Status</h2>
@@ -374,15 +474,15 @@
             <h3>"Sync failed"</h3>
             <ul>
                 <li>Check your internet connection</li>
-                <li>Click <strong>Validate</strong> first, then <strong>Sync Now</strong></li>
-                <li>If it persists, try again in a few minutes</li>
+                <li>Click <strong>Validate License</strong> first, then <strong>Sync Now</strong></li>
+                <li>If it persists, try <strong>Recover Setup</strong> under Maintenance Tools</li>
             </ul>
 
             <h3>Assets not showing in Asset Browser</h3>
             <ul>
                 <li>Select <strong>NO3D Tools</strong> in the Asset Browser dropdown (top left)</li>
-                <li>Close and reopen the Asset Browser</li>
-                <li>Run <strong>Sync Now</strong> to refresh</li>
+                <li>Click <strong>Refresh Library</strong> (Step 6) in addon preferences</li>
+                <li>If still empty, run <strong>Sync Now</strong> then <strong>Refresh Library</strong></li>
             </ul>
 
             <h3>Lost your license key</h3>
@@ -402,11 +502,19 @@
                     </tr>
                     <tr>
                         <td>Enter license key</td>
-                        <td>Addon preferences → License → Key → Validate</td>
+                        <td>Addon preferences → Step 1 → Key field → Validate License</td>
                     </tr>
                     <tr>
                         <td>Sync assets</td>
-                        <td>Addon preferences → Sync Now</td>
+                        <td>Addon preferences → Step 5 → Sync Now</td>
+                    </tr>
+                    <tr>
+                        <td>Refresh library</td>
+                        <td>Addon preferences → Step 6 → Refresh Library</td>
+                    </tr>
+                    <tr>
+                        <td>Check for updates</td>
+                        <td>Addon preferences → Maintenance Tools → Check for Updates</td>
                     </tr>
                     <tr>
                         <td>Browse assets</td>
@@ -423,10 +531,30 @@
                 </tbody>
             </table>
 
+            <!-- ==================== -->
+            <h2>AI Help</h2>
+            <p>Get better help from ChatGPT, Claude, or any AI assistant with your No3d Tools assets. Our AI reference file gives them full knowledge of every product, parameter, and workflow.</p>
+            <p><a href="/ai-help.html"><strong>Set up AI help &rarr;</strong></a></p>
+
             <div style="margin-top: var(--space-xlarge); text-align: center;">
                 <a href="/subscribe.html" class="cta-button">Subscribe Now</a>
             </div>
         </div>
     </div>
+    <div class="guide-image-overlay" id="image-overlay" onclick="this.classList.remove('active')">
+        <img id="overlay-img" src="" alt="">
+    </div>
+    <script>
+        document.querySelectorAll('.guide-image').forEach(img => {
+            img.addEventListener('click', () => {
+                const overlay = document.getElementById('image-overlay');
+                document.getElementById('overlay-img').src = img.src;
+                overlay.classList.add('active');
+            });
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') document.getElementById('image-overlay').classList.remove('active');
+        });
+    </script>
 </body>
 </html>

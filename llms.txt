@@ -1,0 +1,108 @@
+# No3d Tools
+
+> Procedural Blender geometry node assets for makers and 3D artists.
+> Subscription-based library of drag-and-drop tools, materials, and mesh objects.
+> All assets are delivered via a Blender addon that syncs to your Asset Browser.
+
+## Docs
+
+- [Getting Started](https://no3dtools.com/guide.html): Install the addon, enter your license key, sync your library
+- [Subscribe](https://no3dtools.com/subscribe.html): Get a No3d Tools subscription
+- [Account & License](https://no3dtools.com/account.html): Manage subscription, recover license key
+- [AI Help](https://no3dtools.com/ai-help.html): How to give AI assistants No3d Tools context
+- [Full Reference](https://no3dtools.com/llms-full.txt): Complete product documentation for AI assistants
+
+## Product Catalog
+
+### Blender Add-on
+
+- **Airpods Max**: Blender asset: Airpods Max [blender, addon, 3d, asset]
+- **Apple Magsafe Charger**: Blender asset: Apple Magsafe Charger [blender, addon, 3d, asset]
+- **Apple Watch Charger**: Blender asset: Apple Watch Charger cable holder [blender, geometry-nodes, object, accessory]
+- **Arrow**: Blender asset: Arrow from mesh line [blender, geometry-nodes, mesh-tool]
+- **Basic Skadis Panel 200mm**: A standard IKEA Skadis pegboard panel (200mm) modeled for 3D printing. Ready to print as-is — drop into your scene... [blender, 3d-printing, skadis, ikea, pegboard, organizer]
+- **Chrome Crayon**: Node-powered curve-to-cyber-sigil 3D geometry generator [3D Printable, Mograph]
+- **Corner Mounted Skadis**: A corner-mountable Skadis pegboard bracket for 3D printing. Mounts a Skadis panel at 90 degrees in a corner. [blender, 3d-printing, skadis, ikea, pegboard, organizer, corner-mount]
+- **Cylinder from Crv Lathe**: Blender asset: Cylinder from Crv Lathe [blender, addon, 3d, asset]
+- **Dojo Bolt Gen v05_Obj**: Drag-and-drop bolt object with full parametric controls [blender, addon, 3d, asset, PRocedural, Mesh Generator, 3D printable]
+- **Dojo Bool v5**: A simple node group, but its in my top 5 most used node tools of all time. [blender, addon, 3d, asset]
+- **Dojo Calipers**: 3D digital caliper simulation with sub-millimeter accuracy [blender, addon, 3d, asset]
+- **Dojo Crv Wrapper v4**: Blender asset: Dojo Crv Wrapper v4 [blender, addon, 3d, asset]
+- **Dojo Gluefinity Grid**: Blender asset: Dojo Gluefinity Grid_obj [blender, addon, 3d, asset]
+- **Dojo Knob**: Blender asset: Dojo Knob [blender, geometry-nodes, super-primitive]
+- **Dojo Knob_obj**: Blender asset: Dojo Knob_obj [Mesh Gen, blender, 3d, asset]
+- **Dojo Mesh Repair**: Blender asset: Dojo Mesh Repair [blender, addon, 3d, asset]
+- **Dojo Plywood Generator**: Procedural plywood material effect for geometry nodes with adjustable rotation, scale, and layer count. [blender, addon, 3d, asset, material, geometry-nodes, plywood, procedural]
+- **Dojo Print Viz_V4.5**: Blender asset: Dojo Print Viz_V4.5 [blender, addon, 3d, asset]
+- **Dojo Squircle v4.5_obj**: Blender asset: Dojo Squircle v4.5_obj [Mesh Gen, blender, addon, 3d, asset]
+- **Dojo_Curvature Lines**: Blender asset: dojo_curvature lines [blender, addon, 3d, asset]
+- **Dojo_Fillet by Length**: Blender asset: dojo_fillet by length [blender, addon, 3d, asset]
+- **Dojo_Squircle v4.5**: Blender asset: Dojo_Squircle v4.5 [Super Primitive, blender, addon, 3d, asset]
+- **Dowel Shelf Generator**: Parametric dowel shelf generator with adjustable dimensions, shelf count, and dowel diameter. [blender, addon, 3d, asset, generator, geometry-nodes, shelf, furniture, 3d-printable]
+- **Flat Color Material**: Initial release [blender, material, shader, flat-color, emission, viewport, geometry-nodes]
+- **Print Bed Preview_obj**: Blender asset: Print Bed Preview_obj [blender, addon, 3d, asset]
+- **Print Orientation**: Blender asset: Orient print by face selection [blender, geometry-nodes, 3d-printing, utility]
+- **Select By Bounding Face**: Select faces on a mesh by their proximity to a bounding box face. [blender, addon, 3d, asset, selection, geometry-nodes]
+- **Select Half Of Object**: Select exactly half of a mesh along any axis with adjustable split factor and direction. [blender, addon, 3d, asset, selection, geometry-nodes]
+- **Separate Half**: Split a mesh in half along any axis and separate the two halves into distinct geometry outputs. [blender, addon, 3d, asset, selection, geometry-nodes, split]
+- **Spike Ball_Simple V1**: Blender asset: Parametric spike ball generator [blender, addon, 3d, asset, procedural, mesh generator, 3D printable]
+- **T-Slot Utilities**: Blender asset: T-Slot aluminum extrusion generator and profile library [blender, geometry-nodes, utility, mechanical]
+- **Tarot Stipple Material**: A stipple-textured material for creating tarot-inspired visual effects in Blender [MoGraph, Well Tarot, Design, Visualization, Digital Art, Generative]
+- **Threaded Insert**: Initial release [blender, geometry-nodes, 3d-printing, hardware, threaded-insert, mechanical]
+- **View Crv Points**: Blender asset: view crv pts [blender, addon, 3d, asset]
+
+### Blender Object
+
+- **Arduino Nano**: Arduino Nano microcontroller reference model for electronics project visualization [blender, geometry-nodes, hardware, electronics, reference-model]
+- **Base Nut**: Base nut hardware reference model [blender, geometry-nodes, hardware, reference-model]
+- **Battery Pack**: Battery pack model with adjustable cable curvature and positioning [blender, geometry-nodes, hardware, electronics]
+- **Bic Lighter**: Bic lighter model with geometry nodes assembly [blender, geometry-nodes, reference-model, product-design]
+- **CL Breadboard**: Breadboard reference model for electronics project visualization [blender, static-mesh, hardware, electronics, reference-model]
+- **Dojo Gridfinity Bins**: Parametric Gridfinity-compatible bin generator with adjustable X/Y size and height [blender, geometry-nodes, 3D-printable, organizer, gridfinity]
+- **Driver Shank**: Parametric screwdriver shank with adjustable length [blender, geometry-nodes, hardware, reference-model]
+- **Gabor Pattern Airpod Case**: AirPod case with procedural Gabor noise pattern surface [blender, geometry-nodes, product-design, pattern]
+- **Nylon Bolt**: Parametric nylon bolt generator with adjustable length, cap option, and multiple output configurations [blender, geometry-nodes, hardware, 3D-printable]
+- **Putty Flange Generator**: Procedural putty flange generator that molds organic flanged shapes around target objects [blender, geometry-nodes, putty, procedural]
+- **Screwdriver**: Screwdriver model with geometry nodes assembly [blender, geometry-nodes, hardware, reference-model]
+- **Simple Bin Generator**: Parametric bin/organizer generator with adjustable dimensions, dividers, and corner fillets [blender, geometry-nodes, 3D-printable, organizer]
+- **Spike Putty 1**: Procedural spike putty wrapper that creates organic spiked surfaces around mesh collections [blender, geometry-nodes, putty, procedural]
+- **USB-C Cable**: USB-C cable model with adjustable curvature and connector rotation [blender, geometry-nodes, hardware, electronics]
+- **Vase Ribbed**: Parametric ribbed vase generator with adjustable length [blender, geometry-nodes, 3D-printable, vase]
+- **Voronoi Putty 1**: Procedural voronoi putty wrapper that creates organic voronoi-pattern surfaces around mesh collections [blender, geometry-nodes, putty, procedural]
+
+### Blender Scene
+
+- **Sketchbook Generator Scene**: Procedural sketchbook/notebook generator scene with page-flipping animation, customizable covers, stickers, and binding [blender, scene, procedural, notebook, animation]
+- **Voronoi Wrapper Scene**: Complete Blender scene with voronoi putty wrapping tools, reference objects (AirPods Max, lighter, screwdriver), and a photo studio setup [blender, scene, putty, product-design]
+
+### Geometry Node
+
+- **Bubble Putty Generator**: Procedural bubble putty generator that wraps mesh objects in organic bubble forms [blender, geometry-nodes, putty, procedural]
+- **Dojo Bolt Gen v05**: Procedural bolt generator optimized for 3D printing [Node Group, hardware, 3D printable]
+- **Dojo Fixed Grid**: Fixed grid box node group for snapping geometry to a grid with adjustable resolution and buffer [blender, geometry-nodes, utility, grid]
+- **No3d Knurler**: Procedural knurling generator for adding grip texture patterns to cylindrical surfaces [blender, geometry-nodes, surface-detail, knurling]
+
+### Material
+
+- **Set Holdout Material**: Apply holdout material to geometry via geometry nodes [blender, material, 3d, asset, holdout, compositing]
+
+### Mesh Object
+
+- **Metabones Obj**: Blender asset: 2D Metabones generator [blender, addon, 3d, asset, procedural, mesh generator, 3D printable, metabones]
+- **No3d Pixel Markers**: Blender asset: Pixel Marker generator [UI, Marker, Utility, Mograph, Free]
+
+## Membership Addon
+
+The No3d Tools Membership addon syncs your asset library into Blender.
+
+Setup: Install addon → Enter license key (NO3D-XXXX-XXXX-XXXX-XXXX) → Validate → Set library path → Sync Now
+
+Common issues:
+- "Invalid license key" → Include the NO3D- prefix, check for spaces
+- "Sync failed" → Check internet, click Validate first, then Sync Now
+- Assets not showing → Select "NO3D Tools" in Asset Browser dropdown, click Refresh Library
+- Lost license key → Check email or visit no3dtools.com/account.html
+
+## Optional
+
+- [Full product docs with parameters and usage guides](https://no3dtools.com/llms-full.txt)

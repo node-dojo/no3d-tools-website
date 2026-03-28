@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Help - NO3D Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: var(--color-stone-gray); }
+
+        .guide-wrap {
+            max-width: 720px;
+            margin: var(--space-xlarge) auto;
+            padding: var(--space-large);
+        }
+
+        .guide-card {
+            background: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-xlarge) var(--space-xlarge) var(--space-large);
+        }
+
+        .guide-card h1 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h1);
+            text-transform: uppercase;
+            margin-bottom: var(--space-tiny);
+            color: var(--color-void-black);
+            line-height: 1.0;
+        }
+
+        .guide-card .subtitle {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: 300;
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-xlarge);
+        }
+
+        .guide-card h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-top: var(--space-xlarge);
+            margin-bottom: var(--space-small);
+            padding-bottom: var(--space-micro);
+            border-bottom: 2px solid var(--color-lello);
+        }
+
+        .guide-card h3 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-top: var(--space-large);
+            margin-bottom: var(--space-tiny);
+        }
+
+        .guide-card p, .guide-card li {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: 300;
+            line-height: 1.6;
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-small);
+        }
+
+        .guide-card ul, .guide-card ol {
+            padding-left: 20px;
+            margin-bottom: var(--space-medium);
+        }
+
+        .guide-card li {
+            margin-bottom: var(--space-tiny);
+        }
+
+        .guide-card strong {
+            font-weight: 500;
+            color: var(--color-void-black);
+        }
+
+        .guide-card a {
+            color: var(--color-void-black);
+            text-decoration: underline;
+        }
+
+        .guide-card a:hover {
+            background: var(--color-lello);
+            text-decoration: none;
+        }
+
+        .step-box {
+            background: var(--color-stone-gray);
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-medium) var(--space-large);
+            margin: var(--space-small) 0 var(--space-medium);
+        }
+
+        .step-box p {
+            margin-bottom: var(--space-tiny);
+        }
+
+        .step-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .prompt-block {
+            position: relative;
+            background: var(--color-void-black);
+            color: var(--color-lello);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.5;
+            padding: var(--space-medium) var(--space-large);
+            padding-right: 60px;
+            margin: var(--space-small) 0 var(--space-medium);
+            white-space: pre-wrap;
+            word-break: break-word;
+            user-select: all;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: var(--space-small);
+            right: var(--space-small);
+            background: transparent;
+            border: 1px solid var(--color-lello);
+            color: var(--color-lello);
+            font-family: var(--font-visitor);
+            font-size: 10px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--color-lello);
+            color: var(--color-void-black);
+        }
+
+        .copy-btn.copied {
+            background: var(--color-lello);
+            color: var(--color-void-black);
+        }
+
+        .method-card {
+            border: 1px solid var(--color-void-black);
+            padding: var(--space-medium) var(--space-large);
+            margin: var(--space-small) 0 var(--space-medium);
+        }
+
+        .method-card .method-label {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-small);
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            margin-bottom: var(--space-tiny);
+        }
+
+        .method-card .method-effort {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 300;
+            color: var(--color-dark-gray);
+            margin-bottom: var(--space-small);
+        }
+
+        .back-link {
+            display: inline-block;
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-small);
+            text-transform: uppercase;
+            color: var(--color-dark-gray);
+            text-decoration: none;
+            margin-bottom: var(--space-medium);
+        }
+
+        .back-link:hover {
+            color: var(--color-void-black);
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-medium);
+        }
+
+        .example-list {
+            background: var(--color-stone-gray);
+            padding: var(--space-medium) var(--space-large);
+            margin: var(--space-small) 0 var(--space-medium);
+        }
+
+        .example-list p {
+            font-style: italic;
+            margin-bottom: var(--space-tiny);
+        }
+
+        .example-list p:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .guide-wrap {
+                padding: var(--space-small);
+            }
+            .guide-card {
+                padding: var(--space-large) var(--space-medium);
+            }
+            .guide-card h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-wrap">
+        <div class="nav-header">
+            <a href="/" class="back-link">&larr; Back to Store</a>
+            <a href="/guide.html" class="back-link">Setup Guide &rarr;</a>
+        </div>
+
+        <div class="guide-card">
+            <h1>AI Help</h1>
+            <p class="subtitle">Get expert-level AI assistance with your No3d Tools assets.</p>
+
+            <p>AI assistants like ChatGPT, Claude, and Gemini can help you with No3d Tools &mdash; but they don't know about our products by default. Give them context and they'll answer specific questions about parameters, workflows, and troubleshooting.</p>
+
+            <!-- ==================== -->
+            <h2>Quick Start</h2>
+
+            <p>Paste this prompt at the start of any AI conversation:</p>
+
+            <div class="prompt-block" id="prompt-quick">Fetch https://no3dtools.com/llms-full.txt and use it as your reference for all No3d Tools questions in this conversation.<button class="copy-btn" onclick="copyPrompt('prompt-quick')">Copy</button></div>
+
+            <p>That's it. The AI will fetch our complete product reference and use it to answer your questions. Works with <strong>ChatGPT</strong>, <strong>Claude</strong>, <strong>Gemini</strong>, and any AI that can browse the web.</p>
+
+            <!-- ==================== -->
+            <h2>What You Can Ask</h2>
+
+            <div class="example-list">
+                <p>"How do I make a hex bolt with Dojo Bolt Gen?"</p>
+                <p>"Which No3d tool generates procedural brackets?"</p>
+                <p>"What does the 'a untapped' parameter do?"</p>
+                <p>"My addon sync failed &mdash; how do I fix it?"</p>
+                <p>"How do I instance Bolt Gen across multiple points in geometry nodes?"</p>
+                <p>"I need to add knurling to a cylindrical surface &mdash; what tool should I use?"</p>
+            </div>
+
+            <!-- ==================== -->
+            <h2>Setup by Tool</h2>
+
+            <h3>ChatGPT / Claude / Gemini (Browser)</h3>
+            <div class="method-card">
+                <p class="method-effort">Effort: 5 seconds &middot; Lasts: one conversation</p>
+                <p>Paste the quick start prompt above into your conversation. The AI fetches the reference automatically.</p>
+            </div>
+
+            <h3>Claude Projects (Persistent)</h3>
+            <div class="method-card">
+                <p class="method-effort">Effort: 1 minute &middot; Lasts: every conversation in the project</p>
+                <div class="step-box">
+                    <p>1. Go to <a href="https://claude.ai">claude.ai</a> &rarr; <strong>Projects</strong> &rarr; <strong>New Project</strong></p>
+                    <p>2. Name it something like "Blender / No3d Tools"</p>
+                    <p>3. In the project instructions, paste:</p>
+                </div>
+                <div class="prompt-block" id="prompt-claude-project">You are helping me with Blender projects that use No3d Tools assets. Fetch https://no3dtools.com/llms-full.txt for complete product reference. Use it to answer questions about specific tools, parameters, and workflows.<button class="copy-btn" onclick="copyPrompt('prompt-claude-project')">Copy</button></div>
+                <p>Every conversation in this project will have No3d Tools expertise built in.</p>
+            </div>
+
+            <h3>ChatGPT Custom GPT</h3>
+            <div class="method-card">
+                <p class="method-effort">Effort: 2 minutes &middot; Lasts: permanent</p>
+                <div class="step-box">
+                    <p>1. Go to <a href="https://chatgpt.com">chatgpt.com</a> &rarr; <strong>Explore GPTs</strong> &rarr; <strong>Create</strong></p>
+                    <p>2. In the instructions, paste the quick start prompt above</p>
+                    <p>3. Or download the <a href="/llms-full.txt" download="no3d-tools-reference.txt">full reference file</a> and upload it as knowledge</p>
+                </div>
+            </div>
+
+            <!-- ==================== -->
+            <h2>What the AI Gets</h2>
+
+            <p>The reference file includes:</p>
+            <ul>
+                <li>Every No3d Tools product with full descriptions</li>
+                <li>Parameter documentation and node group diagrams</li>
+                <li>Usage guides and workflow tips</li>
+                <li>Membership addon setup and troubleshooting</li>
+                <li>Asset types: how to drag-and-drop geometry nodes, materials, mesh objects</li>
+            </ul>
+
+            <p>The file is updated whenever we add or update products. You don't need to re-download anything &mdash; the AI fetches the latest version each time.</p>
+
+            <!-- ==================== -->
+            <h2>Direct Links</h2>
+
+            <ul>
+                <li><a href="/llms.txt">llms.txt</a> &mdash; Concise product overview (for AI discovery)</li>
+                <li><a href="/llms-full.txt">llms-full.txt</a> &mdash; Complete product reference (for detailed help)</li>
+            </ul>
+
+        </div>
+    </div>
+
+    <script>
+    function copyPrompt(id) {
+        const block = document.getElementById(id);
+        // Get text content minus the button text
+        const text = block.childNodes[0].textContent.trim();
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = block.querySelector('.copy-btn');
+            btn.textContent = 'Copied';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+    </script>
+</body>
+</html>

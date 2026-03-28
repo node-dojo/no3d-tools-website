@@ -179,6 +179,77 @@
         color: var(--color-dark-gray);
       }
 
+      /* Onboarding steps */
+      .onboarding-steps {
+        text-align: left;
+        margin: var(--space-large) 0;
+        padding: var(--space-medium);
+        background-color: var(--color-stone-gray);
+        border: 1px solid var(--color-void-black);
+      }
+
+      .onboarding-steps h3 {
+        font-family: var(--font-visitor);
+        font-size: 14px;
+        letter-spacing: var(--letter-spacing-wide);
+        margin-bottom: var(--space-medium);
+        color: var(--color-void-black);
+      }
+
+      .onboarding-step {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-small);
+        margin-bottom: var(--space-medium);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--color-dark-gray);
+        line-height: 1.6;
+      }
+
+      .onboarding-step:last-child {
+        margin-bottom: 0;
+      }
+
+      .step-number {
+        font-family: var(--font-visitor);
+        font-size: 14px;
+        color: var(--color-void-black);
+        background: var(--color-lello);
+        border: 1px solid var(--color-void-black);
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .step-content {
+        flex: 1;
+        padding-top: 3px;
+      }
+
+      .addon-download-btn {
+        display: inline-block;
+        background: var(--color-void-black);
+        color: var(--color-lello);
+        border: 1px solid var(--color-void-black);
+        padding: var(--space-small) var(--space-large);
+        font-family: var(--font-visitor);
+        font-size: 12px;
+        letter-spacing: var(--letter-spacing-wide);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        margin-top: var(--space-small);
+      }
+
+      .addon-download-btn:hover {
+        background: var(--color-lello);
+        color: var(--color-void-black);
+      }
+
       /* Logo styling */
       .success-logo {
         margin-bottom: var(--space-large);
@@ -211,6 +282,37 @@
         font-size: var(--font-size-small);
         color: var(--color-dark-gray);
         margin-bottom: var(--space-small);
+      }
+
+      .license-progress-wrap {
+        width: 100%;
+        height: 6px;
+        background: var(--color-stone-gray);
+        border: 1px solid var(--color-void-black);
+        margin: var(--space-small) 0;
+        overflow: hidden;
+      }
+
+      .license-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: var(--color-lello);
+        transition: width 0.4s ease;
+      }
+
+      .license-progress-bar.indeterminate {
+        width: 30%;
+        animation: indeterminate 1.5s ease-in-out infinite;
+      }
+
+      @keyframes indeterminate {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(433%); }
+      }
+
+      .license-progress-bar.complete {
+        width: 100%;
+        animation: none;
       }
 
       .license-key-box {
@@ -353,6 +455,8 @@
             const licenseKeyEl = document.getElementById('license-key-display');
             const licenseStatusEl = document.getElementById('license-status');
             const copyBtn = document.getElementById('copy-license-key');
+            const progressBar = document.getElementById('license-progress-bar');
+            const progressWrap = document.getElementById('license-progress-wrap');
 
             for (let attempt = 0; attempt < maxAttempts; attempt++) {
                 try {
@@ -360,7 +464,16 @@
                     const data = await response.json();
 
                     if (data.license_key) {
-                        // Found! Display and save
+                        // Complete the progress bar
+                        if (progressBar) {
+                            progressBar.classList.remove('indeterminate');
+                            progressBar.classList.add('complete');
+                        }
+                        // Brief pause to show the completed bar
+                        await new Promise(r => setTimeout(r, 400));
+                        if (progressWrap) progressWrap.style.display = 'none';
+
+                        // Show the key
                         if (licenseKeyEl) {
                             licenseKeyEl.textContent = data.license_key;
                             licenseKeyEl.style.display = 'block';
@@ -369,7 +482,7 @@
                             copyBtn.style.display = 'inline-block';
                         }
                         if (licenseStatusEl) {
-                            licenseStatusEl.textContent = 'License key generated!';
+                            licenseStatusEl.textContent = '';
                         }
                         // Save to localStorage for website subscription detection
                         localStorage.setItem('no3d_license_key', data.license_key);
@@ -381,16 +494,31 @@
                     console.error('License poll error:', err);
                 }
 
-                // Show waiting state
-                if (licenseStatusEl) {
-                    licenseStatusEl.textContent = `Generating your license key... (${attempt + 1}/${maxAttempts})`;
+                // Advance progress toward ~90% over the attempts
+                const pct = Math.min(90, ((attempt + 1) / maxAttempts) * 90);
+                if (progressBar) {
+                    progressBar.classList.remove('indeterminate');
+                    progressBar.style.width = `${pct}%`;
                 }
 
-                // Wait 3 seconds before next attempt
+                if (licenseStatusEl) {
+                    const messages = [
+                        'Setting up your account...',
+                        'Generating license key...',
+                        'Almost there...',
+                    ];
+                    licenseStatusEl.textContent = messages[Math.min(attempt, messages.length - 1)];
+                }
+
                 await new Promise(resolve => setTimeout(resolve, 3000));
             }
 
-            // Timeout — show fallback message
+            // Timeout — show fallback
+            if (progressBar) {
+                progressBar.classList.remove('indeterminate');
+                progressBar.style.width = '100%';
+                progressBar.style.background = 'var(--color-medium-gray)';
+            }
             if (licenseStatusEl) {
                 licenseStatusEl.textContent = 'Your license key will be emailed to you shortly. Check your inbox.';
             }
@@ -426,23 +554,17 @@
                 `;
             }
 
-            const portalUrl = data.portalUrl;
-            const portalBlock = portalUrl
-                ? `<a href="${portalUrl}" class="primary-cta" target="_blank" rel="noopener">
-                    MANAGE SUBSCRIPTION →
-                   </a>`
-                : `<a href="account.html" class="primary-cta">MANAGE BILLING</a>`;
+            const portalUrl = data.portalUrl || 'account.html';
 
             contentContainer.innerHTML = `
                 <div class="success-icon">
                     <i class="fas fa-check"></i>
                 </div>
 
-                <h1 class="success-title">SUBSCRIPTION ACTIVE</h1>
+                <h1 class="success-title">YOU'RE IN!</h1>
 
                 <p class="success-message">
-                    Thank you!<br>
-                    Your license details are sent by email. Use the Blender add-on with your license key to download assets.
+                    Your subscription is active. Here's everything you need to get started.
                 </p>
 
                 ${orderDetailsHtml}
@@ -450,20 +572,46 @@
                 <div class="license-key-section">
                     <h3>YOUR LICENSE KEY</h3>
                     <p id="license-status">Generating your license key...</p>
+                    <div class="license-progress-wrap" id="license-progress-wrap">
+                        <div class="license-progress-bar indeterminate" id="license-progress-bar"></div>
+                    </div>
                     <div id="license-key-display" class="license-key-box" style="display: none;"></div>
                     <button id="copy-license-key" style="display: none;" onclick="copyLicenseKey()">COPY LICENSE KEY</button>
-                    <p class="license-help">Enter this key in the No3d Tools Blender addon to sync your library.</p>
                 </div>
 
-                ${portalBlock}
+                <div class="onboarding-steps">
+                    <h3>GET STARTED</h3>
+                    <div class="onboarding-step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            Download and install the No3d Tools addon in Blender<br>
+                            (Edit → Preferences → Add-ons → Install from Disk)<br>
+                            <a href="/api/download-addon" class="addon-download-btn" download>DOWNLOAD ADDON</a>
+                        </div>
+                    </div>
+                    <div class="onboarding-step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            Open addon preferences and paste your license key above
+                        </div>
+                    </div>
+                    <div class="onboarding-step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            Click "Sync Library" — all ${data.productCount || '64'} assets will appear in your Asset Browser
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/" class="primary-cta">BROWSE THE LIBRARY →</a>
 
                 <br><br>
 
-                <a href="/" class="secondary-link">&larr; Back to Store</a>
+                <a href="${portalUrl}" class="secondary-link"${portalUrl.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>Manage subscription</a>
 
                 <div class="help-text">
-                    <strong>Need help?</strong> Check your inbox (and spam) for your license email, or
-                    <a href="mailto:support@no3dtools.com">contact support</a>.
+                    Your license key has also been sent to your email.
+                    <a href="mailto:support@no3dtools.com">Contact support</a> if you need help.
                 </div>
             `;
         }

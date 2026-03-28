@@ -13,7 +13,16 @@
  */
 
 import Stripe from 'stripe';
+import crypto from 'crypto';
 import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
+import { sendLicenseKeyEmail } from './lib/email.js';
+
+function generateLicenseKey() {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const chars = new Array(16).fill(null).map(() => alphabet[crypto.randomInt(0, alphabet.length)]);
+  const s = chars.join('');
+  return `NO3D-${s.slice(0, 4)}-${s.slice(4, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}`;
+}
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -47,8 +56,10 @@ export default async function handler(req, res) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    // Get customer ID from Stripe session
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    // Get session details from Stripe
+    const session = await stripe.checkout.sessions.retrieve(session_id, {
+      expand: ['subscription'],
+    });
     if (!session || !session.customer) {
       return res.status(404).json({ error: 'Session not found or no customer' });
     }
@@ -65,16 +76,68 @@ export default async function handler(req, res) {
       .eq('stripe_customer_id', customerId)
       .single();
 
-    if (error || !subscription) {
-      // Webhook hasn't processed yet
+    if (!error && subscription) {
+      return res.status(200).json({
+        license_key: subscription.license_key,
+        email: subscription.email,
+        status: subscription.status,
+        expires_at: subscription.expires_at,
+      });
+    }
+
+    // Webhook hasn't processed yet — provision directly from Stripe session
+    // data as a resilient fallback. Only provision for paid sessions.
+    if (session.payment_status !== 'paid') {
       return res.status(200).json({ pending: true });
     }
 
+    const email = session.customer_email || session.customer_details?.email;
+    if (!email) {
+      return res.status(200).json({ pending: true });
+    }
+
+    const licenseKey = generateLicenseKey();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const stripeSub = session.subscription;
+    const stripeSubId =
+      typeof stripeSub === 'string'
+        ? stripeSub
+        : stripeSub?.id || null;
+
+    const { error: upsertError } = await supabase.from('subscriptions').upsert(
+      {
+        stripe_customer_id: customerId,
+        stripe_sub_id: stripeSubId,
+        email,
+        license_key: licenseKey,
+        status: 'active',
+        expires_at: expiresAt.toISOString(),
+        grace_until: null,
+      },
+      { onConflict: 'stripe_customer_id' }
+    );
+
+    if (upsertError) {
+      console.error('Fallback license provisioning failed:', upsertError);
+      return res.status(200).json({ pending: true });
+    }
+
+    // Send license email (best-effort)
+    try {
+      if (process.env.LICENSE_EMAIL_DRY_RUN !== 'true') {
+        await sendLicenseKeyEmail(email, licenseKey, process.env.ADDON_DOWNLOAD_URL);
+      }
+    } catch (emailErr) {
+      console.error('License email send failed:', emailErr?.message || emailErr);
+    }
+
     return res.status(200).json({
-      license_key: subscription.license_key,
-      email: subscription.email,
-      status: subscription.status,
-      expires_at: subscription.expires_at,
+      license_key: licenseKey,
+      email,
+      status: 'active',
+      expires_at: expiresAt.toISOString(),
     });
   } catch (err) {
     console.error('Error fetching license by session:', err);

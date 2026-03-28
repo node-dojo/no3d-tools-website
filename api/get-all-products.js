@@ -78,6 +78,13 @@ export default async function handler(req, res) {
       return 'tools'
     }
 
+    // Fallback: find icon in hosted_media when icon_url is null
+    const findIconInHostedMedia = (hostedMedia) => {
+      if (!hostedMedia) return null
+      const iconKey = Object.keys(hostedMedia).find(k => k.toLowerCase().startsWith('icon_'))
+      return iconKey ? hostedMedia[iconKey] : null
+    }
+
     // Transform to match website format - return as array (not wrapped in object)
     const productsRaw = (data || []).map((p) => ({
       id: p.id,
@@ -86,7 +93,7 @@ export default async function handler(req, res) {
       description: p.description,
       price: p.price,
       product_type: mapProductType(p.product_type), // Map to website productType
-      image: p.icon_url,
+      image: p.icon_url || findIconInHostedMedia(p.metadata?.hosted_media),
       preview: p.preview_image_url,
       video: p.video_url,
       tags: p.tags || [],
