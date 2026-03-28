@@ -12,6 +12,8 @@
   --color-lello-light: #f0ff00;
   --color-dark-gray: #222222;
   --color-medium-gray: #303030;
+  --color-error-red: #FF3B30;
+  --color-beta-blue: #4A90D9;
   
   /* Typography */
   --font-mono: 'JetBrains Mono', 'Courier New', 'Courier', 'Monaco', 'Consolas', monospace;
@@ -1307,9 +1309,89 @@ a.sidebar-help-link {
   width: 100%;
 }
 
+.home-grid-item {
+  position: relative;
+}
+
 .home-grid-item:hover {
   transform: translateY(-2px);
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Release Status Badges */
+.release-badge {
+  position: absolute;
+  bottom: 42px;
+  right: 12px;
+  font-family: var(--font-visitor);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.release-badge-beta {
+  color: var(--color-beta-blue);
+}
+
+.release-badge-alpha {
+  color: var(--color-error-red);
+}
+
+/* Coming Soon Treatment */
+.home-grid-item.coming-soon {
+  pointer-events: none;
+  cursor: default;
+}
+
+.home-grid-item.coming-soon .home-grid-item-thumbnail {
+  filter: grayscale(100%);
+  opacity: 0.35;
+}
+
+.home-grid-item.coming-soon .coming-soon-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-visitor);
+  font-size: 14px;
+  color: var(--color-paper-white);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  -webkit-text-stroke: 0.7px var(--color-void-black);
+  pointer-events: none;
+}
+
+.home-grid-item.coming-soon:hover {
+  transform: none;
+  background-color: transparent;
+}
+
+/* Sidebar release badges */
+.sidebar-badge {
+  font-family: var(--font-visitor);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.sidebar-badge-beta {
+  color: var(--color-beta-blue);
+}
+
+.sidebar-badge-alpha {
+  color: var(--color-error-red);
+}
+
+.sidebar-badge-soon {
+  color: var(--color-medium-gray);
+}
+
+.product-item.sidebar-coming-soon {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .home-grid-item-thumbnail {

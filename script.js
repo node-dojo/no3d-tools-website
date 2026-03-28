@@ -114,6 +114,8 @@ async function fetchUnifiedProducts() {
           folderName: product.handle,
           hosted_media: product.hosted_media || {},
           carousel_media: product.carousel_media || [],
+          releaseStatus: product.release_status || 'stable',
+          releaseVersion: product.release_version || null,
         };
       });
       console.log(`✅ Populated 'products' object with ${Object.keys(products).length} products.`);
@@ -204,13 +206,28 @@ function renderSidebar() {
       const productList = document.createElement('div');
       productList.className = 'group-product-list';
       
-      Object.values(typeProducts).sort((a, b) => a.name.localeCompare(b.name)).forEach(product => {
-        const productItem = document.createElement('div');
-        productItem.className = `product-item ${product.id === currentProduct ? 'active' : ''}`;
-        productItem.dataset.product = product.id;
-        productItem.innerHTML = `<span class="product-name">${product.name}</span>`;
-        productList.appendChild(productItem);
-      });
+      // Sort: stable first, then beta, alpha, coming_soon
+      const releaseOrder = { stable: 0, beta: 1, alpha: 2, coming_soon: 3 };
+      Object.values(typeProducts)
+        .sort((a, b) => {
+          const ra = releaseOrder[a.releaseStatus] || 0;
+          const rb = releaseOrder[b.releaseStatus] || 0;
+          return ra - rb || a.name.localeCompare(b.name);
+        })
+        .forEach(product => {
+          const productItem = document.createElement('div');
+          const rs = product.releaseStatus;
+          let extraClass = product.id === currentProduct ? ' active' : '';
+          if (rs === 'coming_soon') extraClass += ' sidebar-coming-soon';
+          productItem.className = `product-item${extraClass}`;
+          productItem.dataset.product = product.id;
+          let badge = '';
+          if (rs === 'beta') badge = ' <span class="sidebar-badge sidebar-badge-beta">BETA</span>';
+          else if (rs === 'alpha') badge = ' <span class="sidebar-badge sidebar-badge-alpha">ALPHA</span>';
+          else if (rs === 'coming_soon') badge = ' <span class="sidebar-badge sidebar-badge-soon">SOON</span>';
+          productItem.innerHTML = `<span class="product-name">${product.name}</span>${badge}`;
+          productList.appendChild(productItem);
+        });
       
       groupsContainer.appendChild(productList);
     }
@@ -273,6 +290,24 @@ function renderHomeGrid() {
 
     gridItem.appendChild(img);
     gridItem.appendChild(title);
+
+    // Release status badges
+    const rs = product.releaseStatus;
+    if (rs === 'coming_soon') {
+      gridItem.classList.add('coming-soon');
+      gridItem.removeEventListener('click', () => {});
+      gridItem.style.pointerEvents = 'none';
+      const label = document.createElement('span');
+      label.className = 'coming-soon-label';
+      label.textContent = 'COMING SOON';
+      gridItem.appendChild(label);
+    } else if (rs === 'beta' || rs === 'alpha') {
+      const badge = document.createElement('span');
+      badge.className = `release-badge release-badge-${rs}`;
+      badge.textContent = rs.toUpperCase();
+      gridItem.appendChild(badge);
+    }
+
     homeGrid.appendChild(gridItem);
   });
   console.log(`✅ Home grid rendered with ${productsArray.length} products`);
@@ -284,6 +319,7 @@ async function selectProduct(productId) {
     console.warn(`Product ${productId} not found`);
     return;
   }
+  if (products[productId].releaseStatus === 'coming_soon') return;
   currentProduct = productId;
   await updateProductDisplay(productId);
   updateActiveStates(productId);

@@ -105,7 +105,9 @@ export default async function handler(req, res) {
       carousel_media: p.metadata?.carousel_media || [],
       excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
       main_image: p.metadata?.main_image || null,
-      changelog: p.metadata?.changelog || []
+      changelog: p.metadata?.changelog || [],
+      release_status: p.release_status || 'stable',
+      release_version: p.release_version || null
     }))
 
     const seenHandles = new Set()
