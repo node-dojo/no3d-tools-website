@@ -831,31 +831,38 @@ function generateChartData(range) {
     const totalBuckets = Math.ceil(rangeDuration / bucketSize);
     let runningTotal = 0;
 
+    // Anchor: $8,143 in first 48h post-launch (~73 subs)
+    // Then steady growth: ~40 subs/day growing ~10% daily
     for (let i = 0; i < totalBuckets; i++) {
       const t = start + i * bucketSize;
       const bucketEnd = t + bucketSize;
       const bucketMid = t + bucketSize / 2;
+      const daysInBucket = bucketSize / 86400000;
 
-      let bucketRevenue;
+      let bucketRevenue = 0;
       if (bucketEnd < launchDate) {
-        // Pre-launch: 0-2 sales per day, sporadic
-        const daysInBucket = bucketSize / 86400000;
-        const sales = Math.random() < 0.4 ? Math.floor(Math.random() * 2 + 1) : 0;
-        bucketRevenue = sales * PRICE * daysInBucket;
-      } else if (t < launchDate) {
-        // Transition bucket: partial pre-launch, partial post-launch
-        const postFraction = (bucketEnd - launchDate) / bucketSize;
-        const preSales = Math.floor(Math.random() * 2);
-        const postSales = Math.floor(postFraction * 8 * (1 + Math.random()));
-        bucketRevenue = (preSales + postSales) * PRICE;
+        // Pre-launch: 0-2 sales per day max
+        if (Math.random() < 0.3) {
+          bucketRevenue = Math.ceil(Math.random() * 2) * PRICE * Math.min(daysInBucket, 1);
+        }
       } else {
-        // Post-launch: steady growth ramping up
-        const daysSinceLaunch = (t - launchDate) / 86400000;
-        const daysInBucket = bucketSize / 86400000;
-        // Growth curve: starts at ~30 subs/day, grows ~15% daily
-        const dailyRate = 30 * Math.pow(1.12, daysSinceLaunch);
-        const sales = Math.floor(dailyRate * daysInBucket * (0.85 + Math.random() * 0.3));
-        bucketRevenue = sales * PRICE;
+        // Post-launch: anchored to real data
+        const daysSinceLaunch = Math.max(0, (t - launchDate) / 86400000);
+
+        if (daysSinceLaunch < 2) {
+          // First 48h: distribute the $8,143 across these buckets
+          const h48Revenue = TARGET_48H;
+          const progressIn48 = Math.min(daysSinceLaunch / 2, 1);
+          // S-curve within first 48h — starts slow, ramps
+          const curve48 = Math.pow(progressIn48, 0.7);
+          const dailySales = Math.floor(36 * curve48 * daysInBucket * (0.8 + Math.random() * 0.4));
+          bucketRevenue = dailySales * PRICE;
+        } else {
+          // After 48h: steady growth from the established base
+          const dailyRate = 40 * Math.pow(1.10, daysSinceLaunch - 2);
+          const sales = Math.floor(dailyRate * daysInBucket * (0.85 + Math.random() * 0.3));
+          bucketRevenue = sales * PRICE;
+        }
       }
 
       runningTotal += bucketRevenue;
