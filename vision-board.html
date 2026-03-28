@@ -826,31 +826,40 @@ function generateChartData(range) {
       dataPoints.push({ x: new Date(t + bucketSize / 2), y: Math.round(cumulative * 100) / 100 });
     }
   } else {
-    // Generate realistic growth curve: slow before launch, then ramp up
+    // Launch date: March 26, 2026 — sales were minimal before this
+    const launchDate = new Date('2026-03-26T12:00:00').getTime();
     const totalBuckets = Math.ceil(rangeDuration / bucketSize);
-    const launchPoint = range === '7d' ? 0.7 : range === '4w' ? 0.85 : range === '3m' ? 0.93 : 0.96;
+    let runningTotal = 0;
 
     for (let i = 0; i < totalBuckets; i++) {
       const t = start + i * bucketSize;
-      const progress = i / totalBuckets;
+      const bucketEnd = t + bucketSize;
+      const bucketMid = t + bucketSize / 2;
 
-      let revenue;
-      if (progress < launchPoint) {
-        // Pre-launch: near zero with tiny trickle
-        revenue = Math.random() * 15 * (progress / launchPoint);
+      let bucketRevenue;
+      if (bucketEnd < launchDate) {
+        // Pre-launch: 0-2 sales per day, sporadic
+        const daysInBucket = bucketSize / 86400000;
+        const sales = Math.random() < 0.4 ? Math.floor(Math.random() * 2 + 1) : 0;
+        bucketRevenue = sales * PRICE * daysInBucket;
+      } else if (t < launchDate) {
+        // Transition bucket: partial pre-launch, partial post-launch
+        const postFraction = (bucketEnd - launchDate) / bucketSize;
+        const preSales = Math.floor(Math.random() * 2);
+        const postSales = Math.floor(postFraction * 8 * (1 + Math.random()));
+        bucketRevenue = (preSales + postSales) * PRICE;
       } else {
-        // Post-launch: exponential growth
-        const postLaunchProgress = (progress - launchPoint) / (1 - launchPoint);
-        const growthCurve = Math.pow(postLaunchProgress, 1.5);
-
-        // Scale so the endpoint reaches realistic projections
-        const projectedTotals = { '7d': 22000, '4w': 68000, '3m': 145000, '1y': 420000 };
-        const target = projectedTotals[range] || 22000;
-        revenue = growthCurve * target;
+        // Post-launch: steady growth ramping up
+        const daysSinceLaunch = (t - launchDate) / 86400000;
+        const daysInBucket = bucketSize / 86400000;
+        // Growth curve: starts at ~30 subs/day, grows ~15% daily
+        const dailyRate = 30 * Math.pow(1.12, daysSinceLaunch);
+        const sales = Math.floor(dailyRate * daysInBucket * (0.85 + Math.random() * 0.3));
+        bucketRevenue = sales * PRICE;
       }
 
-      cumulative = revenue;
-      dataPoints.push({ x: new Date(t + bucketSize / 2), y: Math.round(cumulative * 100) / 100 });
+      runningTotal += bucketRevenue;
+      dataPoints.push({ x: new Date(bucketMid), y: Math.round(runningTotal * 100) / 100 });
     }
   }
 
