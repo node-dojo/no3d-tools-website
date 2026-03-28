@@ -798,7 +798,202 @@ function initializeCheckoutModal() {}
 function initializeLandingPopup() {}
 function initializeChristmasPopup() {}
 function initializeThemeToggle() {}
-function initializeMobileSearch() {}
+// ==================== CMD+K SEARCH FUNCTIONALITY ====================
+
+const searchModal = document.getElementById('search-modal');
+const searchModalBackdrop = document.getElementById('search-modal-backdrop');
+const searchInput = document.getElementById('search-input');
+const searchResultsContainer = document.getElementById('search-results-container');
+const searchResultsEmpty = document.getElementById('search-results-empty');
+
+let searchResults = [];
+let selectedResultIndex = -1;
+
+// Open search modal with CMD+K or Ctrl+K
+document.addEventListener('keydown', function(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    openSearchModal();
+  }
+  if (e.key === 'Escape' && searchModal && searchModal.classList.contains('active')) {
+    closeSearchModal();
+  }
+});
+
+function openSearchModal() {
+  if (!searchModal || !searchModalBackdrop || !searchInput) return;
+  searchModal.classList.add('active');
+  searchModalBackdrop.classList.add('active');
+  searchInput.value = '';
+  searchInput.focus();
+  performSearch('');
+}
+
+function closeSearchModal() {
+  if (!searchModal || !searchModalBackdrop) return;
+  searchModal.classList.remove('active');
+  searchModalBackdrop.classList.remove('active');
+  if (searchResultsContainer) searchResultsContainer.classList.remove('active');
+  if (searchResultsEmpty) searchResultsEmpty.classList.remove('active');
+  selectedResultIndex = -1;
+}
+
+if (searchModalBackdrop) searchModalBackdrop.addEventListener('click', closeSearchModal);
+
+if (searchInput) {
+  searchInput.addEventListener('input', function(e) {
+    performSearch(e.target.value);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedResultIndex = Math.min(selectedResultIndex + 1, searchResults.length - 1);
+      updateSearchSelection();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+      updateSearchSelection();
+    } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
+      e.preventDefault();
+      const productId = searchResults[selectedResultIndex];
+      (async () => { await selectProduct(productId); })();
+      closeSearchModal();
+    }
+  });
+}
+
+function performSearch(query) {
+  const searchTerm = query.toLowerCase().trim();
+  const allProducts = Object.keys(products);
+
+  if (searchTerm === '') {
+    searchResults = allProducts;
+  } else {
+    searchResults = allProducts.filter(productId => {
+      const product = products[productId];
+      const name = (product.name || '').toLowerCase();
+      const desc = (product.description || '').toLowerCase();
+
+      if (name.includes(searchTerm) || desc.includes(searchTerm)) return true;
+
+      if (product.changelog && Array.isArray(product.changelog)) {
+        if (product.changelog.some(item => {
+          if (typeof item === 'string') return item.toLowerCase().includes(searchTerm);
+          if (item && typeof item === 'object') return JSON.stringify(item).toLowerCase().includes(searchTerm);
+          return false;
+        })) return true;
+      }
+
+      if (product.productType && product.productType.toLowerCase().includes(searchTerm)) return true;
+
+      if (product.groups && Array.isArray(product.groups)) {
+        if (product.groups.some(group => (group || '').toLowerCase().includes(searchTerm))) return true;
+      }
+
+      return false;
+    });
+  }
+
+  selectedResultIndex = searchResults.length > 0 ? 0 : -1;
+  renderSearchResults();
+}
+
+function renderSearchResults() {
+  if (!searchResultsContainer || !searchResultsEmpty) return;
+  searchResultsContainer.innerHTML = '';
+
+  if (searchResults.length === 0) {
+    searchResultsContainer.classList.remove('active');
+    searchResultsEmpty.classList.add('active');
+    return;
+  }
+
+  searchResultsEmpty.classList.remove('active');
+  searchResultsContainer.classList.add('active');
+
+  searchResults.forEach((productId, index) => {
+    const product = products[productId];
+    const resultItem = document.createElement('div');
+    resultItem.className = 'search-result-item';
+    if (index === selectedResultIndex) resultItem.classList.add('selected');
+
+    resultItem.innerHTML = `
+      <div class="search-result-content">
+        <div class="search-result-title">${product.name}</div>
+        <div class="search-result-price">${product.price}</div>
+      </div>
+    `;
+
+    resultItem.addEventListener('click', async () => {
+      await selectProduct(productId);
+      closeSearchModal();
+    });
+
+    searchResultsContainer.appendChild(resultItem);
+  });
+}
+
+function updateSearchSelection() {
+  const resultItems = searchResultsContainer.querySelectorAll('.search-result-item');
+  resultItems.forEach((item, index) => {
+    if (index === selectedResultIndex) {
+      item.classList.add('selected');
+      item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+function initializeMobileSearch() {
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  const mobileSearchButton = document.getElementById('mobile-search-button');
+
+  if (mobileSearchInput && mobileSearchButton) {
+    mobileSearchInput.addEventListener('input', () => {
+      if (!searchModal.classList.contains('active')) openSearchModal();
+      searchInput.value = mobileSearchInput.value;
+      performSearch(mobileSearchInput.value);
+    });
+
+    mobileSearchButton.addEventListener('click', () => {
+      openSearchModal();
+      if (mobileSearchInput.value) {
+        searchInput.value = mobileSearchInput.value;
+        performSearch(mobileSearchInput.value);
+      } else {
+        mobileSearchInput.focus();
+      }
+    });
+
+    mobileSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstResult = document.querySelector('.search-result-item');
+        if (firstResult) firstResult.click();
+      }
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        if (searchModal.classList.contains('active')) {
+          mobileSearchInput.value = searchInput.value;
+        }
+      });
+    }
+
+    if (searchModalBackdrop) {
+      searchModalBackdrop.addEventListener('click', () => { mobileSearchInput.value = ''; });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && searchModal && searchModal.classList.contains('active')) {
+        mobileSearchInput.value = '';
+      }
+    });
+  }
+}
 function initializeMemberCTA() {
   const isMember = checkSubscriptionStatus();
   document.querySelectorAll('.member-cta-button, .mobile-member-cta-button, [data-member-cta]').forEach(btn => {

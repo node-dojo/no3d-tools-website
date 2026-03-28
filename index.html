@@ -211,6 +211,34 @@
         </button>
     </div>
 
+    <!-- Search Modal (CMD+K) -->
+    <div class="search-modal-backdrop" id="search-modal-backdrop"></div>
+    <div class="search-modal" id="search-modal">
+        <div class="search-modal-container">
+            <div class="search-modal-header">
+                <input
+                    type="text"
+                    class="search-input"
+                    id="search-input"
+                    placeholder="Search products, descriptions, categories..."
+                    autocomplete="off"
+                >
+            </div>
+            <div class="search-results-container" id="search-results-container">
+                <div class="search-results-empty" id="search-results-empty">
+                    <span>No results found</span>
+                </div>
+            </div>
+            <div class="search-modal-footer">
+                <span class="search-hint">
+                    <span class="search-key">↑↓</span> Navigate
+                    <span class="search-key">↵</span> Select
+                    <span class="search-key">Esc</span> Close
+                </span>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <span class="footer-text" id="footer-text">Cmd/ctrl + K to Search</span>
         <span class="footer-text" id="footer-commit">Commit: <span id="commit-hash">-</span></span>
