@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Stripe</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -568,14 +570,18 @@
     <!-- Revenue Chart -->
     <div class="chart-section">
       <div class="chart-header">
-        <div class="chart-title">Revenue — Last 48 hours</div>
+        <div class="chart-title" id="chart-title-label">Gross volume — Last 48 hours</div>
         <div class="chart-tabs">
-          <button class="chart-tab active">Gross volume</button>
-          <button class="chart-tab">Net volume</button>
-          <button class="chart-tab">New customers</button>
+          <button class="chart-tab active" onclick="setChartRange('48h', this)">48H</button>
+          <button class="chart-tab" onclick="setChartRange('7d', this)">7D</button>
+          <button class="chart-tab" onclick="setChartRange('4w', this)">4W</button>
+          <button class="chart-tab" onclick="setChartRange('3m', this)">3M</button>
+          <button class="chart-tab" onclick="setChartRange('1y', this)">1Y</button>
         </div>
       </div>
-      <div class="chart-container" id="revenue-chart"></div>
+      <div style="height: 300px; position: relative;">
+        <canvas id="revenue-chart-canvas"></canvas>
+      </div>
     </div>
 
     <!-- Recent Payments -->
@@ -789,34 +795,150 @@ function renderPaymentsTable(tableId, payments, limit) {
   `).join('');
 }
 
-function renderChart() {
-  const container = document.getElementById('revenue-chart');
-  // Group payments into 2-hour buckets
-  const buckets = [];
-  const bucketSize = 2 * 60 * 60 * 1000;
-  const start = now - h48;
+// ======= CHART.JS REVENUE CHART =======
+let revenueChart = null;
 
-  for (let t = start; t < now; t += bucketSize) {
-    const end = t + bucketSize;
-    const count = allPayments.filter(p => p.timestamp >= t && p.timestamp < end).length;
-    const revenue = count * PRICE;
-    buckets.push({ time: t, revenue, count });
+const rangeLabels = {
+  '48h': 'Last 48 hours',
+  '7d': 'Last 7 days',
+  '4w': 'Last 4 weeks',
+  '3m': 'Last 3 months',
+  '1y': 'Last 12 months'
+};
+
+function generateChartData(range) {
+  const ms = { '48h': 48*3600000, '7d': 7*86400000, '4w': 28*86400000, '3m': 90*86400000, '1y': 365*86400000 };
+  const bucketSizes = { '48h': 2*3600000, '7d': 12*3600000, '4w': 86400000, '3m': 7*86400000, '1y': 30*86400000 };
+  const rangeDuration = ms[range] || ms['48h'];
+  const bucketSize = bucketSizes[range] || bucketSizes['48h'];
+  const start = now - rangeDuration;
+
+  // For periods beyond 48h, generate projected growth data
+  const dataPoints = [];
+  let cumulative = 0;
+
+  if (range === '48h') {
+    // Use actual payment data
+    for (let t = start; t < now; t += bucketSize) {
+      const end = t + bucketSize;
+      const count = allPayments.filter(p => p.timestamp >= t && p.timestamp < end).length;
+      cumulative += count * PRICE;
+      dataPoints.push({ x: new Date(t + bucketSize / 2), y: Math.round(cumulative * 100) / 100 });
+    }
+  } else {
+    // Generate realistic growth curve: slow before launch, then ramp up
+    const totalBuckets = Math.ceil(rangeDuration / bucketSize);
+    const launchPoint = range === '7d' ? 0.7 : range === '4w' ? 0.85 : range === '3m' ? 0.93 : 0.96;
+
+    for (let i = 0; i < totalBuckets; i++) {
+      const t = start + i * bucketSize;
+      const progress = i / totalBuckets;
+
+      let revenue;
+      if (progress < launchPoint) {
+        // Pre-launch: near zero with tiny trickle
+        revenue = Math.random() * 15 * (progress / launchPoint);
+      } else {
+        // Post-launch: exponential growth
+        const postLaunchProgress = (progress - launchPoint) / (1 - launchPoint);
+        const growthCurve = Math.pow(postLaunchProgress, 1.5);
+
+        // Scale so the endpoint reaches realistic projections
+        const projectedTotals = { '7d': 22000, '4w': 68000, '3m': 145000, '1y': 420000 };
+        const target = projectedTotals[range] || 22000;
+        revenue = growthCurve * target;
+      }
+
+      cumulative = revenue;
+      dataPoints.push({ x: new Date(t + bucketSize / 2), y: Math.round(cumulative * 100) / 100 });
+    }
   }
 
-  const maxRevenue = Math.max(...buckets.map(b => b.revenue));
+  return dataPoints;
+}
 
-  container.innerHTML = buckets.map((b, i) => {
-    const height = maxRevenue > 0 ? (b.revenue / maxRevenue * 220) : 0;
-    const hour = new Date(b.time).getHours();
-    const label = i % 3 === 0 ? `${hour}:00` : '';
-    return `
-      <div class="chart-bar-group">
-        <div class="chart-tooltip">$${b.revenue.toFixed(2)} · ${b.count} payments</div>
-        <div class="chart-bar revenue" style="height: ${Math.max(height, 2)}px;"></div>
-        <div class="chart-bar-label">${label}</div>
-      </div>
-    `;
-  }).join('');
+function renderChart(range = '48h') {
+  const ctx = document.getElementById('revenue-chart-canvas');
+  const data = generateChartData(range);
+
+  document.getElementById('chart-title-label').textContent = 'Gross volume — ' + rangeLabels[range];
+
+  if (revenueChart) revenueChart.destroy();
+
+  revenueChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'Gross Volume',
+        data: data,
+        borderColor: '#635bff',
+        backgroundColor: 'rgba(99, 91, 255, 0.08)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 0,
+        pointHitRadius: 20,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#635bff',
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        borderWidth: 2.5,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a2e',
+          titleColor: '#8898aa',
+          bodyColor: '#fff',
+          bodyFont: { weight: '600', size: 14 },
+          padding: 12,
+          cornerRadius: 8,
+          displayColors: false,
+          callbacks: {
+            title: (items) => {
+              const d = new Date(items[0].parsed.x);
+              return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            },
+            label: (item) => '$' + item.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: range === '48h' ? 'hour' : range === '7d' ? 'day' : range === '4w' ? 'week' : 'month',
+            displayFormats: {
+              hour: 'ha',
+              day: 'MMM d',
+              week: 'MMM d',
+              month: 'MMM yyyy'
+            }
+          },
+          grid: { color: 'rgba(26, 58, 92, 0.3)', drawBorder: false },
+          ticks: { color: '#5a6f86', font: { size: 11 }, maxTicksLimit: 8 }
+        },
+        y: {
+          grid: { color: 'rgba(26, 58, 92, 0.3)', drawBorder: false },
+          ticks: {
+            color: '#5a6f86',
+            font: { size: 11 },
+            callback: (v) => '$' + (v >= 1000 ? (v/1000).toFixed(v >= 10000 ? 0 : 1) + 'K' : v)
+          }
+        }
+      }
+    }
+  });
+}
+
+function setChartRange(range, btn) {
+  document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderChart(range);
 }
 
 function renderCustomers() {
@@ -899,7 +1021,7 @@ setTimeout(showPaymentNotification, 3000);
 // ======= INIT =======
 renderPaymentsTable('payments-table', allPayments, 15);
 renderPaymentsTable('all-payments-table', allPayments);
-renderChart();
+renderChart('48h');
 renderCustomers();
 renderSubscriptions();
 
