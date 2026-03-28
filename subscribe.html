@@ -354,6 +354,15 @@
                 </div>
             </div>
 
+            <div class="tools-list-section" id="tools-list-section" style="margin-top: var(--space-large);">
+                <h2 style="font-family: var(--font-visitor); font-size: var(--font-size-h2); text-transform: uppercase; margin-bottom: var(--space-medium); letter-spacing: var(--letter-spacing-wide);">What's Included</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; max-width: 680px;">
+                    <ul id="tools-list-col1" style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: var(--font-size-base); line-height: 2; letter-spacing: var(--letter-spacing-normal); color: var(--color-dark-gray);"></ul>
+                    <ul id="tools-list-col2" style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: var(--font-size-base); line-height: 2; letter-spacing: var(--letter-spacing-normal); color: var(--color-dark-gray);"></ul>
+                </div>
+                <p id="tools-list-upcoming" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-medium-gray); margin-top: var(--space-medium); letter-spacing: var(--letter-spacing-normal);"></p>
+            </div>
+
             <p class="product-count-detail" id="product-count-detail" style="text-align: center; margin-top: var(--space-large);">Access to <span id="product-count-number">...</span> products and growing</p>
         </div>
     </main>
@@ -458,9 +467,43 @@
             }
         }
 
+        async function fetchToolsList() {
+            try {
+                const response = await fetch('/api/get-all-products');
+                if (!response.ok) return;
+                const products = await response.json();
+                if (!Array.isArray(products)) return;
+
+                const sorted = products
+                    .map(p => p.title)
+                    .sort((a, b) => a.localeCompare(b));
+
+                const mid = Math.ceil(sorted.length / 2);
+                const col1 = document.getElementById('tools-list-col1');
+                const col2 = document.getElementById('tools-list-col2');
+
+                sorted.slice(0, mid).forEach(name => {
+                    const li = document.createElement('li');
+                    li.textContent = name;
+                    col1.appendChild(li);
+                });
+                sorted.slice(mid).forEach(name => {
+                    const li = document.createElement('li');
+                    li.textContent = name;
+                    col2.appendChild(li);
+                });
+
+                const upcoming = document.getElementById('tools-list-upcoming');
+                upcoming.textContent = `${sorted.length} tools available now — new tools added regularly`;
+            } catch (err) {
+                console.error('Error fetching tools list:', err);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             fetchProductCount();
             fetchSubscriptionPrice();
+            fetchToolsList();
         });
     </script>
 </body>
