@@ -79,6 +79,7 @@ export default async function handler(req, res) {
       success_url: successUrl,
       cancel_url: cancelUrl,
       customer_email: customerEmail,
+      allow_promotion_codes: true,
       metadata: {
         source: 'stripe_checkout_session',
       }
