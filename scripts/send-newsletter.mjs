@@ -160,6 +160,7 @@ function wrapInEmailTemplate(title, bodyHtml) {
     <div class="footer">
       <p><a href="${SITE_URL}/blog">Read more on the blog</a></p>
       <p>&copy; ${new Date().getFullYear()} NO3D Tools. All rights reserved.</p>
+      <p><a href="{{UNSUBSCRIBE_URL}}" style="color: #999; font-size: 11px;">Unsubscribe from this newsletter</a></p>
     </div>
   </div>
 </body>
@@ -291,25 +292,26 @@ async function main() {
 
   const { data: subscribers, error: subError } = await supabase
     .from('subscriptions')
-    .select('email')
-    .eq('status', 'active');
+    .select('email, unsubscribe_token')
+    .eq('status', 'active')
+    .or('newsletter_opted_out.is.null,newsletter_opted_out.eq.false');
 
   if (subError) {
     console.error('Failed to fetch subscribers:', subError.message);
     process.exit(1);
   }
 
-  const emails = (subscribers || []).map(s => s.email).filter(Boolean);
-  console.log(`Recipients: ${emails.length} active subscriber(s)`);
+  const recipientList = (subscribers || []).filter(s => s.email);
+  console.log(`Recipients: ${recipientList.length} active subscriber(s) (opted-out excluded)`);
 
-  if (emails.length === 0) {
+  if (recipientList.length === 0) {
     console.warn('No active subscribers found. Nothing to send.');
     return;
   }
 
   if (dryRun) {
     console.log('\n[dry-run] Would send to:');
-    for (const email of emails) console.log(`  - ${email}`);
+    for (const s of recipientList) console.log(`  - ${s.email}`);
     console.log('\n[dry-run] Subject:', subject);
     console.log('[dry-run] HTML preview length:', html.length, 'chars');
     console.log('[dry-run] Would lock file after sending.');
@@ -317,29 +319,36 @@ async function main() {
   }
 
   // Confirm before sending
-  console.log(`\nAbout to send to ${emails.length} subscriber(s). This cannot be undone.`);
+  console.log(`\nAbout to send to ${recipientList.length} subscriber(s). This cannot be undone.`);
   console.log('Sending in 5 seconds... (Ctrl+C to abort)');
   await new Promise(resolve => setTimeout(resolve, 5000));
 
-  // Send via Resend
+  // Send via Resend — personalized unsubscribe link per recipient
   const resend = new Resend(process.env.RESEND_API_KEY);
   let sent = 0;
   let failed = 0;
 
-  for (const email of emails) {
+  for (const subscriber of recipientList) {
+    const unsubscribeUrl = `${SITE_URL}/api/unsubscribe?token=${subscriber.unsubscribe_token}`;
+    const personalizedHtml = html.replace('{{UNSUBSCRIBE_URL}}', unsubscribeUrl);
+    const personalizedText = plainText + `\n\nUnsubscribe: ${unsubscribeUrl}`;
     try {
       await resend.emails.send({
         from: FROM_EMAIL,
-        to: email,
+        to: subscriber.email,
         subject,
-        html,
-        text: plainText,
+        html: personalizedHtml,
+        text: personalizedText,
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       });
       sent++;
-      console.log(`  [ok] ${email}`);
+      console.log(`  [ok] ${subscriber.email}`);
     } catch (err) {
       failed++;
-      console.error(`  [fail] ${email}: ${err.message}`);
+      console.error(`  [fail] ${subscriber.email}: ${err.message}`);
     }
   }
 
