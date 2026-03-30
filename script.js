@@ -1,15 +1,27 @@
 // NO3D TOOLS WEBSITE INTERACTIVITY
 // Following Figma Design System Rules
 
-// Configure marked (loaded from CDN) with security options
+// Configure marked (loaded from CDN)
 if (typeof marked !== 'undefined') {
   marked.setOptions({
     breaks: true,
     gfm: true,
-    sanitize: false, // We'll sanitize manually if needed
     smartLists: true,
     smartypants: true
   });
+}
+
+// Sanitize HTML through DOMPurify when available, passthrough otherwise
+function sanitizeHTML(html) {
+  if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html);
+  return html.replace(/<[^>]*>/g, '');
+}
+
+// Escape plain text for safe innerHTML insertion (names, prices, labels)
+function escapeText(str) {
+  const el = document.createElement('span');
+  el.textContent = str;
+  return el.innerHTML;
 }
 
 // Global state variables
@@ -60,6 +72,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeMemberCTA();
     initializeAccountDropdown();
     initializeDownloadButton();
+    initFeedbackModal();
     // Auto-open download modal if ?download=true
     if (new URLSearchParams(window.location.search).get('download') === 'true') {
       openDownloadModal();
@@ -108,24 +121,62 @@ async function fetchUnifiedProducts() {
         products[product.id] = {
           id: product.id,
           name: product.title.toUpperCase(),
+          title: product.title,
           price: product.price || 'FREE',
           description: product.description,
-          changelog: product.changelog || [], // Ensure changelog is included
-          image: product.image || null, // Main image for grid/icon
-          icon: product.image || null, // Using main image for icon
+          changelog: product.changelog || [],
+          image: product.image || null,
+          icon: product.image || null,
           productType: product.product_type || 'tools',
-          groups: product.tags || [], // Tags for product groups
+          groups: product.tags || [],
+          tags: product.tags || [],
           handle: product.handle,
           folderName: product.handle,
           hosted_media: product.hosted_media || {},
           carousel_media: product.carousel_media || [],
           releaseStatus: product.release_status || 'stable',
           releaseVersion: product.release_version || null,
+          sku: product.sku || null,
+          vendor: product.vendor || null,
+          metafields: product.metafields || [],
         };
       });
       console.log(`✅ Populated 'products' object with ${Object.keys(products).length} products.`);
     } else {
       console.warn('⚠️ No products returned from /api/get-all-products');
+    }
+
+    // Fetch blog articles and merge into docs category
+    try {
+      const articlesRes = await fetch('/api/articles?limit=50');
+      if (articlesRes.ok) {
+        const articles = await articlesRes.json();
+        for (const a of articles) {
+          const id = 'blog-' + a.slug;
+          products[id] = {
+            id,
+            name: a.title.toUpperCase(),
+            price: '',
+            description: a.excerpt || '',
+            changelog: [],
+            image: a.featured_image || null,
+            icon: a.featured_image || null,
+            productType: 'docs',
+            groups: a.tags || [],
+            handle: a.slug,
+            folderName: a.slug,
+            hosted_media: {},
+            carousel_media: [],
+            releaseStatus: 'stable',
+            releaseVersion: null,
+            _isBlogPost: true,
+            _blogSlug: a.slug,
+          };
+        }
+        console.log(`✅ Added ${articles.length} blog article(s) to sidebar`);
+      }
+    } catch (blogErr) {
+      console.warn('⚠️ Could not fetch blog articles:', blogErr.message);
     }
   } catch (error) {
     console.error('Error in fetchUnifiedProducts:', error);
@@ -197,7 +248,7 @@ function renderSidebar() {
     const typeHeader = document.createElement('div');
     typeHeader.className = 'type-header';
     const isExpanded = type.key === activeProductType;
-    typeHeader.innerHTML = `<span class="carrot ${isExpanded ? 'expanded' : 'collapsed'}">${isExpanded ? '▼' : '▶'}</span><span class="category-name">${type.label}</span>`;
+    typeHeader.innerHTML = `<span class="carrot ${isExpanded ? 'expanded' : 'collapsed'}">${isExpanded ? '▼' : '▶'}</span><span class="category-name">${escapeText(type.label)}</span>`;
     
     const groupsContainer = document.createElement('div');
     groupsContainer.className = 'product-groups-container';
@@ -230,7 +281,7 @@ function renderSidebar() {
           if (rs === 'beta') badge = ' <span class="sidebar-badge sidebar-badge-beta">BETA</span>';
           else if (rs === 'alpha') badge = ' <span class="sidebar-badge sidebar-badge-alpha">ALPHA</span>';
           else if (rs === 'coming_soon') badge = ' <span class="sidebar-badge sidebar-badge-soon">SOON</span>';
-          productItem.innerHTML = `<span class="product-name">${product.name}</span>${badge}`;
+          productItem.innerHTML = `<span class="product-name">${escapeText(product.name)}</span>${badge}`;
           productList.appendChild(productItem);
         });
       
@@ -324,6 +375,11 @@ async function selectProduct(productId) {
     console.warn(`Product ${productId} not found`);
     return;
   }
+  // Blog posts navigate to /blog/{slug} instead of opening detail panel
+  if (products[productId]._isBlogPost) {
+    window.location.href = '/blog/' + products[productId]._blogSlug;
+    return;
+  }
   if (products[productId].releaseStatus === 'coming_soon') return;
   currentProduct = productId;
   await updateProductDisplay(productId);
@@ -353,20 +409,44 @@ async function updateProductDisplay(productId) {
 
   productTitle.textContent = product.name;
   productPrice.textContent = `PRICE: ${product.price}`;
-  
+
+  // --- Parse description: extract changelog and strip boilerplate ---
+  let descriptionText = '';
+  let changelogMd = '';
   if (product.description) {
-    const descriptionText = typeof product.description === 'string'
+    descriptionText = typeof product.description === 'string'
       ? product.description
       : String(product.description || '');
 
+    // Extract changelog section
+    const clIdx = descriptionText.indexOf('## Changelog');
+    if (clIdx !== -1) {
+      const afterChangelog = descriptionText.substring(clIdx + '## Changelog'.length);
+      const nextSection = afterChangelog.search(/\n## (?!#)/);
+      changelogMd = nextSection !== -1 ? afterChangelog.substring(0, nextSection).trim() : afterChangelog.trim();
+      // Remove changelog and everything after from description
+      descriptionText = descriptionText.substring(0, clIdx).trim();
+    }
+    // Strip Support and License boilerplate sections
+    descriptionText = descriptionText.replace(/## Support[\s\S]*?(?=## |$)/, '').trim();
+    descriptionText = descriptionText.replace(/## License[\s\S]*?(?=## |$)/, '').trim();
+  }
+
+  if (descriptionText) {
     if (typeof marked !== 'undefined') {
-      productDescription.innerHTML = marked.parse(descriptionText);
+      productDescription.innerHTML = sanitizeHTML(marked.parse(descriptionText));
     } else {
-      productDescription.innerHTML = `<p>${descriptionText.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+      productDescription.innerHTML = sanitizeHTML(`<p>${descriptionText.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`);
     }
   } else {
     productDescription.innerHTML = '';
   }
+
+  // --- Render meta table ---
+  renderProductMetaTable(product);
+
+  // --- Render changelog ---
+  renderProductChangelog(changelogMd);
 
   updateButtonVisibility();
 
@@ -402,6 +482,200 @@ async function updateProductDisplay(productId) {
   }
 
   await initializeCarousel(productId);
+}
+
+// ============================================================================
+// PRODUCT META TABLE, CHANGELOG, AND FEEDBACK MODAL
+// ============================================================================
+
+function getMetafield(product, key) {
+  const mf = (product.metafields || []).find(m => m.key === key);
+  return mf ? mf.value : null;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch { return dateStr; }
+}
+
+function renderProductMetaTable(product) {
+  const container = document.getElementById('product-meta-table');
+  if (!container) return;
+
+  const assetType = getMetafield(product, 'asset_type') || product.productType || '';
+  const blenderVersion = getMetafield(product, 'blender_version');
+  const exportDate = getMetafield(product, 'export_date');
+  const status = product.releaseStatus || 'stable';
+  const statusClass = status === 'stable' ? 'meta-badge-stable'
+    : status === 'beta' ? 'meta-badge-beta'
+    : status === 'alpha' ? 'meta-badge-alpha' : 'meta-badge-dark';
+
+  const tags = product.tags || product.groups || [];
+  const tagsHtml = tags.map(t =>
+    `<span class="meta-tag-pill">${t}</span>`
+  ).join('');
+
+  container.innerHTML = `
+    <table>
+      <tr><td class="meta-label">Type</td><td class="meta-value"><span class="meta-badge meta-badge-dark">${assetType}</span></td></tr>
+      <tr><td class="meta-label">Status</td><td class="meta-value"><span class="meta-badge ${statusClass}">${status}${product.releaseVersion ? ' v' + product.releaseVersion : ''}</span></td></tr>
+      ${blenderVersion ? `<tr><td class="meta-label">Blender</td><td class="meta-value">${blenderVersion}</td></tr>` : ''}
+      ${exportDate ? `<tr><td class="meta-label">Updated</td><td class="meta-value">${formatDate(exportDate)}</td></tr>` : ''}
+      ${tags.length ? `<tr><td class="meta-label">Tags</td><td class="meta-value"><div class="meta-tags-container">${tagsHtml}</div></td></tr>` : ''}
+    </table>
+  `;
+}
+
+function renderProductChangelog(changelogMd) {
+  const container = document.getElementById('product-changelog');
+  if (!container) return;
+
+  if (!changelogMd) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const releaseCount = (changelogMd.match(/###\s+[Vv]/g) || []).length;
+  let renderedContent = changelogMd;
+  if (typeof marked !== 'undefined') {
+    renderedContent = typeof DOMPurify !== 'undefined'
+      ? DOMPurify.sanitize(marked.parse(changelogMd))
+      : marked.parse(changelogMd);
+  }
+
+  container.innerHTML = `
+    <div class="changelog-header">
+      <span class="changelog-title">Changelog</span>
+      <span class="changelog-count">${releaseCount} release${releaseCount !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="changelog-body">${renderedContent}</div>
+  `;
+}
+
+// --- Feedback modal logic ---
+function initFeedbackModal() {
+  const modal = document.getElementById('feedback-modal');
+  const modalTitle = document.getElementById('feedback-modal-title');
+  const closeBtn = document.getElementById('feedback-modal-close');
+  if (!modal || !closeBtn) return;
+
+  let selectedType = 'bug';
+  let selectedShare = 'yes';
+
+  // Tag selection for type
+  document.querySelectorAll('#feedback-type-tags .feedback-tag-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#feedback-type-tags .feedback-tag-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedType = btn.dataset.value;
+    });
+  });
+
+  // Tag selection for share preference
+  document.querySelectorAll('#feedback-share-tags .feedback-tag-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#feedback-share-tags .feedback-tag-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedShare = btn.dataset.value;
+    });
+  });
+
+  // Close modal
+  closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+
+  // Build message helper
+  function buildMessage() {
+    const asset = document.getElementById('feedback-form-asset').value;
+    const name = document.getElementById('feedback-form-name').value;
+    const email = document.getElementById('feedback-form-email').value;
+    const subject = document.getElementById('feedback-form-subject').value;
+    const details = document.getElementById('feedback-form-details').value;
+    const blender = document.getElementById('feedback-form-blender').value;
+    const os = document.getElementById('feedback-form-os').value;
+    const typeBtn = document.querySelector('#feedback-type-tags .feedback-tag-option.selected');
+    const typeLabel = typeBtn ? typeBtn.textContent.trim() : 'Bug';
+
+    const subjectLine = `[no3d-tools] [${typeLabel}] ${asset}: ${subject}`;
+    const body = [
+      `Asset: ${asset}`,
+      `Type: ${typeLabel}`,
+      `Blender: ${blender || 'not specified'}`,
+      `OS: ${os || 'not specified'}`,
+      name ? `From: ${name}` : '',
+      email ? `Email: ${email}` : '',
+      `Share publicly: ${selectedShare}`,
+      '',
+      '---',
+      '',
+      details,
+      '',
+      '---',
+      'Sent from no3dtools.com product page'
+    ].filter(Boolean).join('\n');
+
+    return { subjectLine, body };
+  }
+
+  // Send via email
+  document.getElementById('feedback-send-email').addEventListener('click', () => {
+    const { subjectLine, body } = buildMessage();
+    window.location.href = `mailto:Joe@welltarot.com?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(body)}`;
+    modal.classList.remove('active');
+  });
+
+  // Copy to clipboard
+  document.getElementById('feedback-copy-clipboard').addEventListener('click', async () => {
+    const { subjectLine, body } = buildMessage();
+    const fullText = `To: Joe@welltarot.com\nSubject: ${subjectLine}\n\n${body}`;
+    const status = document.getElementById('feedback-status');
+
+    try {
+      await navigator.clipboard.writeText(fullText);
+      status.textContent = 'Copied to clipboard!';
+      status.style.color = '#1a5c15';
+    } catch {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = fullText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      status.textContent = 'Copied to clipboard!';
+      status.style.color = '#1a5c15';
+    }
+    setTimeout(() => {
+      status.textContent = 'Choose: open your email client, or copy the full message to paste anywhere';
+      status.style.color = '#999';
+    }, 3000);
+  });
+
+  // Open modal function
+  window.openFeedbackModal = function(type) {
+    selectedType = type || 'bug';
+    document.querySelectorAll('#feedback-type-tags .feedback-tag-option').forEach(b => {
+      b.classList.toggle('selected', b.dataset.value === selectedType);
+    });
+    modalTitle.textContent = type === 'feature' ? 'Request Feature' : type === 'bug' ? 'Report Issue' : 'Send Feedback';
+    document.getElementById('feedback-form-asset').value = productTitle.textContent.trim();
+    document.getElementById('feedback-form-subject').value = '';
+    document.getElementById('feedback-form-details').value = '';
+    document.getElementById('feedback-form-name').value = '';
+    document.getElementById('feedback-form-email').value = '';
+    document.getElementById('feedback-form-blender').selectedIndex = 0;
+    document.getElementById('feedback-form-os').selectedIndex = 0;
+    const status = document.getElementById('feedback-status');
+    status.textContent = 'Choose: open your email client, or copy the full message to paste anywhere';
+    status.style.color = '#999';
+    modal.classList.add('active');
+  };
+
+  // Wire up buttons
+  document.getElementById('btn-report-issue').addEventListener('click', () => openFeedbackModal('bug'));
+  document.getElementById('btn-request-feature').addEventListener('click', () => openFeedbackModal('feature'));
 }
 
 function updateViewState(showProductCard) {
@@ -1022,8 +1296,8 @@ function renderSearchResults() {
 
     resultItem.innerHTML = `
       <div class="search-result-content">
-        <div class="search-result-title">${product.name}</div>
-        <div class="search-result-price">${product.price}</div>
+        <div class="search-result-title">${escapeText(product.name)}</div>
+        <div class="search-result-price">${escapeText(product.price)}</div>
       </div>
     `;
 

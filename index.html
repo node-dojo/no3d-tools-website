@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="deployment-version" content="613370f">
+    <meta name="deployment-version" content="cccdd4e">
     <meta name="deployment-branch" content="main">
     <title>NO3D TOOLS</title>
     <link rel="stylesheet" href="styles.css">
@@ -20,6 +20,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Marked.js for markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <!-- DOMPurify for sanitizing rendered HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
     <!-- Visitor font - self-hosted WOFF2 webfont -->
     <!-- Preload Visitor font for better performance -->
     <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
@@ -161,14 +163,26 @@
                             </div>
                         </div>
                         
-                        <!-- Bottom divider line -->
-                        <div class="divider-line-thin"></div>
-                        
-                        <!-- Product Tags -->
-                        <div class="product-tags" id="product-tags">
-                            <span class="tags-label">Tags:</span>
-                            <span class="tags-list" id="tags-list"></span>
+                        <!-- Product Meta Table -->
+                        <div class="product-meta-table" id="product-meta-table"></div>
+
+                        <!-- Contribute Buttons -->
+                        <div class="product-contribute" id="product-contribute">
+                            <div class="contribute-buttons">
+                                <button class="contribute-btn" id="btn-report-issue" type="button">
+                                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"/></svg>
+                                    Report issue
+                                </button>
+                                <button class="contribute-btn" id="btn-request-feature" type="button">
+                                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+                                    Request feature
+                                </button>
+                            </div>
+                            <span class="contribute-hint">Feedback helps shape future updates</span>
                         </div>
+
+                        <!-- Changelog -->
+                        <div class="product-changelog" id="product-changelog"></div>
                     </div>
                 </div>
 
@@ -176,6 +190,87 @@
                 <div class="product-right-section">
                     <div class="product-description-scroll" id="product-description">
                         <!-- Markdown content from _desc.md rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Modal -->
+            <div class="feedback-modal-overlay" id="feedback-modal">
+                <div class="feedback-modal">
+                    <div class="feedback-modal-header">
+                        <span id="feedback-modal-title">Report Issue</span>
+                        <button class="feedback-modal-close" id="feedback-modal-close" type="button">X</button>
+                    </div>
+                    <div class="feedback-modal-message">
+                        <div class="feedback-modal-message-title">I read all of these, btw</div>
+                        <div class="feedback-modal-message-body">Filling out this form sends a message directly to me, personally. So please be nice. And also detailed. I'm working hard over here and your feedback is super valuable and helpful so thank you.</div>
+                    </div>
+                    <div class="feedback-modal-body">
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Asset</label>
+                            <input class="feedback-form-input" id="feedback-form-asset" readonly />
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Type</label>
+                            <div class="feedback-tag-row" id="feedback-type-tags">
+                                <button class="feedback-tag-option selected" data-value="bug" type="button">Bug</button>
+                                <button class="feedback-tag-option" data-value="feature" type="button">Feature request</button>
+                                <button class="feedback-tag-option" data-value="question" type="button">Question</button>
+                                <button class="feedback-tag-option" data-value="docs" type="button">Docs / Tip</button>
+                            </div>
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Your name</label>
+                            <input class="feedback-form-input" id="feedback-form-name" placeholder="Optional" />
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Your email</label>
+                            <input class="feedback-form-input" id="feedback-form-email" type="email" placeholder="so we can follow up" />
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Subject</label>
+                            <input class="feedback-form-input" id="feedback-form-subject" placeholder="Brief summary" />
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Details</label>
+                            <textarea class="feedback-form-textarea" id="feedback-form-details" placeholder="What happened? What did you expect? Steps to reproduce..."></textarea>
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Your Blender version</label>
+                            <select class="feedback-form-input" id="feedback-form-blender">
+                                <option value="" disabled selected>Select...</option>
+                                <option>5.1</option><option>5.0</option>
+                                <option>4.4</option><option>4.3</option><option>4.2</option><option>4.1</option><option>4.0</option>
+                                <option>3.6</option><option>3.5</option><option>3.4</option><option>3.3</option><option>3.2</option><option>3.1</option><option>3.0</option>
+                            </select>
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Your operating system</label>
+                            <select class="feedback-form-input" id="feedback-form-os">
+                                <option value="" disabled selected>Select...</option>
+                                <option>Windows 11</option><option>Windows 10</option>
+                                <option>macOS (Apple Silicon)</option><option>macOS (Intel)</option>
+                                <option>Linux (Ubuntu/Debian)</option><option>Linux (Fedora/RHEL)</option><option>Linux (Arch)</option><option>Linux (Other)</option>
+                            </select>
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Attach screenshot or .blend</label>
+                            <span class="feedback-form-hint">Your email client will open — you can attach files there before sending</span>
+                        </div>
+                        <div class="feedback-form-group">
+                            <label class="feedback-form-label">Can we share this publicly?</label>
+                            <div class="feedback-tag-row" id="feedback-share-tags">
+                                <button class="feedback-tag-option selected" data-value="yes" type="button">Yes</button>
+                                <button class="feedback-tag-option" data-value="anonymous" type="button">Anonymously</button>
+                                <button class="feedback-tag-option" data-value="no" type="button">No, private</button>
+                            </div>
+                            <span class="feedback-form-hint">Shared feedback may appear in changelogs or community updates</span>
+                        </div>
+                        <div class="feedback-form-actions">
+                            <button class="feedback-form-submit feedback-form-submit-primary" id="feedback-send-email" type="button">Send via email</button>
+                            <button class="feedback-form-submit feedback-form-submit-secondary" id="feedback-copy-clipboard" type="button">Copy to clipboard</button>
+                        </div>
+                        <span class="feedback-form-hint" id="feedback-status">Choose: open your email client, or copy the full message to paste anywhere</span>
                     </div>
                 </div>
             </div>
