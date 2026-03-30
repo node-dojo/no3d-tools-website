@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - NO3D Tools</title>
+    <meta name="description" content="Notes, research, and documentation from NO3D Tools — procedural geometry, esoteric systems thinking, and creative tooling.">
+    <meta property="og:title" content="Blog - NO3D Tools">
+    <meta property="og:description" content="Notes, research, and documentation from NO3D Tools.">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="blog.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <style>
+      @font-face { font-family: 'Visitor'; src: url('./fonts/visitor.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Visitor'; src: url('./fonts/visitor.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Visitor TT1 BRK'; src: url('./fonts/visitor.woff2') format('woff2'); font-weight: normal; font-style: normal; font-display: swap; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
+</head>
+<body>
+    <div class="blog-container">
+        <header class="blog-header">
+            <a href="/" class="blog-logo">
+                <img src="assets/light/no3d-tools.png" alt="NO3D TOOLS">
+            </a>
+            <nav class="blog-nav">
+                <a href="/">TOOLS</a>
+                <a href="/blog" class="active">BLOG</a>
+            </nav>
+        </header>
+
+        <!-- Blog listing view -->
+        <main id="blog-listing" class="blog-listing">
+            <h1 class="blog-page-title">BLOG</h1>
+            <div id="tag-filters" class="tag-filters"></div>
+            <div id="article-grid" class="article-grid">
+                <p class="loading-message">Loading...</p>
+            </div>
+        </main>
+
+        <!-- Article detail view -->
+        <article id="blog-article" class="blog-article" style="display:none;">
+            <a href="/blog" class="back-link">&larr; ALL POSTS</a>
+            <header class="article-header">
+                <h1 id="article-title"></h1>
+                <div class="article-meta">
+                    <time id="article-date"></time>
+                    <div id="article-tags" class="article-tags"></div>
+                </div>
+            </header>
+            <div id="article-content" class="product-description"></div>
+            <nav class="article-nav">
+                <a id="prev-article" href="#" class="article-nav-link prev" style="display:none;">&larr; Previous</a>
+                <a id="next-article" href="#" class="article-nav-link next" style="display:none;">Next &rarr;</a>
+            </nav>
+        </article>
+
+        <!-- Subscribe CTA -->
+        <section class="blog-subscribe-cta">
+            <h2>STAY IN THE LOOP</h2>
+            <p>Get updates on new tools, tutorials, and posts.</p>
+            <a href="/subscribe" class="cta-button">SUBSCRIBE</a>
+        </section>
+
+        <footer class="blog-footer">
+            <p>&copy; 2026 NO3D Tools</p>
+        </footer>
+    </div>
+
+    <script src="blog.js"></script>
+</body>
+</html>

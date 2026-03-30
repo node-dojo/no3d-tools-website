@@ -5,17 +5,11 @@
  * This includes Supabase URL and anon key (which are designed to be public).
  */
 
+import { setCorsHeaders } from './lib/cors.js';
+
 export default async function handler(req, res) {
-  // Always set JSON content type
   res.setHeader('Content-Type', 'application/json')
-  
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
+  if (setCorsHeaders(req, res, { methods: 'GET, OPTIONS' })) return;
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })

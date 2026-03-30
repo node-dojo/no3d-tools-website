@@ -15,18 +15,11 @@
  */
 
 import Stripe from 'stripe';
+import { setCorsHeaders } from './lib/cors.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
-
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({ ok: true });
-  }
+  if (setCorsHeaders(req, res, { methods: 'POST, GET, OPTIONS' })) return;
 
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed', url: null });
@@ -50,10 +43,8 @@ export default async function handler(req, res) {
 
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
-    // Origin fallback for local/serverless execution.
     const siteUrl = (
       SITE_URL?.trim() ||
-      req.headers.origin?.trim() ||
       'https://no3dtools.com'
     );
 
@@ -98,9 +89,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Stripe checkout session creation failed:', error?.message || error);
     return res.status(500).json({
-      error: error?.message || 'Failed to create checkout session',
-      url: null,
-      details: process.env.NODE_ENV === 'development' ? String(error?.stack || error) : undefined
+      error: 'Failed to create checkout session',
+      url: null
     });
   }
 }

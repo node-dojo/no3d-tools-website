@@ -23,7 +23,11 @@ async function listProducts() {
 
     console.log('\n=== Fetching Polar Products ===\n');
 
-    const organizationId = process.env.POLAR_ORG_ID || 'f0c16049-5959-42c9-8be8-5952c38c7d63';
+    const organizationId = process.env.POLAR_ORG_ID;
+    if (!organizationId) {
+      console.error('ERROR: POLAR_ORG_ID not found in environment');
+      process.exit(1);
+    }
 
     const result = await polar.products.list({
       organizationId: organizationId,

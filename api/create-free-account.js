@@ -13,6 +13,7 @@
 import crypto from 'crypto';
 import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
 import { sendLicenseKeyEmail } from './lib/email.js';
+import { setCorsHeaders } from './lib/cors.js';
 
 function generateLicenseKey() {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -21,14 +22,31 @@ function generateLicenseKey() {
   return `NO3D-${s.slice(0, 4)}-${s.slice(4, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}`;
 }
 
+// Simple per-IP rate limiter (resets on cold start — sufficient for serverless)
+const rateLimit = new Map();
+const WINDOW_MS = 60_000;
+const MAX_REQUESTS = 5;
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateLimit.get(ip);
+  if (!entry || now - entry.start > WINDOW_MS) {
+    rateLimit.set(ip, { start: now, count: 1 });
+    return false;
+  }
+  entry.count++;
+  return entry.count > MAX_REQUESTS;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (setCorsHeaders(req, res, { methods: 'POST, OPTIONS' })) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+  if (isRateLimited(ip)) {
+    return res.status(429).json({ error: 'Too many requests. Try again in a minute.' });
+  }
 
   const body = typeof req.body === 'object' ? req.body : {};
   const email = (body.email || '').trim().toLowerCase();
@@ -51,13 +69,16 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     if (existing?.license_key) {
-      // Already registered — return existing key
+      // Already registered — re-send the key via email, don't expose it in the response
+      try {
+        await sendLicenseKeyEmail({ email, licenseKey: existing.license_key, tier: existing.tier || 'free' });
+      } catch (emailErr) {
+        console.error('Failed to re-send license key email:', emailErr?.message || emailErr);
+      }
       return res.status(200).json({
-        license_key: existing.license_key,
         email,
-        tier: existing.tier || 'free',
         existing: true,
-        download_url: '/api/download-addon'
+        message: 'A license key has been sent to your email.'
       });
     }
 

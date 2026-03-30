@@ -525,12 +525,18 @@
             return null;
         }
 
+        function escText(str) {
+            const el = document.createElement('span');
+            el.textContent = str;
+            return el.innerHTML;
+        }
+
         function showSuccessState(data = {}) {
             const contentContainer = document.getElementById('success-content');
 
             let orderDetailsHtml = '';
             if (data.products && data.products.length > 0) {
-                const productNames = data.products.map((p) => p.name).join(', ');
+                const productNames = data.products.map((p) => escText(p.name)).join(', ');
                 orderDetailsHtml = `
                     <div class="order-details">
                         <div class="order-details-title">ORDER SUMMARY</div>
@@ -541,7 +547,7 @@
                         ${data.customerEmail ? `
                         <div class="order-detail-row">
                             <span class="label">Email:</span>
-                            <span>${data.customerEmail}</span>
+                            <span>${escText(data.customerEmail)}</span>
                         </div>
                         ` : ''}
                         ${data.total != null ? `

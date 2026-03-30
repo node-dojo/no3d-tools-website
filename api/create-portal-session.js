@@ -8,19 +8,34 @@
  */
 
 import Stripe from 'stripe';
+import { setCorsHeaders } from './lib/cors.js';
+
+const rateLimit = new Map();
+const WINDOW_MS = 60_000;
+const MAX_REQUESTS = 5;
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateLimit.get(ip);
+  if (!entry || now - entry.start > WINDOW_MS) {
+    rateLimit.set(ip, { start: now, count: 1 });
+    return false;
+  }
+  entry.count++;
+  return entry.count > MAX_REQUESTS;
+}
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({ ok: true });
-  }
+  if (setCorsHeaders(req, res, { methods: 'POST, OPTIONS' })) return;
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+  if (isRateLimited(ip)) {
+    return res.status(429).json({ error: 'Too many requests. Try again in a minute.', portalUrl: null });
   }
 
   const email =
@@ -72,7 +87,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('create-portal-session:', error?.message || error);
     return res.status(500).json({
-      error: error?.message || 'portal_error',
+      error: 'portal_error',
       portalUrl: null
     });
   }

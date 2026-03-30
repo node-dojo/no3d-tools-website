@@ -13,6 +13,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { setCorsHeaders } from './lib/cors.js'
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
@@ -21,14 +22,7 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
 const USE_SUPABASE = process.env.USE_SUPABASE === 'true'
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
+  if (setCorsHeaders(req, res, { methods: 'GET, OPTIONS' })) return;
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -69,7 +63,7 @@ export default async function handler(req, res) {
     // Build query
     let query = supabase
       .from('products')
-      .select('*', { count: 'exact' })
+      .select('id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, created_at, updated_at', { count: 'exact' })
       .eq('status', 'active')
 
     // Filter by product type
@@ -151,8 +145,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error fetching products:', error)
     res.status(500).json({
-      error: 'Failed to fetch products',
-      message: error.message
+      error: 'Failed to fetch products'
     })
   }
 }

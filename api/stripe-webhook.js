@@ -3,6 +3,21 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { sendLicenseKeyEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail } from './lib/email.js';
 
+// Disable Vercel body parsing so we get the raw bytes for Stripe signature verification
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+async function readRawBody(req) {
+  const chunks = [];
+  for await (const chunk of req) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -320,7 +335,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ received: false, error: 'Missing stripe-signature header' });
   }
 
-  const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  const rawBody = await readRawBody(req);
 
   let event;
   try {

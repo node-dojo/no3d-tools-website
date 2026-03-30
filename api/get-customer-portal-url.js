@@ -8,23 +8,18 @@
  */
 
 import Stripe from 'stripe';
+import { setCorsHeaders } from './lib/cors.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({ ok: true });
-  }
+  if (setCorsHeaders(req, res, { methods: 'GET, OPTIONS' })) return;
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const sessionId = req.query.session_id || req.query.checkout_id;
-  let customerId = req.query.customer_id;
+  let customerId;
 
   if (!process.env.STRIPE_SECRET_KEY) {
     console.error('STRIPE_SECRET_KEY not configured');
@@ -71,8 +66,7 @@ export default async function handler(req, res) {
     console.error('Error creating billing portal session:', error?.message || error);
     return res.status(200).json({
       portalUrl: null,
-      error: error?.message || 'portal_error',
-      note: 'Configure Stripe Customer Portal in the Stripe Dashboard'
+      error: 'portal_error'
     });
   }
 }

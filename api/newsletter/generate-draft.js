@@ -37,6 +37,14 @@ export default async function handler(req, res) {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active')
 
+    // Get articles published in the last 15 days
+    const { data: recentArticles } = await supabase
+      .from('articles')
+      .select('slug, title, published_at')
+      .eq('status', 'published')
+      .gte('published_at', fifteenDaysAgo)
+      .order('published_at', { ascending: false })
+
     // Get total product count
     const { count: productCount } = await supabase
       .from('products')
@@ -64,6 +72,14 @@ export default async function handler(req, res) {
       draft += `\n`
     } else {
       draft += `No product updates this period.\n\n`
+    }
+
+    if (recentArticles && recentArticles.length > 0) {
+      draft += `## Recent Blog Posts\n\n`
+      for (const a of recentArticles) {
+        draft += `- **[${a.title}](https://no3dtools.com/blog/${a.slug})**\n`
+      }
+      draft += `\n`
     }
 
     draft += `## Library Stats\n\n`

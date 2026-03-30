@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NO3D Product Card - Meta Table Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --color-lello: #f0ff00;
+    --color-deep-charcoal: #1A1A1A;
+    --color-stone-gray: #E8E8E8;
+    --color-shadow-black: #0D0D0D;
+    --color-void-black: #000000;
+    --color-paper-white: #FFFFFF;
+    --color-dark-gray: #222222;
+    --color-medium-gray: #303030;
+    --color-beta-blue: #4A90D9;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --font-size-base: 13px;
+    --font-size-small: 11px;
+    --font-size-micro: 9px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-size: var(--font-size-base);
+    background: var(--color-stone-gray);
+    color: var(--color-dark-gray);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    align-items: center;
+  }
+
+  h2.section-label {
+    font-size: var(--font-size-small);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-medium-gray);
+    margin-bottom: 12px;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* =========================================
+     OPTION A: Compact GitHub sidebar style
+     Clean key-value pairs, no borders
+     ========================================= */
+  .meta-table-a {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .meta-row-a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .meta-row-a:last-child {
+    border-bottom: none;
+  }
+
+  .meta-key-a {
+    font-size: var(--font-size-small);
+    font-weight: 400;
+    color: rgba(0,0,0,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .meta-value-a {
+    font-size: var(--font-size-small);
+    font-weight: 400;
+    color: var(--color-void-black);
+    text-align: right;
+  }
+
+  .meta-tags-a {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+
+  .meta-tag-a {
+    font-size: var(--font-size-micro);
+    padding: 2px 6px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 3px;
+    color: var(--color-dark-gray);
+    letter-spacing: 0.02em;
+  }
+
+  .meta-tag-a.highlight {
+    background: var(--color-lello);
+    color: var(--color-void-black);
+  }
+
+  /* =========================================
+     OPTION B: Two-column grid, more structured
+     Feels like a package.json / npm sidebar
+     ========================================= */
+  .meta-table-b {
+    width: 100%;
+    max-width: 520px;
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 0;
+  }
+
+  .meta-cell-b {
+    padding: 5px 0;
+    font-size: var(--font-size-small);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .meta-cell-b.key {
+    font-weight: 400;
+    color: rgba(0,0,0,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: var(--font-size-micro);
+    padding-top: 7px;
+  }
+
+  .meta-cell-b.value {
+    font-weight: 300;
+    color: var(--color-void-black);
+  }
+
+  .meta-tags-b {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .meta-tag-b {
+    font-size: var(--font-size-micro);
+    padding: 1px 5px;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 2px;
+    color: var(--color-dark-gray);
+  }
+
+  .meta-tag-b.type-tag {
+    border-color: var(--color-lello);
+    background: rgba(240, 255, 0, 0.15);
+  }
+
+  /* =========================================
+     OPTION C: Minimal inline / GitHub "About" style
+     Two logical groups separated visually
+     ========================================= */
+  .meta-table-c {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .meta-group-c {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: baseline;
+  }
+
+  .meta-item-c {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    font-size: var(--font-size-small);
+  }
+
+  .meta-item-c .key {
+    color: rgba(0,0,0,0.35);
+    font-size: var(--font-size-micro);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .meta-item-c .val {
+    color: var(--color-void-black);
+    font-weight: 400;
+  }
+
+  .meta-divider-c {
+    width: 100%;
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+  }
+
+  .meta-tags-c {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .meta-tag-c {
+    font-size: var(--font-size-micro);
+    padding: 2px 7px;
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 10px;
+    color: var(--color-dark-gray);
+    letter-spacing: 0.02em;
+  }
+
+  .meta-tag-c:hover {
+    border-color: var(--color-lello);
+    background: rgba(240, 255, 0, 0.1);
+  }
+
+  /* License badge */
+  .license-badge {
+    font-size: var(--font-size-micro);
+    padding: 1px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .license-badge.open {
+    color: #2da44e;
+    border: 1px solid #2da44e40;
+  }
+  .license-badge.commercial {
+    color: var(--color-beta-blue);
+    border: 1px solid rgba(74, 144, 217, 0.3);
+  }
+
+  /* Status badge */
+  .status-badge {
+    font-size: var(--font-size-micro);
+    padding: 1px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .status-badge.stable { color: #2da44e; border: 1px solid #2da44e40; }
+  .status-badge.beta { color: var(--color-beta-blue); border: 1px solid rgba(74,144,217,0.3); }
+
+  /* Simulated context: product header above */
+  .mock-header {
+    width: 100%;
+    max-width: 520px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--color-void-black);
+    margin-bottom: -4px;
+  }
+  .mock-header h1 {
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .mock-header .price {
+    font-size: var(--font-size-small);
+    color: rgba(0,0,0,0.5);
+    margin-top: 2px;
+  }
+  .mock-thin-line {
+    width: 100%;
+    max-width: 520px;
+    height: 1px;
+    background: var(--color-void-black);
+    opacity: 0.2;
+    margin-bottom: -4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== OPTION A ==================== -->
+<h2 class="section-label">Option A — GitHub Sidebar (key: value rows)</h2>
+
+<div class="mock-header">
+  <h1>Dojo Bolt Gen</h1>
+  <div class="price">$7.77</div>
+</div>
+<div class="mock-thin-line"></div>
+
+<div class="meta-table-a">
+  <div class="meta-row-a">
+    <span class="meta-key-a">Type</span>
+    <span class="meta-value-a">Geometry Node</span>
+  </div>
+  <div class="meta-row-a">
+    <span class="meta-key-a">Compatibility</span>
+    <span class="meta-value-a">Blender 5.0+</span>
+  </div>
+  <div class="meta-row-a">
+    <span class="meta-key-a">Version</span>
+    <span class="meta-value-a">v05 <span class="status-badge stable">stable</span></span>
+  </div>
+  <div class="meta-row-a">
+    <span class="meta-key-a">License</span>
+    <span class="meta-value-a"><span class="license-badge commercial">commercial</span></span>
+  </div>
+  <div class="meta-row-a">
+    <span class="meta-key-a">Size</span>
+    <span class="meta-value-a">700 KB</span>
+  </div>
+  <div class="meta-row-a">
+    <span class="meta-key-a">Format</span>
+    <span class="meta-value-a">.blend</span>
+  </div>
+  <div class="meta-row-a">
+    <span class="meta-key-a">Updated</span>
+    <span class="meta-value-a">2025-12-13</span>
+  </div>
+  <div class="meta-row-a">
+    <span class="meta-key-a">Tags</span>
+    <span class="meta-value-a">
+      <span class="meta-tags-a">
+        <span class="meta-tag-a highlight">blender</span>
+        <span class="meta-tag-a">addon</span>
+        <span class="meta-tag-a">3d</span>
+        <span class="meta-tag-a">asset</span>
+      </span>
+    </span>
+  </div>
+</div>
+
+
+<!-- ==================== OPTION B ==================== -->
+<h2 class="section-label">Option B — Grid Layout (npm/crates.io style)</h2>
+
+<div class="mock-header">
+  <h1>Dojo Bolt Gen</h1>
+  <div class="price">$7.77</div>
+</div>
+<div class="mock-thin-line"></div>
+
+<div class="meta-table-b">
+  <div class="meta-cell-b key">Type</div>
+  <div class="meta-cell-b value">Geometry Node</div>
+
+  <div class="meta-cell-b key">Compat</div>
+  <div class="meta-cell-b value">Blender 5.0+</div>
+
+  <div class="meta-cell-b key">Version</div>
+  <div class="meta-cell-b value">v05 <span class="status-badge stable">stable</span></div>
+
+  <div class="meta-cell-b key">License</div>
+  <div class="meta-cell-b value"><span class="license-badge commercial">commercial</span></div>
+
+  <div class="meta-cell-b key">Size</div>
+  <div class="meta-cell-b value">700 KB &middot; .blend</div>
+
+  <div class="meta-cell-b key">Updated</div>
+  <div class="meta-cell-b value">2025-12-13</div>
+
+  <div class="meta-cell-b key">Tags</div>
+  <div class="meta-cell-b value">
+    <span class="meta-tags-b">
+      <span class="meta-tag-b type-tag">blender</span>
+      <span class="meta-tag-b">addon</span>
+      <span class="meta-tag-b">3d</span>
+      <span class="meta-tag-b">asset</span>
+    </span>
+  </div>
+</div>
+
+
+<!-- ==================== OPTION C ==================== -->
+<h2 class="section-label">Option C — Inline Clusters (GitHub "About" style)</h2>
+
+<div class="mock-header">
+  <h1>Dojo Bolt Gen</h1>
+  <div class="price">$7.77</div>
+</div>
+<div class="mock-thin-line"></div>
+
+<div class="meta-table-c">
+  <div class="meta-group-c">
+    <span class="meta-item-c"><span class="key">type</span> <span class="val">Geometry Node</span></span>
+    <span class="meta-item-c"><span class="key">compat</span> <span class="val">Blender 5.0+</span></span>
+    <span class="meta-item-c"><span class="key">ver</span> <span class="val">v05</span> <span class="status-badge stable">stable</span></span>
+  </div>
+
+  <div class="meta-divider-c"></div>
+
+  <div class="meta-group-c">
+    <span class="meta-item-c"><span class="key">license</span> <span class="license-badge commercial">commercial</span></span>
+    <span class="meta-item-c"><span class="key">size</span> <span class="val">700 KB</span></span>
+    <span class="meta-item-c"><span class="key">format</span> <span class="val">.blend</span></span>
+    <span class="meta-item-c"><span class="key">updated</span> <span class="val">2025-12-13</span></span>
+  </div>
+
+  <div class="meta-divider-c"></div>
+
+  <div class="meta-tags-c">
+    <span class="meta-tag-c">blender</span>
+    <span class="meta-tag-c">addon</span>
+    <span class="meta-tag-c">3d</span>
+    <span class="meta-tag-c">asset</span>
+  </div>
+</div>
+
+</body>
+</html>

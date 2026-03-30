@@ -12,19 +12,25 @@
  * @property {'active'|'grace'|'expired'} status
  * @property {string | null} expires_at
  * @property {string | null} grace_until
+ * @property {'free'|'subscriber'} [tier]
  */
 
 /**
  * @param {SubscriptionRow | null} row
  * @param {Date} [now]
- * @returns {{ allowed: boolean, effectiveStatus: 'active'|'grace'|'expired'|'invalid', expires_at: string | null, grace_until: string | null }}
+ * @returns {{ allowed: boolean, effectiveStatus: 'active'|'grace'|'expired'|'free'|'invalid', expires_at: string | null, grace_until: string | null }}
  */
 export function computeAccessState(row, now = new Date()) {
   if (!row) {
     return { allowed: false, effectiveStatus: 'invalid', expires_at: null, grace_until: null };
   }
 
-  const { status, expires_at, grace_until } = row;
+  const { status, expires_at, grace_until, tier } = row;
+
+  // Free tier: valid license but no subscriber asset access
+  if (tier === 'free') {
+    return { allowed: false, effectiveStatus: 'free', expires_at: null, grace_until: null };
+  }
 
   if (status === 'active') {
     return {
