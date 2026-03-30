@@ -28,7 +28,7 @@ function escapeText(str) {
 let products = {};
 let currentProduct = null;
 let productDataByType = {};
-let activeProductType = 'tools';
+let activeProductType = null;
 let expandedProductGroups = new Set();
 let activeToolFilters = new Set(['all']);
 const purchasedProducts = new Set(); // To track purchased products
@@ -64,7 +64,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeSidebarEventListeners();
     initializeSidebarScrollbar();
     updateHeaderLogo('tools');
-    expandProductType('tools');
     renderHomeGrid();
     initializeDeepLinks();
     updateViewState(false); // Start with home grid visible
@@ -225,11 +224,11 @@ function renderSidebar() {
   sidebarContent.innerHTML = '';
   
   const productTypes = [
+    { key: 'docs', label: 'THE WELL BLOG' },
     { key: 'tools', label: 'TOOLS' },
     { key: 'tutorials', label: 'TUTORIALS' },
     { key: 'prints', label: 'PRINTS' },
-    { key: 'apps', label: 'APPS' },
-    { key: 'docs', label: 'DOCS/BLOG' }
+    { key: 'apps', label: 'APPS' }
   ];
   
   productTypes.forEach(type => {
@@ -382,6 +381,20 @@ async function selectProduct(productId) {
   }
   if (products[productId].releaseStatus === 'coming_soon') return;
   currentProduct = productId;
+
+  // Auto-expand the sidebar section containing this product
+  const productType = products[productId].productType || 'tools';
+  const section = document.querySelector(`.product-type[data-type="${productType}"]`);
+  if (section && !section.classList.contains('expanded')) {
+    section.classList.add('expanded');
+    const carrot = section.querySelector('.carrot');
+    if (carrot) {
+      carrot.classList.add('expanded');
+      carrot.classList.remove('collapsed');
+      carrot.textContent = '▼';
+    }
+  }
+
   await updateProductDisplay(productId);
   updateActiveStates(productId);
   updateViewState(true); // Show product card
