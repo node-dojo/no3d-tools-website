@@ -399,8 +399,8 @@
             <!-- ── PRICING ── -->
             <section class="pricing-section">
                 <h2 class="pricing-h2">The Whole Library. One Price.</h2>
-                <div class="price-amount" id="monthly-price">$11.11</div>
-                <div class="price-period">per month</div>
+                <div class="price-amount" id="monthly-price">&nbsp;</div>
+                <div class="price-period" id="price-period">&nbsp;</div>
                 <div class="price-count" id="price-count"><span id="product-count-number">--</span>+ tools · always up to date</div>
                 <button class="subscribe-cta" id="subscribe-button" onclick="handleSubscribe(event)">Subscribe Now →</button>
                 <p class="pricing-footnote">Cancel anytime &nbsp;·&nbsp; No hidden fees &nbsp;·&nbsp; Full access while subscribed</p>
@@ -548,6 +548,24 @@
             updateProductCount(50);
         }
 
+        // ─── STRIPE PRICE ───
+        async function fetchPrice() {
+            try {
+                const response = await fetch('/api/get-subscription-price');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('monthly-price').textContent = data.formatted;
+                    document.getElementById('price-period').textContent = `per ${data.interval}`;
+                    return;
+                }
+            } catch (error) {
+                console.error('Error fetching price:', error);
+            }
+            // Fallback
+            document.getElementById('monthly-price').textContent = '$11.11';
+            document.getElementById('price-period').textContent = 'per month';
+        }
+
         // ─── STRIPE CHECKOUT ───
         async function handleSubscribe(event) {
             event.preventDefault();
@@ -587,6 +605,7 @@
         // ─── INIT ───
         document.addEventListener('DOMContentLoaded', () => {
             loadGlobalHeader();
+            fetchPrice();
             fetchProductCount();
         });
     </script>
