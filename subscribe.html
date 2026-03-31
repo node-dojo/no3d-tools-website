@@ -3,531 +3,577 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscribe - NO3D Tools</title>
+    <title>Subscribe — NO3D Tools</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Subscribe Page Styles - Following NO3D Tools Design System */
-        body {
-            background-color: var(--color-stone-gray);
-        }
-        
-        .site-header .logo img {
-            height: 43px;
-            width: 274px;
-            object-fit: contain;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-            padding: 6px;
-            margin-top: 0px;
-            margin-bottom: 0px;
-            display: block;
-            color: rgba(0, 0, 0, 1);
-            font-family: "Visitor TT1 BRK";
-            border-color: rgba(0, 0, 0, 0);
-            border-image: none;
-        }
-        
-        .subscribe-container {
-            max-width: var(--content-max-width);
-            margin: var(--space-xlarge) auto;
-            padding: var(--space-large);
-        }
-        
-        .subscribe-header {
-            text-align: center;
-            margin-bottom: var(--space-xlarge);
-        }
-        
-        .subscribe-header h1 {
-            font-family: var(--font-visitor);
-            font-size: var(--font-size-h1);
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--color-void-black);
-            letter-spacing: var(--letter-spacing-normal);
-            margin-bottom: var(--space-medium);
-            line-height: 1.0;
-        }
-        
-        .subscribe-header p {
-            font-family: var(--font-mono);
-            font-size: var(--text-body-size);
-            color: var(--color-medium-gray);
-            line-height: var(--text-body-line-height);
-            letter-spacing: var(--text-body-letter-spacing);
-            opacity: var(--text-body-opacity);
+        /* ─── SUBSCRIBE PAGE OVERRIDES ─── */
+
+        /* Layout */
+        .sub-page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 60px 24px 100px;
         }
 
-        .top-subscribe-wrap {
-            display: flex;
-            justify-content: center;
-            margin-top: var(--space-medium);
-            margin-bottom: var(--space-large);
+        /* ─── HERO ─── */
+        .hero-section {
+            padding: 80px 0 60px;
+            margin-bottom: 0;
         }
-        
-        .product-count {
-            font-family: var(--font-mono);
-            font-size: var(--text-body-size);
-            color: var(--color-medium-gray);
-            line-height: var(--text-body-line-height);
-            letter-spacing: var(--text-body-letter-spacing);
-            opacity: var(--text-body-opacity);
-            margin-top: var(--space-medium);
-        }
-        
-        .benefits-section {
-            background: var(--color-paper-white);
+
+        .hero-video {
+            width: 100%;
+            max-width: 960px;
+            display: block;
+            margin: 0 auto;
             border: 1px solid var(--color-void-black);
-            border-radius: 0;
-            padding: var(--space-large);
-            margin-bottom: var(--space-large);
         }
-        
-        .benefits-section h2 {
+
+        .hero-eyebrow {
+            display: inline-block;
+            background-color: var(--color-lello);
+            color: var(--color-medium-gray);
             font-family: var(--font-visitor);
-            font-size: var(--font-size-h2);
-            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 5px 11px;
+            margin-bottom: 28px;
+        }
+
+        .hero-h1 {
+            font-family: var(--font-visitor);
+            font-size: clamp(28px, 5vw, 46px);
+            line-height: 1.0;
             text-transform: uppercase;
             color: var(--color-void-black);
             letter-spacing: var(--letter-spacing-normal);
-            margin-top: 10px;
-            margin-bottom: 10px;
-            padding-top: 0;
-            padding-bottom: 0;
-            line-height: 1.0;
+            margin-bottom: 24px;
+            max-width: 700px;
         }
-        
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--space-medium);
-            margin-top: var(--space-medium);
+
+        .hero-sub {
+            font-family: var(--font-mono);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-base);
+            color: var(--color-medium-gray);
+            line-height: 1.6;
+            max-width: 580px;
+            margin-bottom: 24px;
         }
-        
-        .benefit-card {
-            padding: var(--space-medium);
-            background: var(--color-stone-gray);
+
+        .hero-count {
+            font-family: var(--font-mono);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-base);
+            color: var(--color-medium-gray);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* ─── STORY SECTION ─── */
+        .story-section {
             border: 1px solid var(--color-void-black);
-            border-radius: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-small);
+            background-color: transparent;
+            padding: 40px;
+            margin: 48px 0;
         }
-        
-        .benefit-card h3 {
+
+        .section-h2 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            letter-spacing: var(--letter-spacing-normal);
+            line-height: 1.0;
+            margin-bottom: 28px;
+        }
+
+        .story-body {
+            font-family: var(--font-mono);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-base);
+            color: var(--color-medium-gray);
+            line-height: 1.6;
+            max-width: 720px;
+        }
+
+        .story-body p {
+            margin-bottom: 18px;
+        }
+
+        .story-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .pull-quote {
+            border-left: 3px solid var(--color-lello);
+            padding: 16px 24px;
+            margin: 28px 0;
+            background-color: var(--color-paper-white);
+        }
+
+        .pull-quote p {
+            font-family: var(--font-mono);
+            font-weight: 400;
+            font-size: 13px;
+            color: var(--color-void-black);
+            line-height: 1.7;
+            margin: 0;
+            font-style: italic;
+        }
+
+        .inline-code {
+            display: inline-block;
+            background-color: var(--color-paper-white);
+            border: 1px solid var(--color-void-black);
+            color: var(--color-dark-gray);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            padding: 3px 8px;
+        }
+
+        /* ─── HOW IT WORKS ─── */
+        .how-section {
+            margin: 48px 0;
+        }
+
+        .steps-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            margin-top: 28px;
+            border: 1px solid var(--color-void-black);
+            background-color: var(--color-paper-white);
+        }
+
+        .step-card {
+            padding: 28px 24px;
+            border-right: 1px solid var(--color-void-black);
+        }
+
+        .step-card:last-child {
+            border-right: none;
+        }
+
+        .step-number {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            color: var(--color-void-black);
+            line-height: 1.0;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .step-title {
             font-family: var(--font-visitor);
             font-size: var(--font-size-h3);
-            font-weight: 700;
             text-transform: uppercase;
             color: var(--color-void-black);
-            letter-spacing: var(--letter-spacing-normal);
-            margin: 0;
             line-height: 1.0;
+            margin-bottom: 10px;
+            letter-spacing: var(--letter-spacing-normal);
         }
-        
-        .benefit-card p {
+
+        .step-body {
             font-family: var(--font-mono);
-            font-size: var(--text-body-size);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-base);
             color: var(--color-medium-gray);
-            line-height: var(--text-body-line-height);
-            letter-spacing: var(--text-body-letter-spacing);
-            opacity: var(--text-body-opacity);
-            margin: 0;
+            line-height: 1.6;
         }
-        
-        .pricing-section {
-            background: var(--color-paper-white);
+
+        /* ─── LIBRARY GRID ─── */
+        .library-section {
+            margin: 48px 0;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0;
+            margin-top: 28px;
             border: 1px solid var(--color-void-black);
-            border-radius: 0;
-            padding: var(--space-large);
-            margin-bottom: var(--space-large);
+            background-color: var(--color-paper-white);
+        }
+
+        .benefit-card {
+            padding: 28px 24px;
+            border-right: 1px solid var(--color-void-black);
+            border-bottom: 1px solid var(--color-void-black);
+        }
+
+        .benefit-card:nth-child(2n) {
+            border-right: none;
+        }
+
+        .benefit-card:nth-child(5),
+        .benefit-card:nth-child(6) {
+            border-bottom: none;
+        }
+
+        .benefit-card-title {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            text-transform: uppercase;
+            color: var(--color-void-black);
+            line-height: 1.0;
+            margin-bottom: 10px;
+            letter-spacing: var(--letter-spacing-normal);
+        }
+
+        .benefit-card-body {
+            font-family: var(--font-mono);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-base);
+            color: var(--color-medium-gray);
+            line-height: 1.6;
+        }
+
+        /* ─── PRICING ─── */
+        .pricing-section {
+            border: 1px solid var(--color-void-black);
+            background-color: var(--color-paper-white);
+            padding: 52px 40px;
+            margin: 48px 0;
             text-align: center;
         }
-        
-        .pricing-section h2 {
+
+        .pricing-h2 {
             font-family: var(--font-visitor);
             font-size: var(--font-size-h2);
-            font-weight: 700;
             text-transform: uppercase;
             color: var(--color-void-black);
             letter-spacing: var(--letter-spacing-normal);
-            margin-bottom: var(--space-medium);
             line-height: 1.0;
+            margin-bottom: 36px;
         }
-        
-        .pricing-amount {
+
+        .price-amount {
             font-family: var(--font-visitor);
-            font-size: var(--font-size-h1);
-            font-weight: 700;
+            font-size: clamp(48px, 8vw, 72px);
             color: var(--color-void-black);
-            letter-spacing: var(--letter-spacing-normal);
-            margin: var(--space-medium) 0;
             line-height: 1.0;
+            letter-spacing: var(--letter-spacing-normal);
         }
-        
-        .pricing-period {
+
+        .price-period {
             font-family: var(--font-mono);
-            font-size: var(--text-body-size);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-base);
             color: var(--color-medium-gray);
-            line-height: var(--text-body-line-height);
-            letter-spacing: var(--text-body-letter-spacing);
-            opacity: var(--text-body-opacity);
-            margin-bottom: var(--space-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 8px;
+            margin-bottom: 20px;
         }
-        
-        .product-count-detail {
+
+        .price-count {
             font-family: var(--font-mono);
-            font-size: var(--text-body-size);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-base);
             color: var(--color-medium-gray);
-            line-height: var(--text-body-line-height);
-            letter-spacing: var(--text-body-letter-spacing);
-            opacity: var(--text-body-opacity);
-            margin: var(--space-medium) 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 36px;
         }
-        
-        .subscribe-button {
+
+        .subscribe-cta {
+            display: inline-block;
             background-color: var(--color-lello);
             color: var(--color-void-black);
-            border: 1px solid var(--color-void-black);
-            padding: var(--space-small) var(--space-large);
             font-family: var(--font-visitor);
             font-size: var(--font-size-h2);
-            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: var(--letter-spacing-normal);
+            letter-spacing: 0.04em;
+            padding: 16px 48px;
+            text-decoration: none;
+            border: 1px solid var(--color-void-black);
             cursor: pointer;
             transition: all var(--transition-normal);
-            border-radius: 0;
-            display: inline-block;
-            margin: var(--space-medium) 0;
-            text-decoration: none;
             line-height: 1.0;
         }
-        
-        .subscribe-button:hover:not(:disabled) {
-            background-color: var(--color-lello-light);
+
+        .subscribe-cta:hover:not(:disabled) {
+            background-color: #d9e600;
             transform: translateY(-2px);
             box-shadow: var(--shadow-lello-glow);
         }
-        
-        .subscribe-button:active:not(:disabled) {
-            background-color: #d4e600;
+
+        .subscribe-cta:active:not(:disabled) {
+            background-color: #c8d400;
             transform: translateY(0);
         }
-        
-        .subscribe-button:disabled {
-            background: var(--color-stone-gray);
-            color: var(--color-medium-gray);
+
+        .subscribe-cta:disabled,
+        .subscribe-cta.loading {
+            opacity: 0.4;
             cursor: not-allowed;
-            opacity: 0.5;
+            pointer-events: none;
         }
-        
-        .subscribe-footer-note {
+
+        .pricing-footnote {
             font-family: var(--font-mono);
-            font-size: var(--text-body-size);
+            font-weight: var(--font-mono-weight);
+            font-size: var(--font-size-small);
             color: var(--color-medium-gray);
-            line-height: var(--text-body-line-height);
-            letter-spacing: var(--text-body-letter-spacing);
-            opacity: var(--text-body-opacity);
-            margin-top: var(--space-medium);
-        }
-        
-        .action-link {
-            color: var(--color-void-black);
-            text-decoration: none;
-            padding: var(--space-tiny) var(--space-medium);
-            border: 1px solid var(--color-void-black);
-            border-radius: 0;
-            transition: all var(--transition-normal);
-            font-family: var(--font-visitor);
-            font-size: var(--font-size-h3);
-            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: var(--letter-spacing-normal);
-            background: var(--color-paper-white);
-        }
-        
-        .action-link:hover {
-            background: var(--color-lello);
-            color: var(--color-void-black);
-            transform: translateY(-1px);
+            letter-spacing: 0.06em;
+            margin-top: 20px;
         }
 
-        @media (max-width: 768px) {
-            html,
-            body {
-                min-height: 100%;
-                height: auto;
-                overflow-x: hidden;
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch;
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: transparent; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-lello); }
+        html:hover ::-webkit-scrollbar-thumb { background: var(--color-void-black); }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 700px) {
+            .sub-page {
+                padding: 40px 16px 80px;
             }
 
-            .site-container {
-                min-height: auto;
-                overflow: visible;
-                overscroll-behavior: auto;
-                padding-top: 88px;
-                padding-bottom: 90px;
+            .story-section {
+                padding: 28px 20px;
             }
 
-            .subscribe-container {
-                margin-top: var(--space-medium);
-                padding: var(--space-medium);
+            .steps-row {
+                grid-template-columns: 1fr;
             }
 
-            .top-subscribe-wrap {
-                position: sticky;
-                top: 80px;
-                z-index: 150;
-                background: var(--color-stone-gray);
-                padding: var(--space-tiny) 0;
+            .step-card {
+                border-right: none;
+                border-bottom: 1px solid var(--color-void-black);
             }
 
-            .top-subscribe-wrap .subscribe-button {
-                width: 100%;
-                max-width: 320px;
-                text-align: center;
-                font-size: var(--font-size-h3);
-                margin: 0;
+            .step-card:last-child {
+                border-bottom: none;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .benefit-card {
+                border-right: none;
+            }
+
+            .benefit-card:nth-child(5) {
+                border-bottom: 1px solid var(--color-void-black);
+            }
+
+            .pricing-section {
+                padding: 36px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <header class="site-header">
-        <div class="header-left">
-            <a href="index.html" class="logo">
-                <img src="assets/light/no3d-tools.png" alt="NO3D Tools" class="logo">
-            </a>
-        </div>
-        <div class="header-icons">
-            <a href="/?download=true" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Download Addon</a>
-            <a href="index.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Library</a>
-            <a href="account.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Account</a>
-        </div>
-    </header>
+
+    <div id="global-header-slot"></div>
 
     <main class="site-container">
-        <div class="subscribe-container">
-            <div class="subscribe-header">
-                <h1>Get Full Access</h1>
-                <div class="pricing-amount" id="monthly-price">--</div>
-                <div class="pricing-period" id="pricing-period">per month</div>
-                <p>Unlock the entire library of premium Blender assets, nodes, and tools</p>
-                <div class="product-count" id="product-count">
-                    Loading product count...
-                </div>
-                <p class="subscribe-footer-note">
-                    Cancel anytime • No hidden fees • Full access while subscribed
-                </p>
-                <div class="top-subscribe-wrap">
-                    <a href="#" class="subscribe-button" id="subscribe-button" onclick="handleSubscribe(event); return false;">
-                        Subscribe Now
-                    </a>
-                </div>
-            </div>
+        <div class="sub-page">
 
-            <div class="benefits-section">
-                <h2>What You Get</h2>
+            <!-- ── PRICING ── -->
+            <section class="pricing-section">
+                <h2 class="pricing-h2">The Whole Library. One Price.</h2>
+                <div class="price-amount" id="monthly-price">$7.77</div>
+                <div class="price-period">per month</div>
+                <div class="price-count" id="price-count"><span id="product-count-number">--</span>+ tools · always up to date</div>
+                <button class="subscribe-cta" id="subscribe-button" onclick="handleSubscribe(event)">Subscribe Now →</button>
+                <p class="pricing-footnote">Cancel anytime &nbsp;·&nbsp; No hidden fees &nbsp;·&nbsp; Full access while subscribed</p>
+            </section>
+
+            <!-- ── HERO ── -->
+            <section class="hero-section">
+                <span class="hero-eyebrow">NO3D Tools · Blender Geo Nodes Library</span>
+                <h1 class="hero-h1">A Digital Twin Of My Workflow.<br>Inside Your Blender.</h1>
+                <p class="hero-sub">The tools I use daily — auto-synced into your Blender Asset Browser. No re-downloading. No zip files. No version chaos.</p>
+                <div class="hero-count" id="hero-count">Loading tool count...</div>
+            </section>
+
+            <video class="hero-video" autoplay loop muted playsinline>
+                <source src="assets/subscribe-hero.mp4" type="video/mp4">
+            </video>
+
+            <!-- ── STORY ── -->
+            <section class="story-section">
+                <h2 class="section-h2">Why I Built This</h2>
+                <div class="story-body">
+                    <p>I got really tired of the fact that creating really useful tools was often easier than saving them.</p>
+                    <p>It's way too hard to store and share the digital tools we build during actual work. I'm constantly trying to solve that problem. This isn't the final solution — but it's a damn good patch in the meantime.</p>
+                    <p>After spending an absurd amount of time building in Blender Geometry Nodes, at some point my tools got good enough that I needed a real system. Not a folder of .blend files scattered across Downloads. Not a Gumroad page that breaks my flow every time I need an update. Something that actually behaved like a professional, always-within-reach, perfectly-synced palette of tools.</p>
+                    <p>I couldn't find one. So I built one.</p>
+
+                    <div class="pull-quote">
+                        <p>What you're subscribing to isn't a static library. It's a live duplicate of the tools I actually use — the same node groups, the same parametric systems, the same print-ready geometry generators that run in my studio. When I improve something, your copy improves. When I build something new for a project and add it to the library, you get it automatically.</p>
+                    </div>
+
+                    <p>Most of the time you shouldn't even know this is happening. All you should really notice is that every once in a while, your NO3D Tools asset library is gradually getting bigger, more polished, and more packed with info.</p>
+                    <p>Once the add-on is installed in your Blender environment, you'll never need to visit my website to download an update.</p>
+                    <p>No <span class="inline-code">dojo_bool_v2_FINAL_use_this_one.blend</span> in your Downloads folder.</p>
+                </div>
+            </section>
+
+            <!-- ── HOW IT WORKS ── -->
+            <section class="how-section">
+                <h2 class="section-h2">How The Sync Works</h2>
+                <div class="steps-row">
+                    <div class="step-card">
+                        <span class="step-number">01</span>
+                        <div class="step-title">Install Once</div>
+                        <div class="step-body">Install the NO3D Tools addon in Blender. Point it at your subscription. Done. You never touch it again.</div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-number">02</span>
+                        <div class="step-title">I Ship A Tool</div>
+                        <div class="step-body">When I finish a tool, it goes into the pipeline — metadata synced, .blend file pushed to CDN, version flag updated on the server.</div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-number">03</span>
+                        <div class="step-title">It Appears In Yours</div>
+                        <div class="step-body">Your addon checks on Blender startup. If something's new, it pulls it down and registers it in your Asset Browser automatically.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── WHAT'S IN THE LIBRARY ── -->
+            <section class="library-section">
+                <h2 class="section-h2">What's In The Library</h2>
                 <div class="benefits-grid">
                     <div class="benefit-card">
-                        <h3>Complete Library Access</h3>
-                        <p>Access all current and future products in the NO3D Tools library. New products are automatically included.</p>
+                        <div class="benefit-card-title"><span id="tool-count-inline">--</span>+ Tools. Growing Monthly.</div>
+                        <div class="benefit-card-body">Boolean management, squircle generators, parametric bracket systems, print bed preview, calipers, and more. Real tools built for real work.</div>
                     </div>
                     <div class="benefit-card">
-                        <h3>Regular Updates</h3>
-                        <p>Get notified when new products are added. Download updated library anytime with all new content.</p>
+                        <div class="benefit-card-title">Built For 3D Printing</div>
+                        <div class="benefit-card-body">Clean meshes. Manifold geometry. No ngons. Every tool outputs print-ready results for FDM and resin workflows. Not decorative nodes. Functional ones.</div>
                     </div>
                     <div class="benefit-card">
-                        <h3>Premium Quality</h3>
-                        <p>High-quality Blender assets, shader nodes, geometry nodes, and utility tools crafted by professionals.</p>
+                        <div class="benefit-card-title">Auto-Synced Into Blender</div>
+                        <div class="benefit-card-body">Install the addon once. Every tool populates your Asset Browser automatically. Updates appear without you touching a thing.</div>
                     </div>
                     <div class="benefit-card">
-                        <h3>Priority Support</h3>
-                        <p>Get priority support for any questions or issues. We're here to help you succeed.</p>
+                        <div class="benefit-card-title">One Workshop, Not A Marketplace</div>
+                        <div class="benefit-card-body">Every tool is designed and built by one person. $38K in sales. 200K followers. You're getting access to the whole workshop.</div>
                     </div>
                     <div class="benefit-card">
-                        <h3>Cancel Anytime</h3>
-                        <p>No long-term commitment. Cancel your subscription anytime, access continues until period ends.</p>
+                        <div class="benefit-card-title">The Whole Library, Forever</div>
+                        <div class="benefit-card-body">Every past tool, every future release — all included. The library grows. Your price doesn't.</div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-card-title">Cancel Anytime</div>
+                        <div class="benefit-card-body">No commitment. Cancel anytime and access continues until the period ends. No friction, no guilt trip.</div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="tools-list-section" id="tools-list-section" style="margin-top: var(--space-large);">
-                <h2 style="font-family: var(--font-visitor); font-size: var(--font-size-h2); text-transform: uppercase; margin-bottom: var(--space-medium); letter-spacing: var(--letter-spacing-wide);">What's Included</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; max-width: 680px;">
-                    <ul id="tools-list-col1" style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: var(--font-size-base); line-height: 2; letter-spacing: var(--letter-spacing-normal); color: var(--color-dark-gray);"></ul>
-                    <ul id="tools-list-col2" style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: var(--font-size-base); line-height: 2; letter-spacing: var(--letter-spacing-normal); color: var(--color-dark-gray);"></ul>
-                </div>
-                <p id="tools-list-upcoming" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-medium-gray); margin-top: var(--space-medium); letter-spacing: var(--letter-spacing-normal);"></p>
-            </div>
-
-            <p class="product-count-detail" id="product-count-detail" style="text-align: center; margin-top: var(--space-large);">Access to <span id="product-count-number">...</span> products and growing</p>
         </div>
     </main>
 
     <footer class="footer">
-        <p class="footer-text">&copy; 2026 NO3D Tools. All rights reserved.</p>
+        <span class="footer-text">&copy; 2026 NO3D Tools</span>
+        <img src="assets/stone logo.png" alt="Stone Logo" class="footer-logo">
     </footer>
 
     <script>
-        // Fetch product count from our own API
-        function renderProductCount(count) {
-            const safeCount = Number.isFinite(count) && count > 0 ? Math.floor(count) : null;
-            const productCountEl = document.getElementById('product-count');
-            const productCountNumber = document.getElementById('product-count-number');
+        // ─── GLOBAL HEADER ───
+        async function loadGlobalHeader() {
+            const slot = document.getElementById('global-header-slot');
+            if (!slot) return;
 
-            if (!safeCount) {
-                productCountEl.textContent = 'Products available';
-                productCountNumber.textContent = 'all';
-                return;
+            try {
+                const response = await fetch('index.html');
+                if (!response.ok) return;
+
+                const html = await response.text();
+                const parsed = new DOMParser().parseFromString(html, 'text/html');
+                const sharedHeader = parsed.querySelector('header.site-header');
+                if (sharedHeader) {
+                    slot.innerHTML = sharedHeader.outerHTML;
+                }
+            } catch (error) {
+                console.error('Error loading global header:', error);
             }
-
-            const noun = safeCount === 1 ? 'product' : 'products';
-            productCountEl.textContent = `${safeCount} ${noun} available`;
-            productCountNumber.textContent = `${safeCount}`;
         }
 
+        // ─── PRODUCT COUNT (Supabase via API) ───
         async function fetchProductCount() {
             try {
-                // Preferred source: paginated products endpoint exposes total count.
-                const pagedResponse = await fetch('/api/products?limit=1&page=1');
-                if (pagedResponse.ok) {
-                    const pagedData = await pagedResponse.json();
-                    const total = pagedData?.pagination?.total;
-                    if (Number.isFinite(total) && total >= 0) {
-                        renderProductCount(total);
+                const response = await fetch('/api/get-all-products');
+                if (response.ok) {
+                    const products = await response.json();
+                    const count = Array.isArray(products) ? products.length : 0;
+                    if (count > 0) {
+                        updateProductCount(count);
                         return;
                     }
                 }
-
-                // Fallback for older environments: count from get-all-products.
-                const fallbackResponse = await fetch('/api/get-all-products');
-                const fallbackData = await fallbackResponse.json();
-                if (Array.isArray(fallbackData)) {
-                    renderProductCount(fallbackData.length);
-                    return;
-                }
-
-                renderProductCount(null);
-            } catch (err) {
-                console.error('Error fetching product count:', err);
-                renderProductCount(null);
+                setFallbackCount();
+            } catch (error) {
+                console.error('Error fetching product count:', error);
+                setFallbackCount();
             }
         }
 
-        async function fetchSubscriptionPrice() {
-            const priceEl = document.getElementById('monthly-price');
-            const periodEl = document.getElementById('pricing-period');
-            try {
-                const response = await fetch('/api/subscription-price');
-                if (!response.ok) throw new Error('Failed to load subscription price');
-                const data = await response.json();
-
-                if (data.formattedAmount) {
-                    priceEl.textContent = data.formattedAmount;
-                }
-
-                if (data.interval) {
-                    periodEl.textContent = `per ${data.interval}`;
-                }
-            } catch (err) {
-                console.error('Error fetching subscription price:', err);
-                // Keep neutral fallback text to avoid stale hardcoded pricing.
-                priceEl.textContent = 'See checkout';
-                periodEl.textContent = '';
-            }
+        function updateProductCount(count) {
+            document.getElementById('hero-count').textContent = `${count}+ tools and growing`;
+            document.getElementById('product-count-number').textContent = `${count}`;
+            document.getElementById('tool-count-inline').textContent = `${count}`;
         }
 
+        function setFallbackCount() {
+            updateProductCount(50);
+        }
+
+        // ─── STRIPE CHECKOUT ───
         async function handleSubscribe(event) {
             event.preventDefault();
             const button = document.getElementById('subscribe-button');
-            if (button.classList.contains('loading')) return;
+
             button.classList.add('loading');
-            button.textContent = 'LOADING...';
+            button.textContent = 'Loading...';
+
             try {
                 const response = await fetch('/api/create-checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({})
                 });
-                const data = await response.json();
-                const url = data.checkout_url || data.url;
-                if (response.ok && url) {
-                    window.location.href = url;
-                    return;
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.error || `Server error (${response.status})`);
                 }
-                alert('Subscription checkout is not available. Please try again later.');
-            } catch (e) {
-                alert('Subscription checkout is not available. Please try again later.');
-            } finally {
+
+                const data = await response.json();
+                const checkoutUrl = data.checkout_url || data.url;
+
+                if (!checkoutUrl) {
+                    throw new Error('No checkout URL returned');
+                }
+
+                window.location.href = checkoutUrl;
+            } catch (error) {
+                console.error('Checkout error:', error);
                 button.classList.remove('loading');
-                button.textContent = 'Subscribe Now';
+                button.textContent = 'Subscribe Now →';
+                alert('Unable to start checkout. Please try again or contact support.');
             }
         }
 
-        async function fetchToolsList() {
-            try {
-                const response = await fetch('/api/get-all-products');
-                if (!response.ok) return;
-                const products = await response.json();
-                if (!Array.isArray(products)) return;
-
-                const sorted = products
-                    .map(p => p.title)
-                    .sort((a, b) => a.localeCompare(b));
-
-                const mid = Math.ceil(sorted.length / 2);
-                const col1 = document.getElementById('tools-list-col1');
-                const col2 = document.getElementById('tools-list-col2');
-
-                sorted.slice(0, mid).forEach(name => {
-                    const li = document.createElement('li');
-                    li.textContent = name;
-                    col1.appendChild(li);
-                });
-                sorted.slice(mid).forEach(name => {
-                    const li = document.createElement('li');
-                    li.textContent = name;
-                    col2.appendChild(li);
-                });
-
-                const upcoming = document.getElementById('tools-list-upcoming');
-                upcoming.textContent = `${sorted.length} tools available now — new tools added regularly`;
-            } catch (err) {
-                console.error('Error fetching tools list:', err);
-            }
-        }
-
+        // ─── INIT ───
         document.addEventListener('DOMContentLoaded', () => {
+            loadGlobalHeader();
             fetchProductCount();
-            fetchSubscriptionPrice();
-            fetchToolsList();
         });
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
