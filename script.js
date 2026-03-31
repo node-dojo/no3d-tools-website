@@ -24,6 +24,27 @@ function escapeText(str) {
   return el.innerHTML;
 }
 
+// ============================================================================
+// ANALYTICS — lightweight event tracking to Supabase
+// ============================================================================
+const _sessionId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+
+function track(event, properties) {
+  const payload = {
+    event,
+    properties: properties || {},
+    page: window.location.pathname + window.location.search,
+    referrer: document.referrer || null,
+    session_id: _sessionId,
+  };
+  // Fire and forget — never block UI
+  fetch('/api/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
+
 // Global state variables
 let products = {};
 let currentProduct = null;
@@ -54,6 +75,7 @@ const buyNowButton = document.getElementById('buy-now-button');
 // ============================================================================ 
 
 document.addEventListener('DOMContentLoaded', async function() {
+  track('page_view');
   // Don't hide loading screen immediately - wait for data to load
   try {
     await fetchUnifiedProducts();
@@ -145,12 +167,13 @@ async function fetchUnifiedProducts() {
       console.warn('⚠️ No products returned from /api/get-all-products');
     }
 
-    // Fetch blog articles and merge into docs category
+    // Fetch blog articles (exclude newsletters) and merge into docs category
     try {
       const articlesRes = await fetch('/api/articles?limit=50');
       if (articlesRes.ok) {
         const articles = await articlesRes.json();
         for (const a of articles) {
+          if ((a.tags || []).includes('newsletter')) continue;
           const id = 'blog-' + a.slug;
           products[id] = {
             id,
@@ -381,6 +404,7 @@ async function selectProduct(productId) {
   }
   if (products[productId].releaseStatus === 'coming_soon') return;
   currentProduct = productId;
+  track('product_view', { product_handle: products[productId].handle, product_name: products[productId].name });
 
   // Auto-expand the sidebar section containing this product
   const productType = products[productId].productType || 'tools';
@@ -468,6 +492,7 @@ async function updateProductDisplay(productId) {
     buyNowButton.onclick = async (e) => {
       e.preventDefault();
       if (buyNowButton.classList.contains('loading')) return;
+      track('checkout_start', { product_handle: products[currentProduct]?.handle });
       buyNowButton.classList.add('loading');
       buyNowButton.textContent = 'LOADING...';
       try {
@@ -635,6 +660,7 @@ function initFeedbackModal() {
   // Send via email
   document.getElementById('feedback-send-email').addEventListener('click', () => {
     const { subjectLine, body } = buildMessage();
+    track('feedback_send', { method: 'email', type: selectedType, product_handle: products[currentProduct]?.handle });
     window.location.href = `mailto:Joe@welltarot.com?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(body)}`;
     modal.classList.remove('active');
   });
@@ -642,6 +668,7 @@ function initFeedbackModal() {
   // Copy to clipboard
   document.getElementById('feedback-copy-clipboard').addEventListener('click', async () => {
     const { subjectLine, body } = buildMessage();
+    track('feedback_send', { method: 'clipboard', type: selectedType, product_handle: products[currentProduct]?.handle });
     const fullText = `To: Joe@welltarot.com\nSubject: ${subjectLine}\n\n${body}`;
     const status = document.getElementById('feedback-status');
 
@@ -668,6 +695,7 @@ function initFeedbackModal() {
 
   // Open modal function
   window.openFeedbackModal = function(type) {
+    track('feedback_open', { type: type || 'bug', product_handle: products[currentProduct]?.handle });
     selectedType = type || 'bug';
     document.querySelectorAll('#feedback-type-tags .feedback-tag-option').forEach(b => {
       b.classList.toggle('selected', b.dataset.value === selectedType);
@@ -1093,6 +1121,7 @@ function initializeThemeToggle() {}
 // ==================== DOWNLOAD EMAIL CAPTURE ====================
 
 function openDownloadModal() {
+  track('download_modal_open');
   const backdrop = document.getElementById('download-modal-backdrop');
   const modal = document.getElementById('download-modal');
   if (!backdrop || !modal) return;
@@ -1160,6 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Show license key
+        track('free_account_created', { email_domain: email.split('@')[1] });
         document.getElementById('download-email-form').style.display = 'none';
         status.style.display = 'none';
         document.getElementById('download-modal-success').style.display = 'block';
@@ -1252,9 +1282,18 @@ if (searchInput) {
   });
 }
 
+let _searchTrackTimeout = null;
 function performSearch(query) {
   const searchTerm = query.toLowerCase().trim();
   const allProducts = Object.keys(products);
+
+  // Debounced search tracking — fires 1s after user stops typing
+  if (searchTerm.length >= 2) {
+    clearTimeout(_searchTrackTimeout);
+    _searchTrackTimeout = setTimeout(() => {
+      track('search', { query: searchTerm });
+    }, 1000);
+  }
 
   if (searchTerm === '') {
     searchResults = allProducts;
@@ -1391,6 +1430,7 @@ function initializeMemberCTA() {
     } else {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        track('member_cta_click');
         window.location.href = '/subscribe.html';
       });
     }
@@ -1423,7 +1463,7 @@ function initializeAccountDropdown() {
     menu.innerHTML = `
       <a href="account.html" class="account-dropdown-item">ACCOUNT</a>
       <a href="/api/download-addon" class="account-dropdown-item" download>DOWNLOAD ADD-ON</a>
-      <button class="account-dropdown-item" id="copy-license-key">COPY LICENSE KEY</button>
+      <button class="account-dropdown-item" id="copy-license-key">COPY NO3D LINK KEY</button>
       <button class="account-dropdown-item" id="logout-button">LOGOUT</button>
     `;
   } else {
@@ -1452,7 +1492,7 @@ function initializeAccountDropdown() {
       if (key) {
         navigator.clipboard.writeText(key);
         copyBtn.textContent = 'COPIED!';
-        setTimeout(() => { copyBtn.textContent = 'COPY LICENSE KEY'; }, 2000);
+        setTimeout(() => { copyBtn.textContent = 'COPY NO3D LINK KEY'; }, 2000);
       }
       menu.classList.remove('open');
     });
@@ -1482,7 +1522,7 @@ function initializeDownloadButton() {
 
     const licenseKey = localStorage.getItem('no3d_license_key');
     if (!licenseKey) {
-      alert('License key not found. Please enter your license key on the Account page.');
+      alert('No3D Link key not found. Please enter your No3D Link License Key on the Account page.');
       return;
     }
 
