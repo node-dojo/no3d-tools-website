@@ -97,7 +97,29 @@ function markdownToHtml(markdown) {
   return `<p>${html}</p>`;
 }
 
-function wrapInEmailTemplate(title, bodyHtml) {
+function loadRenderedManifest(title) {
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const manifestPath = path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    '..', 'email', '.rendered', `${slug}.json`
+  );
+  if (fs.existsSync(manifestPath)) {
+    return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  }
+  return null;
+}
+
+function wrapInEmailTemplate(title, bodyHtml, renderedUrls) {
+  const heroImg = renderedUrls?.hero
+    ? `<tr><td><img src="${renderedUrls.hero}" alt="${title}" width="600" style="width:100%;display:block;"></td></tr>`
+    : '';
+  const calloutImg = renderedUrls?.callout
+    ? `<tr><td><img src="${renderedUrls.callout}" alt="Callout" width="600" style="width:100%;display:block;"></td></tr>`
+    : '';
+  const bannerImg = renderedUrls?.banner
+    ? `<tr><td><img src="${renderedUrls.banner}" alt="Banner" width="600" style="width:100%;display:block;"></td></tr>`
+    : '';
+
   return `
 <!DOCTYPE html>
 <html>
@@ -105,64 +127,63 @@ function wrapInEmailTemplate(title, bodyHtml) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    .container {
-      background: white;
-      border: 2px solid #000;
-      padding: 40px;
-      margin: 20px 0;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .logo {
-      font-family: monospace;
-      font-size: 24px;
-      font-weight: bold;
-      text-transform: uppercase;
-      color: #000;
-      letter-spacing: 2px;
-    }
-    h1 { font-size: 24px; margin-bottom: 20px; }
-    h2 { font-size: 20px; margin: 24px 0 12px; }
-    h3 { font-size: 16px; margin: 20px 0 8px; }
-    a { color: #000; text-decoration: underline; }
-    ul { padding-left: 20px; }
-    li { margin: 6px 0; }
-    hr { border: none; border-top: 1px solid #ddd; margin: 24px 0; }
-    img { max-width: 100%; height: auto; border: 1px solid #ddd; }
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #ddd;
-      font-size: 12px;
-      color: #666;
-    }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="logo">NO3D TOOLS</div>
-    </div>
-    ${bodyHtml}
-    <div class="footer">
-      <p><a href="${SITE_URL}/blog">Read more on the blog</a></p>
-      <p>&copy; ${new Date().getFullYear()} NO3D Tools. All rights reserved.</p>
-      <p><a href="{{UNSUBSCRIBE_URL}}" style="color: #999; font-size: 11px;">Unsubscribe from this newsletter</a></p>
-    </div>
-  </div>
+<body style="margin:0;padding:0;background-color:#333333;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#333333;">
+    <tr>
+      <td align="center" style="padding:20px 0;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#eaeaea;">
+          ${heroImg}
+          ${calloutImg}
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px 48px;background-color:#eaeaea;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:1.6;color:#000000;text-align:justify;">
+              ${bodyHtml}
+            </td>
+          </tr>
+          ${bannerImg}
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#202020;padding:32px 48px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="font-family:'Courier New',Courier,monospace;color:#b8b8b8;vertical-align:top;">
+                    <div style="font-size:14px;font-weight:bold;margin-bottom:12px;">NO3D TOOLS</div>
+                    <div style="font-size:10px;line-height:1.8;">
+                      <a href="https://no3dtools.com" style="color:#b8b8b8;text-decoration:underline;">no3dtools.com</a><br>
+                      <a href="https://no3dtools.com/blog" style="color:#b8b8b8;text-decoration:underline;">Blog</a><br>
+                      <a href="https://no3dtools.com/library" style="color:#b8b8b8;text-decoration:underline;">Tool Library</a>
+                    </div>
+                  </td>
+                  <td style="font-family:'Courier New',Courier,monospace;color:#b8b8b8;text-align:right;vertical-align:top;">
+                    <div style="font-size:14px;font-weight:bold;margin-bottom:12px;">Stay Foolish.</div>
+                    <div style="font-size:10px;line-height:1.8;">
+                      <a href="https://www.reddit.com/user/no3dtools/" style="color:#b8b8b8;text-decoration:underline;">Reddit</a><br>
+                      <a href="https://www.youtube.com/@no3dtools" style="color:#b8b8b8;text-decoration:underline;">YouTube</a><br>
+                      <a href="https://bsky.app/profile/no3dtools.com" style="color:#b8b8b8;text-decoration:underline;">Bluesky</a>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Unsubscribe + legal -->
+          <tr>
+            <td style="background-color:#202020;padding:0 48px 24px;text-align:center;font-family:'Courier New',Courier,monospace;">
+              <div style="border-top:1px solid #333;padding-top:16px;">
+                <a href="{{UNSUBSCRIBE_URL}}" style="color:#666666;font-size:10px;text-decoration:underline;">Unsubscribe</a>
+                <span style="color:#444;font-size:10px;"> &middot; </span>
+                <a href="${SITE_URL}/blog" style="color:#666666;font-size:10px;text-decoration:underline;">View in browser</a>
+              </div>
+              <div style="color:#444;font-size:9px;margin-top:8px;">
+                &copy; ${new Date().getFullYear()} NO3D Tools. You received this because you subscribed at no3dtools.com.
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
   `.trim();
@@ -274,9 +295,18 @@ async function main() {
   console.log(`Subject:    ${subject}`);
   console.log(`File:       ${path.basename(matchedFile)}`);
 
+  // Load rendered section images (from render-email-sections.mjs)
+  const manifest = loadRenderedManifest(title);
+  if (manifest?.urls) {
+    console.log(`Rendered:   hero=${manifest.urls.hero ? 'yes' : 'no'}, callout=${manifest.urls.callout ? 'yes' : 'no'}, banner=${manifest.urls.banner ? 'yes' : 'no'}`);
+  } else {
+    console.log('Rendered:   No rendered sections found. Run render-email-sections.mjs first for custom typography.');
+    console.log('            Sending with text-only template.');
+  }
+
   // Convert to HTML
   const bodyHtml = markdownToHtml(body);
-  const html = wrapInEmailTemplate(title, bodyHtml);
+  const html = wrapInEmailTemplate(title, bodyHtml, manifest?.urls);
   const plainText = body
     .replace(/\[\[([^\]|]+?)\|([^\]]+)\]\]/g, '$2')
     .replace(/\[\[([^\]]+)\]\]/g, '$1')

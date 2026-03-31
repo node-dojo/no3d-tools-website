@@ -16,7 +16,9 @@
     "publish-blog:force": "node scripts/publish-blog.mjs --force",
     "send-newsletter": "node scripts/send-newsletter.mjs",
     "send-newsletter:dry": "node scripts/send-newsletter.mjs --dry-run",
-    "newsletter:list": "node scripts/send-newsletter.mjs --list"
+    "newsletter:list": "node scripts/send-newsletter.mjs --list",
+    "newsletter:render": "node scripts/render-email-sections.mjs",
+    "newsletter:preview": "node scripts/render-email-sections.mjs --preview"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",

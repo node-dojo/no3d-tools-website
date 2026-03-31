@@ -35,5 +35,9 @@ tmp/
 .vercel
 .env*.local
 
+# Rendered email sections (build artifacts)
+email/.rendered/
+email/.tmp-*
+
 # Redundant product folders (legacy structure)
 # Product data is now in assets/ directories, media is on Cloudinary
