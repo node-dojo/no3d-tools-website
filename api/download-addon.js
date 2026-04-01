@@ -9,7 +9,7 @@
 
 import { isR2Configured, presignGetObject } from './lib/r2.js';
 
-const R2_KEY = 'no3d-tools-library/addon/No3D Tools Addon.zip';
+const R2_KEY = 'no3d-tools-library/addon/no3d_tools_membership.zip';
 const PRESIGN_TTL = 300; // 5 minutes
 
 export default async function handler(req, res) {
