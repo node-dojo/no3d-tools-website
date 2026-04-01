@@ -7,6 +7,7 @@
   "public": true,
   "rewrites": [
     { "source": "/account", "destination": "/account.html" },
+    { "source": "/join", "destination": "/join.html" },
     { "source": "/blog", "destination": "/blog.html" },
     { "source": "/blog/:slug", "destination": "/blog.html" }
   ],

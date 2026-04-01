@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join — NO3D Tools</title>
+    <meta name="description" content="Get updates on new Blender tools, tutorials, and assets from NO3D Tools.">
+    <meta property="og:title" content="Join NO3D Tools">
+    <meta property="og:description" content="Free Blender geometry node tools. Get updates when new ones drop.">
+    <link rel="preload" href="/fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <style>
+        @font-face { font-family: 'Visitor'; src: url('/fonts/visitor.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+        @font-face { font-family: 'Visitor'; src: url('/fonts/visitor.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'JetBrains Mono', 'SF Mono', monospace;
+            background: #e8e8e8;
+            color: #222;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .container {
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .logo {
+            height: 40px;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-family: 'Visitor', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 32px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        input[type="email"] {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            padding: 14px 16px;
+            border: 2px solid #222;
+            background: #fff;
+            color: #222;
+            text-align: center;
+            outline: none;
+        }
+        input[type="email"]:focus {
+            border-color: #f0ff00;
+            box-shadow: 0 0 0 2px #f0ff00;
+        }
+        input[type="email"]::placeholder { color: #aaa; }
+        button {
+            font-family: 'Visitor', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 14px 24px 11px;
+            border: 2px solid #222;
+            background: #222;
+            color: #f0ff00;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        button:hover { background: #f0ff00; color: #222; }
+        button:disabled { opacity: 0.5; cursor: wait; }
+        .status {
+            font-size: 12px;
+            margin-top: 8px;
+            min-height: 20px;
+            color: #555;
+        }
+        .status.success { color: #1a5c15; }
+        .status.error { color: #991b1b; }
+        .success-message {
+            display: none;
+            margin-top: 24px;
+        }
+        .success-message h2 {
+            font-family: 'Visitor', monospace;
+            font-size: 24px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .success-message p {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.5;
+        }
+        .success-message a {
+            display: inline-block;
+            margin-top: 20px;
+            font-family: 'Visitor', monospace;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #222;
+            text-decoration: none;
+            border: 1.5px solid #222;
+            padding: 10px 20px 8px;
+        }
+        .success-message a:hover { background: #222; color: #f0ff00; }
+        .footer {
+            margin-top: 48px;
+            font-size: 11px;
+            color: #999;
+        }
+        .footer a { color: #777; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <a href="/"><img src="/assets/light/no3d-tools.png" alt="NO3D TOOLS" class="logo"></a>
+
+        <div id="signup-form">
+            <h1>Stay in the loop</h1>
+            <p class="subtitle">Free Blender geometry node tools, updates when new ones drop, and the occasional behind-the-scenes note.</p>
+            <form id="join-form">
+                <input type="email" id="join-email" placeholder="your@email.com" required autocomplete="email">
+                <button type="submit" id="join-btn">Join</button>
+            </form>
+            <div class="status" id="join-status"></div>
+        </div>
+
+        <div class="success-message" id="join-success">
+            <h2>You're in</h2>
+            <p>You'll hear from me when something new drops. No spam, just tools.</p>
+            <a href="/">Browse the tools</a>
+        </div>
+
+        <div class="footer">
+            <a href="/">no3dtools.com</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('join-form');
+        const btn = document.getElementById('join-btn');
+        const status = document.getElementById('join-status');
+        const source = new URLSearchParams(window.location.search).get('source') || 'direct';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('join-email').value.trim();
+            if (!email) return;
+
+            btn.disabled = true;
+            btn.textContent = '...';
+            status.textContent = '';
+            status.className = 'status';
+
+            try {
+                const res = await fetch('/api/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, source })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    status.textContent = data.error || 'Something went wrong.';
+                    status.className = 'status error';
+                    btn.disabled = false;
+                    btn.textContent = 'Join';
+                    return;
+                }
+
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('join-success').style.display = 'block';
+            } catch (err) {
+                status.textContent = 'Network error. Try again.';
+                status.className = 'status error';
+                btn.disabled = false;
+                btn.textContent = 'Join';
+            }
+        });
+    </script>
+</body>
+</html>
