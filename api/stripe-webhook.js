@@ -99,6 +99,13 @@ async function handleInvoicePaid({ supabase, invoice, stripeCustomerId, stripeSu
     graceUntil: null
   });
 
+  // Log conversion event
+  await supabase.from('site_events').insert({
+    event: existingRow?.license_key ? 'subscription_renewed' : 'checkout_complete',
+    properties: { email_domain: finalEmail.split('@')[1], is_new: !existingRow?.license_key },
+    page: '/api/stripe-webhook',
+  }).catch(() => {}); // Never block webhook on analytics
+
   // Send the email only when we create a new license.
   if (!existingRow?.license_key) {
     const addonDownloadUrl = process.env.ADDON_DOWNLOAD_URL;
