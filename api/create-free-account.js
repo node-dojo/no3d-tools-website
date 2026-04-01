@@ -78,7 +78,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         email,
         existing: true,
-        message: 'A license key has been sent to your email.'
+        message: 'A No3D Link License Key has been sent to your email.'
       });
     }
 
@@ -102,6 +102,13 @@ export default async function handler(req, res) {
       console.error('Failed to create free account:', insertError.message);
       return res.status(500).json({ error: 'Failed to create account' });
     }
+
+    // Log email capture event server-side
+    supabase.from('site_events').insert({
+      event: 'email_captured',
+      properties: { email_domain: email.split('@')[1], tier: 'free' },
+      page: '/api/create-free-account',
+    }).catch(() => {});
 
     // Send license key email (non-blocking — don't fail if email fails)
     const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';

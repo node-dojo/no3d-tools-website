@@ -8,6 +8,7 @@
  */
 
 import { isR2Configured, presignGetObject } from './lib/r2.js';
+import { createClient } from '@supabase/supabase-js';
 
 const R2_KEY = 'no3d-tools-library/addon/no3d_tools_membership.zip';
 const PRESIGN_TTL = 300; // 5 minutes
@@ -30,6 +31,18 @@ export default async function handler(req, res) {
 
   try {
     const url = await presignGetObject(R2_KEY, PRESIGN_TTL);
+
+    // Log every actual download — fire and forget
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+      supabase.from('site_events').insert({
+        event: 'addon_downloaded',
+        properties: { source: req.headers.referer || 'direct' },
+        page: '/api/download-addon',
+        referrer: req.headers.referer || null,
+      }).catch(() => {});
+    }
+
     // Redirect to trigger browser download
     res.setHeader('Location', url);
     res.setHeader('Cache-Control', 'no-store');
