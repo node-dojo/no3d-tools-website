@@ -104,11 +104,13 @@ export default async function handler(req, res) {
     }
 
     // Log email capture event server-side
-    supabase.from('site_events').insert({
-      event: 'email_captured',
-      properties: { email_domain: email.split('@')[1], tier: 'free' },
-      page: '/api/create-free-account',
-    }).catch(() => {});
+    try {
+      await supabase.from('site_events').insert({
+        event: 'email_captured',
+        properties: { email_domain: email.split('@')[1], tier: 'free' },
+        page: '/api/create-free-account',
+      });
+    } catch (_) { /* never block account creation on analytics */ }
 
     // Send license key email (non-blocking — don't fail if email fails)
     const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';

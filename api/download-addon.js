@@ -34,13 +34,15 @@ export default async function handler(req, res) {
 
     // Log every actual download — fire and forget
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-      supabase.from('site_events').insert({
-        event: 'addon_downloaded',
-        properties: { source: req.headers.referer || 'direct' },
-        page: '/api/download-addon',
-        referrer: req.headers.referer || null,
-      }).catch(() => {});
+      try {
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+        await supabase.from('site_events').insert({
+          event: 'addon_downloaded',
+          properties: { source: req.headers.referer || 'direct' },
+          page: '/api/download-addon',
+          referrer: req.headers.referer || null,
+        });
+      } catch (_) { /* never block download on analytics */ }
     }
 
     // Redirect to trigger browser download
