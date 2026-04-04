@@ -343,7 +343,7 @@ function renderHomeGrid() {
   if (!homeGrid) return;
 
   homeGrid.innerHTML = '';
-  const productsArray = Object.values(products).sort((a, b) => a.name.localeCompare(b.name));
+  const productsArray = Object.values(products).filter(p => !p._isBlogPost).sort((a, b) => a.name.localeCompare(b.name));
 
   productsArray.forEach(product => {
     const gridItem = document.createElement('div');
