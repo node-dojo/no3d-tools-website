@@ -149,18 +149,21 @@ function buildWikilinkIndex(postFiles) {
 // --- Obsidian Syntax Conversion ---
 
 function convertObsidianSyntax(content, wikilinkIndex) {
-  // Step 1: Convert media embeds ![[file.ext]] and ![[file.ext|width]]
+  // Step 1: Convert media embeds ![[file.ext]], ![[file.ext|width]], ![[file.ext|alt text]]
   content = content.replace(
-    /!\[\[([^\]|]+?)(?:\|(\d+))?\]\]/g,
-    (match, filename, width) => {
+    /!\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/g,
+    (match, filename, pipeValue) => {
       const ext = path.extname(filename).slice(1).toLowerCase();
+      const isWidth = pipeValue && /^\d+$/.test(pipeValue);
+      const width = isWidth ? pipeValue : null;
+      const alt = isWidth ? path.basename(filename) : (pipeValue || path.basename(filename));
       if (VIDEO_EXTS.has(ext)) {
         const widthAttr = width ? ` width="${width}"` : '';
         return `<video src="${filename}"${widthAttr} controls></video>`;
       }
       if (IMAGE_EXTS.has(ext) || ext === '') {
         const widthMeta = width ? `{width=${width}}` : '';
-        return `![${path.basename(filename)}](${filename})${widthMeta}`;
+        return `![${alt}](${filename})${widthMeta}`;
       }
       return match;
     }
