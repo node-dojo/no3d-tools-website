@@ -294,13 +294,7 @@
   font-size: var(--font-size-small);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: var(--color-void-black);
-  color: var(--color-lello);
-  border-color: var(--color-void-black);
-}
-
-#article-content tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-void-black);
 }
 
 #article-content td strong {
