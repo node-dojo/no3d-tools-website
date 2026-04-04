@@ -536,6 +536,7 @@ async function main() {
         source_file: path.relative(POST_DIR, filePath),
         content_hash: contentHash,
         date: frontmatter.date,
+        shortlink: frontmatter.shortlink || null,
       },
     });
 

@@ -149,6 +149,26 @@ function renderArticle(article) {
     contentEl.textContent = article.content || '';
   }
 
+  // Share button
+  const shareBtn = document.getElementById('share-btn');
+  const shortlink = article.metadata?.shortlink;
+  const shareUrl = shortlink
+    ? window.location.origin + '/go/' + shortlink
+    : window.location.href;
+
+  shareBtn.style.display = 'inline-block';
+  shareBtn.onclick = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: article.title, url: shareUrl });
+        return;
+      } catch {}
+    }
+    await navigator.clipboard.writeText(shareUrl);
+    shareBtn.textContent = 'COPIED';
+    setTimeout(() => { shareBtn.textContent = 'SHARE'; }, 2000);
+  };
+
   updateMetaTags(article);
 }
 

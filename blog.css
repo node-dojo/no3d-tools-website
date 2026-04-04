@@ -245,6 +245,26 @@
   margin-right: 12px;
 }
 
+/* --- Share button --- */
+
+.share-btn {
+  font-family: var(--font-visitor);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 14px;
+  border: 1px solid var(--color-void-black);
+  background: transparent;
+  color: var(--color-void-black);
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.share-btn:hover {
+  background: var(--color-void-black);
+  color: var(--color-lello);
+}
+
 /* Article content: uses .product-description from styles.css */
 
 /* --- Blockquotes in article content --- */
