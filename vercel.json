@@ -5,6 +5,9 @@
   "framework": null,
   "outputDirectory": ".",
   "public": true,
+  "redirects": [
+    { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/account", "destination": "/account.html" },
     { "source": "/join", "destination": "/join.html" },
