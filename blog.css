@@ -247,6 +247,53 @@
 
 /* Article content: uses .product-description from styles.css */
 
+/* --- Tables in article content --- */
+
+#article-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-mono-weight);
+}
+
+#article-content th,
+#article-content td {
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid var(--color-stone-gray);
+}
+
+#article-content th {
+  font-family: var(--font-visitor);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--color-void-black);
+  color: var(--color-lello);
+  border-color: var(--color-void-black);
+}
+
+#article-content tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+#article-content td strong {
+  color: var(--color-void-black);
+}
+
+@media (max-width: 600px) {
+  #article-content table {
+    font-size: 11px;
+  }
+
+  #article-content th,
+  #article-content td {
+    padding: 6px 8px;
+  }
+}
+
 .article-nav {
   display: flex;
   justify-content: space-between;

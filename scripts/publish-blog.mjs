@@ -64,11 +64,16 @@ function parseCloudinaryCredentials() {
   return { cloudName, apiKey, apiSecret };
 }
 
+function sanitizePublicId(name) {
+  return name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_\-/]/g, '');
+}
+
 function getOptimizedUrl(cloudName, publicId, resourceType = 'image') {
+  const encodedId = publicId.split('/').map(encodeURIComponent).join('/');
   if (resourceType === 'video') {
-    return `https://res.cloudinary.com/${cloudName}/video/upload/f_auto,q_auto/${publicId}`;
+    return `https://res.cloudinary.com/${cloudName}/video/upload/f_auto,q_auto/${encodedId}`;
   }
-  return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_auto/${publicId}`;
+  return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_auto/${encodedId}`;
 }
 
 async function checkCloudinaryExists(cloudName, apiKey, apiSecret, publicId, resourceType) {
@@ -234,7 +239,7 @@ async function uploadMedia(mediaRefs, slug) {
     const isVideo = VIDEO_EXTS.has(ext);
     const resourceType = isVideo ? 'video' : 'image';
     const basename = path.basename(absolutePath, path.extname(absolutePath));
-    const publicId = `${CLOUDINARY_FOLDER}/${slug}/${basename}`;
+    const publicId = `${CLOUDINARY_FOLDER}/${slug}/${sanitizePublicId(basename)}`;
 
     const exists = await checkCloudinaryExists(
       creds.cloudName, creds.apiKey, creds.apiSecret, publicId, resourceType
