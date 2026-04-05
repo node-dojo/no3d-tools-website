@@ -193,6 +193,7 @@ async function fetchUnifiedProducts() {
             releaseVersion: null,
             _isBlogPost: true,
             _blogSlug: a.slug,
+            _publishedAt: a.published_at,
           };
         }
         console.log(`✅ Added ${articles.length} blog article(s) to sidebar`);
@@ -284,10 +285,13 @@ function renderSidebar() {
       const productList = document.createElement('div');
       productList.className = 'group-product-list';
       
-      // Sort: stable first, then beta, alpha, coming_soon
+      // Sort: blog posts by date (newest first), others by release status then name
       const releaseOrder = { stable: 0, beta: 1, alpha: 2, coming_soon: 3 };
       Object.values(typeProducts)
         .sort((a, b) => {
+          if (a._isBlogPost && b._isBlogPost) {
+            return new Date(b._publishedAt) - new Date(a._publishedAt);
+          }
           const ra = releaseOrder[a.releaseStatus] || 0;
           const rb = releaseOrder[b.releaseStatus] || 0;
           return ra - rb || a.name.localeCompare(b.name);
@@ -314,6 +318,32 @@ function renderSidebar() {
     productTypeDiv.appendChild(groupsContainer);
     sidebarContent.appendChild(productTypeDiv);
   });
+
+  // Add latest blog post preview card below the blog section
+  const blogProducts = productDataByType['docs'] || {};
+  const latestPost = Object.values(blogProducts)
+    .filter(p => p._isBlogPost && p._publishedAt)
+    .sort((a, b) => new Date(b._publishedAt) - new Date(a._publishedAt))[0];
+
+  if (latestPost) {
+    const preview = document.createElement('a');
+    preview.href = '/blog/' + latestPost._blogSlug;
+    preview.className = 'sidebar-blog-preview';
+    preview.onclick = (e) => { e.preventDefault(); window.location.href = '/blog/' + latestPost._blogSlug; };
+
+    const date = new Date(latestPost._publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const excerpt = latestPost.description ? latestPost.description.slice(0, 120) + (latestPost.description.length > 120 ? '...' : '') : '';
+    const thumbHtml = latestPost.image ? `<img class="sidebar-blog-preview-thumb" src="${latestPost.image}" alt="">` : '';
+
+    preview.innerHTML =
+      '<span class="sidebar-blog-preview-flag">*NEW*</span>' +
+      thumbHtml +
+      '<span class="sidebar-blog-preview-title">' + escapeText(latestPost.name) + '</span>' +
+      '<span class="sidebar-blog-preview-date">' + date + '</span>' +
+      (excerpt ? '<span class="sidebar-blog-preview-excerpt">' + escapeText(excerpt) + '</span>' : '');
+
+    sidebarContent.appendChild(preview);
+  }
 
   // Add Help section below product list
   const helpSection = document.createElement('div');

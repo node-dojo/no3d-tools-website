@@ -6,7 +6,9 @@
   "outputDirectory": ".",
   "public": true,
   "redirects": [
-    { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true }
+    { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true },
+    { "source": "/go/supports", "destination": "/blog/easy-engineered-supports", "permanent": true },
+    { "source": "/go/asset-lib", "destination": "/blog/blenders-asset-library-sucks", "permanent": true }
   ],
   "rewrites": [
     { "source": "/account", "destination": "/account.html" },

@@ -3,9 +3,9 @@
 /**
  * Publish Blog Posts from Obsidian Vault to Supabase
  *
- * Scans Blog/Post/ for markdown files. Every file in this folder is
- * considered published. Uses content hashing to detect changes —
- * only new or modified posts are synced.
+ * Scans Blog/Post/ for markdown files. Uses content hashing to detect
+ * changes — only new or modified posts are synced. Posts with a future
+ * `date` in frontmatter are skipped until that date arrives.
  *
  * Wikilinks ([[Target Note]]) are converted to live blog links when
  * the target exists as a published post, otherwise rendered as plain text.
@@ -68,12 +68,14 @@ function sanitizePublicId(name) {
   return name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_\-/]/g, '');
 }
 
-function getOptimizedUrl(cloudName, publicId, resourceType = 'image') {
+function getOptimizedUrl(cloudName, publicId, resourceType = 'image', { isGif = false } = {}) {
   const encodedId = publicId.split('/').map(encodeURIComponent).join('/');
   if (resourceType === 'video') {
     return `https://res.cloudinary.com/${cloudName}/video/upload/f_auto,q_auto/${encodedId}`;
   }
-  return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_auto/${encodedId}`;
+  // Animated GIFs need fl_animated to preserve animation (f_auto alone converts to static WebP)
+  const transforms = isGif ? 'f_auto,q_auto,w_auto,fl_animated' : 'f_auto,q_auto,w_auto';
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${transforms}/${encodedId}`;
 }
 
 async function checkCloudinaryExists(cloudName, apiKey, apiSecret, publicId, resourceType) {
@@ -248,8 +250,10 @@ async function uploadMedia(mediaRefs, slug) {
       creds.cloudName, creds.apiKey, creds.apiSecret, publicId, resourceType
     );
 
+    const isGif = ext === 'gif';
+
     if (exists) {
-      const optimized = getOptimizedUrl(creds.cloudName, publicId, resourceType);
+      const optimized = getOptimizedUrl(creds.cloudName, publicId, resourceType, { isGif });
       urlMap.set(localRef, optimized);
       console.log(`  [ok] Already exists: ${publicId}`);
       continue;
@@ -258,7 +262,7 @@ async function uploadMedia(mediaRefs, slug) {
     console.log(`  [upload] ${localRef} -> ${publicId}`);
     try {
       await uploadToCloudinary(absolutePath, publicId, resourceType, creds);
-      const optimized = getOptimizedUrl(creds.cloudName, publicId, resourceType);
+      const optimized = getOptimizedUrl(creds.cloudName, publicId, resourceType, { isGif });
       urlMap.set(localRef, optimized);
       console.log(`  [ok] Uploaded: ${optimized}`);
     } catch (err) {
@@ -474,6 +478,18 @@ async function main() {
     currentSlugs.add(slug);
 
     if (targetSlug && slug !== targetSlug) continue;
+
+    // Skip posts with a future date (scheduled publishing)
+    if (frontmatter.date) {
+      const postDate = new Date(frontmatter.date + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (postDate > today) {
+        console.log(`[scheduled] ${title} (${slug}) — publishes ${frontmatter.date}`);
+        skipped++;
+        continue;
+      }
+    }
 
     // Check content hash — skip if unchanged
     const contentHash = hashContent(raw);
