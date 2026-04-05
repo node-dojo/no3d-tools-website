@@ -103,6 +103,7 @@ export default async function handler(req, res) {
       vendor: p.vendor,
       metafields: p.metafields || [],
       hosted_media: p.metadata?.hosted_media || {},
+      animated_thumbnail: p.metadata?.animated_thumbnail || null,
       thumbnail_image: p.metadata?.thumbnail_image || null,
       carousel_media: p.metadata?.carousel_media || [],
       excluded_carousel_media: p.metadata?.excluded_carousel_media || [],

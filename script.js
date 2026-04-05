@@ -162,6 +162,7 @@ async function fetchUnifiedProducts() {
           handle: product.handle,
           folderName: product.handle,
           hosted_media: product.hosted_media || {},
+          animated_thumbnail: product.animated_thumbnail || null,
           carousel_media: product.carousel_media || [],
           releaseStatus: product.release_status || 'stable',
           releaseVersion: product.release_version || null,
@@ -389,41 +390,22 @@ function renderHomeGrid() {
     gridItem.dataset.productId = product.id;
     gridItem.addEventListener('click', () => selectProduct(product.id));
 
-    // Check for animated video thumbnail (mp4/webm in hosted_media)
-    const videoExts = ['.mp4', '.webm', '.mov'];
+    // Use animated_thumbnail if set and hosted
     let animatedUrl = null;
-    if (product.hosted_media) {
-      for (const [filename, entry] of Object.entries(product.hosted_media)) {
-        if (videoExts.some(ext => filename.toLowerCase().endsWith(ext))) {
-          animatedUrl = resolveHostedUrl(entry);
-          break;
-        }
-      }
+    if (product.animated_thumbnail && product.hosted_media) {
+      animatedUrl = resolveHostedUrl(product.hosted_media[product.animated_thumbnail]);
     }
 
-    let thumb;
-    if (animatedUrl) {
-      thumb = document.createElement('video');
-      thumb.className = 'home-grid-item-thumbnail';
-      thumb.src = animatedUrl;
-      thumb.autoplay = true;
-      thumb.loop = true;
-      thumb.muted = true;
-      thumb.playsInline = true;
-      thumb.setAttribute('playsinline', '');
-      thumb.alt = product.name;
-    } else {
-      thumb = document.createElement('img');
-      thumb.className = 'home-grid-item-thumbnail';
-      thumb.src = product.icon || '';
-      thumb.alt = product.name;
-      thumb.loading = 'lazy';
-      thumb.onerror = () => {
-        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="12px" fill="#aaa">No Image</text></svg>';
-        thumb.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-        thumb.onerror = null;
-      };
-    }
+    const thumb = document.createElement('img');
+    thumb.className = 'home-grid-item-thumbnail';
+    thumb.src = animatedUrl || product.icon || '';
+    thumb.alt = product.name;
+    thumb.loading = 'lazy';
+    thumb.onerror = () => {
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="12px" fill="#aaa">No Image</text></svg>';
+      thumb.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+      thumb.onerror = null;
+    };
 
     const title = document.createElement('div');
     title.className = 'home-grid-item-title';
