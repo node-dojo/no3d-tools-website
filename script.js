@@ -11,6 +11,14 @@ if (typeof marked !== 'undefined') {
   });
 }
 
+// Resolve URL from hosted_media entry (supports string or {url, checksum} format)
+function resolveHostedUrl(entry) {
+  if (!entry) return null;
+  if (typeof entry === 'string') return entry;
+  if (typeof entry === 'object' && entry.url) return entry.url;
+  return null;
+}
+
 // Sanitize HTML through DOMPurify when available, passthrough otherwise
 function sanitizeHTML(html) {
   if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html);
@@ -381,22 +389,47 @@ function renderHomeGrid() {
     gridItem.dataset.productId = product.id;
     gridItem.addEventListener('click', () => selectProduct(product.id));
 
-    const img = document.createElement('img');
-    img.className = 'home-grid-item-thumbnail';
-    img.src = product.icon || '';
-    img.alt = product.name;
-    img.loading = 'lazy';
-    img.onerror = () => {
-      const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="12px" fill="#aaa">No Image</text></svg>';
-      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-      img.onerror = null;
-    };
+    // Check for animated video thumbnail (mp4/webm in hosted_media)
+    const videoExts = ['.mp4', '.webm', '.mov'];
+    let animatedUrl = null;
+    if (product.hosted_media) {
+      for (const [filename, entry] of Object.entries(product.hosted_media)) {
+        if (videoExts.some(ext => filename.toLowerCase().endsWith(ext))) {
+          animatedUrl = resolveHostedUrl(entry);
+          break;
+        }
+      }
+    }
+
+    let thumb;
+    if (animatedUrl) {
+      thumb = document.createElement('video');
+      thumb.className = 'home-grid-item-thumbnail';
+      thumb.src = animatedUrl;
+      thumb.autoplay = true;
+      thumb.loop = true;
+      thumb.muted = true;
+      thumb.playsInline = true;
+      thumb.setAttribute('playsinline', '');
+      thumb.alt = product.name;
+    } else {
+      thumb = document.createElement('img');
+      thumb.className = 'home-grid-item-thumbnail';
+      thumb.src = product.icon || '';
+      thumb.alt = product.name;
+      thumb.loading = 'lazy';
+      thumb.onerror = () => {
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="12px" fill="#aaa">No Image</text></svg>';
+        thumb.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+        thumb.onerror = null;
+      };
+    }
 
     const title = document.createElement('div');
     title.className = 'home-grid-item-title';
     title.textContent = product.name;
 
-    gridItem.appendChild(img);
+    gridItem.appendChild(thumb);
     gridItem.appendChild(title);
 
     // Release status badges
@@ -790,8 +823,9 @@ async function initializeCarousel(productId) {
 
   if (product.carousel_media && product.carousel_media.length > 0 && product.hosted_media) {
     product.carousel_media.forEach(mediaKey => {
-      if (product.hosted_media[mediaKey]) {
-        carouselItems.push({ url: product.hosted_media[mediaKey], name: mediaKey });
+      const url = resolveHostedUrl(product.hosted_media[mediaKey]);
+      if (url) {
+        carouselItems.push({ url, name: mediaKey });
       }
     });
   } 

@@ -72,11 +72,19 @@ export default async function handler(req, res) {
       return 'tools'
     }
 
+    // Resolve URL from hosted_media entry (supports string or {url, checksum} format)
+    const resolveHostedUrl = (entry) => {
+      if (!entry) return null
+      if (typeof entry === 'string') return entry
+      if (typeof entry === 'object' && entry.url) return entry.url
+      return null
+    }
+
     // Fallback: find icon in hosted_media when icon_url is null
     const findIconInHostedMedia = (hostedMedia) => {
       if (!hostedMedia) return null
       const iconKey = Object.keys(hostedMedia).find(k => k.toLowerCase().startsWith('icon_'))
-      return iconKey ? hostedMedia[iconKey] : null
+      return iconKey ? resolveHostedUrl(hostedMedia[iconKey]) : null
     }
 
     // Transform to match website format - return as array (not wrapped in object)
