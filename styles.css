@@ -1743,6 +1743,11 @@ a.sidebar-help-link {
   margin: 1rem 0;
 }
 
+.product-description strong,
+.product-description-scroll strong {
+  font-weight: 900;
+}
+
 /* Video Wrapper - Responsive 16:9 aspect ratio */
 .video-wrapper {
   position: relative;
