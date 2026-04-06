@@ -3,12 +3,12 @@
 /**
  * Send Newsletter from Obsidian Vault
  *
- * Reads a markdown file from Blog/Newsletter/, converts it to HTML,
+ * Reads a markdown file from Blog/Newsletter/Ready/, converts it to HTML,
  * sends it to all active subscribers via Resend, records it in Supabase,
  * and locks the source file to read-only (chmod 444).
  *
- * Drafts live in Blog/Newsletter/ alongside sent newsletters.
- * Sent newsletters are distinguished by their read-only file permissions.
+ * Drafts ready to send live in Blog/Newsletter/Ready/.
+ * Sent newsletters are moved manually to Blog/Newsletter/Sent/ after sending.
  *
  * Usage:
  *   doppler run -- node scripts/send-newsletter.mjs "Newsletter Title"
@@ -30,7 +30,7 @@ const VAULT_PATH = path.resolve(
   process.env.HOME,
   'Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault_001'
 );
-const NEWSLETTER_DIR = path.join(VAULT_PATH, 'Blog', 'Newsletter');
+const NEWSLETTER_DIR = path.join(VAULT_PATH, 'Blog', 'Newsletter', 'Ready');
 const SITE_URL = process.env.SITE_URL || 'https://no3dtools.com';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'NO3D Tools <onboarding@resend.dev>';
 
@@ -193,7 +193,7 @@ function wrapInEmailTemplate(title, bodyHtml, renderedUrls) {
 
 function listNewsletters() {
   if (!fs.existsSync(NEWSLETTER_DIR)) {
-    console.log('Blog/Newsletter/ does not exist yet.');
+    console.log('Blog/Newsletter/Ready/ does not exist yet.');
     return;
   }
 
@@ -202,11 +202,11 @@ function listNewsletters() {
     .sort();
 
   if (files.length === 0) {
-    console.log('No newsletter files found in Blog/Newsletter/');
+    console.log('No newsletter files found in Blog/Newsletter/Ready/');
     return;
   }
 
-  console.log('Newsletters in Blog/Newsletter/:\n');
+  console.log('Newsletters in Blog/Newsletter/Ready/:\n');
 
   for (const file of files) {
     const filePath = path.join(NEWSLETTER_DIR, file);
@@ -243,7 +243,7 @@ async function main() {
   }
 
   if (!fs.existsSync(NEWSLETTER_DIR)) {
-    console.log(`Blog/Newsletter/ not found at: ${NEWSLETTER_DIR}`);
+    console.log(`Blog/Newsletter/Ready/ not found at: ${NEWSLETTER_DIR}`);
     console.log('Creating it now...');
     fs.mkdirSync(NEWSLETTER_DIR, { recursive: true });
     console.log('Created. Add a markdown newsletter file and run again.');

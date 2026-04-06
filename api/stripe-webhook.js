@@ -1,7 +1,12 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
-import { sendLicenseKeyEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail } from './lib/email.js';
+import {
+  sendLicenseKeyEmail,
+  sendPaymentFailedEmail,
+  sendSubscriptionCancelledEmail,
+  notifyAdminAcquisition,
+} from './lib/email.js';
 
 // Disable Vercel body parsing so we get the raw bytes for Stripe signature verification
 export const config = {
@@ -116,6 +121,16 @@ async function handleInvoicePaid({ supabase, invoice, stripeCustomerId, stripeSu
     } else {
       await sendLicenseKeyEmail(finalEmail, licenseKey, addonDownloadUrl);
     }
+    try {
+      await notifyAdminAcquisition({
+        type: 'paid_subscriber',
+        subscriberEmail: finalEmail,
+        detail: {
+          stripe_customer_id: stripeCustomerId,
+          stripe_subscription_id: stripeSubId || '',
+        },
+      });
+    } catch (_) { /* non-fatal */ }
   }
 }
 

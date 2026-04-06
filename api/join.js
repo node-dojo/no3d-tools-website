@@ -6,7 +6,9 @@
  * Returns { ok: true, existing: bool }
  */
 
+import crypto from 'crypto';
 import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
+import { notifyAdminAcquisition } from './lib/email.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -63,6 +65,14 @@ export default async function handler(req, res) {
         page: '/api/join',
       });
     } catch (_) {}
+
+    try {
+      await notifyAdminAcquisition({
+        type: 'email_list',
+        subscriberEmail: email.toLowerCase().trim(),
+        detail: { source: source || 'email_signup', endpoint: '/api/join' },
+      });
+    } catch (_) { /* non-fatal */ }
 
     return res.status(201).json({ ok: true, existing: false });
   } catch (err) {

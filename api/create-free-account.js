@@ -12,7 +12,7 @@
 
 import crypto from 'crypto';
 import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
-import { sendLicenseKeyEmail } from './lib/email.js';
+import { sendLicenseKeyEmail, notifyAdminAcquisition } from './lib/email.js';
 import { setCorsHeaders } from './lib/cors.js';
 
 function generateLicenseKey() {
@@ -70,8 +70,9 @@ export default async function handler(req, res) {
 
     if (existing?.license_key) {
       // Already registered — re-send the key via email, don't expose it in the response
+      const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';
       try {
-        await sendLicenseKeyEmail({ email, licenseKey: existing.license_key, tier: existing.tier || 'free' });
+        await sendLicenseKeyEmail(email, existing.license_key, `${siteUrl}/api/download-addon`);
       } catch (emailErr) {
         console.error('Failed to re-send license key email:', emailErr?.message || emailErr);
       }
@@ -121,6 +122,14 @@ export default async function handler(req, res) {
     } catch (emailErr) {
       console.error('License email failed (non-fatal):', emailErr.message);
     }
+
+    try {
+      await notifyAdminAcquisition({
+        type: 'free_license',
+        subscriberEmail: email,
+        detail: { tier: 'free', endpoint: '/api/create-free-account' },
+      });
+    } catch (_) { /* non-fatal */ }
 
     return res.status(201).json({
       license_key: licenseKey,

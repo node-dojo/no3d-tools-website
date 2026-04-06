@@ -60,11 +60,17 @@
             </nav>
         </article>
 
-        <!-- Subscribe CTA -->
+        <!-- Newsletter Signup CTA -->
         <section class="blog-subscribe-cta">
             <h2>STAY IN THE LOOP</h2>
             <p>Get updates on new tools, tutorials, and posts.</p>
-            <a href="/subscribe" class="cta-button">SUBSCRIBE</a>
+            <form id="newsletter-form" class="newsletter-form" onsubmit="handleNewsletterSignup(event)">
+                <div class="newsletter-input-row">
+                    <input type="email" id="newsletter-email" placeholder="your@email.com" required autocomplete="email" />
+                    <button type="submit" class="cta-button" id="newsletter-btn">SUBSCRIBE</button>
+                </div>
+                <p id="newsletter-status" class="newsletter-status"></p>
+            </form>
         </section>
 
         <footer class="blog-footer">

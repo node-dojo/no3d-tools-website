@@ -447,7 +447,7 @@
             navigator.clipboard.writeText(key).then(() => {
                 const btn = document.getElementById('copy-license-key');
                 btn.textContent = 'COPIED!';
-                setTimeout(() => { btn.textContent = 'COPY LICENSE KEY'; }, 2000);
+                setTimeout(() => { btn.textContent = 'COPY NO3D LINK KEY'; }, 2000);
             });
         }
 
@@ -504,7 +504,7 @@
                 if (licenseStatusEl) {
                     const messages = [
                         'Setting up your account...',
-                        'Generating license key...',
+                        'Generating your No3D Link key...',
                         'Almost there...',
                     ];
                     licenseStatusEl.textContent = messages[Math.min(attempt, messages.length - 1)];
@@ -520,7 +520,7 @@
                 progressBar.style.background = 'var(--color-medium-gray)';
             }
             if (licenseStatusEl) {
-                licenseStatusEl.textContent = 'Your license key will be emailed to you shortly. Check your inbox.';
+                licenseStatusEl.textContent = 'Your No3D Link key will be emailed to you shortly. Check your inbox.';
             }
             return null;
         }
@@ -576,13 +576,13 @@
                 ${orderDetailsHtml}
 
                 <div class="license-key-section">
-                    <h3>YOUR LICENSE KEY</h3>
-                    <p id="license-status">Generating your license key...</p>
+                    <h3>YOUR NO3D LINK LICENSE KEY</h3>
+                    <p id="license-status">Generating your No3D Link key...</p>
                     <div class="license-progress-wrap" id="license-progress-wrap">
                         <div class="license-progress-bar indeterminate" id="license-progress-bar"></div>
                     </div>
                     <div id="license-key-display" class="license-key-box" style="display: none;"></div>
-                    <button id="copy-license-key" style="display: none;" onclick="copyLicenseKey()">COPY LICENSE KEY</button>
+                    <button id="copy-license-key" style="display: none;" onclick="copyLicenseKey()">COPY NO3D LINK KEY</button>
                 </div>
 
                 <div class="onboarding-steps">
@@ -598,13 +598,13 @@
                     <div class="onboarding-step">
                         <span class="step-number">2</span>
                         <div class="step-content">
-                            Open addon preferences and paste your license key above
+                            Open addon preferences and paste your No3D Link License Key above
                         </div>
                     </div>
                     <div class="onboarding-step">
                         <span class="step-number">3</span>
                         <div class="step-content">
-                            Click "Sync Library" — all ${data.productCount || '64'} assets will appear in your Asset Browser
+                            Click "Activate No3D Link" — all ${data.productCount || '64'} assets will appear in your Asset Browser
                         </div>
                     </div>
                 </div>
@@ -616,7 +616,7 @@
                 <a href="${portalUrl}" class="secondary-link"${portalUrl.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>Manage subscription</a>
 
                 <div class="help-text">
-                    Your license key has also been sent to your email.
+                    Your No3D Link key has also been sent to your email.
                     <a href="mailto:support@no3dtools.com">Contact support</a> if you need help.
                 </div>
             `;

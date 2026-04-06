@@ -269,6 +269,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ─── Newsletter Signup ───
+async function handleNewsletterSignup(event) {
+  event.preventDefault();
+  const emailInput = document.getElementById('newsletter-email');
+  const btn = document.getElementById('newsletter-btn');
+  const status = document.getElementById('newsletter-status');
+  const email = emailInput.value.trim();
+
+  if (!email) return;
+
+  btn.disabled = true;
+  btn.textContent = '...';
+  status.textContent = '';
+  status.className = 'newsletter-status';
+
+  try {
+    const response = await fetch('/api/newsletter/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to subscribe');
+    }
+
+    status.textContent = "You're in. Welcome.";
+    status.className = 'newsletter-status success';
+    emailInput.value = '';
+    btn.textContent = 'DONE';
+  } catch (error) {
+    status.textContent = error.message || 'Something went wrong. Try again.';
+    status.className = 'newsletter-status error';
+    btn.textContent = 'SUBSCRIBE';
+    btn.disabled = false;
+  }
+}
+// Make it available globally for the inline onsubmit
+window.handleNewsletterSignup = handleNewsletterSignup;
+
 // Handle browser back/forward
 window.addEventListener('popstate', async () => {
   const slug = getSlugFromUrl();

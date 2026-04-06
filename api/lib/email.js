@@ -836,7 +836,7 @@ export function getLicenseKeyEmail(licenseKey, addonDownloadUrl) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your NO3D Tools License Key</title>
+  <title>Your No3D Link License Key</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -907,8 +907,8 @@ export function getLicenseKeyEmail(licenseKey, addonDownloadUrl) {
       <div class="logo">NO3D TOOLS</div>
     </div>
 
-    <h1 style="font-size: 24px; margin-bottom: 10px;">Your License Key</h1>
-    <p style="margin-top: 0;">Use the key below in Blender preferences to activate full library access.</p>
+    <h1 style="font-size: 24px; margin-bottom: 10px;">Your No3D Link License Key</h1>
+    <p style="margin-top: 0;">Use this key in Blender preferences to activate full library access.</p>
 
     <div class="key">${licenseKey}</div>
 
@@ -938,7 +938,7 @@ export function getLicenseKeyEmailText(licenseKey, addonDownloadUrl) {
   return `
 NO3D TOOLS
 
-Your License Key:
+Your No3D Link License Key:
 ${licenseKey}
 
 Download the subscriber add-on:
@@ -959,7 +959,7 @@ export async function sendLicenseKeyEmail(email, licenseKey, addonDownloadUrl) {
 
   return sendEmail({
     to: email,
-    subject: 'Your NO3D Tools License Key',
+    subject: 'Your No3D Link License Key',
     html: getLicenseKeyEmail(licenseKey, addonUrl),
     text: getLicenseKeyEmailText(licenseKey, addonUrl),
   });
@@ -1002,6 +1002,58 @@ export async function sendPaymentFailedEmail(email, graceUntil) {
  * @param {string|Date} expiresAt - Date access expires
  * @returns {Promise<object>} Resend response
  */
+/**
+ * Internal signup alerts — comma-separated recipient list (e.g. you@domain.com).
+ * Sent via Resend; no-op if unset or RESEND_API_KEY missing.
+ * Not gated by LICENSE_EMAIL_DRY_RUN (customer dry-run still alerts you).
+ */
+export async function notifyAdminAcquisition({ type, subscriberEmail, detail = {} }) {
+  const raw = process.env.ADMIN_NOTIFY_EMAIL || '';
+  const recipients = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!recipients.length || !process.env.RESEND_API_KEY) {
+    return;
+  }
+
+  const labels = {
+    free_license: 'New free No3D account (license issued)',
+    email_list: 'New email list signup (join)',
+    newsletter: 'New newsletter subscriber',
+    paid_subscriber: 'New No3D Tools paid subscriber',
+  };
+
+  const title = labels[type] || type;
+  const safeEmail = String(subscriberEmail || '').trim();
+  const lines = [
+    title,
+    '',
+    `Subscriber: ${safeEmail}`,
+    ...Object.entries(detail).map(([k, v]) => `${k}: ${v}`),
+    '',
+    `Time (UTC): ${new Date().toISOString()}`,
+  ];
+  const text = lines.join('\n');
+  const html = `<pre style="font-family:ui-monospace,monospace;font-size:14px;line-height:1.5">${text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')}</pre>`;
+
+  try {
+    for (const to of recipients) {
+      await sendEmail({
+        to,
+        subject: `[NO3D] ${title}`,
+        html,
+        text,
+      });
+    }
+  } catch (err) {
+    console.error('notifyAdminAcquisition failed:', err?.message || err);
+  }
+}
+
 export async function sendSubscriptionCancelledEmail(email, expiresAt) {
   const expiryDate = new Date(expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
@@ -1033,6 +1085,7 @@ export default {
   sendLicenseKeyEmail,
   sendPaymentFailedEmail,
   sendSubscriptionCancelledEmail,
+  notifyAdminAcquisition,
   sendEmail,
   getMagicLinkEmail,
   getMagicLinkEmailText,

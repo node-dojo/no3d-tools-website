@@ -3,9 +3,16 @@
 /**
  * Publish Blog Posts from Obsidian Vault to Supabase
  *
- * Scans Blog/Post/ for markdown files. Uses content hashing to detect
- * changes — only new or modified posts are synced. Posts with a future
- * `date` in frontmatter are skipped until that date arrives.
+ * Scans BOTH Blog/4-Ready/ (new posts) and Blog/5-Published/ (already-live
+ * posts that may have been edited). Uses content hashing to detect changes —
+ * only new or modified posts are synced. Posts with a future `date` in
+ * frontmatter are skipped until that date arrives.
+ *
+ * Auto-move on first publish: when a post in Blog/4-Ready/ is successfully
+ * upserted, the file is moved to Blog/5-Published/ with a "YYYY-MM-DD "
+ * filename prefix (pulled from frontmatter date) for chronological sort.
+ * The prefix is decorative — stripped before deriving title or slug, never
+ * reaches the website. Sort survives edits, syncs, and mtime touches.
  *
  * Wikilinks ([[Target Note]]) are converted to live blog links when
  * the target exists as a published post, otherwise rendered as plain text.
@@ -28,9 +35,34 @@ const VAULT_PATH = path.resolve(
   process.env.HOME,
   'Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault_001'
 );
-const POST_DIR = path.join(VAULT_PATH, 'Blog', 'Post');
+const POST_DIR = path.join(VAULT_PATH, 'Blog', '4-Ready');
+const PUBLISHED_DIR = path.join(VAULT_PATH, 'Blog', '5-Published');
 const ATTACHMENTS_DIR = path.join(VAULT_PATH, 'The Well Notebook/attachments');
 const CLOUDINARY_FOLDER = 'no3d-blog';
+
+// --- Filename Date Prefix Helpers ---
+//
+// Published posts in Blog/5-Published/ are prefixed with "YYYY-MM-DD " (ISO)
+// so the file explorer sorts them chronologically by filename — robust against
+// edits, syncs, and any tool that touches mtime. The prefix is decorative;
+// it MUST be stripped before deriving title/slug so it never reaches the
+// website. Posts in Blog/4-Ready/ may also have the prefix; same rule.
+
+const DATE_PREFIX_REGEX = /^\d{4}-\d{2}-\d{2}\s+/;
+
+function stripDatePrefix(filename) {
+  return filename.replace(DATE_PREFIX_REGEX, '');
+}
+
+function formatDatePrefix(dateStr) {
+  // Accepts "YYYY-MM-DD" or any string parseable by Date. Returns "YYYY-MM-DD".
+  const d = dateStr ? new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : '')) : new Date();
+  if (isNaN(d.getTime())) return formatDatePrefix(null); // fall back to today on bad input
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']);
 const VIDEO_EXTS = new Set(['mp4', 'mov', 'webm']);
@@ -378,7 +410,10 @@ async function upsertArticle(supabase, article) {
 }
 
 /**
- * Remove articles from Supabase that no longer have a file in Blog/Post/.
+ * Remove articles from Supabase that no longer have a source file in EITHER
+ * Blog/4-Ready/ OR Blog/5-Published/. The currentSlugs set is built from
+ * both folders during the main loop, so anything missing here is a true
+ * orphan (file was deleted, not just moved between folders).
  */
 async function removeDeletedPosts(supabase, currentSlugs) {
   const { data: existing } = await supabase
@@ -391,7 +426,7 @@ async function removeDeletedPosts(supabase, currentSlugs) {
 
   const toDelete = existing.filter(row => !currentSlugs.has(row.slug));
   for (const row of toDelete) {
-    console.log(`  [remove] ${row.slug} (file no longer in Blog/Post/)`);
+    console.log(`  [remove] ${row.slug} (file no longer in 4-Ready/ or 5-Published/)`);
     await supabase
       .from('articles')
       .update({ status: 'draft', updated_at: new Date().toISOString() })
@@ -432,11 +467,16 @@ async function main() {
   const targetSlug = slugArgIdx !== -1 ? args[slugArgIdx + 1] : null;
 
   if (!fs.existsSync(POST_DIR)) {
-    console.log(`Blog/Post/ directory not found at: ${POST_DIR}`);
+    console.log(`Blog/4-Ready/ directory not found at: ${POST_DIR}`);
     console.log('Creating it now...');
     fs.mkdirSync(POST_DIR, { recursive: true });
-    console.log('Created. Add markdown files to Blog/Post/ and run again.');
+    console.log('Created. Add markdown files to Blog/4-Ready/ and run again.');
     return;
+  }
+
+  // Ensure 5-Published exists; needed for first-publish moves
+  if (!fs.existsSync(PUBLISHED_DIR)) {
+    fs.mkdirSync(PUBLISHED_DIR, { recursive: true });
   }
 
   const supabase = createClient(
@@ -444,9 +484,13 @@ async function main() {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // Collect all post files
-  const files = collectPostFiles(POST_DIR);
-  console.log(`Found ${files.length} markdown file(s) in Blog/Post/\n`);
+  // Collect post files from BOTH folders.
+  // - 4-Ready/ holds new or pending-first-publish posts
+  // - 5-Published/ holds already-published posts that may have been edited
+  const readyFiles = collectPostFiles(POST_DIR);
+  const publishedFiles = collectPostFiles(PUBLISHED_DIR);
+  const files = [...readyFiles, ...publishedFiles];
+  console.log(`Found ${readyFiles.length} in Blog/4-Ready/, ${publishedFiles.length} in Blog/5-Published/ (${files.length} total)\n`);
 
   if (files.length === 0) return;
 
@@ -464,12 +508,16 @@ async function main() {
   for (const filePath of files) {
     const raw = fs.readFileSync(filePath, 'utf-8');
     const { data: frontmatter, content: body } = matter(raw);
-    const filename = path.basename(filePath, '.md');
+    const rawFilename = path.basename(filePath, '.md');
+    // Strip "DD MMM YYYY " prefix used in 5-Published/ for sorting.
+    // The prefix is decorative — never let it leak into title or slug.
+    const filename = stripDatePrefix(rawFilename);
+    const isInPublished = filePath.startsWith(PUBLISHED_DIR);
 
-    // Title: frontmatter > filename
+    // Title: frontmatter > stripped filename
     const title = frontmatter.title || filename;
 
-    // Slug: frontmatter > derived from filename
+    // Slug: frontmatter > derived from stripped filename
     const slug = frontmatter.slug || filename
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -549,14 +597,35 @@ async function main() {
       featuredImage,
       publishedAt,
       metadata: {
-        source_file: path.relative(POST_DIR, filePath),
+        source_file: path.relative(path.join(VAULT_PATH, 'Blog'), filePath),
         content_hash: contentHash,
         date: frontmatter.date,
         shortlink: frontmatter.shortlink || null,
       },
     });
 
-    console.log(`  [ok] Upserted (updated_at: ${article.updated_at})\n`);
+    console.log(`  [ok] Upserted (updated_at: ${article.updated_at})`);
+
+    // First-publish move: if the file lives in 4-Ready/, move it to
+    // 5-Published/ with a "YYYY-MM-DD " filename prefix for chronological sort.
+    // Already-published files (in 5-Published/) stay where they are; they're
+    // editable and will re-sync to the website on subsequent runs by slug.
+    // Uses the STRIPPED filename so we never produce double prefixes if a
+    // draft was manually pre-prefixed.
+    if (!isInPublished) {
+      const datePrefix = formatDatePrefix(frontmatter.date);
+      const newFilename = `${datePrefix} ${filename}.md`;
+      const destPath = path.join(PUBLISHED_DIR, newFilename);
+      try {
+        fs.renameSync(filePath, destPath);
+        console.log(`  [moved] → 5-Published/${newFilename}`);
+      } catch (moveErr) {
+        console.warn(`  [warn] Upsert succeeded but file move failed: ${moveErr.message}`);
+        console.warn(`  [warn] Manually move ${filePath} to ${destPath}`);
+      }
+    }
+
+    console.log();
     synced++;
   }
 

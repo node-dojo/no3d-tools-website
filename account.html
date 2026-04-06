@@ -185,14 +185,14 @@
             <!-- State: No key stored — show entry form -->
             <div id="state-no-key">
                 <div class="account-section">
-                    <h2>LICENSE KEY</h2>
-                    <p>Enter your license key to view your account.</p>
+                    <h2>NO3D LINK LICENSE KEY</h2>
+                    <p>Enter your No3D Link License Key to view your account.</p>
                     <input type="text" id="license-key-input" placeholder="NO3D-XXXX-XXXX-XXXX-XXXX">
-                    <button onclick="saveLicenseKey()">SAVE LICENSE KEY</button>
+                    <button onclick="saveLicenseKey()">SAVE NO3D LINK KEY</button>
                     <p id="save-error" class="account-msg"></p>
                 </div>
                 <div class="account-section">
-                    <p>Don't have your key? Check your email for <strong>"No3d Tools — Your License Key"</strong>.</p>
+                    <p>Don't have your key? Check your email for <strong>"No3d Tools — Your No3D Link License Key"</strong>.</p>
                     <p><a href="subscribe.html">Subscribe</a> to get started.</p>
                 </div>
             </div>
@@ -201,7 +201,7 @@
             <div id="state-has-key" style="display: none;">
                 <!-- License Key -->
                 <div class="account-section">
-                    <h2>LICENSE KEY</h2>
+                    <h2>NO3D LINK LICENSE KEY</h2>
                     <div class="license-key-box" id="account-license-key"></div>
                     <div class="btn-row">
                         <button onclick="copyAccountLicenseKey()">COPY</button>
@@ -236,7 +236,7 @@
 
                 <!-- Change key link -->
                 <div class="account-section" style="border-bottom: none;">
-                    <a href="#" id="change-key-link" onclick="showChangeKey(event)" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-dark-gray);">Use a different license key</a>
+                    <a href="#" id="change-key-link" onclick="showChangeKey(event)" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-dark-gray);">Use a different No3D Link key</a>
                     <div id="change-key-form" style="display: none; margin-top: var(--space-medium);">
                         <input type="text" id="change-key-input" placeholder="NO3D-XXXX-XXXX-XXXX-XXXX">
                         <div class="btn-row">
@@ -281,10 +281,10 @@
             if (!key.match(/^NO3D-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
                 const errorEl = inputId ? null : document.getElementById('save-error');
                 if (errorEl) {
-                    errorEl.textContent = 'Invalid format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX';
+                    errorEl.textContent = 'Invalid No3D Link key format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX';
                     errorEl.style.color = '#cc0000';
                 } else {
-                    alert('Invalid format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX');
+                    alert('Invalid No3D Link key format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX');
                 }
                 return;
             }
