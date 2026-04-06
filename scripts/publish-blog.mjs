@@ -54,14 +54,29 @@ function stripDatePrefix(filename) {
   return filename.replace(DATE_PREFIX_REGEX, '');
 }
 
-function formatDatePrefix(dateStr) {
-  // Accepts "YYYY-MM-DD" or any string parseable by Date. Returns "YYYY-MM-DD".
-  const d = dateStr ? new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : '')) : new Date();
-  if (isNaN(d.getTime())) return formatDatePrefix(null); // fall back to today on bad input
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+function formatDatePrefix(dateInput) {
+  // Accepts a YAML-parsed Date object, a "YYYY-MM-DD" string, or null.
+  // Returns "YYYY-MM-DD". Always reads UTC components to avoid the
+  // timezone bug where YAML parses "2026-04-04" as midnight UTC and the
+  // local-time getter returns the previous day in negative-offset zones.
+  if (!dateInput) {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+  if (typeof dateInput === 'string') {
+    // Already-formatted "YYYY-MM-DD" — return the first 10 chars verbatim if they match.
+    const m = dateInput.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (m) return m[1];
+    // Fall through to Date parsing for unusual string formats.
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return formatDatePrefix(null);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  }
+  if (dateInput instanceof Date) {
+    if (isNaN(dateInput.getTime())) return formatDatePrefix(null);
+    return `${dateInput.getUTCFullYear()}-${String(dateInput.getUTCMonth() + 1).padStart(2, '0')}-${String(dateInput.getUTCDate()).padStart(2, '0')}`;
+  }
+  return formatDatePrefix(null);
 }
 
 const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']);
