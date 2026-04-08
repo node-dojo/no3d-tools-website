@@ -73,7 +73,7 @@ let carouselIsDragging = false;
 
 // DOM elements
 const productTitle = document.getElementById('product-title');
-const productPrice = document.getElementById('product-price');
+// const productPrice = document.getElementById('product-price'); // hidden 2026-04-07 (subscription-only)
 const productDescription = document.getElementById('product-description');
 const downloadButton = document.getElementById('download-button');
 const buyNowButton = document.getElementById('buy-now-button');
@@ -151,7 +151,7 @@ async function fetchUnifiedProducts() {
           id: product.id,
           name: product.title.toUpperCase(),
           title: product.title,
-          price: product.price || 'FREE',
+          // price: product.price || 'FREE', // hidden 2026-04-07 (subscription-only)
           description: product.description,
           changelog: product.changelog || [],
           image: product.image || null,
@@ -490,7 +490,7 @@ async function updateProductDisplay(productId) {
   if (!product) return;
 
   productTitle.textContent = product.name;
-  productPrice.textContent = `PRICE: ${product.price}`;
+  // productPrice.textContent = `PRICE: ${product.price}`; // hidden 2026-04-07 (subscription-only)
 
   // --- Parse description: extract changelog and strip boilerplate ---
   let descriptionText = '';
@@ -1395,7 +1395,7 @@ function renderSearchResults() {
     resultItem.innerHTML = `
       <div class="search-result-content">
         <div class="search-result-title">${escapeText(product.name)}</div>
-        <div class="search-result-price">${escapeText(product.price)}</div>
+        <!-- price hidden 2026-04-07 (subscription-only) -->
       </div>
     `;
 
