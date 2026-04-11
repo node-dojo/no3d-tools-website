@@ -26,8 +26,9 @@
  *            during playback. If omitted, defaults to "#article-content".
  */
 
-/** Human-verification line; width + text-wrap: balance yields ~3 even lines */
-const POL_CAPTION_HTML = `This post is verifiably written by human hands and <em class="pol-caption-em">not</em> AI. Hit the replay button to view the writer's process start to finish.`;
+/** Human-verification copy — bold lead, regular sub, per Figma POL-Play Button w Message */
+const POL_INLINE_MESSAGE_HTML = `<span class="pol-inline-msg-bold">This post is verifiably written by a human and NOT AI.</span><span class="pol-inline-msg-sub">Hit the replay button to view the writer's process start to finish.</span>`;
+const POL_FOOTER_CAPTION_HTML = `This post is verifiably written by human hands and <em class="pol-caption-em">not</em> AI. Hit the replay button to view the writer's process start to finish.`;
 
 const POL_PLAY_SVG = `<svg class="pol-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
 const POL_PAUSE_SVG = `<svg class="pol-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
@@ -112,47 +113,68 @@ class ProofOfLife extends HTMLElement {
         animation: pol-blink 1s step-end infinite;
       }
 
-      /* --- Inline surface (below article header) --- */
+      /* --- Inline surface — Figma "POL-Play Button w Message" (334x40) --- */
       .pol-inline {
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 0;
-        margin-bottom: 24px;
-        border-bottom: 1px solid #E8E8E8;
-      }
-      .pol-inline-controls {
-        width: 100%;
-        display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 9px;
+        width: 334px;
+        max-width: 100%;
+        height: 40px;
+        background: #FFFFFF;
+        border: 1px solid #000000;
+        box-sizing: border-box;
+        margin-bottom: 24px;
       }
-      .pol-inline-kicker {
+      .pol-inline-message {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1px;
+        padding-right: 11px;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-size: 9px;
+        line-height: 1.15;
+        color: #000000;
+        overflow: hidden;
+      }
+      .pol-inline-msg-bold {
+        font-weight: 700;
+      }
+      .pol-inline-msg-sub {
+        font-weight: 400;
+      }
+      .pol-inline-restore-btn {
+        display: none;
+        flex: 1;
+        align-self: stretch;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: #FFFFFF;
+        color: #000000;
+        font-family: 'Visitor TT1 BRK', 'Visitor', 'Space Mono', monospace;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+      }
+      .pol-inline-restore-btn:hover {
+        background: #000000;
+        color: #f0ff00;
+      }
+      .pol-inline.is-replaying .pol-inline-message {
+        display: none;
+      }
+      .pol-inline.is-replaying .pol-inline-restore-btn {
         display: block;
-        font-family: 'JetBrains Mono', 'Courier New', monospace;
-        font-size: 10px;
-        font-weight: 300;
-        color: #303030;
-        letter-spacing: 0.02em;
-        line-height: 1.45;
-        max-width: min(38ch, 100%);
-        text-wrap: balance;
       }
       .pol-caption-em {
         font-style: italic;
         font-weight: 500;
         color: #111111;
-      }
-      .pol-inline-meta {
-        font-family: 'JetBrains Mono', 'Courier New', monospace;
-        font-size: 10px;
-        font-weight: 300;
-        color: #303030;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-left: auto;
-        font-variant-numeric: tabular-nums;
       }
       .pol-btn {
         font-family: 'Visitor TT1 BRK', 'Visitor', 'Space Mono', monospace;
@@ -334,18 +356,15 @@ class ProofOfLife extends HTMLElement {
     const wrap = document.createElement("div");
     wrap.className = "pol-inline";
     wrap.innerHTML = `
-      <div class="pol-inline-controls">
-        <button type="button" class="pol-btn pol-icon-btn pol-inline-btn" aria-label="Play">${POL_PLAY_SVG}</button>
-        <button type="button" class="pol-btn pol-restore-btn pol-inline-restore-btn">RESTORE</button>
-        <span class="pol-inline-meta pol-inline-counter">0 / 0</span>
-      </div>
-      <span class="pol-inline-kicker">${POL_CAPTION_HTML}</span>
+      <button type="button" class="pol-btn pol-icon-btn pol-inline-btn" aria-label="Play">${POL_PLAY_SVG}</button>
+      <div class="pol-inline-message">${POL_INLINE_MESSAGE_HTML}</div>
+      <button type="button" class="pol-inline-restore-btn">RESTORE FULL POST</button>
     `;
     this._targetEl.parentNode.insertBefore(wrap, this._targetEl);
     this._inlineEl = wrap;
     this._inlineBtn = wrap.querySelector(".pol-inline-btn");
     this._inlineRestoreBtn = wrap.querySelector(".pol-inline-restore-btn");
-    this._inlineCounter = wrap.querySelector(".pol-inline-counter");
+    this._inlineCounter = null;
     this._inlineBtn.addEventListener("click", () => this._togglePlay());
     this._inlineRestoreBtn.addEventListener("click", () => this._restore());
   }
@@ -360,7 +379,7 @@ class ProofOfLife extends HTMLElement {
             <button type="button" class="pol-btn pol-icon-btn pol-footer-btn" aria-label="Play">${POL_PLAY_SVG}</button>
             <button type="button" class="pol-btn pol-restore-btn pol-footer-restore-btn">RESTORE</button>
           </div>
-          <span class="pol-footer-kicker">${POL_CAPTION_HTML}</span>
+          <span class="pol-footer-kicker">${POL_FOOTER_CAPTION_HTML}</span>
         </div>
         <input type="range" class="pol-scrubber" min="0" max="0" value="0">
         <span class="pol-counter">0 / 0</span>
@@ -384,7 +403,7 @@ class ProofOfLife extends HTMLElement {
   }
 
   _setRestoreVisible(visible) {
-    if (this._inlineRestoreBtn) this._inlineRestoreBtn.classList.toggle("is-visible", visible);
+    if (this._inlineEl) this._inlineEl.classList.toggle("is-replaying", visible);
     if (this._footerRestoreBtn) this._footerRestoreBtn.classList.toggle("is-visible", visible);
   }
 

@@ -2,29 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Proof of Life — Test</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="blog.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <style>
-    body {
-      background: #000;
-      color: #e8e8e8;
-      font-family: 'JetBrains Mono', monospace;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-    h1 { font-size: 16px; color: #f0ff00; }
-    p { font-size: 13px; color: #888; margin-bottom: 20px; }
+    @font-face { font-family: 'Visitor'; src: url('fonts/visitor.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Visitor'; src: url('fonts/visitor.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Visitor TT1 BRK'; src: url('fonts/visitor.woff2') format('woff2'); font-weight: normal; font-style: normal; font-display: swap; }
   </style>
 </head>
 <body>
-  <h1>PROOF OF LIFE — TEST</h1>
-  <p>Paste a .jsonl sidecar file or use the generated sample below.</p>
+  <div class="blog-container">
+    <h1 class="blog-page-title">PROOF OF LIFE — TEST</h1>
+    <p class="loading-message" style="padding: 0 0 24px 0;">Paste a .jsonl sidecar file or use the generated sample below.</p>
 
-  <proof-of-life id="player" target="#article-content"></proof-of-life>
+    <proof-of-life id="player" target="#article-content"></proof-of-life>
 
-  <article id="article-content" style="background:#111;padding:16px;border:1px solid #333;">
-    <p>Sample article body — replay replaces this region during playback.</p>
-  </article>
+    <div id="article-content" class="product-description">
+      <p>Sample article body — replay replaces this region during playback.</p>
+    </div>
+  </div>
 
   <script src="proof-of-life.js"></script>
   <script>
