@@ -168,12 +168,34 @@ class ProofOfLife extends HTMLElement {
         min-width: 72px;
         text-align: center;
       }
-      .pol-icon-btn {
+      /* Play / pause: solid PETRI lello square */
+      .pol-btn.pol-icon-btn.pol-inline-btn,
+      .pol-btn.pol-icon-btn.pol-footer-btn {
+        width: 40px;
+        height: 40px;
         min-width: 40px;
-        padding: 8px 12px;
+        padding: 0;
+        box-sizing: border-box;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        background: #f0ff00;
+        border: 1px solid #000000;
+        color: #000000;
+      }
+      .pol-btn.pol-icon-btn.pol-inline-btn:hover,
+      .pol-btn.pol-icon-btn.pol-footer-btn:hover {
+        background: #000000;
+        color: #f0ff00;
+      }
+      .pol-btn.pol-icon-btn.pol-inline-btn:disabled,
+      .pol-btn.pol-icon-btn.pol-footer-btn:disabled,
+      .pol-btn.pol-icon-btn.pol-inline-btn:disabled:hover,
+      .pol-btn.pol-icon-btn.pol-footer-btn:disabled:hover {
+        opacity: 0.45;
+        cursor: default;
+        background: #f0ff00;
+        color: #000000;
       }
       .pol-btn-icon {
         width: 14px;
