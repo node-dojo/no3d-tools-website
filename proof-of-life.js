@@ -158,6 +158,12 @@ class ProofOfLife extends HTMLElement {
         background: transparent;
         color: #000000;
       }
+      .pol-restore-btn {
+        display: none;
+      }
+      .pol-restore-btn.is-visible {
+        display: inline-block;
+      }
 
       /* --- Fixed footer surface --- */
       .pol-footer {
@@ -256,13 +262,16 @@ class ProofOfLife extends HTMLElement {
     wrap.innerHTML = `
       <span class="pol-inline-kicker">Proof of Life</span>
       <button type="button" class="pol-btn pol-inline-btn">PLAY</button>
+      <button type="button" class="pol-btn pol-restore-btn pol-inline-restore-btn">RESTORE</button>
       <span class="pol-inline-meta pol-inline-counter">0 / 0</span>
     `;
     this._targetEl.parentNode.insertBefore(wrap, this._targetEl);
     this._inlineEl = wrap;
     this._inlineBtn = wrap.querySelector(".pol-inline-btn");
+    this._inlineRestoreBtn = wrap.querySelector(".pol-inline-restore-btn");
     this._inlineCounter = wrap.querySelector(".pol-inline-counter");
     this._inlineBtn.addEventListener("click", () => this._togglePlay());
+    this._inlineRestoreBtn.addEventListener("click", () => this._restore());
   }
 
   _mountFooter() {
@@ -272,6 +281,7 @@ class ProofOfLife extends HTMLElement {
       <div class="pol-footer-bar">
         <span class="pol-footer-kicker">Proof of Life</span>
         <button type="button" class="pol-btn pol-footer-btn">PLAY</button>
+        <button type="button" class="pol-btn pol-restore-btn pol-footer-restore-btn">RESTORE</button>
         <input type="range" class="pol-scrubber" min="0" max="0" value="0">
         <span class="pol-counter">0 / 0</span>
       </div>
@@ -279,16 +289,32 @@ class ProofOfLife extends HTMLElement {
     document.body.appendChild(footer);
     this._footerEl = footer;
     this._footerBtn = footer.querySelector(".pol-footer-btn");
+    this._footerRestoreBtn = footer.querySelector(".pol-footer-restore-btn");
     this._scrubberEl = footer.querySelector(".pol-scrubber");
     this._counterEl = footer.querySelector(".pol-counter");
 
     this._footerBtn.addEventListener("click", () => this._togglePlay());
+    this._footerRestoreBtn.addEventListener("click", () => this._restore());
     this._scrubberEl.addEventListener("input", () => {
       if (!this._loaded) return;
       const idx = parseInt(this._scrubberEl.value, 10);
       this._ensureSwapped();
       this._seekTo(idx);
     });
+  }
+
+  _setRestoreVisible(visible) {
+    if (this._inlineRestoreBtn) this._inlineRestoreBtn.classList.toggle("is-visible", visible);
+    if (this._footerRestoreBtn) this._footerRestoreBtn.classList.toggle("is-visible", visible);
+  }
+
+  _restore() {
+    this._pause();
+    this._restoreTarget();
+    this._currentIndex = 0;
+    if (this._scrubberEl) this._scrubberEl.value = "0";
+    this._updateCounter();
+    this._setRestoreVisible(false);
   }
 
   _wireScrollReveal() {
@@ -329,6 +355,7 @@ class ProofOfLife extends HTMLElement {
     this._targetEl.innerHTML = "";
     this._targetEl.appendChild(replay);
     this._replayEl = replay;
+    this._setRestoreVisible(true);
   }
 
   _restoreTarget() {
@@ -336,6 +363,7 @@ class ProofOfLife extends HTMLElement {
     this._targetEl.innerHTML = this._originalHTML;
     this._originalHTML = null;
     this._replayEl = null;
+    this._setRestoreVisible(false);
   }
 
   // --- Playback ---
