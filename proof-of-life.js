@@ -26,8 +26,8 @@
  *            during playback. If omitted, defaults to "#article-content".
  */
 
-const POL_CAPTION =
-  "Verify article is Human Typed (not AI) by replaying writing process";
+/** Human-verification line; width + text-wrap: balance yields ~3 even lines */
+const POL_CAPTION_HTML = `This post is verifiably written by human hands and <em class="pol-caption-em">not</em> AI. Hit the replay button to view the writer's process start to finish.`;
 
 const POL_PLAY_SVG = `<svg class="pol-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
 const POL_PAUSE_SVG = `<svg class="pol-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
@@ -129,13 +129,20 @@ class ProofOfLife extends HTMLElement {
         gap: 14px;
       }
       .pol-inline-kicker {
+        display: block;
         font-family: 'JetBrains Mono', 'Courier New', monospace;
         font-size: 10px;
         font-weight: 300;
         color: #303030;
         letter-spacing: 0.02em;
         line-height: 1.45;
-        max-width: 100%;
+        max-width: min(38ch, 100%);
+        text-wrap: balance;
+      }
+      .pol-caption-em {
+        font-style: italic;
+        font-weight: 500;
+        color: #111111;
       }
       .pol-inline-meta {
         font-family: 'JetBrains Mono', 'Courier New', monospace;
@@ -232,12 +239,15 @@ class ProofOfLife extends HTMLElement {
         gap: 10px;
       }
       .pol-footer-kicker {
+        display: block;
         font-family: 'JetBrains Mono', 'Courier New', monospace;
         font-size: 10px;
         font-weight: 300;
         color: #303030;
         letter-spacing: 0.02em;
         line-height: 1.35;
+        max-width: min(38ch, 100%);
+        text-wrap: balance;
       }
       .pol-scrubber {
         flex: 1;
@@ -307,7 +317,7 @@ class ProofOfLife extends HTMLElement {
         <button type="button" class="pol-btn pol-restore-btn pol-inline-restore-btn">RESTORE</button>
         <span class="pol-inline-meta pol-inline-counter">0 / 0</span>
       </div>
-      <span class="pol-inline-kicker">${POL_CAPTION}</span>
+      <span class="pol-inline-kicker">${POL_CAPTION_HTML}</span>
     `;
     this._targetEl.parentNode.insertBefore(wrap, this._targetEl);
     this._inlineEl = wrap;
@@ -328,7 +338,7 @@ class ProofOfLife extends HTMLElement {
             <button type="button" class="pol-btn pol-icon-btn pol-footer-btn" aria-label="Play">${POL_PLAY_SVG}</button>
             <button type="button" class="pol-btn pol-restore-btn pol-footer-restore-btn">RESTORE</button>
           </div>
-          <span class="pol-footer-kicker">${POL_CAPTION}</span>
+          <span class="pol-footer-kicker">${POL_CAPTION_HTML}</span>
         </div>
         <input type="range" class="pol-scrubber" min="0" max="0" value="0">
         <span class="pol-counter">0 / 0</span>
