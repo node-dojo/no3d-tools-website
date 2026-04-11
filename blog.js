@@ -194,8 +194,9 @@ function renderPrevNext(currentSlug, allArticles) {
   if (idx > 0) {
     const prev = allArticles[idx - 1];
     prevEl.href = '/blog/' + prev.slug;
-    prevEl.textContent = '\u2190 ' + prev.title;
-    prevEl.style.display = 'inline-block';
+    // Arrow outside the ellipsis-clipped title span so it never gets eaten
+    prevEl.innerHTML = '<span class="nav-arrow">\u2190</span><span class="nav-title">' + escapeText(prev.title) + '</span>';
+    prevEl.style.display = 'inline-flex';
     prevEl.onclick = (e) => {
       e.preventDefault();
       window.history.pushState({ slug: prev.slug }, '', '/blog/' + prev.slug);
@@ -208,8 +209,8 @@ function renderPrevNext(currentSlug, allArticles) {
   if (idx < allArticles.length - 1) {
     const next = allArticles[idx + 1];
     nextEl.href = '/blog/' + next.slug;
-    nextEl.textContent = next.title + ' \u2192';
-    nextEl.style.display = 'inline-block';
+    nextEl.innerHTML = '<span class="nav-title">' + escapeText(next.title) + '</span><span class="nav-arrow">\u2192</span>';
+    nextEl.style.display = 'inline-flex';
     nextEl.onclick = (e) => {
       e.preventDefault();
       window.history.pushState({ slug: next.slug }, '', '/blog/' + next.slug);
@@ -218,6 +219,12 @@ function renderPrevNext(currentSlug, allArticles) {
   } else {
     nextEl.style.display = 'none';
   }
+}
+
+function escapeText(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 // --- Meta tags ---

@@ -357,9 +357,9 @@
 .article-nav {
   display: flex;
   justify-content: space-between;
-  padding: 32px 0;
+  padding: 24px 0 32px 0;
   margin-top: 32px;
-  border-top: 1px solid var(--color-stone-gray);
+  border-top: 1px solid var(--color-void-black);
 }
 
 .article-nav-link {
@@ -369,12 +369,29 @@
   color: var(--color-dark-gray);
   text-decoration: none;
   max-width: 45%;
+  min-width: 0;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.article-nav-link .nav-arrow {
+  flex-shrink: 0;
+  color: var(--color-medium-gray);
+  font-size: 14px;
+}
+
+.article-nav-link .nav-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .article-nav-link:hover {
+  color: var(--color-void-black);
+}
+
+.article-nav-link:hover .nav-arrow {
   color: var(--color-void-black);
 }
 

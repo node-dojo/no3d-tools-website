@@ -56,6 +56,7 @@ class ProofOfLife extends HTMLElement {
     this._inlineEl = null;
     this._footerEl = null;
     this._footerVisible = false;
+    this._inlineOutOfView = false;
     this._intersectionObserver = null;
   }
 
@@ -319,24 +320,29 @@ class ProofOfLife extends HTMLElement {
 
   _wireScrollReveal() {
     // Show the fixed footer once the inline button scrolls out of view.
+    // Also force-show it while replay mode is active regardless of scroll.
     if (!("IntersectionObserver" in window)) {
-      this._setFooterVisible(true);
+      this._inlineOutOfView = true;
+      this._updateFooterVisibility();
       return;
     }
     this._intersectionObserver = new IntersectionObserver(
       (entries) => {
         const inlineVisible = entries[0]?.isIntersecting ?? false;
-        this._setFooterVisible(!inlineVisible);
+        this._inlineOutOfView = !inlineVisible;
+        this._updateFooterVisibility();
       },
       { threshold: 0, rootMargin: "0px 0px -40px 0px" }
     );
     this._intersectionObserver.observe(this._inlineEl);
   }
 
-  _setFooterVisible(visible) {
-    if (this._footerVisible === visible) return;
-    this._footerVisible = visible;
-    if (visible) {
+  _updateFooterVisibility() {
+    // Visible if scrolled past the inline button OR replay mode is active.
+    const shouldShow = this._inlineOutOfView || this._originalHTML !== null;
+    if (this._footerVisible === shouldShow) return;
+    this._footerVisible = shouldShow;
+    if (shouldShow) {
       this._footerEl.classList.add("is-visible");
       document.body.style.paddingBottom = "72px";
     } else {
@@ -356,6 +362,7 @@ class ProofOfLife extends HTMLElement {
     this._targetEl.appendChild(replay);
     this._replayEl = replay;
     this._setRestoreVisible(true);
+    this._updateFooterVisibility();
   }
 
   _restoreTarget() {
@@ -364,6 +371,7 @@ class ProofOfLife extends HTMLElement {
     this._originalHTML = null;
     this._replayEl = null;
     this._setRestoreVisible(false);
+    this._updateFooterVisibility();
   }
 
   // --- Playback ---
