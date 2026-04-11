@@ -149,6 +149,15 @@ function renderArticle(article) {
     contentEl.textContent = article.content || '';
   }
 
+  // Proof of Life playback — appended below article content when metadata present
+  const proofUrl = article.metadata?.proofoflife_url;
+  if (proofUrl) {
+    const polEl = document.createElement('proof-of-life');
+    polEl.setAttribute('src', proofUrl);
+    polEl.style.marginTop = '32px';
+    contentEl.appendChild(polEl);
+  }
+
   // Share button
   const shareBtn = document.getElementById('share-btn');
   const shortlink = article.metadata?.shortlink;

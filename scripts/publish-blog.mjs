@@ -145,7 +145,10 @@ async function uploadToCloudinary(filePath, publicId, resourceType, { cloudName,
   const signature = crypto.createHash('sha1').update(paramsToSign + apiSecret).digest('hex');
 
   const fileBuffer = fs.readFileSync(filePath);
-  const mime = resourceType === 'video' ? 'video/mp4' : 'image/png';
+  let mime;
+  if (resourceType === 'video') mime = 'video/mp4';
+  else if (resourceType === 'raw') mime = 'application/octet-stream';
+  else mime = 'image/png';
   const fileBase64 = `data:${mime};base64,${fileBuffer.toString('base64')}`;
 
   const formData = new URLSearchParams();
@@ -164,6 +167,73 @@ async function uploadToCloudinary(filePath, publicId, resourceType, { cloudName,
   }
 
   return await res.json();
+}
+
+// --- Proof of Life Sidecar ---
+//
+// If a .proofoflife/<path>.jsonl sidecar exists for this note, upload it
+// as a Cloudinary "raw" resource so the web <proof-of-life> component can
+// fetch and replay it. Returns { url, stats } or null.
+//
+// Stats are computed by a single pass over the JSONL lines: count sessions,
+// count events, sum deltaMs per session (clamped to exclude the initial 0
+// between session header and first event).
+
+async function uploadProofOfLifeSidecar(vaultRelPath, slug) {
+  const sidecarAbs = path.join(
+    VAULT_PATH,
+    '.proofoflife',
+    vaultRelPath.replace(/\.md$/i, '.jsonl')
+  );
+  if (!fs.existsSync(sidecarAbs)) return null;
+
+  const raw = fs.readFileSync(sidecarAbs, 'utf-8');
+  const lines = raw.split('\n').filter((l) => l.trim());
+  let sessions = 0;
+  let totalEvents = 0;
+  let totalTimeMs = 0;
+
+  for (const line of lines) {
+    try {
+      const parsed = JSON.parse(line);
+      if (Array.isArray(parsed)) {
+        totalEvents++;
+        totalTimeMs += parsed[0] || 0;
+      } else if (parsed.v !== undefined) {
+        sessions++;
+      }
+    } catch {
+      // Skip malformed lines
+    }
+  }
+
+  if (totalEvents === 0) {
+    console.log(`  [proof-of-life] Sidecar exists but has no events — skipping upload`);
+    return null;
+  }
+
+  const creds = parseCloudinaryCredentials();
+  // For raw resources, Cloudinary keeps the extension as part of the
+  // public_id and serves the file at that exact path. Including ".jsonl"
+  // preserves the content-type for the browser.
+  const publicId = `${CLOUDINARY_FOLDER}/${slug}/proof-of-life.jsonl`;
+
+  console.log(`  [proof-of-life] ${sessions} session(s), ${totalEvents} events, ${(totalTimeMs / 1000).toFixed(1)}s writing time`);
+  console.log(`  [proof-of-life] uploading ${sidecarAbs.replace(VAULT_PATH, '')} → ${publicId}`);
+
+  try {
+    await uploadToCloudinary(sidecarAbs, publicId, 'raw', creds);
+    const encodedId = publicId.split('/').map(encodeURIComponent).join('/');
+    const url = `https://res.cloudinary.com/${creds.cloudName}/raw/upload/${encodedId}`;
+    console.log(`  [proof-of-life] [ok] ${url}`);
+    return {
+      url,
+      stats: { sessions, totalEvents, totalTimeMs },
+    };
+  } catch (err) {
+    console.error(`  [proof-of-life] [fail] ${err.message}`);
+    return null;
+  }
 }
 
 // --- Wikilink Resolution ---
@@ -450,6 +520,20 @@ async function removeDeletedPosts(supabase, currentSlugs) {
 }
 
 // --- Collect Post Files ---
+//
+// Two post shapes are supported:
+//
+// 1. Flat post:        4-Ready/my-post.md
+// 2. Folder-note post: 4-Ready/my-post/my-post.md  (+ children: my-post.log.md,
+//                      research.md, screenshot.png, etc — children NEVER publish)
+//
+// Folder-note posts in 5-Published/ may have their parent folder date-prefixed
+// for chronological sort: 5-Published/2026-04-09 my-post/my-post.md
+//
+// Inside a folder-note post directory we publish exactly ONE file: {dirname}.md
+// (where {dirname} is the parent folder name with any date prefix stripped).
+// Every other file in that directory is treated as a vault-only sidecar and
+// is never sent to Supabase. See Vault_001/Agent/Reference/Folder-Note-Convention.md
 
 function collectPostFiles(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -459,17 +543,36 @@ function collectPostFiles(dir) {
 
   for (const entry of entries) {
     if (entry.isFile() && entry.name.endsWith('.md')) {
+      // Flat post — picked up directly. Skip *.log.md sidecars from the
+      // legacy flat-with-sibling-log shape; logs are vault-only artifacts
+      // and should never become Supabase articles.
+      if (entry.name.endsWith('.log.md')) continue;
       files.push(path.join(dir, entry.name));
     } else if (entry.isDirectory()) {
-      // Support posts in subdirectories (for co-located media)
-      const subFiles = fs.readdirSync(path.join(dir, entry.name))
-        .filter(f => f.endsWith('.md'))
-        .map(f => path.join(dir, entry.name, f));
-      files.push(...subFiles);
+      // Folder-note post: only the inner {dirname}.md gets published.
+      // Date prefix on the folder (5-Published/2026-04-09 my-post/) is
+      // stripped when computing the expected inner filename.
+      const folderName = stripDatePrefix(entry.name);
+      const expectedInnerFile = `${folderName}.md`;
+      const innerPath = path.join(dir, entry.name, expectedInnerFile);
+      if (fs.existsSync(innerPath)) {
+        files.push(innerPath);
+      }
+      // Anything else in the subdirectory is a sidecar (logs, research, media,
+      // unrelated .md files) and is intentionally skipped.
     }
   }
 
   return files;
+}
+
+// True if filePath is the folder note of a folder-note post —
+// i.e. its parent directory name (with any date prefix stripped) equals the
+// file's basename without extension.
+function isFolderNotePost(filePath) {
+  const fileStem = path.basename(filePath, '.md');
+  const parentName = stripDatePrefix(path.basename(path.dirname(filePath)));
+  return parentName === fileStem;
 }
 
 // --- Main ---
@@ -602,6 +705,11 @@ async function main() {
     // Determine published_at: keep existing if updating, use frontmatter date or now if new
     const publishedAt = frontmatter.date || new Date().toISOString();
 
+    // Upload Proof of Life sidecar if one exists for this note.
+    // The sidecar path mirrors the vault path under .proofoflife/ with .md → .jsonl.
+    const vaultRelPath = path.relative(VAULT_PATH, filePath);
+    const proofOfLife = dryRun ? null : await uploadProofOfLifeSidecar(vaultRelPath, slug);
+
     const article = await upsertArticle(supabase, {
       slug,
       title,
@@ -616,27 +724,80 @@ async function main() {
         content_hash: contentHash,
         date: frontmatter.date,
         shortlink: frontmatter.shortlink || null,
+        ...(proofOfLife && {
+          proofoflife_url: proofOfLife.url,
+          proofoflife_stats: proofOfLife.stats,
+        }),
       },
     });
 
     console.log(`  [ok] Upserted (updated_at: ${article.updated_at})`);
 
-    // First-publish move: if the file lives in 4-Ready/, move it to
-    // 5-Published/ with a "YYYY-MM-DD " filename prefix for chronological sort.
-    // Already-published files (in 5-Published/) stay where they are; they're
+    // First-publish move: if the post lives in 4-Ready/, move it to
+    // 5-Published/ with a "YYYY-MM-DD " prefix for chronological sort.
+    // Already-published posts (in 5-Published/) stay where they are; they're
     // editable and will re-sync to the website on subsequent runs by slug.
-    // Uses the STRIPPED filename so we never produce double prefixes if a
-    // draft was manually pre-prefixed.
+    //
+    // Two shapes:
+    //   - Flat post:        rename the .md file with a date prefix.
+    //   - Folder-note post: rename the PARENT FOLDER with a date prefix.
+    //                       The inner {dirname}.md file keeps its name.
+    //                       Children (log, research, media) come along intact
+    //                       because we're moving the whole folder.
+    //
+    // Uses STRIPPED names so we never produce double prefixes if a draft was
+    // manually pre-prefixed.
     if (!isInPublished) {
       const datePrefix = formatDatePrefix(frontmatter.date);
-      const newFilename = `${datePrefix} ${filename}.md`;
-      const destPath = path.join(PUBLISHED_DIR, newFilename);
-      try {
-        fs.renameSync(filePath, destPath);
-        console.log(`  [moved] → 5-Published/${newFilename}`);
-      } catch (moveErr) {
-        console.warn(`  [warn] Upsert succeeded but file move failed: ${moveErr.message}`);
-        console.warn(`  [warn] Manually move ${filePath} to ${destPath}`);
+
+      if (isFolderNotePost(filePath)) {
+        // Move the entire parent folder.
+        const parentDir = path.dirname(filePath);
+        const parentName = stripDatePrefix(path.basename(parentDir));
+        const newFolderName = `${datePrefix} ${parentName}`;
+        const destFolder = path.join(PUBLISHED_DIR, newFolderName);
+        try {
+          fs.renameSync(parentDir, destFolder);
+          console.log(`  [moved] → 5-Published/${newFolderName}/ (folder-note post, children intact)`);
+        } catch (moveErr) {
+          console.warn(`  [warn] Upsert succeeded but folder move failed: ${moveErr.message}`);
+          console.warn(`  [warn] Manually move ${parentDir} to ${destFolder}`);
+        }
+      } else {
+        // Flat post: rename the file.
+        const newFilename = `${datePrefix} ${filename}.md`;
+        const destPath = path.join(PUBLISHED_DIR, newFilename);
+        try {
+          fs.renameSync(filePath, destPath);
+          console.log(`  [moved] → 5-Published/${newFilename}`);
+        } catch (moveErr) {
+          console.warn(`  [warn] Upsert succeeded but file move failed: ${moveErr.message}`);
+          console.warn(`  [warn] Manually move ${filePath} to ${destPath}`);
+        }
+
+        // Mirror the move for the Proof of Life sidecar so future re-syncs
+        // can still find it. Only needed for flat posts — folder-note posts
+        // are handled by moving the whole parent directory above, and the
+        // sidecar lives outside that directory under .proofoflife/.
+        const oldSidecar = path.join(
+          VAULT_PATH,
+          '.proofoflife',
+          path.relative(VAULT_PATH, filePath).replace(/\.md$/i, '.jsonl')
+        );
+        if (fs.existsSync(oldSidecar)) {
+          const newSidecar = path.join(
+            VAULT_PATH,
+            '.proofoflife',
+            path.relative(VAULT_PATH, destPath).replace(/\.md$/i, '.jsonl')
+          );
+          try {
+            fs.mkdirSync(path.dirname(newSidecar), { recursive: true });
+            fs.renameSync(oldSidecar, newSidecar);
+            console.log(`  [moved] proof-of-life sidecar → ${path.relative(VAULT_PATH, newSidecar)}`);
+          } catch (sidecarErr) {
+            console.warn(`  [warn] Sidecar move failed: ${sidecarErr.message}`);
+          }
+        }
       }
     }
 

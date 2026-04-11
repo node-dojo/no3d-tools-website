@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Proof of Life — Test</title>
+  <style>
+    body {
+      background: #000;
+      color: #e8e8e8;
+      font-family: 'JetBrains Mono', monospace;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    h1 { font-size: 16px; color: #f0ff00; }
+    p { font-size: 13px; color: #888; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>PROOF OF LIFE — TEST</h1>
+  <p>Paste a .jsonl sidecar file or use the generated sample below.</p>
+
+  <proof-of-life id="player"></proof-of-life>
+
+  <script src="proof-of-life.js"></script>
+  <script>
+    // Generate a sample JSONL log that simulates typing "Hello, world!\n\nThis is a test of Proof of Life."
+    const text = "Hello, world!\n\nThis is a test of Proof of Life.\n\nIt captures every keystroke, deletion, and revision.\nThe messy human process, preserved.";
+    const events = [];
+    let pos = 0;
+    let time = 0;
+
+    for (const ch of text) {
+      // Simulate realistic typing delays
+      const delay = 50 + Math.floor(Math.random() * 120);
+      time += delay;
+      events.push([delay, pos, ch, ""]);
+      pos++;
+    }
+
+    // Simulate some deletions — go back and fix a "typo"
+    // Delete "preserved" and retype it
+    const delStart = text.indexOf("preserved");
+    const delWord = "preserved";
+    events.push([800, delStart, "", delWord]);
+    events.push([200, delStart, "captured forever", ""]);
+
+    // Build JSONL
+    const header = JSON.stringify({ v: 1, sid: "test-session-1", t: Date.now(), doc: "" });
+    const lines = [header, ...events.map(e => JSON.stringify(e))].join("\n");
+
+    // Create a blob URL so the component can fetch it
+    const blob = new Blob([lines], { type: "application/jsonl" });
+    const url = URL.createObjectURL(blob);
+
+    document.getElementById("player").setAttribute("src", url);
+  </script>
+</body>
+</html>
