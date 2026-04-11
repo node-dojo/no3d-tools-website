@@ -2,10 +2,10 @@
  * <proof-of-life> — In-place writing replay
  *
  * Two-surface UX:
- *   1. An inline PLAY button rendered below the article header, above the
- *      body. This is the primary affordance.
- *   2. A fixed footer with play button + scrubber that fades in once the
- *      inline button scrolls out of view, so controls stay reachable as the
+ *   1. An inline play control (triangle icon) below the article header, above the
+ *      body, with explanatory copy beneath. Primary affordance.
+ *   2. A fixed footer with the same icon + scrubber that fades in once the
+ *      inline control scrolls out of view, so controls stay reachable as the
  *      user moves through a long article.
  *
  * When playback starts, the target element's rendered HTML is replaced with
@@ -17,7 +17,7 @@
  *
  * The element itself renders nothing in its own box — it creates two sibling
  * DOM elements:
- *   - an inline button inserted BEFORE the target element
+ *   - an inline block inserted BEFORE the target element (icon row + caption)
  *   - a position:fixed footer appended to document.body
  *
  * Attributes:
@@ -25,6 +25,12 @@
  *   target — CSS selector for the element whose innerHTML is swapped
  *            during playback. If omitted, defaults to "#article-content".
  */
+
+const POL_CAPTION =
+  "Verify article is Human Typed (not AI) by replaying writing process";
+
+const POL_PLAY_SVG = `<svg class="pol-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
+const POL_PAUSE_SVG = `<svg class="pol-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
 class ProofOfLife extends HTMLElement {
   constructor() {
@@ -109,19 +115,27 @@ class ProofOfLife extends HTMLElement {
       /* --- Inline surface (below article header) --- */
       .pol-inline {
         display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 16px 0 20px 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 0;
         margin-bottom: 24px;
         border-bottom: 1px solid #E8E8E8;
+      }
+      .pol-inline-controls {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 14px;
       }
       .pol-inline-kicker {
         font-family: 'JetBrains Mono', 'Courier New', monospace;
         font-size: 10px;
         font-weight: 300;
         color: #303030;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.02em;
+        line-height: 1.45;
+        max-width: 100%;
       }
       .pol-inline-meta {
         font-family: 'JetBrains Mono', 'Courier New', monospace;
@@ -146,6 +160,19 @@ class ProofOfLife extends HTMLElement {
         border-radius: 0;
         min-width: 72px;
         text-align: center;
+      }
+      .pol-icon-btn {
+        min-width: 40px;
+        padding: 8px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pol-btn-icon {
+        width: 14px;
+        height: 14px;
+        display: block;
+        flex-shrink: 0;
       }
       .pol-btn:hover {
         background: #000000;
@@ -189,15 +216,28 @@ class ProofOfLife extends HTMLElement {
         display: flex;
         align-items: center;
         gap: 14px;
+        flex-wrap: wrap;
+      }
+      .pol-footer-lead {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        flex-shrink: 0;
+        max-width: min(100%, 340px);
+      }
+      .pol-footer-controls-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
       .pol-footer-kicker {
         font-family: 'JetBrains Mono', 'Courier New', monospace;
         font-size: 10px;
         font-weight: 300;
         color: #303030;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        flex-shrink: 0;
+        letter-spacing: 0.02em;
+        line-height: 1.35;
       }
       .pol-scrubber {
         flex: 1;
@@ -245,7 +285,8 @@ class ProofOfLife extends HTMLElement {
       }
       @media (max-width: 600px) {
         .pol-footer-bar { padding: 10px 16px; gap: 10px; }
-        .pol-footer-kicker { display: none; }
+        .pol-footer-lead { max-width: 100%; }
+        .pol-footer-kicker { font-size: 9px; }
         .pol-counter { min-width: 60px; font-size: 9px; }
       }
     `;
@@ -261,10 +302,12 @@ class ProofOfLife extends HTMLElement {
     const wrap = document.createElement("div");
     wrap.className = "pol-inline";
     wrap.innerHTML = `
-      <span class="pol-inline-kicker">Proof of Life</span>
-      <button type="button" class="pol-btn pol-inline-btn">PLAY</button>
-      <button type="button" class="pol-btn pol-restore-btn pol-inline-restore-btn">RESTORE</button>
-      <span class="pol-inline-meta pol-inline-counter">0 / 0</span>
+      <div class="pol-inline-controls">
+        <button type="button" class="pol-btn pol-icon-btn pol-inline-btn" aria-label="Play">${POL_PLAY_SVG}</button>
+        <button type="button" class="pol-btn pol-restore-btn pol-inline-restore-btn">RESTORE</button>
+        <span class="pol-inline-meta pol-inline-counter">0 / 0</span>
+      </div>
+      <span class="pol-inline-kicker">${POL_CAPTION}</span>
     `;
     this._targetEl.parentNode.insertBefore(wrap, this._targetEl);
     this._inlineEl = wrap;
@@ -280,9 +323,13 @@ class ProofOfLife extends HTMLElement {
     footer.className = "pol-footer";
     footer.innerHTML = `
       <div class="pol-footer-bar">
-        <span class="pol-footer-kicker">Proof of Life</span>
-        <button type="button" class="pol-btn pol-footer-btn">PLAY</button>
-        <button type="button" class="pol-btn pol-restore-btn pol-footer-restore-btn">RESTORE</button>
+        <div class="pol-footer-lead">
+          <div class="pol-footer-controls-row">
+            <button type="button" class="pol-btn pol-icon-btn pol-footer-btn" aria-label="Play">${POL_PLAY_SVG}</button>
+            <button type="button" class="pol-btn pol-restore-btn pol-footer-restore-btn">RESTORE</button>
+          </div>
+          <span class="pol-footer-kicker">${POL_CAPTION}</span>
+        </div>
         <input type="range" class="pol-scrubber" min="0" max="0" value="0">
         <span class="pol-counter">0 / 0</span>
       </div>
@@ -344,7 +391,7 @@ class ProofOfLife extends HTMLElement {
     this._footerVisible = shouldShow;
     if (shouldShow) {
       this._footerEl.classList.add("is-visible");
-      document.body.style.paddingBottom = "72px";
+      document.body.style.paddingBottom = "120px";
     } else {
       this._footerEl.classList.remove("is-visible");
       document.body.style.paddingBottom = "";
@@ -379,11 +426,11 @@ class ProofOfLife extends HTMLElement {
   async _togglePlay() {
     if (!this._loaded) {
       this._setButtonsDisabled(true);
-      this._setButtonsText("...");
+      this._setPlayButtonMode("loading");
       try {
         await this._loadLog();
       } catch (err) {
-        this._setButtonsText("ERR");
+        this._setPlayButtonMode("error");
         console.error("[proof-of-life] Load error:", err);
         return;
       } finally {
@@ -396,11 +443,14 @@ class ProofOfLife extends HTMLElement {
   }
 
   _play() {
-    if (this._totalEvents === 0) return;
+    if (this._totalEvents === 0) {
+      this._setPlayButtonMode("play");
+      return;
+    }
     this._ensureSwapped();
     if (this._currentIndex >= this._totalEvents) this._seekTo(0);
     this._playing = true;
-    this._setButtonsText("PAUSE");
+    this._setPlayButtonMode("pause");
     this._lastFrameTime = performance.now();
     this._accumulatedTime = 0;
     this._scheduleFrame();
@@ -408,16 +458,30 @@ class ProofOfLife extends HTMLElement {
 
   _pause() {
     this._playing = false;
-    this._setButtonsText("PLAY");
+    this._setPlayButtonMode("play");
     if (this._pendingFrame !== null) {
       cancelAnimationFrame(this._pendingFrame);
       this._pendingFrame = null;
     }
   }
 
-  _setButtonsText(text) {
-    if (this._inlineBtn) this._inlineBtn.textContent = text;
-    if (this._footerBtn) this._footerBtn.textContent = text;
+  _setPlayButtonMode(mode) {
+    const btns = [this._inlineBtn, this._footerBtn].filter(Boolean);
+    for (const btn of btns) {
+      if (mode === "play") {
+        btn.innerHTML = POL_PLAY_SVG;
+        btn.setAttribute("aria-label", "Play");
+      } else if (mode === "pause") {
+        btn.innerHTML = POL_PAUSE_SVG;
+        btn.setAttribute("aria-label", "Pause");
+      } else if (mode === "loading") {
+        btn.textContent = "…";
+        btn.setAttribute("aria-label", "Loading");
+      } else if (mode === "error") {
+        btn.textContent = "ERR";
+        btn.setAttribute("aria-label", "Error loading log");
+      }
+    }
   }
 
   _setButtonsDisabled(disabled) {
