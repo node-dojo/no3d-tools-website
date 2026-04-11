@@ -1,25 +1,38 @@
 /**
- * <proof-of-life> Web Component
+ * <proof-of-life> — In-place writing replay
  *
- * Replays a writing process captured as JSONL events.
- * Interface: editor pane + play/pause button + scrubber slider.
+ * Two-surface UX:
+ *   1. An inline PLAY button rendered below the article header, above the
+ *      body. This is the primary affordance.
+ *   2. A fixed footer with play button + scrubber that fades in once the
+ *      inline button scrolls out of view, so controls stay reachable as the
+ *      user moves through a long article.
+ *
+ * When playback starts, the target element's rendered HTML is replaced with
+ * a monospace pane that reconstructs the raw markdown keystroke by keystroke.
+ * Pause or end of playback restores the original HTML.
  *
  * Usage:
- *   <proof-of-life src="https://example.com/log.jsonl.gz"></proof-of-life>
+ *   <proof-of-life src="..." target="#article-content"></proof-of-life>
+ *
+ * The element itself renders nothing in its own box — it creates two sibling
+ * DOM elements:
+ *   - an inline button inserted BEFORE the target element
+ *   - a position:fixed footer appended to document.body
  *
  * Attributes:
- *   src — URL to a gzipped JSONL proof-of-life log
+ *   src    — URL to the JSONL proof-of-life log (gzipped if .gz)
+ *   target — CSS selector for the element whose innerHTML is swapped
+ *            during playback. If omitted, defaults to "#article-content".
  */
 
 class ProofOfLife extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
 
-    // State
-    this._sessions = [];     // [{ doc: string, events: [...] }, ...]
-    this._flatEvents = [];   // All events across sessions with absolute index
-    this._snapshots = [];    // Document state at each event index (built lazily)
+    this._sessions = [];
+    this._flatEvents = [];
+    this._snapshots = {};
     this._totalEvents = 0;
     this._currentIndex = 0;
     this._playing = false;
@@ -28,158 +41,330 @@ class ProofOfLife extends HTMLElement {
     this._lastFrameTime = 0;
     this._accumulatedTime = 0;
     this._speed = 10;
-    this._maxPause = 500;    // Compress pauses > 5s to 500ms
+    this._maxPause = 500;
     this._pauseThreshold = 5000;
+
+    this._doc = "";
+    this._cursor = 0;
+
+    // Target swap state
+    this._targetEl = null;
+    this._originalHTML = null;
+    this._replayEl = null;
+
+    // Surfaces
+    this._inlineEl = null;
+    this._footerEl = null;
+    this._footerVisible = false;
+    this._intersectionObserver = null;
   }
 
   connectedCallback() {
-    this._render();
+    this._injectBlinkStyle();
+    this._resolveTarget();
+    if (!this._targetEl) return;
+    this._mountInline();
+    this._mountFooter();
+    this._wireScrollReveal();
   }
 
-  _render() {
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: block;
-          border: 1px solid #333;
-          background: #0a0a0a;
-          font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
-          overflow: hidden;
-        }
-        .editor {
-          height: 400px;
-          overflow-y: auto;
-          padding: 16px 20px;
-          white-space: pre-wrap;
-          word-wrap: break-word;
-          font-size: 13px;
-          line-height: 1.6;
-          color: #e8e8e8;
-          cursor: default;
-          user-select: text;
-        }
-        .editor .cursor {
-          display: inline;
-          border-left: 2px solid #f0ff00;
-          margin-left: -1px;
-          animation: blink 1s step-end infinite;
-        }
-        @keyframes blink {
-          50% { border-color: transparent; }
-        }
-        .controls {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 8px 16px;
-          border-top: 1px solid #333;
-          background: #111;
-        }
-        .play-btn {
-          background: none;
-          border: 1px solid #555;
-          color: #e8e8e8;
-          width: 32px;
-          height: 32px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          flex-shrink: 0;
-        }
-        .play-btn:hover {
-          border-color: #f0ff00;
-          color: #f0ff00;
-        }
-        .scrubber {
-          flex: 1;
-          -webkit-appearance: none;
-          appearance: none;
-          height: 4px;
-          background: #333;
-          outline: none;
-          cursor: pointer;
-        }
-        .scrubber::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 14px;
-          height: 14px;
-          border-radius: 50%;
-          background: #f0ff00;
-          cursor: pointer;
-        }
-        .scrubber::-moz-range-thumb {
-          width: 14px;
-          height: 14px;
-          border-radius: 50%;
-          background: #f0ff00;
-          border: none;
-          cursor: pointer;
-        }
-        .loading {
-          color: #555;
-          padding: 40px 20px;
-          text-align: center;
-          font-size: 12px;
-        }
-      </style>
-      <div class="editor" id="editor"></div>
-      <div class="controls">
-        <button class="play-btn" id="play-btn" title="Play / Pause">&#9654;</button>
-        <input type="range" class="scrubber" id="scrubber" min="0" max="0" value="0">
+  disconnectedCallback() {
+    this._pause();
+    this._restoreTarget();
+    if (this._inlineEl) this._inlineEl.remove();
+    if (this._footerEl) this._footerEl.remove();
+    if (this._intersectionObserver) this._intersectionObserver.disconnect();
+  }
+
+  _injectBlinkStyle() {
+    if (document.getElementById("pol-global-style")) return;
+    const style = document.createElement("style");
+    style.id = "pol-global-style";
+    style.textContent = `
+      @keyframes pol-blink { 50% { background: transparent; } }
+      .pol-replay-pane {
+        margin: 0;
+        padding: 0;
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 13px;
+        font-weight: 300;
+        line-height: 1.6;
+        color: #222222;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        background: transparent;
+        border: none;
+      }
+      .pol-cursor {
+        display: inline-block;
+        width: 2px;
+        height: 1.1em;
+        background: #000000;
+        vertical-align: text-bottom;
+        margin: 0 -1px;
+        animation: pol-blink 1s step-end infinite;
+      }
+
+      /* --- Inline surface (below article header) --- */
+      .pol-inline {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 0 20px 0;
+        margin-bottom: 24px;
+        border-bottom: 1px solid #E8E8E8;
+      }
+      .pol-inline-kicker {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 10px;
+        font-weight: 300;
+        color: #303030;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .pol-inline-meta {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 10px;
+        font-weight: 300;
+        color: #303030;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+      }
+      .pol-btn {
+        font-family: 'Visitor TT1 BRK', 'Visitor', 'Space Mono', monospace;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 6px 16px;
+        border: 1px solid #000000;
+        background: transparent;
+        color: #000000;
+        cursor: pointer;
+        border-radius: 0;
+        min-width: 72px;
+        text-align: center;
+      }
+      .pol-btn:hover {
+        background: #000000;
+        color: #f0ff00;
+      }
+      .pol-btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .pol-btn:disabled:hover {
+        background: transparent;
+        color: #000000;
+      }
+
+      /* --- Fixed footer surface --- */
+      .pol-footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        background: #FFFFFF;
+        border-top: 1px solid #000000;
+        box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+        transform: translateY(100%);
+        transition: transform 240ms ease-out;
+      }
+      .pol-footer.is-visible {
+        transform: translateY(0);
+      }
+      .pol-footer-bar {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .pol-footer-kicker {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 10px;
+        font-weight: 300;
+        color: #303030;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        flex-shrink: 0;
+      }
+      .pol-scrubber {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 2px;
+        background: #E8E8E8;
+        outline: none;
+        cursor: pointer;
+        border-radius: 0;
+        border-top: 1px solid #000000;
+        border-bottom: 1px solid #000000;
+        padding: 0;
+        margin: 0;
+      }
+      .pol-scrubber::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 12px;
+        height: 16px;
+        border-radius: 0;
+        background: #f0ff00;
+        border: 1px solid #000000;
+        cursor: pointer;
+      }
+      .pol-scrubber::-moz-range-thumb {
+        width: 12px;
+        height: 16px;
+        border-radius: 0;
+        background: #f0ff00;
+        border: 1px solid #000000;
+        cursor: pointer;
+      }
+      .pol-counter {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 10px;
+        font-weight: 300;
+        color: #303030;
+        flex-shrink: 0;
+        min-width: 80px;
+        text-align: right;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-variant-numeric: tabular-nums;
+      }
+      @media (max-width: 600px) {
+        .pol-footer-bar { padding: 10px 16px; gap: 10px; }
+        .pol-footer-kicker { display: none; }
+        .pol-counter { min-width: 60px; font-size: 9px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  _resolveTarget() {
+    const selector = this.getAttribute("target") || "#article-content";
+    this._targetEl = document.querySelector(selector);
+  }
+
+  _mountInline() {
+    const wrap = document.createElement("div");
+    wrap.className = "pol-inline";
+    wrap.innerHTML = `
+      <span class="pol-inline-kicker">Proof of Life</span>
+      <button type="button" class="pol-btn pol-inline-btn">PLAY</button>
+      <span class="pol-inline-meta pol-inline-counter">0 / 0</span>
+    `;
+    this._targetEl.parentNode.insertBefore(wrap, this._targetEl);
+    this._inlineEl = wrap;
+    this._inlineBtn = wrap.querySelector(".pol-inline-btn");
+    this._inlineCounter = wrap.querySelector(".pol-inline-counter");
+    this._inlineBtn.addEventListener("click", () => this._togglePlay());
+  }
+
+  _mountFooter() {
+    const footer = document.createElement("div");
+    footer.className = "pol-footer";
+    footer.innerHTML = `
+      <div class="pol-footer-bar">
+        <span class="pol-footer-kicker">Proof of Life</span>
+        <button type="button" class="pol-btn pol-footer-btn">PLAY</button>
+        <input type="range" class="pol-scrubber" min="0" max="0" value="0">
+        <span class="pol-counter">0 / 0</span>
       </div>
     `;
+    document.body.appendChild(footer);
+    this._footerEl = footer;
+    this._footerBtn = footer.querySelector(".pol-footer-btn");
+    this._scrubberEl = footer.querySelector(".pol-scrubber");
+    this._counterEl = footer.querySelector(".pol-counter");
 
-    this._editorEl = this.shadowRoot.getElementById("editor");
-    this._playBtn = this.shadowRoot.getElementById("play-btn");
-    this._scrubberEl = this.shadowRoot.getElementById("scrubber");
-
-    this._editorEl.innerHTML = '<div class="loading">Click play to load</div>';
-
-    this._playBtn.addEventListener("click", () => this._togglePlay());
-
-    // Scrubber: drag to seek
-    this._scrubbing = false;
+    this._footerBtn.addEventListener("click", () => this._togglePlay());
     this._scrubberEl.addEventListener("input", () => {
-      this._scrubbing = true;
+      if (!this._loaded) return;
       const idx = parseInt(this._scrubberEl.value, 10);
+      this._ensureSwapped();
       this._seekTo(idx);
     });
-    this._scrubberEl.addEventListener("change", () => {
-      this._scrubbing = false;
-      // If was playing before scrub, resume
-    });
   }
+
+  _wireScrollReveal() {
+    // Show the fixed footer once the inline button scrolls out of view.
+    if (!("IntersectionObserver" in window)) {
+      this._setFooterVisible(true);
+      return;
+    }
+    this._intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const inlineVisible = entries[0]?.isIntersecting ?? false;
+        this._setFooterVisible(!inlineVisible);
+      },
+      { threshold: 0, rootMargin: "0px 0px -40px 0px" }
+    );
+    this._intersectionObserver.observe(this._inlineEl);
+  }
+
+  _setFooterVisible(visible) {
+    if (this._footerVisible === visible) return;
+    this._footerVisible = visible;
+    if (visible) {
+      this._footerEl.classList.add("is-visible");
+      document.body.style.paddingBottom = "72px";
+    } else {
+      this._footerEl.classList.remove("is-visible");
+      document.body.style.paddingBottom = "";
+    }
+  }
+
+  // --- Target swap ---
+
+  _ensureSwapped() {
+    if (!this._targetEl || this._originalHTML !== null) return;
+    this._originalHTML = this._targetEl.innerHTML;
+    const replay = document.createElement("pre");
+    replay.className = "pol-replay-pane";
+    this._targetEl.innerHTML = "";
+    this._targetEl.appendChild(replay);
+    this._replayEl = replay;
+  }
+
+  _restoreTarget() {
+    if (!this._targetEl || this._originalHTML === null) return;
+    this._targetEl.innerHTML = this._originalHTML;
+    this._originalHTML = null;
+    this._replayEl = null;
+  }
+
+  // --- Playback ---
 
   async _togglePlay() {
     if (!this._loaded) {
-      this._editorEl.innerHTML = '<div class="loading">Loading...</div>';
+      this._setButtonsDisabled(true);
+      this._setButtonsText("...");
       try {
         await this._loadLog();
       } catch (err) {
-        this._editorEl.innerHTML = '<div class="loading">Failed to load log</div>';
+        this._setButtonsText("ERR");
         console.error("[proof-of-life] Load error:", err);
         return;
+      } finally {
+        this._setButtonsDisabled(false);
       }
     }
 
-    if (this._playing) {
-      this._pause();
-    } else {
-      this._play();
-    }
+    if (this._playing) this._pause();
+    else this._play();
   }
 
   _play() {
     if (this._totalEvents === 0) return;
-    // If at the end, restart
-    if (this._currentIndex >= this._totalEvents) {
-      this._seekTo(0);
-    }
+    this._ensureSwapped();
+    if (this._currentIndex >= this._totalEvents) this._seekTo(0);
     this._playing = true;
-    this._playBtn.innerHTML = "&#9646;&#9646;"; // pause icon
+    this._setButtonsText("PAUSE");
     this._lastFrameTime = performance.now();
     this._accumulatedTime = 0;
     this._scheduleFrame();
@@ -187,11 +372,21 @@ class ProofOfLife extends HTMLElement {
 
   _pause() {
     this._playing = false;
-    this._playBtn.innerHTML = "&#9654;"; // play icon
-    if (this._pendingFrame) {
+    this._setButtonsText("PLAY");
+    if (this._pendingFrame !== null) {
       cancelAnimationFrame(this._pendingFrame);
       this._pendingFrame = null;
     }
+  }
+
+  _setButtonsText(text) {
+    if (this._inlineBtn) this._inlineBtn.textContent = text;
+    if (this._footerBtn) this._footerBtn.textContent = text;
+  }
+
+  _setButtonsDisabled(disabled) {
+    if (this._inlineBtn) this._inlineBtn.disabled = disabled;
+    if (this._footerBtn) this._footerBtn.disabled = disabled;
   }
 
   _scheduleFrame() {
@@ -201,7 +396,7 @@ class ProofOfLife extends HTMLElement {
   _tick(now) {
     if (!this._playing) return;
     if (this._currentIndex >= this._totalEvents) {
-      this._pause();
+      this._finish();
       return;
     }
 
@@ -209,16 +404,11 @@ class ProofOfLife extends HTMLElement {
     this._lastFrameTime = now;
     this._accumulatedTime += elapsed * this._speed;
 
-    // Apply events whose deltaMs has been reached
     let applied = false;
     while (this._currentIndex < this._totalEvents) {
       const event = this._flatEvents[this._currentIndex];
       let deltaMs = event[0];
-
-      // Compress long pauses
-      if (deltaMs > this._pauseThreshold) {
-        deltaMs = this._maxPause;
-      }
+      if (deltaMs > this._pauseThreshold) deltaMs = this._maxPause;
 
       if (this._accumulatedTime >= deltaMs) {
         this._accumulatedTime -= deltaMs;
@@ -232,85 +422,72 @@ class ProofOfLife extends HTMLElement {
 
     if (applied) {
       this._renderDoc();
-      if (!this._scrubbing) {
-        this._scrubberEl.value = this._currentIndex;
-      }
+      this._scrubberEl.value = String(this._currentIndex);
+      this._updateCounter();
     }
 
     if (this._currentIndex < this._totalEvents) {
       this._scheduleFrame();
     } else {
-      this._pause();
+      this._finish();
     }
   }
 
+  _finish() {
+    this._pause();
+    // Hold the final state briefly, then restore the rendered article.
+    setTimeout(() => {
+      if (!this._playing) this._restoreTarget();
+    }, 1200);
+  }
+
+  // --- Seek ---
+
   _seekTo(index) {
-    // Rebuild document state at the target index
     this._currentIndex = index;
     this._accumulatedTime = 0;
 
-    // Find the session that contains the target index
     let targetSessionStart = 0;
     for (const session of this._sessions) {
-      if (session._startIndex <= index) {
-        targetSessionStart = session._startIndex;
-      }
+      if (session._startIndex <= index) targetSessionStart = session._startIndex;
     }
 
-    // Use snapshots for efficiency — but only if snapshot is in the same session
-    const snapshotInterval = 500;
-    const nearestSnapshot = Math.floor(index / snapshotInterval) * snapshotInterval;
+    const nearest = Math.floor(index / 500) * 500;
 
     if (
-      this._snapshots[nearestSnapshot] !== undefined &&
-      nearestSnapshot >= targetSessionStart
+      this._snapshots[nearest] !== undefined &&
+      nearest >= targetSessionStart
     ) {
-      this._doc = this._snapshots[nearestSnapshot];
+      this._doc = this._snapshots[nearest];
       this._cursor = 0;
-      for (let i = nearestSnapshot; i < index; i++) {
-        this._applyEventToDoc(i);
-      }
+      for (let i = nearest; i < index; i++) this._applyEventToDoc(i);
     } else {
-      // Rebuild from session start
       this._rebuildFromStart(index);
     }
 
     this._renderDoc();
-    if (!this._scrubbing) {
-      this._scrubberEl.value = index;
-    }
+    this._scrubberEl.value = String(index);
+    this._updateCounter();
   }
 
   _rebuildFromStart(targetIndex) {
-    // Find which session this index belongs to using precomputed offsets
     let sessionDoc = this._sessions[0]?.doc ?? "";
     let sessionStart = 0;
-
     for (const session of this._sessions) {
-      const sessionEnd = session._startIndex + session.events.length;
       if (targetIndex >= session._startIndex) {
         sessionDoc = session.doc;
         sessionStart = session._startIndex;
       }
-      if (sessionEnd > targetIndex) break;
     }
-
     this._doc = sessionDoc;
     this._cursor = 0;
-    for (let i = sessionStart; i < targetIndex; i++) {
-      this._applyEventToDoc(i);
-    }
+    for (let i = sessionStart; i < targetIndex; i++) this._applyEventToDoc(i);
   }
 
   _applyEvent(index) {
-    // Check if we're crossing into a new session
     this._maybeSnapSession(index);
     this._applyEventToDoc(index);
-
-    // Save snapshot every 500 events
-    if (index % 500 === 0) {
-      this._snapshots[index] = this._doc;
-    }
+    if (index % 500 === 0) this._snapshots[index] = this._doc;
   }
 
   _applyEventToDoc(index) {
@@ -323,7 +500,6 @@ class ProofOfLife extends HTMLElement {
   }
 
   _maybeSnapSession(index) {
-    // If this index is the first event of a new session, snap doc to session's initialContent
     for (let i = 1; i < this._sessions.length; i++) {
       if (this._sessions[i]._startIndex === index) {
         this._doc = this._sessions[i].doc;
@@ -333,22 +509,34 @@ class ProofOfLife extends HTMLElement {
     }
   }
 
+  // --- Render ---
+
   _renderDoc() {
-    const el = this._editorEl;
-    // Split doc at cursor position and insert cursor element
+    if (!this._replayEl) return;
     const before = this._escapeHtml(this._doc.slice(0, this._cursor));
     const after = this._escapeHtml(this._doc.slice(this._cursor));
-    el.innerHTML = before + '<span class="cursor"></span>' + after;
+    this._replayEl.innerHTML = before + '<span class="pol-cursor"></span>' + after;
 
-    // Auto-scroll to keep cursor visible
-    const cursorEl = el.querySelector(".cursor");
+    // Auto-scroll so the cursor stays visible as typing progresses
+    const cursorEl = this._replayEl.querySelector(".pol-cursor");
     if (cursorEl) {
-      const elRect = el.getBoundingClientRect();
       const cursorRect = cursorEl.getBoundingClientRect();
-      if (cursorRect.bottom > elRect.bottom - 20 || cursorRect.top < elRect.top + 20) {
+      const viewportH = window.innerHeight;
+      const footerH = this._footerVisible
+        ? this._footerEl.getBoundingClientRect().height
+        : 0;
+      const visibleBottom = viewportH - footerH - 40;
+      const visibleTop = 80;
+      if (cursorRect.bottom > visibleBottom || cursorRect.top < visibleTop) {
         cursorEl.scrollIntoView({ block: "center", behavior: "auto" });
       }
     }
+  }
+
+  _updateCounter() {
+    const text = `${this._currentIndex} / ${this._totalEvents}`;
+    if (this._counterEl) this._counterEl.textContent = text;
+    if (this._inlineCounter) this._inlineCounter.textContent = text;
   }
 
   _escapeHtml(str) {
@@ -358,7 +546,7 @@ class ProofOfLife extends HTMLElement {
       .replace(/>/g, "&gt;");
   }
 
-  // --- JSONL Loading ---
+  // --- JSONL loading ---
 
   async _loadLog() {
     const src = this.getAttribute("src");
@@ -368,8 +556,6 @@ class ProofOfLife extends HTMLElement {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     let text;
-
-    // Try to decompress if gzipped
     if (src.endsWith(".gz")) {
       const ds = new DecompressionStream("gzip");
       const decompressed = response.body.pipeThrough(ds);
@@ -392,22 +578,24 @@ class ProofOfLife extends HTMLElement {
 
   _parseLog(text) {
     const lines = text.split("\n").filter((l) => l.trim());
-
     this._sessions = [];
     this._flatEvents = [];
     let currentSession = null;
 
     for (const line of lines) {
-      const parsed = JSON.parse(line);
+      let parsed;
+      try {
+        parsed = JSON.parse(line);
+      } catch {
+        continue;
+      }
 
       if (Array.isArray(parsed)) {
-        // It's an event tuple
         if (currentSession) {
           currentSession.events.push(parsed);
           this._flatEvents.push(parsed);
         }
       } else if (parsed.v !== undefined) {
-        // It's a session header
         currentSession = {
           doc: parsed.doc ?? "",
           sessionId: parsed.sid,
@@ -420,17 +608,16 @@ class ProofOfLife extends HTMLElement {
     }
 
     this._totalEvents = this._flatEvents.length;
-    this._scrubberEl.max = this._totalEvents;
-    this._scrubberEl.value = 0;
+    this._scrubberEl.max = String(this._totalEvents);
+    this._scrubberEl.value = "0";
 
-    // Initialize document state
     this._doc = this._sessions[0]?.doc ?? "";
     this._cursor = 0;
     this._currentIndex = 0;
-    this._snapshots = [];
+    this._snapshots = {};
     this._snapshots[0] = this._doc;
 
-    this._renderDoc();
+    this._updateCounter();
   }
 }
 

@@ -149,13 +149,18 @@ function renderArticle(article) {
     contentEl.textContent = article.content || '';
   }
 
-  // Proof of Life playback — appended below article content when metadata present
+  // Proof of Life: mount an inline PLAY button above the article body and a
+  // fixed footer scrubber that fades in as the user scrolls past the inline
+  // button. The component manages both surfaces itself — blog.js just needs
+  // to create the element and clean up prior ones.
+  document.querySelectorAll('proof-of-life, .pol-inline, .pol-footer').forEach(el => el.remove());
+  document.body.style.paddingBottom = '';
   const proofUrl = article.metadata?.proofoflife_url;
   if (proofUrl) {
     const polEl = document.createElement('proof-of-life');
     polEl.setAttribute('src', proofUrl);
-    polEl.style.marginTop = '32px';
-    contentEl.appendChild(polEl);
+    polEl.setAttribute('target', '#article-content');
+    document.body.appendChild(polEl);
   }
 
   // Share button
