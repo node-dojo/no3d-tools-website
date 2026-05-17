@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="deployment-version" content="d5a48e3">
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+    <meta name="deployment-version" content="b089678">
     <meta name="deployment-branch" content="main">
     <title>NO3D TOOLS</title>
     <meta name="description" content="Procedural geometry tools, Blender addons, and creative tooling by NO3D.">
@@ -392,6 +393,34 @@
 
     <!-- Vercel Analytics -->
     <script defer src="https://cdn.vercel-insights.com/script.js"></script>
+
+    <!-- Pushover pageview ping (no3d-pageview-pings relay) -->
+    <script>
+    (function () {
+      var RELAY_URL = 'https://no3d-pageview-pings.vercel.app/api/ping';
+      var sessionId;
+      try {
+        sessionId = sessionStorage.getItem('n3d_sid');
+        if (!sessionId) {
+          sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+          sessionStorage.setItem('n3d_sid', sessionId);
+        }
+      } catch (e) { sessionId = ''; }
+      try {
+        fetch(RELAY_URL, {
+          method: 'POST',
+          mode: 'cors',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            path: location.pathname + location.search,
+            referrer: document.referrer || '',
+            sessionId: sessionId,
+          }),
+        }).catch(function () {});
+      } catch (e) {}
+    })();
+    </script>
 
     <script type="module" src="script.js?v=1.0.17"></script>
 </body>

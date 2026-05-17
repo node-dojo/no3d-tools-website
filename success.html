@@ -624,5 +624,33 @@
 
         document.addEventListener('DOMContentLoaded', initSuccessPage);
     </script>
+
+    <!-- Pushover pageview ping (no3d-pageview-pings relay) -->
+    <script>
+    (function () {
+      var RELAY_URL = 'https://no3d-pageview-pings.vercel.app/api/ping';
+      var sessionId;
+      try {
+        sessionId = sessionStorage.getItem('n3d_sid');
+        if (!sessionId) {
+          sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+          sessionStorage.setItem('n3d_sid', sessionId);
+        }
+      } catch (e) { sessionId = ''; }
+      try {
+        fetch(RELAY_URL, {
+          method: 'POST',
+          mode: 'cors',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            path: location.pathname + location.search,
+            referrer: document.referrer || '',
+            sessionId: sessionId,
+          }),
+        }).catch(function () {});
+      } catch (e) {}
+    })();
+    </script>
 </body>
 </html>
