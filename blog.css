@@ -3,7 +3,7 @@
  */
 
 .blog-container {
-  max-width: 820px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 0 24px;
   min-height: 100vh;
@@ -294,19 +294,103 @@
 /* --- Inline code in article content --- */
 
 #article-content code {
-  background: var(--color-deep-charcoal);
-  color: #e0e0e0;
-  padding: 0.125rem 0.375rem;
-  border-radius: 2px;
+  background: #FAFAFA;
+  color: var(--color-void-black);
+  padding: 0.05rem 0.3rem;
+  border: 1px solid var(--color-stone-gray);
+  border-radius: 0;
+  font-family: var(--font-mono);
   font-size: 0.9em;
+  font-weight: var(--font-mono-weight);
+}
+
+/* Override .product-description clamp so blog articles span the full column */
+#article-content.product-description {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* --- Fenced code blocks in article content --- */
+
+#article-content pre {
+  position: relative;
+  margin: 24px 0;
+  padding: 12px 14px;
+  background: transparent;
+  border: 1px solid var(--color-stone-gray);
+  border-radius: 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: var(--font-mono-weight);
+  line-height: 1.45;
+  color: var(--color-void-black);
+  tab-size: 2;
+  -moz-tab-size: 2;
+  white-space: pre;
+}
+
+#article-content pre[data-lang] {
+  padding-top: 28px;
+}
+
+#article-content pre[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: var(--font-mono-weight);
+  letter-spacing: 0.08em;
+  color: var(--color-dark-gray);
+  background: var(--color-stone-gray);
+  pointer-events: none;
 }
 
 #article-content pre code {
   background: none;
+  border: none;
   color: inherit;
   padding: 0;
   border-radius: 0;
+  font-family: inherit;
   font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  white-space: inherit;
+}
+
+.code-copy-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: var(--font-mono-weight);
+  letter-spacing: 0.08em;
+  color: var(--color-dark-gray);
+  background: #FFFFFF;
+  border: 0;
+  border-left: 1px solid var(--color-stone-gray);
+  border-bottom: 1px solid var(--color-stone-gray);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+  text-transform: uppercase;
+}
+
+#article-content pre:hover .code-copy-btn,
+.code-copy-btn:focus-visible {
+  opacity: 1;
+}
+
+.code-copy-btn:hover {
+  color: var(--color-void-black);
+  background: var(--color-lello);
 }
 
 /* --- Tables in article content --- */

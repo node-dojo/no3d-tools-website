@@ -8,6 +8,30 @@ if (typeof marked !== 'undefined') {
   marked.setOptions({ breaks: true, gfm: true });
 }
 
+function enhanceCodeBlocks(root) {
+  root.querySelectorAll('pre').forEach(pre => {
+    const code = pre.querySelector('code');
+    if (!code) return;
+
+    const langMatch = code.className.match(/language-([\w-]+)/);
+    if (langMatch) pre.setAttribute('data-lang', langMatch[1].toUpperCase());
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'code-copy-btn';
+    btn.textContent = 'COPY';
+    btn.setAttribute('aria-label', 'Copy code');
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        btn.textContent = 'COPIED';
+        setTimeout(() => { btn.textContent = 'COPY'; }, 1500);
+      } catch {}
+    });
+    pre.appendChild(btn);
+  });
+}
+
 function sanitizeHTML(html) {
   if (typeof DOMPurify !== 'undefined') {
     return DOMPurify.sanitize(html, {
@@ -145,6 +169,7 @@ function renderArticle(article) {
   const contentEl = document.getElementById('article-content');
   if (article.content && typeof marked !== 'undefined') {
     contentEl.innerHTML = sanitizeHTML(marked.parse(article.content));
+    enhanceCodeBlocks(contentEl);
   } else {
     contentEl.textContent = article.content || '';
   }
