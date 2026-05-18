@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none">
+  <!-- PETRI: Proof-of-life play hover  black fill, lello icon -->
+  <rect x="0.5" y="0.5" width="39" height="39" fill="#000000" stroke="#000000"/>
+  <svg x="13" y="13" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#f0ff00" d="M8 5v14l11-7z"/>
+  </svg>
+</svg>

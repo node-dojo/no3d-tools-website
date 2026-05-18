@@ -113,12 +113,12 @@ class ProofOfLife extends HTMLElement {
         animation: pol-blink 1s step-end infinite;
       }
 
-      /* --- Inline surface — Figma "POL-Play Button w Message" (334x40) --- */
+      /* --- Inline surface — Figma "POL-Play Button w Message" (auto width, 40 tall) --- */
       .pol-inline {
         display: flex;
         align-items: center;
         gap: 9px;
-        width: 334px;
+        width: fit-content;
         max-width: 100%;
         height: 40px;
         background: #FFFFFF;
@@ -127,7 +127,6 @@ class ProofOfLife extends HTMLElement {
         margin-bottom: 24px;
       }
       .pol-inline-message {
-        flex: 1;
         min-width: 0;
         display: flex;
         flex-direction: column;
@@ -142,9 +141,11 @@ class ProofOfLife extends HTMLElement {
       }
       .pol-inline-msg-bold {
         font-weight: 700;
+        white-space: nowrap;
       }
       .pol-inline-msg-sub {
         font-weight: 400;
+        white-space: nowrap;
       }
       .pol-inline-restore-btn {
         display: none;
@@ -263,19 +264,16 @@ class ProofOfLife extends HTMLElement {
       .pol-footer-bar {
         max-width: 820px;
         margin: 0 auto;
-        padding: 12px 24px;
+        padding: 5px 24px;
         display: flex;
         align-items: center;
         gap: 14px;
-        flex-wrap: wrap;
       }
       .pol-footer-lead {
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
+        align-items: center;
+        gap: 10px;
         flex-shrink: 0;
-        max-width: min(100%, 340px);
       }
       .pol-footer-controls-row {
         display: flex;
@@ -283,15 +281,28 @@ class ProofOfLife extends HTMLElement {
         gap: 10px;
       }
       .pol-footer-kicker {
-        display: block;
+        position: absolute;
+        left: 24px;
+        bottom: calc(100% + 8px);
+        max-width: min(420px, calc(100vw - 48px));
+        padding: 8px 12px;
+        background: #FFFFFF;
+        border: 1px solid #000000;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         font-family: 'JetBrains Mono', 'Courier New', monospace;
         font-size: 10px;
         font-weight: 300;
         color: #303030;
         letter-spacing: 0.02em;
         line-height: 1.35;
-        max-width: min(38ch, 100%);
         text-wrap: balance;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease-out;
+      }
+      .pol-footer:hover .pol-footer-kicker,
+      .pol-footer:focus-within .pol-footer-kicker {
+        opacity: 1;
       }
       .pol-scrubber {
         flex: 1;
@@ -338,9 +349,8 @@ class ProofOfLife extends HTMLElement {
         font-variant-numeric: tabular-nums;
       }
       @media (max-width: 600px) {
-        .pol-footer-bar { padding: 10px 16px; gap: 10px; }
-        .pol-footer-lead { max-width: 100%; }
-        .pol-footer-kicker { font-size: 9px; }
+        .pol-footer-bar { padding: 5px 16px; gap: 10px; }
+        .pol-footer-kicker { left: 16px; font-size: 9px; }
         .pol-counter { min-width: 60px; font-size: 9px; }
       }
     `;
@@ -442,7 +452,7 @@ class ProofOfLife extends HTMLElement {
     this._footerVisible = shouldShow;
     if (shouldShow) {
       this._footerEl.classList.add("is-visible");
-      document.body.style.paddingBottom = "120px";
+      document.body.style.paddingBottom = "66px";
     } else {
       this._footerEl.classList.remove("is-visible");
       document.body.style.paddingBottom = "";
