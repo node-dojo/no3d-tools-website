@@ -95,8 +95,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeSidebarScrollbar();
     updateHeaderLogo('tools');
     renderHomeGrid();
-    initializeDeepLinks();
-    updateViewState(false); // Start with home grid visible
+    const deepLinked = initializeDeepLinks();
+    if (!deepLinked) updateViewState(false); // Start with home grid visible (unless deep link activated)
     await checkUrlParameters(); // Check for checkout success from redirect
     initializeMemberCTA();
     initializeAccountDropdown();
@@ -468,9 +468,11 @@ async function selectProduct(productId) {
   updateActiveStates(productId);
   updateViewState(true); // Show product card
 
-  // Update browser history for back/forward navigation
+  // Update browser history with shareable handle slug
+  const handle = products[productId]?.handle || productId;
   const url = new URL(window.location);
-  url.searchParams.set('product', productId);
+  url.searchParams.set('product', handle);
+  url.hash = '';
   window.history.pushState({ product: productId }, '', url);
 }
 
@@ -1606,13 +1608,43 @@ function initializeDownloadButton() {
   };
 }
 
-function initializeDeepLinks() {
-  const params = new URLSearchParams(window.location.search);
-  const productId = params.get('product');
-  if (productId && products[productId]) {
-    selectProduct(productId);
+function resolveProductFromSlug(slug) {
+  if (!slug) return null;
+  // Direct ID match
+  if (products[slug]) return slug;
+  // Handle/slug match (case-insensitive)
+  const lower = slug.toLowerCase();
+  for (const [id, product] of Object.entries(products)) {
+    if (product.handle && product.handle.toLowerCase() === lower) return id;
   }
+  return null;
 }
+
+function initializeDeepLinks() {
+  // Support both ?product=<handle-or-id> and #<handle>
+  const params = new URLSearchParams(window.location.search);
+  const paramSlug = params.get('product');
+  const hashSlug = window.location.hash ? window.location.hash.slice(1) : null;
+  const slug = paramSlug || hashSlug;
+
+  const productId = resolveProductFromSlug(slug);
+  if (productId) {
+    selectProduct(productId);
+    return true; // signal that a deep link was activated
+  }
+  return false;
+}
+
+// Handle hash changes for #<handle> navigation
+window.addEventListener('hashchange', () => {
+  const slug = window.location.hash ? window.location.hash.slice(1) : null;
+  const productId = resolveProductFromSlug(slug);
+  if (productId) {
+    selectProduct(productId);
+  } else if (!slug) {
+    deselectProduct();
+  }
+});
 async function checkUrlParameters() {}
 function showPurchaseProcessing() {}
 async function pollForDownloads() {}
