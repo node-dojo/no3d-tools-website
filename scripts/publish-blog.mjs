@@ -37,7 +37,7 @@ const VAULT_PATH = path.resolve(
 );
 const POST_DIR = path.join(VAULT_PATH, 'Blog', '4-Ready');
 const PUBLISHED_DIR = path.join(VAULT_PATH, 'Blog', '5-Published');
-const ATTACHMENTS_DIR = path.join(VAULT_PATH, 'The Well Notebook/attachments');
+const ATTACHMENTS_DIR = path.join(VAULT_PATH, 'System/attachments');
 const CLOUDINARY_FOLDER = 'no3d-blog';
 
 // --- Filename Date Prefix Helpers ---
