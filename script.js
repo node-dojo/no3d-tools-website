@@ -186,7 +186,7 @@ async function fetchUnifiedProducts() {
           const id = 'blog-' + a.slug;
           products[id] = {
             id,
-            name: a.title.toUpperCase(),
+            name: a.title,
             price: '',
             description: a.excerpt || '',
             changelog: [],
@@ -383,6 +383,11 @@ function renderHomeGrid() {
 
   homeGrid.innerHTML = '';
   const productsArray = Object.values(products).filter(p => !p._isBlogPost).sort((a, b) => a.name.localeCompare(b.name));
+
+  const gridTitleCount = document.getElementById('home-grid-title-count');
+  if (gridTitleCount) {
+    gridTitleCount.textContent = `${productsArray.length} TOOLS AND GROWING`;
+  }
 
   productsArray.forEach(product => {
     const gridItem = document.createElement('div');

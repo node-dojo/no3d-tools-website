@@ -20,6 +20,17 @@
   --font-mono-weight: 300; /* Light weight to match Silka Mono Light */
   --font-silka-mono: var(--font-mono);
   --font-visitor: 'Visitor TT1 BRK', 'Visitor', 'Space Mono', monospace;
+  --font-druk: 'Druk Text Wide Cyr', 'Arial Narrow', system-ui, sans-serif;
+  --font-doto: 'Doto', 'JetBrains Mono', monospace;
+  /* Doto VF: wght 100–900, squared dots (non-rounded static masters) */
+  --letter-spacing-druk: 2px;
+  --letter-spacing-doto: 2px;
+  --letter-spacing-ui: 1px;
+  --font-size-doto-body: 11px;
+  --font-size-doto-lead: 15px;
+  --font-size-ui: 10px;
+  --font-size-product-title: 26px;
+  --letter-spacing-product-title: -0.6px;
   --font-size-base: 13px;
   --font-size-h1: 37.533px;
   --font-size-h2: 21px;
@@ -60,6 +71,13 @@
   --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.15);
   --shadow-lello-glow: 0 4px 12px rgba(240, 255, 0, 0.4);
+
+  /* Typography roles (Petri UI / Figma frame)
+     Druk  — nav categories, display section titles
+     Doto  — default body, product names, descriptions, lead copy
+     Visitor — doc headings, badges, buttons, CTAs
+     Druk also used for product H1 (#product-title)
+     Mono  — code blocks and technical footer hints only */
 }
 
 /* Reset and Base Styles */
@@ -70,9 +88,10 @@
 }
 
 body {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  line-height: 14px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
+  line-height: 1.5;
   color: var(--color-dark-gray);
   background-color: var(--color-stone-gray);
   overflow-x: hidden;
@@ -272,7 +291,7 @@ body {
 }
 
 .account-dropdown-item {
-  font-family: var(--font-visitor);
+  font-family: var(--font-doto);
   font-size: 13px;
   color: var(--color-void-black);
   text-transform: uppercase;
@@ -325,9 +344,9 @@ body {
   border-color: rgba(0, 0, 0, 1);
   padding: 4px 16px;
   font-family: var(--font-visitor);
-  font-size: 10px;
-  font-weight: normal;
-  letter-spacing: 0.01em;
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -374,7 +393,8 @@ body {
 
 .member-welcome-text {
   font-family: var(--font-visitor);
-  font-size: 15px;
+  font-size: var(--font-size-ui);
+  letter-spacing: var(--letter-spacing-ui);
   color: var(--color-void-black);
   text-transform: uppercase;
   cursor: pointer;
@@ -409,9 +429,9 @@ body {
   border-color: rgba(0, 0, 0, 1);
   padding: 8px 12px;
   font-family: var(--font-visitor);
-  font-size: 8px;
-  font-weight: normal;
-  letter-spacing: 0.01em;
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -495,7 +515,7 @@ body {
 .mobile-search-input {
   flex: 1;
   padding: var(--space-small) var(--space-medium);
-  font-family: var(--font-visitor);
+  font-family: var(--font-doto);
   font-size: 14px;
   border: 2px solid var(--color-void-black);
   background-color: var(--color-paper-white);
@@ -753,10 +773,10 @@ body {
 }
 
 .category-name {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-normal);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-druk);
   text-transform: uppercase;
   color: var(--color-void-black);
   line-height: 11px;
@@ -832,10 +852,10 @@ body {
 }
 
 .product-name {
-  font-family: var(--font-visitor);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-normal);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-doto);
   text-transform: uppercase;
   color: var(--color-dark-gray);
   line-height: 1.4;
@@ -851,6 +871,10 @@ body {
 
 .product-item.active .product-name {
   color: var(--color-void-black);
+}
+
+.product-type[data-type="docs"] .product-name {
+  text-transform: none;
 }
 
 a.sidebar-help-link {
@@ -880,10 +904,10 @@ a.sidebar-help-link {
 }
 
 .type-header .category-name {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-normal);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-druk);
   text-transform: uppercase;
   color: var(--color-void-black);
 }
@@ -973,10 +997,10 @@ a.sidebar-help-link {
 }
 
 .group-header .category-name {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-normal);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-druk);
   text-transform: uppercase;
   color: var(--color-dark-gray);
 }
@@ -1070,201 +1094,74 @@ a.sidebar-help-link {
 }
 
 /* ============================================================================
-   HOME CTA BANNER - PETRI UI Design
+   HOME GRID TITLE - PETRI UI Design
    ============================================================================ */
 
-.home-cta-banner {
-  width: calc(100% - 2 * var(--space-medium));
-  height: 150px;
-  min-height: 150px;
-  background-color: var(--color-lello);
-  border: 2px solid var(--color-void-black);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--space-xlarge);
-  box-sizing: border-box;
-  position: relative;
-  flex-shrink: 0;
-  margin: var(--space-medium);
-  margin-bottom: var(--space-small);
-}
-
-.home-cta-banner.hidden {
-  display: none;
-}
-
-.home-cta-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.home-grid-title {
   width: 100%;
-  gap: var(--space-xlarge);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 25px;
+  padding-bottom: 25px;
+  margin: 0 0 var(--space-large) 0;
+  flex-shrink: 0;
 }
 
-.home-cta-text {
+.home-grid-title-copy {
   display: flex;
   flex-direction: column;
   gap: var(--space-tiny);
+  min-width: 0;
 }
 
-.home-cta-label {
-  font-family: var(--font-visitor);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-wide);
-  text-transform: uppercase;
-  color: var(--color-lello);
-  background-color: var(--color-void-black);
-  padding-top: 11px;
-  padding-bottom: 11px;
-  padding-left: 10px;
-  padding-right: 10px;
-  height: 36px;
-  display: inline-block;
-  width: fit-content;
-}
-
-.home-cta-title {
-  font-family: var(--font-visitor);
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-wide);
+.home-grid-title-text {
+  font-family: var(--font-druk);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-druk);
   text-transform: uppercase;
   color: var(--color-void-black);
   margin: 0;
   line-height: 1.0;
 }
 
-.home-cta-description {
-  font-family: var(--font-mono);
-  font-size: var(--text-body-size);
-  font-weight: 600;
+.home-grid-title-sub {
+  font-family: var(--font-doto);
+  font-size: 12px;
+  font-weight: 800;
   color: var(--color-medium-gray);
   margin: 0;
-  text-transform: uppercase;
-  line-height: var(--text-body-line-height);
-  letter-spacing: var(--text-body-letter-spacing);
+  letter-spacing: var(--letter-spacing-doto);
+  line-height: 1.23;
   opacity: var(--text-body-opacity);
 }
 
-.home-cta-actions {
-  display: flex;
-  gap: var(--space-small);
-  flex-shrink: 0;
+.home-grid-title-sub a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.home-cta-button {
-  font-family: var(--font-visitor);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-normal);
+.home-grid-title-sub a:hover {
+  color: var(--color-void-black);
+}
+
+.home-grid-title-count {
+  font-family: var(--font-doto);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-doto);
   text-transform: uppercase;
-  text-decoration: none;
-  padding: 12px 24px;
-  border: 2px solid var(--color-void-black);
-  cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  color: var(--color-medium-gray);
+  opacity: var(--text-body-opacity);
   white-space: nowrap;
 }
 
-.home-cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-medium);
-}
-
-.home-cta-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(240, 255, 0, 0.2);
-}
-
-.home-cta-button-primary {
-  background-color: var(--color-void-black);
-  color: var(--color-lello);
-}
-
-.home-cta-button-primary:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.home-cta-button-secondary {
-  background-color: var(--color-white);
-  color: var(--color-void-black);
-}
-
-.home-cta-button-secondary:hover {
-  background-color: var(--color-stone-gray);
-}
-
-.home-cta-dismiss {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 28px;
-  height: 28px;
-  background-color: transparent;
-  border: 2px solid var(--color-void-black);
-  cursor: pointer;
-  font-family: var(--font-visitor);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-void-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color var(--transition-fast);
-  padding: 0;
-  line-height: 1;
-}
-
-.home-cta-dismiss:hover {
-  background-color: var(--color-void-black);
-  color: var(--color-lello);
-}
-
-/* CTA Banner Responsive */
 @media (max-width: 900px) {
-  .home-cta-banner {
-    height: auto;
-    min-height: 150px;
-    padding: var(--space-medium);
-  }
-
-  .home-cta-content {
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-medium);
-  }
-
-  .home-cta-text {
-    align-items: center;
-    text-align: center;
-  }
-
-  .home-cta-title {
-    font-size: 24px;
-  }
-
-  .home-cta-actions {
-    width: 100%;
-  }
-
-  .home-cta-button {
-    flex: 1;
-    text-align: center;
-  }
-}
-
-/* Mobile CTA Banner - Remove padding, full-width button */
-
-
-@media (max-width: 500px) {
-  .home-cta-actions {
-    flex-direction: column;
-  }
-
-  .home-cta-button {
-    width: 100%;
+  .home-grid-title-text {
+    font-size: 16px;
   }
 }
 
@@ -1414,7 +1311,7 @@ a.sidebar-help-link {
   font-family: var(--font-visitor);
   font-size: 11px;
   color: var(--color-dark);
-  letter-spacing: 1px;
+  letter-spacing: var(--letter-spacing-ui);
   opacity: 0.7;
 }
 
@@ -1426,22 +1323,24 @@ a.sidebar-help-link {
 }
 
 .sidebar-blog-preview-title {
-  font-family: var(--font-visitor);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: 0.5px;
+  font-family: var(--font-doto);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: var(--letter-spacing-doto);
 }
 
 .sidebar-blog-preview-date {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   opacity: 0.5;
 }
 
 .sidebar-blog-preview-excerpt {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   line-height: 1.5;
   opacity: 0.65;
 }
@@ -1458,12 +1357,12 @@ a.sidebar-help-link {
 .home-grid-item-title {
   width: 100%;
   height: 100%;
-  font-family: var(--font-visitor);
-  font-size: 27px;
-  line-height: 19px;
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-normal);
-  text-transform: lowercase;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-doto);
+  text-transform: uppercase;
   color: var(--color-void-black);
   margin: 0;
   text-align: left;
@@ -1473,9 +1372,9 @@ a.sidebar-help-link {
 }
 
 .home-grid-item-price {
-  font-family: var(--font-visitor);
-  font-size: 10px;
-  font-weight: 400;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-dark-gray);
   margin: 0;
   text-align: center;
@@ -1534,8 +1433,9 @@ a.sidebar-help-link {
     width: 100%;
     max-width: 50%; /* Ensure title wraps if it exceeds 50% width */
     height: auto;
-    font-size: 19px;
+    font-size: 13px;
     line-height: 15px;
+    letter-spacing: 2.2px;
     margin: 0px;
     text-align: center; /* Center justify the title text */
     font-weight: 700;
@@ -1626,9 +1526,9 @@ a.sidebar-help-link {
 
 .product-description,
 .product-description-scroll {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   line-height: var(--line-height-base);
   color: var(--color-dark-gray);
   letter-spacing: var(--letter-spacing-normal);
@@ -1661,7 +1561,7 @@ a.sidebar-help-link {
 .product-description-scroll h5,
 .product-description-scroll h6 {
   font-family: var(--font-visitor);
-  font-weight: 700;
+  font-weight: 400;
   margin-top: 2rem;
   margin-bottom: 0.75rem;
   color: var(--color-void-black);
@@ -2134,9 +2034,9 @@ a.sidebar-help-link {
   align-items: center;
   gap: 6px;
   font-family: var(--font-visitor);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   padding: 8px 14px 6px;
   border: 1.5px solid var(--color-void-black);
@@ -2152,8 +2052,8 @@ a.sidebar-help-link {
 }
 
 .contribute-hint {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
   color: #999;
   letter-spacing: 0.3px;
 }
@@ -2167,7 +2067,7 @@ a.sidebar-help-link {
   margin-top: 14px;
   font-family: var(--font-visitor);
   font-size: 13px;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
 }
 
@@ -2197,8 +2097,8 @@ a.sidebar-help-link {
 .changelog-body {
   border-left: 2px solid #ddd;
   padding-left: 12px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
   line-height: 1.6;
   color: #444;
   text-transform: none;
@@ -2260,9 +2160,9 @@ a.sidebar-help-link {
   background: var(--color-void-black);
   color: var(--color-lello);
   font-family: var(--font-visitor);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   padding: 12px 16px 8px;
   display: flex;
@@ -2285,19 +2185,19 @@ a.sidebar-help-link {
 }
 
 .feedback-modal-message-title {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: 30px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.1;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-druk);
   text-transform: uppercase;
   color: var(--color-void-black);
   margin-bottom: 8px;
 }
 
 .feedback-modal-message-body {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
   line-height: 1.6;
   color: #444;
   letter-spacing: 0.2px;
@@ -2318,9 +2218,9 @@ a.sidebar-help-link {
 
 .feedback-form-label {
   font-family: var(--font-visitor);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   color: #666;
 }
@@ -2328,8 +2228,8 @@ a.sidebar-help-link {
 .feedback-form-input,
 .feedback-form-textarea,
 .feedback-form-input[readonly] {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
   padding: 10px 12px;
   border: 1.5px solid #ccc;
   background: #fff;
@@ -2351,8 +2251,8 @@ a.sidebar-help-link {
 }
 
 .feedback-form-hint {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
   color: #999;
   letter-spacing: 0.2px;
 }
@@ -2365,8 +2265,8 @@ a.sidebar-help-link {
 
 .feedback-tag-option {
   font-family: var(--font-visitor);
-  font-size: 11px;
-  letter-spacing: 0.5px;
+  font-size: var(--font-size-ui);
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   padding: 4px 10px 2px;
   border: 1.5px solid #ccc;
@@ -2391,9 +2291,9 @@ a.sidebar-help-link {
 
 .feedback-form-submit {
   font-family: var(--font-visitor);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   padding: 12px 20px 9px;
   border: 2px solid var(--color-void-black);
@@ -2424,13 +2324,13 @@ a.sidebar-help-link {
 }
 
 .product-title {
-  font-family: var(--font-visitor);
-  font-size: 55px;
-  font-weight: normal;
-  letter-spacing: var(--letter-spacing-normal);
+  font-family: var(--font-druk);
+  font-size: var(--font-size-product-title);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-product-title);
   text-transform: uppercase;
   color: var(--color-void-black);
-  line-height: 0.64015; /* 64.015% as per design specs */
+  line-height: 1;
   text-align: left;
   margin: 0;
   padding: 0;
@@ -2438,13 +2338,13 @@ a.sidebar-help-link {
 }
 
 .product-title h2 {
-  font-family: var(--font-visitor);
-  font-size: 37.533px;
-  font-weight: normal;
-  letter-spacing: var(--letter-spacing-normal);
+  font-family: var(--font-druk);
+  font-size: var(--font-size-product-title);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-product-title);
   text-transform: uppercase;
   color: var(--color-void-black);
-  line-height: 0.64015;
+  line-height: 1;
   text-align: right;
   margin: 0;
   padding: 0;
@@ -2514,9 +2414,9 @@ a.sidebar-help-link {
   border: none;
   padding: 7px 56px;
   font-family: var(--font-visitor);
-  font-size: 19px;
-  font-weight: normal;
-  letter-spacing: var(--letter-spacing-normal);
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -2551,9 +2451,9 @@ a.sidebar-help-link {
   border: none;
   padding: 7px 56px;
   font-family: var(--font-visitor);
-  font-size: 19px;
-  font-weight: normal;
-  letter-spacing: var(--letter-spacing-normal);
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -2594,9 +2494,9 @@ a.sidebar-help-link {
   border: 1px solid var(--color-void-black);
   padding: 7px 20px;
   font-family: var(--font-visitor);
-  font-size: 15px;
-  font-weight: normal;
-  letter-spacing: var(--letter-spacing-normal);
+  font-size: var(--font-size-ui);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -2732,10 +2632,10 @@ a.sidebar-help-link {
   background: var(--color-void-black);
   color: var(--color-paper-white);
   font-family: var(--font-visitor);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-ui);
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-normal);
+  letter-spacing: var(--letter-spacing-ui);
   text-decoration: none;
   padding: 10px 20px;
   border: 1px solid var(--color-void-black);
@@ -2877,7 +2777,7 @@ a.sidebar-help-link {
 .search-input {
   width: 100%;
   padding: var(--space-small) var(--space-medium);
-  font-family: var(--font-visitor);
+  font-family: var(--font-doto);
   font-size: 16px;
   border: 2px solid var(--color-void-black);
   background-color: var(--color-paper-white);
@@ -2941,9 +2841,9 @@ a.sidebar-help-link {
 }
 
 .search-result-title {
-  font-family: var(--font-visitor);
-  font-size: 14px;
-  font-weight: 700;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   text-transform: uppercase;
   color: var(--color-void-black);
   flex: 1;
@@ -2955,8 +2855,8 @@ a.sidebar-help-link {
 }
 
 .search-result-price {
-  font-family: var(--font-visitor);
-  font-size: 12px;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
   color: var(--color-medium-gray);
   margin-left: var(--space-medium);
 }
@@ -3156,7 +3056,7 @@ a.sidebar-help-link {
 }
 
 .landing-popup-title {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: var(--font-size-h1);
   font-weight: 700;
   text-transform: uppercase;
@@ -3167,9 +3067,10 @@ a.sidebar-help-link {
 }
 
 .landing-popup-subheader {
-  font-family: var(--font-visitor);
-  font-size: 25px;
-  font-weight: 700;
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-lead);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-doto);
   color: var(--color-deep-charcoal);
   line-height: var(--line-height-base);
   margin: 0;
@@ -3177,9 +3078,9 @@ a.sidebar-help-link {
 }
 
 .landing-popup-description {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-deep-charcoal);
   line-height: var(--line-height-base);
   margin: 0;
@@ -3199,16 +3100,16 @@ a.sidebar-help-link {
   display: flex;
   align-items: center;
   gap: var(--space-small);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-deep-charcoal);
 }
 
 .landing-popup-benefit-icon {
   font-family: var(--font-visitor);
   font-size: var(--font-size-h3);
-  font-weight: 700;
+  font-weight: 400;
   color: var(--color-void-black);
   width: 24px;
   height: 24px;
@@ -3237,7 +3138,7 @@ a.sidebar-help-link {
 }
 
 .landing-popup-option-header {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: var(--font-size-h3);
   font-weight: 700;
   text-transform: uppercase;
@@ -3261,9 +3162,9 @@ a.sidebar-help-link {
   display: flex;
   align-items: center;
   gap: var(--space-small);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-deep-charcoal);
   line-height: 0px;
 }
@@ -3301,10 +3202,10 @@ a.sidebar-help-link {
 .landing-popup-button {
   padding: var(--space-small) var(--space-large);
   font-family: var(--font-visitor);
-  font-size: var(--font-size-h3);
-  font-weight: 700;
+  font-size: var(--font-size-ui);
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-normal);
+  letter-spacing: var(--letter-spacing-ui);
   cursor: pointer;
   border: 2px solid var(--color-void-black);
   transition: all var(--transition-normal);

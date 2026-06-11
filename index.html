@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
-    <meta name="deployment-version" content="b089678">
-    <meta name="deployment-branch" content="main">
+    <meta name="deployment-version" content="4142e44">
+    <meta name="deployment-branch" content="feat/home-banner-and-grid-title">
     <title>NO3D TOOLS</title>
     <meta name="description" content="Procedural geometry tools, Blender addons, and creative tooling by NO3D.">
     <meta property="og:title" content="NO3D TOOLS">
@@ -37,7 +37,9 @@
     <!-- Visitor font - self-hosted WOFF2 webfont -->
     <!-- Preload Visitor font for better performance -->
     <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <!-- Visitor font @font-face declarations -->
+    <link rel="preload" href="./fonts/druk-text-wide-cyr.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="./fonts/doto.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <!-- Visitor + Druk @font-face declarations -->
     <style>
       @font-face {
         font-family: 'Visitor';
@@ -57,6 +59,20 @@
         font-family: 'Visitor TT1 BRK';
         src: url('./fonts/visitor.woff2') format('woff2');
         font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Druk Text Wide Cyr';
+        src: url('./fonts/druk-text-wide-cyr.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Doto';
+        src: url('./fonts/doto.woff2') format('woff2');
+        font-weight: 100 900;
         font-style: normal;
         font-display: swap;
       }
@@ -135,6 +151,15 @@
         <main class="product-card">
             <!-- Home Grid (shown when no product selected) -->
             <div class="home-grid-container visible" id="home-grid-container">
+                <!-- Grid Title -->
+                <div class="home-grid-title">
+                    <div class="home-grid-title-copy">
+                        <h2 class="home-grid-title-text">Blender Asset Library</h2>
+                        <p class="home-grid-title-sub">All No3d Tools and their documentation in one place. All updates come with membership and are sent directly to your Blender environment via the free <a href="#" onclick="event.preventDefault(); openDownloadModal();">No3d Tools add-on</a>.</p>
+                    </div>
+                    <span class="home-grid-title-count" id="home-grid-title-count"></span>
+                </div>
+
                 <div class="home-grid" id="home-grid">
                     <!-- Product thumbnails will be populated by JavaScript -->
                 </div>

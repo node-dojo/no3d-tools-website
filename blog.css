@@ -33,7 +33,7 @@
 }
 
 .blog-nav a {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: var(--font-size-small);
   text-transform: uppercase;
   text-decoration: none;
@@ -53,7 +53,7 @@
 /* --- Blog Listing --- */
 
 .blog-page-title {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: var(--font-size-h1);
   text-transform: uppercase;
   color: var(--color-void-black);
@@ -68,7 +68,7 @@
 }
 
 .tag-btn {
-  font-family: var(--font-mono);
+  font-family: var(--font-visitor);
   font-size: var(--font-size-small);
   font-weight: var(--font-mono-weight);
   padding: 4px 12px;
@@ -135,27 +135,26 @@
 }
 
 .card-title {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: var(--font-size-h3);
-  text-transform: uppercase;
   color: var(--color-deep-charcoal);
   margin: 0 0 6px 0;
   line-height: 1.3;
 }
 
 .card-date {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-medium-gray);
   display: block;
   margin-bottom: 8px;
 }
 
 .card-excerpt {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-dark-gray);
   line-height: 1.5;
   margin: 0;
@@ -170,9 +169,9 @@
 }
 
 .tag {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-visitor);
+  font-size: var(--font-size-ui);
+  font-weight: 400;
   color: var(--color-medium-gray);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -185,9 +184,9 @@
 
 .loading-message,
 .empty-message {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-medium-gray);
   padding: 40px 0;
 }
@@ -199,9 +198,9 @@
 }
 
 .back-link {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-medium-gray);
   text-decoration: none;
   display: inline-block;
@@ -219,9 +218,8 @@
 }
 
 .article-header h1 {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: 38px;
-  text-transform: uppercase;
   color: var(--color-void-black);
   margin: 0 0 12px 0;
   line-height: 1.1;
@@ -235,9 +233,9 @@
 }
 
 .article-meta time {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-medium-gray);
 }
 
@@ -249,9 +247,9 @@
 
 .share-btn {
   font-family: var(--font-visitor);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-ui);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--letter-spacing-ui);
   padding: 4px 14px;
   border: 1px solid var(--color-void-black);
   background: transparent;
@@ -266,6 +264,15 @@
 }
 
 /* Article content: uses .product-description from styles.css */
+
+#article-content h1,
+#article-content h2,
+#article-content h3,
+#article-content h4,
+#article-content h5,
+#article-content h6 {
+  text-transform: none;
+}
 
 /* --- Blockquotes in article content --- */
 
@@ -447,9 +454,9 @@
 }
 
 .article-nav-link {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-dark-gray);
   text-decoration: none;
   max-width: 45%;
@@ -495,7 +502,7 @@
 }
 
 .blog-subscribe-cta h2 {
-  font-family: var(--font-visitor);
+  font-family: var(--font-druk);
   font-size: var(--font-size-h2);
   text-transform: uppercase;
   color: var(--color-void-black);
@@ -503,9 +510,9 @@
 }
 
 .blog-subscribe-cta p {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-mono-weight);
+  font-family: var(--font-doto);
+  font-size: var(--font-size-doto-body);
+  font-weight: 500;
   color: var(--color-medium-gray);
   margin: 0 0 20px 0;
 }
@@ -513,9 +520,9 @@
 .cta-button {
   display: inline-block;
   font-family: var(--font-visitor);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-ui);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--letter-spacing-ui);
   padding: 10px 32px;
   background: var(--color-void-black);
   color: var(--color-lello);
