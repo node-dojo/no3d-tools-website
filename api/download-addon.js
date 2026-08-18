@@ -1,17 +1,18 @@
 /**
  * GET /api/download-addon
  *
- * Returns a presigned R2 URL for the latest no3d_tools_membership.zip.
- * Redirects the browser directly to trigger a download.
+ * Resolves the current canonical Blender Extension archive from the published
+ * extension index. This is the manual-install fallback; native repository
+ * installation is the primary customer path.
  *
  * No license key required — the addon itself validates the license on use.
  */
 
-import { isR2Configured, presignGetObject } from './lib/r2.js';
+import { getObjectUtf8String, isR2Configured } from './lib/r2.js';
 import { createClient } from '@supabase/supabase-js';
 
-const R2_KEY = 'no3d-tools-library/addon/no3d_tools_membership.zip';
-const PRESIGN_TTL = 300; // 5 minutes
+const EXTENSION_INDEX_KEY = 'no3d-tools-library/extensions/index.json';
+const EXTENSION_ID = 'no3d_tools_membership';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,7 +31,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = await presignGetObject(R2_KEY, PRESIGN_TTL);
+    const index = JSON.parse(await getObjectUtf8String(EXTENSION_INDEX_KEY));
+    const extension = index.data?.find((item) => item.id === EXTENSION_ID);
+    if (!extension?.archive_url) {
+      return res.status(404).json({ error: 'Current extension archive not found' });
+    }
 
     // Log every actual download — fire and forget
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -46,7 +51,7 @@ export default async function handler(req, res) {
     }
 
     // Redirect to trigger browser download
-    res.setHeader('Location', url);
+    res.setHeader('Location', extension.archive_url);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(302).end();
   } catch (err) {

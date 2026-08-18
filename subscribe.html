@@ -511,6 +511,9 @@
                 const sharedHeader = parsed.querySelector('header.site-header');
                 if (sharedHeader) {
                     slot.innerHTML = sharedHeader.outerHTML;
+                    const renderedHeader = slot.querySelector('header.site-header');
+                    renderedHeader?.classList.remove('header-home');
+                    renderedHeader?.classList.add('header-secondary');
                 }
             } catch (error) {
                 console.error('Error loading global header:', error);

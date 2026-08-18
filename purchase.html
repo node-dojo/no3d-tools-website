@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purchase ready — NO3D Tools</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body { min-height: 100vh; margin: 0; background: #f4f4f1; color: #050505; }
+    .purchase-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid #050505; background: #fff; }
+    .purchase-brand { color: #050505; font-family: var(--font-visitor, monospace); font-size: 18px; text-decoration: none; }
+    .purchase-shell { width: min(680px, calc(100% - 32px)); margin: 8vh auto 48px; }
+    .purchase-card { border: 1px solid #050505; background: #fff; padding: clamp(28px, 6vw, 56px); box-shadow: 8px 8px 0 #050505; }
+    .purchase-kicker { margin: 0 0 20px; font-family: var(--font-visitor, monospace); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+    .purchase-title { margin: 0 0 18px; font-family: var(--font-druk-wide); font-size: clamp(34px, 8vw, 64px); font-weight: 500; line-height: .92; text-transform: uppercase; }
+    .purchase-copy { max-width: 52ch; margin: 0 0 28px; font-family: var(--font-doto); font-size: 15px; line-height: 1.55; }
+    .purchase-actions { display: grid; gap: 12px; }
+    .purchase-action { display: flex; min-height: 54px; align-items: center; justify-content: center; border: 1px solid #050505; padding: 0 20px; background: #f0ff00; color: #050505; font-family: var(--font-visitor, monospace); font-size: 14px; text-align: center; text-decoration: none; text-transform: uppercase; cursor: pointer; }
+    .purchase-action.secondary { background: #fff; }
+    .purchase-note { margin: 22px 0 0; color: #555; font-family: var(--font-doto); font-size: 12px; line-height: 1.5; }
+    .purchase-library { margin: 28px 0 0; border-top: 1px solid #050505; padding-top: 24px; }
+    .purchase-library h2 { margin: 0 0 10px; font-family: var(--font-visitor, monospace); font-size: 16px; text-transform: uppercase; }
+    .purchase-library p { margin: 0 0 16px; font-family: var(--font-doto); font-size: 13px; line-height: 1.5; }
+    .purchase-library form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+    .purchase-library input { min-width: 0; border: 1px solid #050505; border-radius: 0; padding: 14px; font: 14px var(--font-doto); }
+    .purchase-library button { border: 1px solid #050505; border-radius: 0; padding: 0 18px; background: #f0ff00; font: 13px var(--font-visitor, monospace); text-transform: uppercase; }
+    .purchase-progress { width: 100%; height: 8px; margin: 28px 0; overflow: hidden; border: 1px solid #050505; }
+    .purchase-progress::after { display: block; width: 45%; height: 100%; background: #f0ff00; content: ''; animation: purchase-progress 1.2s infinite alternate ease-in-out; }
+    [hidden] { display: none !important; }
+    @keyframes purchase-progress { from { transform: translateX(-20%); } to { transform: translateX(140%); } }
+    @media (max-width: 560px) { .purchase-header { padding: 15px 16px; } .purchase-shell { margin-top: 32px; } .purchase-card { box-shadow: 5px 5px 0 #050505; } .purchase-library form { grid-template-columns: 1fr; } .purchase-library button { min-height: 48px; } }
+  </style>
+</head>
+<body>
+  <header class="purchase-header">
+    <a class="purchase-brand" href="/">NO3D TOOLS</a>
+    <a class="purchase-brand" href="/account">MY LIBRARY</a>
+  </header>
+  <main class="purchase-shell">
+    <section class="purchase-card" aria-live="polite">
+      <p class="purchase-kicker" id="purchase-kicker">Confirming purchase</p>
+      <h1 class="purchase-title" id="purchase-title">Almost there.</h1>
+      <div class="purchase-progress" id="purchase-progress"></div>
+      <p class="purchase-copy" id="purchase-copy">Stripe has returned you safely. We are confirming payment and preparing your product.</p>
+      <section class="purchase-library" id="purchase-library" hidden>
+        <h2>Your library</h2>
+        <p id="purchase-library-copy">We’ll create your passwordless library using the email from Checkout. Already have a NO3D Tools library? Sign in now and this purchase will join it.</p>
+        <form id="purchase-signin-form">
+          <input id="purchase-email" type="email" autocomplete="email" placeholder="Your existing library email" required>
+          <button id="purchase-signin-submit" type="submit">Sign in</button>
+        </form>
+        <p class="purchase-note" id="purchase-signin-note"></p>
+      </section>
+      <div class="purchase-actions" id="purchase-actions" hidden>
+        <a class="purchase-action" id="purchase-primary" href="#">Download now</a>
+        <a class="purchase-action secondary" id="purchase-download" href="/account">View my library</a>
+        <button class="purchase-action secondary" id="purchase-resend" type="button" hidden>Email me a fresh link</button>
+      </div>
+      <p class="purchase-note" id="purchase-note">You can close this page. Payment confirmation and product delivery continue securely in the background.</p>
+    </section>
+  </main>
+  <script type="module">
+    import { purchaseView } from '/purchase-flow.js';
+
+    const orderId = new URLSearchParams(window.location.search).get('commerce_order')
+      || window.location.pathname.match(/^\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1];
+    const elements = {
+      actions: document.getElementById('purchase-actions'),
+      copy: document.getElementById('purchase-copy'),
+      download: document.getElementById('purchase-download'),
+      kicker: document.getElementById('purchase-kicker'),
+      note: document.getElementById('purchase-note'),
+      library: document.getElementById('purchase-library'),
+      libraryCopy: document.getElementById('purchase-library-copy'),
+      primary: document.getElementById('purchase-primary'),
+      progress: document.getElementById('purchase-progress'),
+      resend: document.getElementById('purchase-resend'),
+      title: document.getElementById('purchase-title'),
+    };
+    let recoveryRequested = false;
+
+    function showActions() {
+      elements.actions.hidden = false;
+      elements.progress.hidden = true;
+    }
+
+    async function requestRecoveryLink() {
+      if (recoveryRequested || !orderId) return;
+      recoveryRequested = true;
+      elements.resend.disabled = true;
+      await fetch('/api/auth/recovery-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      }).catch(() => null);
+      elements.resend.disabled = false;
+      elements.resend.textContent = 'Email sent — send again';
+    }
+
+    function render(order, authenticated) {
+      const view = purchaseView(order, authenticated);
+      if (view.state === 'processing') return false;
+      showActions();
+      if (view.state === 'existing') {
+        elements.library.hidden = true;
+        elements.kicker.textContent = 'Added to your library';
+        elements.title.textContent = `${view.title} is yours.`;
+        elements.copy.textContent = 'This permanent purchase is attached to your existing NO3D Tools account and is ready for your connected Blender library.';
+        elements.primary.href = `/api/commerce/download/${encodeURIComponent(orderId)}`;
+        elements.primary.textContent = 'Download now';
+        elements.download.href = '/account';
+        elements.download.textContent = 'View my library';
+        elements.note.textContent = 'The product is also attached to your NO3D Tools library for Blender sync and future recovery.';
+      } else if (view.state === 'new') {
+        elements.library.hidden = true;
+        elements.kicker.textContent = 'Purchase complete';
+        elements.title.textContent = `${view.title} is yours.`;
+        elements.copy.textContent = 'Your download is ready. We also sent a secure, passwordless library link to the email used at Checkout for Blender sync and future recovery.';
+        elements.primary.href = `/api/commerce/download/${encodeURIComponent(orderId)}`;
+        elements.primary.textContent = 'Download now';
+        elements.download.href = '/guide.html#sync-library';
+        elements.download.textContent = 'Add to Blender';
+        elements.resend.hidden = false;
+        elements.note.textContent = 'No sign-in is required for this download. The email link is only for keeping the product in your library across devices.';
+        void requestRecoveryLink();
+      } else {
+        elements.kicker.textContent = 'Purchase unavailable';
+        elements.title.textContent = 'We need to check this order.';
+        elements.copy.textContent = 'This order is not currently available for delivery. Open your library for its latest status or contact support if you need help.';
+        elements.primary.href = '/account';
+        elements.primary.textContent = 'View my library';
+        elements.download.hidden = true;
+      }
+      if (order?.resourceId) localStorage.setItem(`no3d_commerce_order_${order.resourceId}`, orderId);
+      return true;
+    }
+
+    async function start() {
+      if (!orderId || !/^[0-9a-f-]{36}$/i.test(orderId)) {
+        showActions();
+        elements.kicker.textContent = 'Order not found';
+        elements.title.textContent = 'Open your library.';
+        elements.copy.textContent = 'This purchase link is incomplete. Your account library has the latest status for every order.';
+        elements.primary.href = '/account';
+        elements.primary.textContent = 'View my library';
+        elements.download.hidden = true;
+        return;
+      }
+      const sessionPromise = fetch('/api/auth/session').then((response) => response.json()).catch(() => ({ authenticated: false }));
+      const session = await sessionPromise;
+      if (!session.authenticated) elements.library.hidden = false;
+      for (let attempt = 0; attempt < 15; attempt += 1) {
+        const response = await fetch(`/api/commerce/order/${encodeURIComponent(orderId)}`);
+        const order = await response.json().catch(() => ({}));
+        if (response.ok && render(order, session.authenticated === true)) return;
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+      showActions();
+      elements.kicker.textContent = 'Payment received';
+      elements.title.textContent = 'Still preparing your product.';
+      elements.copy.textContent = 'Delivery is taking longer than usual, but your purchase is safe and processing continues automatically.';
+      elements.primary.href = '/account';
+      elements.primary.textContent = 'Check my library';
+      elements.download.hidden = true;
+      elements.note.textContent = 'If it does not appear shortly, contact support with this order reference: ' + orderId;
+    }
+
+    elements.resend.addEventListener('click', () => {
+      recoveryRequested = false;
+      void requestRecoveryLink();
+    });
+    document.getElementById('purchase-signin-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = document.getElementById('purchase-email').value.trim();
+      const submit = document.getElementById('purchase-signin-submit');
+      const note = document.getElementById('purchase-signin-note');
+      submit.disabled = true;
+      note.textContent = 'Sending your secure sign-in link…';
+      await fetch('/api/auth/request-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, next: `/account/orders/${orderId}` }),
+      }).catch(() => null);
+      note.textContent = 'Check your email. This page will keep preparing the purchase.';
+      submit.disabled = false;
+    });
+    void start();
+  </script>
+</body>
+</html>

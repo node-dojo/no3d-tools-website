@@ -4,7 +4,6 @@
   "installCommand": "npm install",
   "framework": null,
   "outputDirectory": ".",
-  "public": true,
   "redirects": [
     { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true },
     { "source": "/go/naming", "destination": "/blog/quick-print-naming-problem", "permanent": true },
@@ -12,7 +11,10 @@
     { "source": "/go/asset-lib", "destination": "/blog/blenders-asset-library-sucks", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/account", "destination": "/account.html" },
+    { "source": "/extensions/index.json", "destination": "/api/extensions/index" },
+    { "source": "/extensions/dl/:filename", "destination": "/api/extensions/dl/:filename" },
+    { "source": "/account/orders/:orderId", "destination": "/library.html?commerce_order=:orderId" },
+    { "source": "/account", "destination": "/library.html" },
     { "source": "/join", "destination": "/join.html" },
     { "source": "/blog", "destination": "/blog.html" },
     { "source": "/blog/:slug", "destination": "/blog.html" }
@@ -78,7 +80,7 @@
       ]
     },
     {
-      "source": "/assets/(.*)\\.(png|jpg|jpeg|gif|webp|svg|ico)",
+      "source": "/assets/(.*)\\.(png|jpg|jpeg|gif|webp|svg|ico|mp4|webm)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -88,4 +90,3 @@
     }
   ]
 }
-

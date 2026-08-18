@@ -55,9 +55,10 @@ no3d-tools-site/
 ├── index.html          # Main HTML structure
 ├── styles.css          # CSS styles following design system
 ├── script.js           # JavaScript interactivity
-├── README.md           # This documentation
-└── figma-design-system-rules.md  # Design system specifications
+└── README.md           # This documentation
 ```
+
+Canonical design reference: `../docs/design/NO3D_TOOLS_DESIGN_LANGUAGE.md` (v1.0.0). PETRI is retained only as historical compatibility context.
 
 ## 🎮 **Interactions**
 

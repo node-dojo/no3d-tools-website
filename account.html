@@ -161,10 +161,47 @@
         .account-links a {
             color: var(--color-void-black);
         }
+        .account-email {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+        .owned-product {
+            border: 1px solid var(--color-void-black);
+            margin-top: var(--space-small);
+            padding: var(--space-medium);
+        }
+        .owned-product h3 {
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h3);
+            margin: 0 0 var(--space-tiny);
+            text-transform: uppercase;
+        }
+        .owned-product p { margin-bottom: var(--space-tiny); }
+        .compatibility-summary {
+            cursor: pointer;
+            font-family: var(--font-visitor);
+            font-size: var(--font-size-h2);
+            padding: var(--space-medium) 0;
+            text-transform: uppercase;
+        }
+        .account-primary-action {
+            align-items: center;
+            background: var(--color-void-black);
+            border: 1px solid var(--color-void-black);
+            color: var(--color-lello);
+            display: flex;
+            flex: 1;
+            font-family: var(--font-visitor);
+            justify-content: center;
+            padding: var(--space-small);
+            text-align: center;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <header class="site-header">
+    <header class="site-header header-secondary">
         <div class="header-left">
             <a href="index.html" class="logo">
                 <img src="assets/light/no3d-tools.png" alt="NO3D Tools" class="logo">
@@ -180,19 +217,48 @@
             <img src="https://res.cloudinary.com/dz6qxz9c4/image/upload/f_auto,q_auto/no3d-tools/website/workplace-crop-clip.gif" alt="No3d Tools Blender workspace">
         </div>
         <div class="account-card">
-            <h1>Account</h1>
+            <h1>My Library</h1>
+
+            <div class="account-section" id="verified-account">
+                <p class="account-msg" id="verified-account-msg" aria-live="polite"></p>
+                <div id="verified-loading"><p>Checking your account...</p></div>
+                <div id="verified-signed-out" hidden>
+                    <h2>SIGN IN</h2>
+                    <p>Use your purchase email to see what you own and connect it to Blender.</p>
+                    <form id="sign-in-form">
+                        <label for="sign-in-email">Email</label>
+                        <input type="email" id="sign-in-email" autocomplete="email" required placeholder="you@example.com">
+                        <button type="submit" id="sign-in-submit">EMAIL ME A SIGN-IN LINK</button>
+                    </form>
+                    <p class="account-msg" id="sign-in-msg" aria-live="polite"></p>
+                </div>
+                <div id="verified-signed-in" hidden>
+                    <h2>OWNED PRODUCTS</h2>
+                    <p>Signed in as <span class="account-email" id="verified-email"></span></p>
+                    <p class="account-msg" id="membership-status"></p>
+                    <div id="owned-products"></div>
+                    <p class="account-msg" id="owned-products-msg"></p>
+                    <div class="btn-row">
+                        <a href="/guide.html" class="account-primary-action">ADD TO NO3D TOOLS LIBRARY</a>
+                        <button class="btn-secondary" id="sign-out-button" type="button">SIGN OUT</button>
+                    </div>
+                </div>
+            </div>
+
+            <details id="legacy-access">
+                <summary class="compatibility-summary">License-key access and recovery</summary>
 
             <!-- State: No key stored — show entry form -->
             <div id="state-no-key">
                 <div class="account-section">
-                    <h2>NO3D LINK LICENSE KEY</h2>
-                    <p>Enter your No3D Link License Key to view your account.</p>
+                    <h2>NO3D TOOLS LICENSE KEY</h2>
+                    <p>Enter your No3D Tools License Key to view your account.</p>
                     <input type="text" id="license-key-input" placeholder="NO3D-XXXX-XXXX-XXXX-XXXX">
-                    <button onclick="saveLicenseKey()">SAVE NO3D LINK KEY</button>
+                    <button onclick="saveLicenseKey()">SAVE NO3D TOOLS KEY</button>
                     <p id="save-error" class="account-msg"></p>
                 </div>
                 <div class="account-section">
-                    <p>Don't have your key? Check your email for <strong>"No3d Tools — Your No3D Link License Key"</strong>.</p>
+                    <p>Don't have your key? Check your email for <strong>"No3d Tools — Your No3D Tools License Key"</strong>.</p>
                     <p><a href="subscribe.html">Subscribe</a> to get started.</p>
                 </div>
             </div>
@@ -201,7 +267,7 @@
             <div id="state-has-key" style="display: none;">
                 <!-- License Key -->
                 <div class="account-section">
-                    <h2>NO3D LINK LICENSE KEY</h2>
+                    <h2>NO3D TOOLS LICENSE KEY</h2>
                     <div class="license-key-box" id="account-license-key"></div>
                     <div class="btn-row">
                         <button onclick="copyAccountLicenseKey()">COPY</button>
@@ -226,17 +292,17 @@
                     <p class="account-msg" id="portal-msg" aria-live="polite"></p>
                 </div>
 
-                <!-- Download Addon -->
+                <!-- Install Extension -->
                 <div class="account-section">
-                    <h2>BLENDER ADDON</h2>
-                    <p>Download and install in Blender to sync your asset library.</p>
-                    <a href="/guide.html" onclick="window.open('/api/download-addon','_blank');" style="display: inline-block; background: var(--color-void-black); color: var(--color-lello); border: 1px solid var(--color-void-black); padding: var(--space-small) var(--space-large); font-family: var(--font-visitor); font-size: var(--font-size-h3); text-transform: uppercase; text-decoration: none; cursor: pointer; width: 100%; box-sizing: border-box; text-align: center;">DOWNLOAD ADDON</a>
+                    <h2>BLENDER EXTENSION</h2>
+                    <p>Install No3D Tools through Blender's native Extensions system to receive app updates automatically.</p>
+                    <a href="/guide.html#install-extension" style="display: inline-block; background: var(--color-void-black); color: var(--color-lello); border: 1px solid var(--color-void-black); padding: var(--space-small) var(--space-large); font-family: var(--font-visitor); font-size: var(--font-size-h3); text-transform: uppercase; text-decoration: none; cursor: pointer; width: 100%; box-sizing: border-box; text-align: center;">INSTALL NO3D TOOLS</a>
                     <p class="account-msg"><a href="guide.html">Setup guide</a></p>
                 </div>
 
                 <!-- Change key link -->
                 <div class="account-section" style="border-bottom: none;">
-                    <a href="#" id="change-key-link" onclick="showChangeKey(event)" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-dark-gray);">Use a different No3D Link key</a>
+                    <a href="#" id="change-key-link" onclick="showChangeKey(event)" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-dark-gray);">Use a different No3D Tools key</a>
                     <div id="change-key-form" style="display: none; margin-top: var(--space-medium);">
                         <input type="text" id="change-key-input" placeholder="NO3D-XXXX-XXXX-XXXX-XXXX">
                         <div class="btn-row">
@@ -254,6 +320,7 @@
                     <a href="guide.html">Setup Guide</a>
                 </div>
             </div>
+            </details>
         </div>
     </main>
 
@@ -269,6 +336,106 @@
             }
         }
 
+        function productTitle(handle) {
+            return String(handle || '').split('-').filter(Boolean).map((word) =>
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        function renderOwnedProducts(summary) {
+            const container = document.getElementById('owned-products');
+            const message = document.getElementById('owned-products-msg');
+            container.replaceChildren();
+            const products = Array.isArray(summary.products) ? summary.products : [];
+            if (!products.length) {
+                message.textContent = 'No individual products are attached to this account yet.';
+                return;
+            }
+            message.textContent = '';
+            products.forEach((product) => {
+                const card = document.createElement('div');
+                card.className = 'owned-product';
+                const title = document.createElement('h3');
+                title.textContent = productTitle(product.handle);
+                const detail = document.createElement('p');
+                const date = product.purchasedAt ? new Date(product.purchasedAt).toLocaleDateString() : 'Unknown date';
+                const paymentState = product.paymentStatus === 'refunded'
+                    ? 'Refunded · product access removed'
+                    : product.paymentStatus === 'partially_refunded'
+                        ? 'Partially refunded · access remains available'
+                        : product.entitlementStatus === 'revoked' || !product.owned
+                            ? 'Access revoked'
+                            : product.reviewStatus && product.reviewStatus !== 'clear'
+                                ? 'Purchase under review'
+                                : product.permanent ? 'Permanent access' : 'Access available';
+                detail.textContent = `Purchased ${date} · ${paymentState}`;
+                card.append(title, detail);
+                if (product.recovery && product.owned) {
+                    const recovery = document.createElement('a');
+                    recovery.href = `/account/orders/${encodeURIComponent(product.orderId)}`;
+                    recovery.textContent = 'Purchase details and recovery';
+                    card.append(recovery);
+                } else {
+                    const history = document.createElement('p');
+                    history.textContent = 'Purchase retained in account history.';
+                    card.append(history);
+                }
+                container.append(card);
+            });
+        }
+
+        function renderMembershipStatus(summary) {
+            const target = document.getElementById('membership-status');
+            const memberships = Array.isArray(summary.memberships) ? summary.memberships : [];
+            const active = memberships.find((membership) => membership.status === 'active');
+            if (!active) {
+                target.textContent = 'Individual purchases are permanent. No active full-catalog membership is attached to this account.';
+                return;
+            }
+            const ends = active.endsAt ? ` through ${new Date(active.endsAt).toLocaleDateString()}` : '';
+            target.textContent = `Full catalog membership active${ends}. Individual purchases remain separate and permanent.`;
+        }
+
+        async function initVerifiedAccount() {
+            const loading = document.getElementById('verified-loading');
+            const signedOut = document.getElementById('verified-signed-out');
+            const signedIn = document.getElementById('verified-signed-in');
+            const statusMessage = document.getElementById('verified-account-msg');
+            const authState = new URLSearchParams(window.location.search).get('auth');
+            const claimState = new URLSearchParams(window.location.search).get('claim');
+            const recoveryState = new URLSearchParams(window.location.search).get('recovery');
+            try {
+                const sessionResponse = await fetch('/api/auth/session');
+                const session = await sessionResponse.json();
+                loading.hidden = true;
+                if (!session.authenticated) {
+                    signedOut.hidden = false;
+                    if (authState === 'invalid') {
+                        document.getElementById('sign-in-msg').textContent = 'That sign-in link has expired. Request a new one below.';
+                    }
+                    return;
+                }
+                document.getElementById('verified-email').textContent = session.email || '';
+                signedIn.hidden = false;
+                if (claimState === 'review') {
+                    statusMessage.textContent = 'You are signed in. This purchase needs account-recovery review; your existing account was left unchanged.';
+                } else if (recoveryState === 'invalid') {
+                    statusMessage.textContent = 'You are signed in, but that purchase-recovery link has expired or was already used. Request a fresh link from the purchase page.';
+                } else if (authState === 'signed-in') {
+                    statusMessage.textContent = 'Signed in. Your purchases are ready to restore in No3d Tools.';
+                }
+                const accountResponse = await fetch('/api/commerce/account');
+                const summary = await accountResponse.json();
+                if (!accountResponse.ok) throw new Error(summary.error || 'account_unavailable');
+                renderOwnedProducts(summary);
+                renderMembershipStatus(summary);
+            } catch (error) {
+                loading.hidden = true;
+                signedOut.hidden = false;
+                document.getElementById('sign-in-msg').textContent = 'Your account could not be loaded. Please try signing in again.';
+            }
+        }
+
         function showKeyState(key) {
             document.getElementById('state-no-key').style.display = 'none';
             document.getElementById('state-has-key').style.display = 'block';
@@ -281,10 +448,10 @@
             if (!key.match(/^NO3D-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
                 const errorEl = inputId ? null : document.getElementById('save-error');
                 if (errorEl) {
-                    errorEl.textContent = 'Invalid No3D Link key format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX';
+                    errorEl.textContent = 'Invalid No3D Tools key format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX';
                     errorEl.style.color = '#cc0000';
                 } else {
-                    alert('Invalid No3D Link key format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX');
+                    alert('Invalid No3D Tools key format. Expected: NO3D-XXXX-XXXX-XXXX-XXXX');
                 }
                 return;
             }
@@ -369,6 +536,33 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initAccountPage();
+            initVerifiedAccount();
+
+            document.getElementById('sign-in-form').addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const button = document.getElementById('sign-in-submit');
+                const message = document.getElementById('sign-in-msg');
+                const email = document.getElementById('sign-in-email').value.trim();
+                button.disabled = true;
+                message.textContent = '';
+                try {
+                    await fetch('/api/auth/request-link', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email }),
+                    });
+                    message.textContent = 'Check your email for a secure sign-in link. You can close this page after it arrives.';
+                } catch (error) {
+                    message.textContent = 'The link could not be requested. Please try again.';
+                } finally {
+                    button.disabled = false;
+                }
+            });
+
+            document.getElementById('sign-out-button').addEventListener('click', async () => {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.reload();
+            });
 
             // Enter key submits the license key input
             document.getElementById('license-key-input').addEventListener('keydown', (e) => {

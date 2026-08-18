@@ -290,23 +290,23 @@
     </style>
 </head>
 <body>
-    <header class="site-header">
+    <header class="site-header header-secondary">
         <div class="header-left">
             <a href="index.html" class="logo">
                 <img src="assets/light/no3d-tools.png" alt="NO3D Tools" class="logo">
             </a>
         </div>
         <div class="header-icons">
-            <a href="/api/download-addon" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);" download>Download Addon</a>
+            <a href="#install-extension" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Install No3D Tools</a>
             <a href="subscribe.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium); background: var(--color-lello);">Subscribe</a>
-            <a href="account.html" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">Account</a>
+            <a href="/account" class="action-link" style="display: inline-block; padding: var(--space-tiny) var(--space-medium);">My Library</a>
         </div>
     </header>
 
     <div class="guide-wrap">
         <div class="guide-card">
             <h1>Getting Started</h1>
-            <p class="subtitle">Install the No3d Tools addon and sync your asset library into Blender.</p>
+            <p class="subtitle">Install the No3D Tools extension and sync your managed asset library into Blender.</p>
 
             <!-- ==================== -->
             <h2>What You Get</h2>
@@ -315,48 +315,62 @@
             <!-- ==================== -->
             <h2>Requirements</h2>
             <ul>
-                <li>Blender 4.5 or newer</li>
+                <li>Blender 5.0 or newer</li>
                 <li>An active subscription — <a href="/subscribe.html">subscribe here</a></li>
-                <li>Your No3D Link License Key (emailed after subscribing)</li>
+                <li>Your No3D Tools License Key (emailed after subscribing)</li>
             </ul>
 
             <!-- ==================== -->
-            <h2>Install the Addon</h2>
+            <h2 id="install-extension">Install the Extension</h2>
 
-            <h3>Step 1: Download</h3>
-            <p><a href="/api/download-addon" download><strong>Download No3D Tools Addon.zip</strong></a> or use the link in your No3D Link key email.</p>
+            <h3>Step 1: Open on Your Blender Computer</h3>
+            <p>If you purchased on your phone, reopen this page from your email or account on the computer where Blender is installed.</p>
+
+            <p>
+                <a href="blender://extensions/add-repo?url=https%3A%2F%2Fno3dtools.com%2Fextensions%2Findex.json" class="action-link" style="display: inline-block; padding: var(--space-small) var(--space-large); background: var(--color-lello); color: var(--color-void-black); border: 1px solid var(--color-void-black); font-weight: 700;">OPEN IN BLENDER</a>
+            </p>
+            <p>This adds the official No3D Tools repository to Blender and opens Get Extensions. Future extension updates are delivered through Blender.</p>
 
             <h3>Step 2: Install in Blender</h3>
             <div class="step-box">
                 <p>1. Open Blender</p>
-                <p>2. Go to <strong>Edit → Preferences → Add-ons</strong></p>
-                <p>3. Click <strong>Install...</strong> (top right)</p>
-                <p>4. Select the downloaded <strong>.zip</strong> file</p>
-                <p>5. Click <strong>Install Add-on</strong></p>
+                <p>2. Go to <strong>Edit → Preferences → Get Extensions</strong></p>
+                <p>3. Find <strong>No3D Tools</strong> in the official No3D Tools repository</p>
+                <p>4. Click <strong>Install</strong></p>
             </div>
 
-            <h3>Step 3: Enable</h3>
+            <h3>Step 3: Open Preferences</h3>
             <div class="step-box">
-                <p>1. Search for <strong>"No3d Tools Membership"</strong> in the add-ons list</p>
-                <p>2. Check the box to enable it</p>
-                <p>3. The preferences panel will expand</p>
+                <p>1. Go to <strong>Edit → Preferences → Add-ons</strong></p>
+                <p>2. Search for <strong>No3D Tools</strong></p>
+                <p>3. Expand the extension preferences</p>
             </div>
+
+            <details>
+                <summary>Manual installation fallback</summary>
+                <p>If native repository installation is unavailable, <a href="/api/download-addon"><strong>download the current extension ZIP</strong></a>, then use <strong>Edit → Preferences → Extensions → menu → Install from Disk</strong>. Native repository installation is recommended because Blender can deliver extension updates automatically.</p>
+            </details>
 
             <!-- ==================== -->
-            <h2>Setup Sequence</h2>
+            <h2 id="sync-library">Setup and Sync</h2>
 
-            <p>The addon preferences panel walks you through setup with numbered steps. Open it at <strong>Edit → Preferences → Add-ons → No3D Tools</strong>.</p>
+            <p>The extension preferences panel walks you through setup with numbered steps. Open it at <strong>Edit → Preferences → Add-ons → No3D Tools</strong>.</p>
 
             <div class="guide-split">
                 <div class="guide-split-text">
                     <div class="step-box">
-                        <p><strong>Step 1. Enter your No3D Link License Key</strong></p>
+                        <p><strong>Step 1. Enter your No3D Tools License Key</strong></p>
                         <p>Paste your key into the <strong>Key</strong> field. Format: <span class="key-format">NO3D-XXXX-XXXX-XXXX-XXXX</span></p>
                     </div>
 
                     <div class="step-box">
                         <p><strong>Step 2. Activate and set startup sync</strong></p>
-                        <p>Click <strong>Activate No3D Link</strong>. Check <strong>Sync on startup</strong> to automatically sync when Blender opens.</p>
+                        <p>Click <strong>Activate No3D Tools</strong>. Check <strong>Sync on startup</strong> to automatically sync when Blender opens.</p>
+                    </div>
+
+                    <div class="step-box">
+                        <p><strong>Individually purchased tools</strong></p>
+                        <p>Click <strong>Connect Purchases</strong>, approve the connection in your browser, then click <strong>Restore Purchases</strong>. Purchased products become part of your managed Blender Asset Library.</p>
                     </div>
 
                     <div class="step-box">
@@ -365,11 +379,11 @@
                     </div>
 
                     <div class="step-box">
-                        <p><strong>Step 4. Activate No3D Link</strong></p>
-                        <p>Click <strong>Activate No3D Link</strong> to confirm the install folder and run your first sync. Assets are always stored in a "No3d Tools" subfolder. If the library appears empty, click <strong>Refresh No3D Link Library</strong> or try refreshing the Asset Browser panel.</p>
+                        <p><strong>Step 4. Activate No3D Tools</strong></p>
+                        <p>Click <strong>Activate No3D Tools</strong> to confirm the install folder and run your first sync. Assets are always stored in a "No3d Tools" subfolder. If the library appears empty, click <strong>Refresh No3D Tools Library</strong> or try refreshing the Asset Browser panel.</p>
                     </div>
 
-                    <p>Don't have your key? <a href="/account.html">Look it up here</a> or check your email for "No3d Tools — Your No3D Link License Key".</p>
+                    <p>Don't have your key? <a href="/account">Open My Library</a> or check your purchase email.</p>
                 </div>
                 <div class="guide-split-image">
                     <img src="assets/guide/addon-preferences.png" alt="No3D Tools addon preferences panel showing the 4-step setup sequence" class="guide-image">
@@ -449,36 +463,36 @@
                 </tbody>
             </table>
 
-            <p>Manage your subscription, update payment, or cancel: <a href="/account.html">Account page</a></p>
+            <p>Manage your library and access: <a href="/account">My Library</a></p>
 
             <!-- ==================== -->
             <h2>Troubleshooting</h2>
 
-            <h3>"Invalid No3D Link License Key"</h3>
+            <h3>"Invalid No3D Tools License Key"</h3>
             <ul>
                 <li>Include the <strong>NO3D-</strong> prefix</li>
                 <li>Check for extra spaces</li>
-                <li>Verify your subscription at <a href="/account.html">account page</a></li>
+                <li>Verify your access in <a href="/account">My Library</a></li>
             </ul>
 
             <h3>"Sync failed"</h3>
             <ul>
                 <li>Check your internet connection</li>
-                <li>Click <strong>Activate No3D Link</strong> first, then try again</li>
+                <li>Click <strong>Activate No3D Tools</strong> first, then try again</li>
                 <li>If it persists, try <strong>Recover Setup</strong> under Maintenance Tools</li>
             </ul>
 
             <h3>Assets not showing in Asset Browser</h3>
             <ul>
                 <li>Select <strong>NO3D Tools</strong> in the Asset Browser dropdown (top left)</li>
-                <li>Click <strong>Refresh No3D Link Library</strong> in addon preferences</li>
+                <li>Click <strong>Refresh No3D Tools Library</strong> in addon preferences</li>
                 <li>If still empty, try refreshing the Asset Browser panel</li>
             </ul>
 
-            <h3>Lost your No3D Link key</h3>
+            <h3>Lost your No3D Tools key</h3>
             <ul>
-                <li>Check email for "No3d Tools — Your No3D Link License Key"</li>
-                <li>Visit <a href="/account.html">account page</a> and enter your email</li>
+                <li>Check email for "No3d Tools — Your No3D Tools License Key"</li>
+                <li>Visit <a href="/account">My Library</a> and enter your email</li>
             </ul>
 
             <!-- ==================== -->
@@ -487,16 +501,16 @@
             <table class="ref-table">
                 <tbody>
                     <tr>
-                        <td>Install addon</td>
-                        <td>Edit → Preferences → Add-ons → Install → select .zip</td>
+                        <td>Install extension</td>
+                        <td>Open in Blender → Get Extensions → No3D Tools → Install</td>
                     </tr>
                     <tr>
-                        <td>Enter No3D Link key</td>
-                        <td>Addon preferences → Step 1 → Key field → Activate No3D Link</td>
+                        <td>Enter No3D Tools key</td>
+                        <td>Addon preferences → Step 1 → Key field → Activate No3D Tools</td>
                     </tr>
                     <tr>
                         <td>Sync assets</td>
-                        <td>Addon preferences → Step 4 → Activate No3D Link</td>
+                        <td>Addon preferences → Step 4 → Activate No3D Tools</td>
                     </tr>
                     <tr>
                         <td>Refresh library</td>
@@ -516,7 +530,7 @@
                     </tr>
                     <tr>
                         <td>Manage subscription</td>
-                        <td><a href="/account.html">no3dtools.com/account</a></td>
+                        <td><a href="/account">no3dtools.com/account</a></td>
                     </tr>
                 </tbody>
             </table>

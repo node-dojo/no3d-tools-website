@@ -11,13 +11,14 @@ import {
 } from '../lib/subscriptionAccess.js';
 import { getLicenseKeyFromRequest } from '../lib/licenseRequest.js';
 import { isR2Configured, presignGetObject } from '../lib/r2.js';
+import { commerceFetch } from '../commerce/lib/client.js';
 
 const PRESIGN_TTL_SECONDS = 900;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-License-Key, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-License-Key, X-NO3D-Device-Token, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -36,7 +37,8 @@ export default async function handler(req, res) {
   }
 
   const licenseKey = getLicenseKeyFromRequest(req);
-  if (!licenseKey) {
+  const deviceToken = req.headers['x-no3d-device-token'];
+  if (!licenseKey && typeof deviceToken !== 'string') {
     res.setHeader('Content-Type', 'application/json');
     return res.status(401).json({ error: 'license key required (X-License-Key or ?license_key=)' });
   }
@@ -47,11 +49,22 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server misconfigured: Supabase service role missing' });
   }
 
-  const row = await fetchSubscriptionByLicenseKey(supabase, licenseKey);
+  const row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
   const access = computeAccessState(row);
-  if (!access.allowed) {
+  let purchased = false;
+  if (typeof deviceToken === 'string' && deviceToken.length >= 32) {
+    try {
+      const { response, payload } = await commerceFetch(req, res, '/api/devices/entitlements', {
+        headers: { 'X-NO3D-Device-Token': deviceToken }
+      });
+      purchased = response.ok && Array.isArray(payload?.products) && payload.products.some((product) => product?.handle === handle);
+    } catch (e) {
+      console.error('purchase entitlement lookup failed:', e?.message || e);
+    }
+  }
+  if (!access.allowed && !purchased) {
     res.setHeader('Content-Type', 'application/json');
-    return res.status(403).json({ error: 'Subscription not active', status: access.effectiveStatus });
+    return res.status(403).json({ error: 'No active membership or purchased product', status: access.effectiveStatus });
   }
 
   if (!isR2Configured()) {

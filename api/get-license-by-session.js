@@ -123,7 +123,8 @@ export default async function handler(req, res) {
     // Send license email (best-effort)
     try {
       if (process.env.LICENSE_EMAIL_DRY_RUN !== 'true') {
-        await sendLicenseKeyEmail(email, licenseKey, process.env.ADDON_DOWNLOAD_URL);
+        const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';
+        await sendLicenseKeyEmail(email, licenseKey, `${siteUrl}/guide.html#install-extension`);
       }
     } catch (emailErr) {
       console.error('License email send failed:', emailErr?.message || emailErr);

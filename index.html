@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
-    <meta name="deployment-version" content="4142e44">
+    <meta name="deployment-version" content="f73191f">
     <meta name="deployment-branch" content="feat/home-banner-and-grid-title">
     <title>NO3D TOOLS</title>
     <meta name="description" content="Procedural geometry tools, Blender addons, and creative tooling by NO3D.">
@@ -18,8 +18,8 @@
     <meta name="twitter:title" content="NO3D TOOLS">
     <meta name="twitter:description" content="Procedural geometry tools, Blender addons, and creative tooling by NO3D.">
     <meta name="twitter:image" content="https://no3dtools.com/assets/og-default.png">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="mobile.css" media="screen and (max-width: 768px)">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/mobile.css" media="screen and (max-width: 768px)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Preconnect to Cloudinary CDN for faster image loading -->
@@ -37,6 +37,7 @@
     <!-- Visitor font - self-hosted WOFF2 webfont -->
     <!-- Preload Visitor font for better performance -->
     <link rel="preload" href="./fonts/visitor.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="./fonts/druk-wide-cyr-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="./fonts/druk-text-wide-cyr.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="./fonts/doto.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <!-- Visitor + Druk @font-face declarations -->
@@ -63,6 +64,13 @@
         font-display: swap;
       }
       @font-face {
+        font-family: 'Druk Wide Cyr';
+        src: url('./fonts/druk-wide-cyr-medium.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
         font-family: 'Druk Text Wide Cyr';
         src: url('./fonts/druk-text-wide-cyr.woff2') format('woff2');
         font-weight: 500;
@@ -83,7 +91,7 @@
 <body>
     <div class="site-container">
         <!-- Site Header -->
-        <header class="site-header">
+        <header class="site-header header-home">
             <button class="hamburger-menu-button" id="hamburger-menu-button" aria-label="Toggle menu">
                 <i class="fas fa-bars"></i>
             </button>
@@ -151,6 +159,14 @@
         <main class="product-card">
             <!-- Home Grid (shown when no product selected) -->
             <div class="home-grid-container visible" id="home-grid-container">
+                <!-- Membership CTA Banner -->
+                <a href="/subscribe.html" class="home-cta-banner" id="home-cta-banner" aria-label="Become a member — view subscription options">
+                    <video class="home-cta-backdrop-media" autoplay loop muted playsinline preload="metadata" poster="/assets/workplace-crop-clip-banner-cropped.jpg" aria-hidden="true" disablepictureinpicture>
+                        <source src="/assets/home-banner-20260811.mp4" type="video/mp4">
+                    </video>
+                    <img src="/assets/workplace-crop-clip-banner-cropped.jpg" alt="" class="home-cta-backdrop-poster" draggable="false">
+                </a>
+
                 <!-- Grid Title -->
                 <div class="home-grid-title">
                     <div class="home-grid-title-copy">
@@ -166,27 +182,28 @@
             </div>
 
             <div class="product-card-container hidden">
-                <!-- Left Section: Product Image and Details -->
-                <div class="product-left-section">
+                <div class="product-hero-container">
                     <!-- Product Image Carousel -->
-                    <div class="product-image-container">
-                        <div class="product-image-carousel">
-                            <button class="carousel-arrow carousel-arrow-left" id="carousel-arrow-left" aria-label="Previous image">
-                                <img src="/assets/left.png" alt="Previous" class="carousel-arrow-image">
-                            </button>
-                            <div class="carousel-viewport">
-                                <div class="carousel-track" id="carousel-track">
-                                    <!-- Carousel items will be dynamically inserted here -->
+                    <div class="product-left-section">
+                        <div class="product-image-container">
+                            <div class="product-image-carousel">
+                                <button class="carousel-arrow carousel-arrow-left" id="carousel-arrow-left" aria-label="Previous image">
+                                    <img src="/assets/left.png" alt="Previous" class="carousel-arrow-image">
+                                </button>
+                                <div class="carousel-viewport">
+                                    <div class="carousel-track" id="carousel-track">
+                                        <!-- Carousel items will be dynamically inserted here -->
+                                    </div>
                                 </div>
+                                <button class="carousel-arrow carousel-arrow-right" id="carousel-arrow-right" aria-label="Next image">
+                                    <img src="/assets/right.png" alt="Next" class="carousel-arrow-image">
+                                </button>
                             </div>
-                            <button class="carousel-arrow carousel-arrow-right" id="carousel-arrow-right" aria-label="Next image">
-                                <img src="/assets/right.png" alt="Next" class="carousel-arrow-image">
-                            </button>
                         </div>
                     </div>
 
-                    <!-- Product Details -->
-                    <div class="product-details">
+                    <!-- Product Front Matter -->
+                    <div class="product-front-matter product-details">
                         <!-- Top divider lines -->
                         <div class="product-details-divider-top">
                             <div class="divider-line-thick"></div>
@@ -196,10 +213,17 @@
                         <div class="product-header-row">
                             <h1 class="product-title" id="product-title">DOJO MESH REPAIR</h1>
                             <div class="product-price-wrapper">
-                                <!-- Per-product price hidden 2026-04-07: site is subscription-only. Data retained in products.price for future use. -->
-                                <!-- <div class="product-price" id="product-price">PRICE: $7.99</div> -->
                                 <button class="download-button" id="download-button" style="display: none;">DOWNLOAD</button>
-                                <a href="#" class="buy-now-button" id="buy-now-button">SUBSCRIBE</a>
+                                <div class="product-purchase-options" id="product-purchase-options">
+                                    <button class="buy-now-button" id="buy-now-button" type="button">BUY</button>
+                                    <button class="catalog-button" id="catalog-button" type="button">GET FULL CATALOG</button>
+                                </div>
+                                <div class="member-library-panel" id="member-library-panel" style="display: none;">
+                                    <div class="library-status" role="status">IN YOUR LIBRARY</div>
+                                    <a class="sync-instructions-link" href="/guide.html#sync-library">
+                                        <span aria-hidden="true">(i)</span> VIEW SYNC INSTRUCTIONS
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         
@@ -226,7 +250,7 @@
                     </div>
                 </div>
 
-                <!-- Right Section: Product Description (single scrolling thread from _desc.md) -->
+                <!-- Documentation: full-width flow below the product hero -->
                 <div class="product-right-section">
                     <div class="product-description-scroll" id="product-description">
                         <!-- Markdown content from _desc.md rendered here -->
@@ -350,8 +374,8 @@
     <div class="search-modal-backdrop" id="download-modal-backdrop" style="display:none;"></div>
     <div class="search-modal" id="download-modal" style="display:none;">
         <div class="search-modal-container" style="text-align: center; padding: 30px;">
-            <h2 style="font-family: var(--font-visitor); font-size: var(--font-size-h2); text-transform: uppercase; margin-bottom: 8px; letter-spacing: var(--letter-spacing-wide);">Download Add-on</h2>
-            <p style="font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-medium-gray); margin-bottom: 20px; line-height: 1.5;">Enter your email to get your free No3D Link License Key<br>and download the NO3D Tools Blender add-on.</p>
+            <h2 style="font-family: var(--font-visitor); font-size: var(--font-size-h2); text-transform: uppercase; margin-bottom: 8px; letter-spacing: var(--letter-spacing-wide);">Get No3D Tools</h2>
+            <p style="font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-medium-gray); margin-bottom: 20px; line-height: 1.5;">Enter your email to get your free No3D Tools License Key<br>and install No3D Tools through Blender Extensions.</p>
             <form id="download-email-form" style="display: flex; flex-direction: column; gap: 12px; max-width: 360px; margin: 0 auto;">
                 <input
                     type="email"
@@ -363,14 +387,14 @@
                     style="text-align: center;"
                 >
                 <button type="submit" id="download-submit-btn" style="font-family: var(--font-visitor); font-size: var(--font-size-h3); text-transform: uppercase; padding: 10px 24px; background: var(--color-void-black); color: var(--color-lello); border: 1px solid var(--color-void-black); cursor: pointer; letter-spacing: var(--letter-spacing-wide); transition: background 0.15s;">
-                    Get Add-on
+                    Continue to Install
                 </button>
             </form>
             <div id="download-modal-status" style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-medium-gray); margin-top: 16px; display: none;"></div>
             <div id="download-modal-success" style="display: none; margin-top: 16px;">
-                <p style="font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-dark-gray); margin-bottom: 8px;">Your No3D Link License Key:</p>
+                <p style="font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-dark-gray); margin-bottom: 8px;">Your No3D Tools License Key:</p>
                 <div id="download-license-key" style="font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--color-void-black); background: var(--color-lello); padding: 10px 16px; letter-spacing: 0.15em; user-select: all; cursor: text; margin-bottom: 12px;"></div>
-                <p style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-medium-gray);">Check your email — we've sent your No3D Link key to you too.</p>
+                <p style="font-family: var(--font-mono); font-size: var(--font-size-small); color: var(--color-medium-gray);">Check your email — we've sent your No3D Tools key to you too.</p>
             </div>
             <div class="search-modal-footer" style="margin-top: 16px;">
                 <span class="search-hint" style="cursor: pointer;" onclick="closeDownloadModal()">
@@ -447,6 +471,6 @@
     })();
     </script>
 
-    <script type="module" src="script.js?v=1.0.17"></script>
+    <script type="module" src="/script.js?v=1.0.18"></script>
 </body>
 </html>

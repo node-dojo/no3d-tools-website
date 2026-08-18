@@ -61,6 +61,8 @@ let activeProductType = null;
 let expandedProductGroups = new Set();
 let activeToolFilters = new Set(['all']);
 const purchasedProducts = new Set(); // To track purchased products
+let individualProductsCommerceEnabled = false;
+let membershipPrice = null;
 
 // Carousel-specific global variables
 let carouselCurrentIndex = 0;
@@ -77,6 +79,10 @@ const productTitle = document.getElementById('product-title');
 const productDescription = document.getElementById('product-description');
 const downloadButton = document.getElementById('download-button');
 const buyNowButton = document.getElementById('buy-now-button');
+const catalogButton = document.getElementById('catalog-button');
+const productPurchaseOptions = document.getElementById('product-purchase-options');
+const memberLibraryPanel = document.getElementById('member-library-panel');
+const productPriceWrapper = document.querySelector('.product-price-wrapper');
 
 // ============================================================================ 
 // INITIALIZATION AND DATA FETCHING
@@ -87,18 +93,20 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Don't hide loading screen immediately - wait for data to load
   try {
     await fetchUnifiedProducts();
+    await loadCommerceAvailability();
     organizeProductsByType();
     renderSidebar();
     initializeEventListeners();
     initializeMobileMenu();
     initializeSidebarEventListeners();
     initializeSidebarScrollbar();
-    updateHeaderLogo('tools');
+    updateHeaderLogo('home');
     renderHomeGrid();
     const deepLinked = initializeDeepLinks();
     if (!deepLinked) updateViewState(false); // Start with home grid visible (unless deep link activated)
     await checkUrlParameters(); // Check for checkout success from redirect
     initializeMemberCTA();
+    initializeHomeCTABanner();
     initializeAccountDropdown();
     initializeDownloadButton();
     initFeedbackModal();
@@ -119,6 +127,46 @@ document.addEventListener('DOMContentLoaded', async function() {
     hideLoadingScreen();
   }
 });
+
+async function loadCommerceAvailability() {
+  const [commerceResult, membershipResult] = await Promise.allSettled([
+    fetch('/api/commerce/config'),
+    fetch('/api/get-subscription-price'),
+  ]);
+
+  if (commerceResult.status === 'fulfilled' && commerceResult.value.ok) {
+    const config = await commerceResult.value.json();
+    individualProductsCommerceEnabled = config.individualProductsEnabled === true;
+  }
+
+  if (membershipResult.status === 'fulfilled' && membershipResult.value.ok) {
+    const price = await membershipResult.value.json();
+    const interval = price.interval === 'month' ? 'MO' : String(price.interval || '').toUpperCase();
+    membershipPrice = price.formatted
+      ? `${price.formatted}${interval ? `/${interval}` : ''}`
+      : null;
+  }
+}
+
+function isIndividualCommerceProduct(product) {
+  return individualProductsCommerceEnabled && Boolean(product?.handle) && !product?._isBlogPost;
+}
+
+function checkoutButtonLabel(product) {
+  const price = Number(product.price);
+  return Number.isFinite(price) ? `BUY — $${price.toFixed(2)}` : 'BUY';
+}
+
+function catalogButtonLabel() {
+  return `GET FULL CATALOG${membershipPrice ? ` — ${membershipPrice}` : ''}`;
+}
+
+function newCommerceAttemptToken() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
+}
 
 async function fetchUnifiedProducts() {
   console.log('🔄 Fetching unified product data from /api/get-all-products...');
@@ -151,7 +199,7 @@ async function fetchUnifiedProducts() {
           id: product.id,
           name: product.title.toUpperCase(),
           title: product.title,
-          // price: product.price || 'FREE', // hidden 2026-04-07 (subscription-only)
+          price: product.price,
           description: product.description,
           changelog: product.changelog || [],
           image: product.image || null,
@@ -496,6 +544,8 @@ async function updateProductDisplay(productId) {
   const product = products[productId];
   if (!product) return;
 
+  document.getElementById('commerce-account-ready')?.remove();
+
   productTitle.textContent = product.name;
   // productPrice.textContent = `PRICE: ${product.price}`; // hidden 2026-04-07 (subscription-only)
 
@@ -539,24 +589,33 @@ async function updateProductDisplay(productId) {
 
   updateButtonVisibility();
 
-  // Subscribe button handler
   if (buyNowButton) {
     buyNowButton.onclick = async (e) => {
       e.preventDefault();
       if (buyNowButton.classList.contains('loading')) return;
-      track('checkout_start', { product_handle: products[currentProduct]?.handle });
+      const product = products[currentProduct];
+      track('checkout_start', {
+        product_handle: product?.handle,
+        checkout_type: 'individual_product',
+      });
       buyNowButton.classList.add('loading');
       buyNowButton.textContent = 'LOADING...';
       try {
-        const response = await fetch('/api/create-checkout', {
+        const response = await fetch('/api/commerce/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
+          body: JSON.stringify({
+            attemptToken: newCommerceAttemptToken(),
+            handle: product.handle,
+          }),
         });
         if (!response.ok) throw new Error('API error');
         const data = await response.json();
-        const url = data.checkout_url || data.url;
+        const url = data.checkoutUrl || data.checkout_url || data.url;
         if (url) {
+          if (data.orderId) {
+            localStorage.setItem(`no3d_commerce_order_${product.handle}`, data.orderId);
+          }
           window.location.href = url;
         } else {
           throw new Error('No checkout URL');
@@ -566,7 +625,36 @@ async function updateProductDisplay(productId) {
         alert('Unable to start checkout. Please try again.');
       } finally {
         buyNowButton.classList.remove('loading');
-        buyNowButton.textContent = 'SUBSCRIBE';
+        buyNowButton.textContent = checkoutButtonLabel(product);
+      }
+    };
+  }
+
+  if (catalogButton) {
+    catalogButton.onclick = async (e) => {
+      e.preventDefault();
+      if (catalogButton.classList.contains('loading')) return;
+      const product = products[currentProduct];
+      track('checkout_start', { product_handle: product?.handle, checkout_type: 'membership' });
+      catalogButton.classList.add('loading');
+      catalogButton.textContent = 'LOADING...';
+      try {
+        const response = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        if (!response.ok) throw new Error('API error');
+        const data = await response.json();
+        const url = data.checkout_url || data.url;
+        if (!url) throw new Error('No checkout URL');
+        window.location.href = url;
+      } catch (error) {
+        console.error('Membership checkout failed:', error);
+        alert('Unable to start checkout. Please try again.');
+      } finally {
+        catalogButton.classList.remove('loading');
+        catalogButton.textContent = catalogButtonLabel();
       }
     };
   }
@@ -778,9 +866,11 @@ function updateViewState(showProductCard) {
   if (showProductCard) {
     homeGridContainer.classList.add('hidden');
     productCardContainer.classList.remove('hidden');
+    updateHeaderLogo('secondary');
   } else {
     homeGridContainer.classList.remove('hidden');
     productCardContainer.classList.add('hidden');
+    updateHeaderLogo('home');
   }
 }
 
@@ -794,7 +884,14 @@ function expandProductType(typeKey) {
   activeProductType = typeKey;
 }
 
-function updateHeaderLogo(typeKey) {}
+function updateHeaderLogo(view) {
+  const header = document.querySelector('header.site-header');
+  if (!header) return;
+
+  const isHome = view === 'home';
+  header.classList.toggle('header-home', isHome);
+  header.classList.toggle('header-secondary', !isHome);
+}
 
 async function initializeCarousel(productId) {
   const track = document.getElementById('carousel-track');
@@ -1042,15 +1139,38 @@ function updateCarouselArrows() {
 function updateButtonVisibility() {
   const product = products[currentProduct];
   if (!product) return;
-  const hasAccess = purchasedProducts.has(currentProduct) || checkSubscriptionStatus();
+  const isMember = checkSubscriptionStatus();
+  const ownsProduct = purchasedProducts.has(currentProduct);
+  const commerceProduct = isIndividualCommerceProduct(product);
+  if (productPriceWrapper) {
+    productPriceWrapper.style.display = 'flex';
+  }
+  if (productPurchaseOptions) {
+    productPurchaseOptions.style.display = isMember || ownsProduct ? 'none' : 'grid';
+    productPurchaseOptions.style.gridTemplateColumns = commerceProduct
+      ? 'minmax(0, 1fr) minmax(0, 1fr)'
+      : '1fr';
+  }
   if (buyNowButton) {
-    buyNowButton.style.display = hasAccess ? 'none' : 'flex';
-    buyNowButton.textContent = 'SUBSCRIBE';
+    buyNowButton.style.display = commerceProduct ? 'flex' : 'none';
+    buyNowButton.textContent = checkoutButtonLabel(product);
+  }
+  if (catalogButton) {
+    catalogButton.style.display = 'flex';
+    catalogButton.textContent = catalogButtonLabel();
+  }
+  if (memberLibraryPanel) {
+    memberLibraryPanel.style.display = isMember ? 'flex' : 'none';
   }
   if (downloadButton) {
-    downloadButton.style.display = hasAccess ? 'flex' : 'none';
+    downloadButton.style.display = !isMember && ownsProduct ? 'flex' : 'none';
     downloadButton.textContent = 'DOWNLOAD';
   }
+}
+
+function commerceOrderIdForProduct(product) {
+  if (!product?.handle) return null;
+  return localStorage.getItem(`no3d_commerce_order_${product.handle}`);
 }
 
 function checkSubscriptionStatus() {
@@ -1093,6 +1213,8 @@ function updateMemberCTA(isMember) {
   document.querySelectorAll('.member-cta-button, .mobile-member-cta-button, [data-member-cta]').forEach(btn => {
     replaceCTAWithWelcome(btn);
   });
+  const ctaBanner = document.getElementById('home-cta-banner');
+  if (ctaBanner) ctaBanner.classList.add('hidden');
 }
 
 function initializeEventListeners() {
@@ -1187,7 +1309,7 @@ function openDownloadModal() {
   document.getElementById('download-modal-status').style.display = 'none';
   document.getElementById('download-modal-success').style.display = 'none';
   document.getElementById('download-submit-btn').disabled = false;
-  document.getElementById('download-submit-btn').textContent = 'Get Add-on';
+  document.getElementById('download-submit-btn').textContent = 'Continue to Install';
   const input = document.getElementById('download-email-input');
   input.value = '';
   setTimeout(() => input.focus(), 100);
@@ -1237,7 +1359,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!response.ok) {
           status.textContent = data.error || 'Something went wrong. Try again.';
           btn.disabled = false;
-          btn.textContent = 'Get Add-on';
+          btn.textContent = 'Continue to Install';
           return;
         }
 
@@ -1253,18 +1375,15 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('no3d_license_key', data.license_key);
         }
 
-        // Trigger addon download
-        window.open('/api/download-addon', '_blank');
-
-        // Redirect to guide after a moment
+        // Continue to native Blender Extensions installation after showing the key.
         setTimeout(() => {
           closeDownloadModal();
-          window.location.href = '/guide.html';
+          window.location.href = '/guide.html#install-extension';
         }, 4000);
       } catch (err) {
         status.textContent = 'Network error. Please try again.';
         btn.disabled = false;
-        btn.textContent = 'Get Add-on';
+        btn.textContent = 'Continue to Install';
       }
     });
   }
@@ -1490,6 +1609,19 @@ function initializeMemberCTA() {
   });
 }
 
+function initializeHomeCTABanner() {
+  const banner = document.getElementById('home-cta-banner');
+  if (!banner) return;
+
+  // Members never see the subscribe pitch
+  if (checkSubscriptionStatus()) {
+    banner.classList.add('hidden');
+    return;
+  }
+
+  banner.addEventListener('click', () => track('home_banner_cta_click'));
+}
+
 function replaceCTAWithWelcome(btn) {
   // Hide the mobile footer CTA bar entirely for members
   const mobileFooter = document.getElementById('mobile-footer-cta');
@@ -1500,7 +1632,7 @@ function replaceCTAWithWelcome(btn) {
   const welcome = document.createElement('span');
   welcome.className = 'member-welcome-text';
   welcome.textContent = 'WELCOME, YOUNG INITIATE';
-  welcome.addEventListener('click', () => { window.location.href = '/account.html'; });
+  welcome.addEventListener('click', () => { window.location.href = '/account'; });
   btn.replaceWith(welcome);
 }
 function initializeAccountDropdown() {
@@ -1514,14 +1646,14 @@ function initializeAccountDropdown() {
   menu.innerHTML = '';
   if (isMember) {
     menu.innerHTML = `
-      <a href="account.html" class="account-dropdown-item">ACCOUNT</a>
-      <a href="/api/download-addon" class="account-dropdown-item" download>DOWNLOAD ADD-ON</a>
-      <button class="account-dropdown-item" id="copy-license-key">COPY NO3D LINK KEY</button>
+      <a href="/account" class="account-dropdown-item">MY LIBRARY</a>
+      <a href="/guide.html#install-extension" class="account-dropdown-item">INSTALL NO3D TOOLS</a>
+      <button class="account-dropdown-item" id="copy-license-key">COPY NO3D TOOLS KEY</button>
       <button class="account-dropdown-item" id="logout-button">LOGOUT</button>
     `;
   } else {
     menu.innerHTML = `
-      <a href="account.html" class="account-dropdown-item">LOGIN</a>
+      <a href="/account" class="account-dropdown-item">LOGIN</a>
       <a href="subscribe.html" class="account-dropdown-item">SUBSCRIBE</a>
     `;
   }
@@ -1545,7 +1677,7 @@ function initializeAccountDropdown() {
       if (key) {
         navigator.clipboard.writeText(key);
         copyBtn.textContent = 'COPIED!';
-        setTimeout(() => { copyBtn.textContent = 'COPY NO3D LINK KEY'; }, 2000);
+        setTimeout(() => { copyBtn.textContent = 'COPY NO3D TOOLS KEY'; }, 2000);
       }
       menu.classList.remove('open');
     });
@@ -1573,9 +1705,10 @@ function initializeDownloadButton() {
     const product = products[currentProduct];
     if (!product) return;
 
+    const commerceOrderId = commerceOrderIdForProduct(product);
     const licenseKey = localStorage.getItem('no3d_license_key');
-    if (!licenseKey) {
-      alert('No3D Link key not found. Please enter your No3D Link License Key on the Account page.');
+    if (!commerceOrderId && !licenseKey) {
+      alert('No3D Tools key not found. Please enter your No3D Tools License Key on the Account page.');
       return;
     }
 
@@ -1583,10 +1716,13 @@ function initializeDownloadButton() {
     downloadButton.textContent = 'DOWNLOADING...';
 
     try {
-      const response = await fetch(`/api/download/${product.handle}?license_key=${encodeURIComponent(licenseKey)}`);
+      const endpoint = commerceOrderId
+        ? `/api/commerce/download/${encodeURIComponent(commerceOrderId)}`
+        : `/api/download/${product.handle}?license_key=${encodeURIComponent(licenseKey)}`;
+      const response = await fetch(endpoint);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        if (response.status === 403) {
+        if (response.status === 403 && !commerceOrderId) {
           localStorage.removeItem('no3d_license_valid');
           alert('Your subscription has expired. Please re-subscribe to download.');
           updateButtonVisibility();
@@ -1650,8 +1786,117 @@ window.addEventListener('hashchange', () => {
     deselectProduct();
   }
 });
-async function checkUrlParameters() {}
-function showPurchaseProcessing() {}
-async function pollForDownloads() {}
-function showDownloadSuccess() {}
-function showDownloadFallback() {}
+async function checkUrlParameters() {
+  const params = new URLSearchParams(window.location.search);
+  const pathMatch = window.location.pathname.match(/^\/account\/orders\/([0-9a-f-]{36})\/?$/i);
+  const orderId = params.get('commerce_order') || pathMatch?.[1];
+  if (!orderId || !/^[0-9a-f-]{36}$/i.test(orderId)) return;
+
+  showPurchaseProcessing();
+  await pollForDownloads(orderId);
+}
+
+function showPurchaseProcessing() {
+  if (!buyNowButton) return;
+  buyNowButton.style.display = 'flex';
+  buyNowButton.classList.add('loading');
+  buyNowButton.textContent = 'CONFIRMING PURCHASE...';
+}
+
+async function pollForDownloads(orderId) {
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    try {
+      const response = await fetch(`/api/commerce/order/${encodeURIComponent(orderId)}`);
+      const order = await response.json().catch(() => ({}));
+      if (response.ok && order.resourceId) {
+        const productId = resolveProductFromSlug(order.resourceId);
+        if (productId && currentProduct !== productId) {
+          currentProduct = productId;
+          await updateProductDisplay(productId);
+          updateActiveStates(productId);
+          updateViewState(true);
+          showPurchaseProcessing();
+        }
+        localStorage.setItem(`no3d_commerce_order_${order.resourceId}`, orderId);
+      }
+      if (response.ok && order.paymentStatus === 'paid' && order.fulfillmentStatus === 'fulfilled' && order.recovery) {
+        showDownloadSuccess(order.resourceId, orderId);
+        return;
+      }
+      if (response.ok && ['refunded', 'disputed'].includes(order.paymentStatus)) break;
+    } catch (error) {
+      console.warn('Order status check failed:', error);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  showDownloadFallback();
+}
+
+function showDownloadSuccess(handle, orderId) {
+  const productId = resolveProductFromSlug(handle);
+  if (productId) purchasedProducts.add(productId);
+  if (buyNowButton) buyNowButton.classList.remove('loading');
+  updateButtonVisibility();
+  showCommerceAccountReady(handle);
+  void sendPostPurchaseSignInLink(orderId);
+  track('purchase_ready', { product_handle: handle });
+}
+
+async function sendPostPurchaseSignInLink(orderId) {
+  try {
+    const response = await fetch('/api/auth/recovery-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId }),
+    });
+    if (!response.ok) return;
+
+    const detail = document.querySelector('#commerce-account-ready .commerce-account-ready-detail');
+    if (detail) {
+      detail.textContent = 'We sent a secure account link to the email used at Checkout. Use it to restore purchases on another Blender installation.';
+    }
+  } catch {
+    // The account setup link remains available even if this convenience email cannot be sent.
+  }
+}
+
+function showCommerceAccountReady(handle) {
+  if (!productPriceWrapper) return;
+
+  document.getElementById('commerce-account-ready')?.remove();
+  const product = products[resolveProductFromSlug(handle)];
+  const panel = document.createElement('section');
+  panel.id = 'commerce-account-ready';
+  panel.className = 'commerce-account-ready';
+
+  const heading = document.createElement('h2');
+  heading.textContent = 'PURCHASE READY';
+  const description = document.createElement('p');
+  description.textContent = `${product?.name || 'Your product'} is ready for your No3d Tools Library.`;
+  const actions = document.createElement('div');
+  actions.className = 'commerce-account-ready-actions';
+  const addToLibrary = document.createElement('a');
+  addToLibrary.className = 'commerce-account-ready-primary';
+  addToLibrary.href = '/guide.html#sync-library';
+  addToLibrary.textContent = 'ADD TO NO3D TOOLS LIBRARY';
+  const account = document.createElement('a');
+  account.className = 'commerce-account-ready-secondary';
+  account.href = '/account';
+  account.textContent = 'SET UP / RESTORE ACCOUNT';
+  const detail = document.createElement('p');
+  detail.className = 'commerce-account-ready-detail';
+  detail.textContent = 'Use the email from Checkout to restore purchases on another Blender installation.';
+
+  actions.append(addToLibrary, account);
+  panel.append(heading, description, actions, detail);
+  productPriceWrapper.append(panel);
+}
+
+function showDownloadFallback() {
+  if (buyNowButton) {
+    buyNowButton.classList.remove('loading');
+    buyNowButton.style.display = 'flex';
+    buyNowButton.textContent = 'PURCHASE PROCESSING — REFRESH';
+    buyNowButton.onclick = () => window.location.reload();
+  }
+}

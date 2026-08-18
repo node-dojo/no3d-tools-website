@@ -825,10 +825,10 @@ export async function sendWelcomeEmail(email, name, token) {
 /**
  * Generate HTML for license key email (Stripe invoice.paid).
  * @param {string} licenseKey
- * @param {string} addonDownloadUrl
+ * @param {string} addonInstallUrl
  */
-export function getLicenseKeyEmail(licenseKey, addonDownloadUrl) {
-  const url = addonDownloadUrl || `${SITE_URL}/no3d-tools-addon`;
+export function getLicenseKeyEmail(licenseKey, addonInstallUrl) {
+  const url = addonInstallUrl || `${SITE_URL}/guide.html#install-extension`;
 
   return `
 <!DOCTYPE html>
@@ -836,7 +836,7 @@ export function getLicenseKeyEmail(licenseKey, addonDownloadUrl) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your No3D Link License Key</title>
+  <title>Your No3D Tools License Key</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -907,14 +907,14 @@ export function getLicenseKeyEmail(licenseKey, addonDownloadUrl) {
       <div class="logo">NO3D TOOLS</div>
     </div>
 
-    <h1 style="font-size: 24px; margin-bottom: 10px;">Your No3D Link License Key</h1>
+    <h1 style="font-size: 24px; margin-bottom: 10px;">Your No3D Tools License Key</h1>
     <p style="margin-top: 0;">Use this key in Blender preferences to activate full library access.</p>
 
     <div class="key">${licenseKey}</div>
 
-    <p>Download the subscriber add-on here:</p>
+    <p>Install No3D Tools through Blender's native Extensions system:</p>
     <div style="text-align:center; margin: 20px 0;">
-      <a href="${url}" class="button">Download Add-on</a>
+      <a href="${url}" class="button">Install No3D Tools</a>
     </div>
 
     <div class="footer">
@@ -930,18 +930,18 @@ export function getLicenseKeyEmail(licenseKey, addonDownloadUrl) {
 /**
  * Generate plain text version of license key email.
  * @param {string} licenseKey
- * @param {string} addonDownloadUrl
+ * @param {string} addonInstallUrl
  */
-export function getLicenseKeyEmailText(licenseKey, addonDownloadUrl) {
-  const url = addonDownloadUrl || `${SITE_URL}/no3d-tools-addon`;
+export function getLicenseKeyEmailText(licenseKey, addonInstallUrl) {
+  const url = addonInstallUrl || `${SITE_URL}/guide.html#install-extension`;
 
   return `
 NO3D TOOLS
 
-Your No3D Link License Key:
+Your No3D Tools License Key:
 ${licenseKey}
 
-Download the subscriber add-on:
+Install No3D Tools with Blender Extensions:
 ${url}
 
 If you did not make this purchase, you can safely ignore this email.
@@ -952,14 +952,14 @@ If you did not make this purchase, you can safely ignore this email.
  * Send license key email.
  * @param {string} email
  * @param {string} licenseKey
- * @param {string=} addonDownloadUrl
+ * @param {string=} addonInstallUrl
  */
-export async function sendLicenseKeyEmail(email, licenseKey, addonDownloadUrl) {
-  const addonUrl = addonDownloadUrl || `${SITE_URL}/no3d-tools-addon`;
+export async function sendLicenseKeyEmail(email, licenseKey, addonInstallUrl) {
+  const addonUrl = addonInstallUrl || `${SITE_URL}/guide.html#install-extension`;
 
   return sendEmail({
     to: email,
-    subject: 'Your No3D Link License Key',
+    subject: 'Your No3D Tools License Key',
     html: getLicenseKeyEmail(licenseKey, addonUrl),
     text: getLicenseKeyEmailText(licenseKey, addonUrl),
   });

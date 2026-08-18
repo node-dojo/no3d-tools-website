@@ -1,38 +1,39 @@
-# No3d Tools Membership — Install & Usage Guide
+# No3D Tools Extension — Install & Usage Guide
 
 ## What It Does
 
-The No3d Tools Membership addon syncs your entire No3d Tools asset library directly into Blender. Once installed and activated with your license key, every asset — geometry node tools, materials, mesh objects — appears in Blender's Asset Browser, ready to drag into any project. New assets are synced automatically when you open Blender.
+The No3D Tools extension syncs your entitled No3D Tools asset library directly into Blender. Membership products and permanently purchased products appear in Blender's Asset Browser, ready to drag into any project. New and updated assets can sync automatically when you open Blender.
 
 ---
 
 ## Requirements
 
-- Blender 4.5 or newer
-- An active No3d Tools subscription ([subscribe here](https://no3dtools.com/subscribe.html))
-- Your license key (sent to your email after subscribing)
+- Blender 5.0 or newer
+- An active membership, one or more individually purchased products, or a free No3D Tools account
+- A membership license key or a purchase-connected account
 
 ---
 
 ## Installation
 
-### Step 1: Download the Addon
+### Step 1: Add the No3D Tools Repository
 
-Download the latest `no3d_tools_membership.zip` from the link in your license key email, or from your [account page](https://no3dtools.com/account.html).
+On the computer where Blender is installed, open the [No3D Tools setup page](https://no3dtools.com/guide.html#install-extension) and click **Open in Blender**. This adds the official No3D Tools repository to Blender's native Extensions system.
 
 ### Step 2: Install in Blender
 
 1. Open Blender
-2. Go to **Edit → Preferences → Add-ons**
-3. Click **Install...** (top right)
-4. Navigate to the downloaded `no3d_tools_membership.zip`
-5. Click **Install Add-on**
+2. Go to **Edit → Preferences → Get Extensions**
+3. Find **No3D Tools** in the No3D Tools repository
+4. Click **Install**
 
-### Step 3: Enable the Addon
+### Step 3: Open the Extension Preferences
 
-1. In the Add-ons list, search for **"No3d Tools Membership"**
-2. Check the box to enable it
-3. The addon preferences panel will expand
+1. Go to **Edit → Preferences → Add-ons**
+2. Search for **No3D Tools**
+3. Expand the extension preferences
+
+Manual ZIP installation remains available from the setup page as a fallback. Native repository installation is recommended because Blender can deliver extension updates automatically.
 
 ---
 
@@ -75,6 +76,13 @@ To change it:
 ### Enable Auto-Sync
 
 Check **"Sync on startup"** to automatically sync when Blender opens. The sync runs in the background — it won't block you from working.
+
+### Connect Individually Purchased Products
+
+1. In the No3D Tools preferences, click **Connect Purchases**
+2. Approve the connection in the browser window that opens
+3. Return to Blender and click **Restore Purchases**
+4. Your permanently purchased products are added to the managed Asset Library
 
 ---
 
@@ -140,10 +148,10 @@ If your subscription expired, visit [no3dtools.com/subscribe.html](https://no3dt
 - Check that the library path in addon preferences points to the correct folder
 - Run **Sync Now** to refresh
 
-### Addon not appearing in Preferences
-- Make sure you installed the `.zip` file, not an extracted folder
+### Extension not appearing in Preferences
+- Confirm the No3D Tools repository is enabled in **Preferences → Get Extensions**
 - Restart Blender after installation
-- Check that you're running Blender 4.5 or newer
+- Check that you're running Blender 5.0 or newer
 
 ### Lost your license key
 - Check your email for "No3d Tools — Your License Key"
@@ -156,7 +164,7 @@ If your subscription expired, visit [no3dtools.com/subscribe.html](https://no3dt
 
 | Action | How |
 |--------|-----|
-| Install addon | Edit → Preferences → Add-ons → Install → select .zip |
+| Install extension | Setup page → Open in Blender → Get Extensions → Install |
 | Enter license key | Addon preferences → License → Key field → Validate |
 | Sync assets | Addon preferences → Sync Now |
 | Auto-sync | Addon preferences → check "Sync on startup" |

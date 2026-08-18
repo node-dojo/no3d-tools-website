@@ -7,7 +7,7 @@
  * If the email already has a record, returns the existing license key.
  *
  * Returns:
- *   { license_key, email, tier, download_url }
+ *   { license_key, email, tier, install_url }
  */
 
 import crypto from 'crypto';
@@ -72,14 +72,14 @@ export default async function handler(req, res) {
       // Already registered — re-send the key via email, don't expose it in the response
       const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';
       try {
-        await sendLicenseKeyEmail(email, existing.license_key, `${siteUrl}/api/download-addon`);
+        await sendLicenseKeyEmail(email, existing.license_key, `${siteUrl}/guide.html#install-extension`);
       } catch (emailErr) {
         console.error('Failed to re-send license key email:', emailErr?.message || emailErr);
       }
       return res.status(200).json({
         email,
         existing: true,
-        message: 'A No3D Link License Key has been sent to your email.'
+        message: 'A No3D Tools License Key has been sent to your email.'
       });
     }
 
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
     const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';
     try {
       if (process.env.LICENSE_EMAIL_DRY_RUN !== 'true') {
-        await sendLicenseKeyEmail(email, licenseKey, `${siteUrl}/api/download-addon`);
+        await sendLicenseKeyEmail(email, licenseKey, `${siteUrl}/guide.html#install-extension`);
       }
     } catch (emailErr) {
       console.error('License email failed (non-fatal):', emailErr.message);
@@ -136,7 +136,7 @@ export default async function handler(req, res) {
       email,
       tier: 'free',
       existing: false,
-      download_url: '/api/download-addon'
+      install_url: '/guide.html#install-extension'
     });
   } catch (err) {
     console.error('create-free-account error:', err.message);

@@ -57,6 +57,13 @@ body {
   max-height: 23px !important; /* Limit logo height on mobile */
 }
 
+.site-header.header-secondary #header-logo,
+.site-header.header-secondary .header-left img.logo {
+  height: 21px !important;
+  max-height: 21px !important;
+  min-width: 0 !important;
+}
+
 .site-header .header-icons {
   grid-column: 3;
   display: flex;
@@ -106,7 +113,13 @@ body {
   justify-content: center;
 }
 
-/* Container padding is 0 on mobile, so grid title carries its own margins */
+/* Container padding is 0 on mobile, so banner and grid title carry their own margins */
+.home-cta-banner {
+  width: auto;
+  height: clamp(96px, 49.2308vw, var(--banner-home-mobile-height));
+  margin: var(--space-small) var(--space-small) var(--space-tiny);
+}
+
 .home-grid-title {
   width: auto;
   margin: 0 var(--space-small) var(--space-small);
@@ -164,8 +177,16 @@ body {
   gap: 20px;
 }
 
+.product-hero-container {
+  width: 100%;
+  flex-direction: column;
+}
+
 .product-left-section {
   width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
 }
 
 .product-image-carousel {
@@ -175,6 +196,13 @@ body {
 .product-details {
   width: 100%;
   margin-top: 10px;
+}
+
+.product-front-matter,
+.product-right-section {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
 }
 
 .product-header-row {
@@ -197,14 +225,30 @@ body {
   gap: 8px;
 }
 
+.product-purchase-options {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2px;
+}
+
 .product-price {
   font-size: 22px;
   text-align: center;
 }
 
-.download-button, .buy-now-button {
+.download-button, .buy-now-button, .catalog-button, .library-status {
   width: 100% !important;
   height: 40px !important;
+  padding-inline: 8px !important;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.member-library-panel {
+  gap: 6px;
+}
+
+.sync-instructions-link {
+  font-size: 9px;
 }
 
 /* Tabs and Content */

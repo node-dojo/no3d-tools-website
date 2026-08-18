@@ -10,9 +10,22 @@
 
 ## Environment Variables
 
-✅ Configured (typical):
+✅ Existing site variables (typical):
 - `GITHUB_TOKEN` (Production, Preview, Development)
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID` (billing)
+
+### Commerce adapter (individual-product checkout)
+
+These remain unset until the Commerce project has completed its sandbox and
+live-rollout gates. The website only exposes the Chrome Crayon product checkout
+when `COMMERCE_CHROME_CRAYON_ENABLED` is exactly `true`.
+
+- `COMMERCE_API_URL` — Commerce API base URL; used only by serverless routes.
+- `COMMERCE_SITE_BACKEND_SECRET` — trusted website-to-Commerce shared secret;
+  server-side only.
+- `COMMERCE_CHROME_CRAYON_ENABLED` — keep `false` or unset until the Commerce
+  contract's sandbox checkout, delivery, tax, webhook, and controlled-purchase
+  gates have passed.
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY` (catalog)
 
 Remove legacy `POLAR_*` variables from Vercel once Stripe is live; they are no longer used by this codebase.
@@ -78,7 +91,8 @@ After fixing the integration:
 
 ## Current Status
 
-- ✅ Environment variables configured
+- ✅ Existing site/billing variables configured as applicable
+- ⏸️ Commerce adapter variables intentionally unset until Commerce rollout gates pass
 - ✅ Repository structure correct
 - ⚠️ GitHub webhook integration needs verification
 - ⚠️ Auto-deployment not currently working (manual redeploy required)
@@ -146,4 +160,3 @@ This will deploy commit `9a9f2b2` which includes:
 2. ✅ Manually redeploy to get fixes live immediately
 3. ✅ Test auto-deployment with a new commit
 4. ✅ Monitor deployments to ensure they trigger automatically going forward
-
