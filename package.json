@@ -4,9 +4,12 @@
   "description": "NO3D Tools website",
   "type": "module",
   "scripts": {
+    "test": "npm run test:auth && npm run test:v3",
     "build": "node scripts/update-commit-hash.js",
     "start": "doppler run -- npx vercel dev --listen 3001 --yes",
     "test:auth": "node --test tests/auth-session.test.mjs tests/effective-manifest.test.mjs tests/purchase-flow.test.mjs",
+    "test:v3": "node --test tests/v3-ui-contract.test.mjs",
+    "acceptance:v3": "node scripts/v3-acceptance.mjs",
     "update-commit": "node scripts/update-commit-hash.js",
     "fix-vercel": "node scripts/fix-vercel-settings.js",
     "fix-vercel:doppler": "doppler run -- node scripts/fix-vercel-settings.js",
@@ -34,6 +37,6 @@
     "stripe": "^16.12.0"
   },
   "devDependencies": {
-    "puppeteer": "^24.33.0"
+    "puppeteer": "^25.8.0"
   }
 }

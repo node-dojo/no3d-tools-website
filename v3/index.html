@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f0eb">
+  <title>NO3D Tools V3 — Catalog</title>
+  <link rel="stylesheet" href="/v3/styles/v3.css">
+</head>
+<body>
+  <div class="v3-page mobile-home">
+    <header class="v3-mast">
+      <a class="v3-wordmark" href="/v3/" aria-label="NO3D Tools home"><img src="/assets/light/no3d-tools.png" alt="NO3D Tools"></a>
+      <button class="v3-search" type="button" data-search-toggle aria-expanded="false"><span class="desktop-only">Command K / </span>Search</button>
+      <div class="v3-status"><a href="/v3/account/">Account ●</a>&nbsp;&nbsp; Cart [0]</div>
+    </header>
+    <div class="search-region" data-search-region hidden><label class="technical" for="site-search">Search the catalog</label><input id="site-search" type="search" placeholder="Instrument, system, or use"></div>
+    <div class="v3-shell">
+      <aside class="catalog-rail" data-catalog-panel>
+        <button class="catalog-toggle" type="button" data-catalog-toggle aria-controls="catalog-list" aria-expanded="false"><span data-catalog-glyph>☰</span><span>Catalog</span></button>
+        <div class="catalog-list" id="catalog-list" data-catalog-list></div>
+        <p class="catalog-note">Blender 5.0+<br>Instant delivery<br>Updates included</p>
+      </aside>
+      <main class="v3-main">
+        <section class="home-hero" aria-labelledby="hero-title">
+          <div class="home-hero-copy"><span class="technical">Story fixture 01 / Current transmission</span><h1 id="hero-title">Tools For the Future Old School</h1></div>
+          <img class="home-hero-art" src="/v3/assets/mace.png" alt="" aria-hidden="true">
+          <a class="home-hero-action" href="#catalog">Explore the catalog <span>↓</span></a>
+        </section>
+        <section class="catalog-section" id="catalog" aria-labelledby="catalog-title">
+          <header class="catalog-head"><span class="technical">Category 01</span><span class="technical" data-product-count>00 instruments</span><h2 id="catalog-title">Tools for Old School of the Future</h2><span class="data-status" data-data-status>Loading catalog</span></header>
+          <div class="product-grid" data-product-grid aria-live="polite"></div>
+          <p class="empty-state" data-empty hidden>No instruments match this view.</p>
+        </section>
+      </main>
+    </div>
+    <img class="stone-mark" src="/assets/light/stone-logo.png" alt="Stone W mark">
+  </div>
+  <script type="module" src="/v3/js/home.js"></script>
+</body>
+</html>

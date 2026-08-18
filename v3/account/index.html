@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f0eb">
+  <title>Account — NO3D Tools V3</title>
+  <link rel="stylesheet" href="/v3/styles/v3.css">
+</head>
+<body>
+  <div class="v3-page mobile-account">
+    <header class="v3-mast">
+      <a class="v3-wordmark" href="/v3/"><img src="/assets/light/no3d-tools.png" alt="NO3D Tools"></a>
+      <span class="v3-search technical">Account system / 01C</span>
+      <div class="v3-status"><a href="/v3/">Catalog</a>&nbsp;&nbsp; <button class="v3-search" type="button" data-session-action>Sign in</button></div>
+    </header>
+    <main>
+      <section class="account-identity">
+        <span class="technical">Authenticated instrument inventory</span>
+        <h1>My Tools / Working Library</h1>
+        <div class="identity-data"><span class="technical">Identity</span><strong data-identity>Guest library</strong><span class="technical">State</span><span data-identity-state>Checking access</span></div>
+      </section>
+      <div class="account-layout">
+        <nav class="account-nav" aria-label="Account sections"><button class="active" type="button">My library</button><a href="#connect">Blender connection</a><a href="#owned">Purchases</a><a href="/subscribe.html">Membership</a></nav>
+        <section class="account-main">
+          <span class="technical" data-account-state>Checking library</span>
+          <h2>Instrument inventory</h2>
+          <div class="account-state" aria-live="polite" data-account-message>Resolving account and entitlement state.</div>
+          <article class="account-state" data-latest-order hidden><span class="technical" data-order-state>Latest purchase</span><h3 data-order-title>Preparing purchase</h3><p data-order-detail>Confirming payment and preparing your instrument.</p><a class="account-action" data-order-action hidden>Download →</a></article>
+          <div class="flow-steps" id="connect"><article class="flow-step"><b>01 / Install</b><p>Install NO3D Tools through Blender Extensions.</p></article><article class="flow-step"><b>02 / Connect</b><p>Connect this library from the add-on preferences.</p></article><article class="flow-step"><b>03 / Sync</b><p>Owned and membership instruments appear in the Asset Browser.</p></article></div>
+          <section id="owned" aria-labelledby="owned-title"><h3 class="technical" id="owned-title">Owned instruments</h3><div class="account-tools"><input type="search" data-account-search aria-label="Search owned instruments" placeholder="Search library"><select data-account-sort aria-label="Sort instruments"><option value="newest">Newest first</option><option value="name">Name A–Z</option><option value="access">Access type</option></select></div><div class="account-items" data-account-items></div><p data-account-empty>Loading owned instruments.</p></section>
+          <section class="sign-in-panel" data-sign-in><h3 class="technical">Save / restore library</h3><p>Use the purchase email attached to your library. No password required.</p><form data-sign-in-form><input type="email" name="email" autocomplete="email" required placeholder="Purchase email"><button class="v3-button" type="submit">Email sign-in link</button></form><p aria-live="polite" data-sign-in-message></p></section>
+        </section>
+      </div>
+    </main>
+    <img class="stone-mark" src="/assets/light/stone-logo.png" alt="Stone W mark">
+  </div>
+  <script type="module" src="/v3/js/account.js"></script>
+</body>
+</html>
