@@ -31,8 +31,8 @@ test('keeps the approved Chain Generator presentation alias local to V3', () => 
 test('resolves hosted media shapes and ships a canonical paid-product fallback', () => {
   assert.equal(resolveMedia({ secure_url: 'https://media.example/a.gif' }), 'https://media.example/a.gif');
   const bolt = FALLBACK_PRODUCTS.map(normalizeProduct).find(product => product.handle === 'dojo-bolt-gen-v05-obj');
-  assert.equal(bolt.image, '/v3/assets/dojo-bolt-disassembly.webp');
-  assert.equal(bolt.video, '/v3/assets/dojo-bolt-disassembly.webm');
+  assert.equal(bolt.image, '/v3/assets/dojo-bolt-disassembly.webp?v=perf-20260820');
+  assert.equal(bolt.video, '/v3/assets/dojo-bolt-disassembly.webm?v=perf-20260820');
   assert.equal(bolt.price, '7.77');
 });
 

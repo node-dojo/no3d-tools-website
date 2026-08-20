@@ -18,6 +18,7 @@ const USE_SUPABASE = process.env.USE_SUPABASE === 'true'
 
 export default async function handler(req, res) {
   if (setCorsHeaders(req, res, { methods: 'GET, OPTIONS' })) return;
+  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400')
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
