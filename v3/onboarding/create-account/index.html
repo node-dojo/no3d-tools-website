@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f0eb">
+  <title>Create Your Account — NO3D Tools</title>
+  <link rel="stylesheet" href="/v3/styles/v3.css">
+</head>
+<body class="account-entry-page">
+  <iframe class="account-entry-underlay" src="/v3/" title="NO3D Tools catalog" tabindex="-1" aria-hidden="true"></iframe>
+  <div class="account-entry-wash" aria-hidden="true"></div>
+  <section class="account-entry-dialog" role="dialog" aria-modal="true" aria-labelledby="account-entry-title">
+    <header class="setup-index"><div><strong>1/3</strong><span>Final Steps....</span></div><span>Account / Identity</span></header>
+    <div class="account-entry-body">
+      <h1 id="account-entry-title">Create Your Account</h1>
+      <p>Create a free NO3D account to install the add-on, connect Blender, and keep your personal tool library in one place.</p>
+      <nav class="account-mode" aria-label="Account access"><button class="active" type="button" data-auth-mode="signup">Create account</button><button type="button" data-auth-mode="signin">Sign in</button></nav>
+      <div class="account-providers" data-auth-providers hidden><a data-oauth="google" href="/api/auth/oauth?provider=google" hidden><span>Continue with Google</span><span>→</span></a><a data-oauth="github" href="/api/auth/oauth?provider=github" hidden><span>Continue with GitHub</span><span>→</span></a></div>
+      <div class="or-rule" data-email-rule>Continue with email</div>
+      <form class="account-entry-form" data-account-entry-form>
+        <label>Email address<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+        <label>Password<input name="password" type="password" autocomplete="new-password" required minlength="10" placeholder="At least 10 characters"></label>
+        <button class="account-entry-submit" type="submit"><span data-auth-submit>Create free account</span><span>→</span></button>
+      </form>
+      <p class="account-entry-message" data-auth-message aria-live="polite"></p>
+      <p class="account-entry-terms">By continuing, you agree to the Terms and acknowledge the Privacy Policy.</p>
+    </div>
+    <footer class="account-entry-foot"><img src="/assets/light/stone-logo.png" alt=""><span>NO3D Account</span></footer>
+  </section>
+  <script type="module" src="/v3/js/onboarding.js"></script>
+</body>
+</html>

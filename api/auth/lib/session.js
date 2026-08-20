@@ -66,6 +66,18 @@ function storeSession(res, session) {
   setCookie(res, REFRESH_COOKIE, session.refresh_token, 60 * 60 * 24 * 30);
 }
 
+function pkceChallenge(res) {
+  const verifier = crypto.randomBytes(48).toString('base64url');
+  const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
+  setCookie(res, VERIFIER_COOKIE, verifier, 60 * 10);
+  return challenge;
+}
+
+function sessionPayload(payload) {
+  const session = payload?.session || payload;
+  return session?.access_token && session?.refresh_token ? session : null;
+}
+
 export function clearAuthCookies(res, { includeGuest = false } = {}) {
   clearCookie(res, ACCESS_COOKIE);
   clearCookie(res, REFRESH_COOKIE);
@@ -108,8 +120,7 @@ function callbackUrl(req, recoveryToken, next) {
 }
 
 export async function requestSignInLink(req, res, email, { recoveryToken, next } = {}) {
-  const verifier = crypto.randomBytes(48).toString('base64url');
-  const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
+  const challenge = pkceChallenge(res);
   const redirectTo = encodeURIComponent(callbackUrl(req, recoveryToken, next));
   await authFetch(`/otp?redirect_to=${redirectTo}`, {
     body: {
@@ -119,7 +130,42 @@ export async function requestSignInLink(req, res, email, { recoveryToken, next }
       email,
     },
   });
-  setCookie(res, VERIFIER_COOKIE, verifier, 60 * 10);
+}
+
+export async function passwordSignUp(req, res, email, password, { next } = {}) {
+  const challenge = pkceChallenge(res);
+  const redirectTo = encodeURIComponent(callbackUrl(req, undefined, next));
+  const payload = await authFetch(`/signup?redirect_to=${redirectTo}`, {
+    body: { email, password, code_challenge: challenge, code_challenge_method: 's256', data: {} },
+  });
+  const session = sessionPayload(payload);
+  if (session) {
+    storeSession(res, session);
+    clearCookie(res, VERIFIER_COOKIE);
+  }
+  return { authenticated: Boolean(session), verificationRequired: !session, user: payload.user || session?.user || null };
+}
+
+export async function passwordSignIn(res, email, password) {
+  const payload = await authFetch('/token?grant_type=password', { body: { email, password } });
+  const session = sessionPayload(payload);
+  if (!session) throw new Error('Password sign-in returned no session');
+  storeSession(res, session);
+  clearCookie(res, VERIFIER_COOKIE);
+  return { authenticated: true, user: payload.user || session.user || null };
+}
+
+export function oauthAuthorizationUrl(req, res, provider, { next } = {}) {
+  if (!['google', 'github'].includes(provider)) throw new Error('Unsupported OAuth provider');
+  const challenge = pkceChallenge(res);
+  const redirectTo = callbackUrl(req, undefined, next);
+  const query = new URLSearchParams({
+    provider,
+    redirect_to: redirectTo,
+    code_challenge: challenge,
+    code_challenge_method: 's256',
+  });
+  return `${requiredEnv('SUPABASE_URL').replace(/\/$/, '')}/auth/v1/authorize?${query}`;
 }
 
 export async function exchangeAuthCode(req, res, code) {

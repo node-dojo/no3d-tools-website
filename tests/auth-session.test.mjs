@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import test from 'node:test';
 
-import { identityAssertion, safeAuthNext } from '../api/auth/lib/session.js';
+import { identityAssertion, oauthAuthorizationUrl, safeAuthNext } from '../api/auth/lib/session.js';
 
 test('identityAssertion signs a short-lived verified Supabase identity', () => {
   process.env.COMMERCE_IDENTITY_ASSERTION_KID = 'sandbox-v1';
@@ -43,4 +43,26 @@ test('safeAuthNext permits local post-purchase routes and rejects redirects', ()
   );
   assert.equal(safeAuthNext('//attacker.example'), undefined);
   assert.equal(safeAuthNext('https://attacker.example'), undefined);
+});
+
+test('oauthAuthorizationUrl starts Google PKCE without exposing the verifier', () => {
+  process.env.SUPABASE_URL = 'https://project.supabase.co';
+  process.env.NO3D_SITE_URL = 'https://no3dtools.com';
+  const headers = new Map();
+  const response = {
+    getHeader: name => headers.get(name),
+    setHeader: (name, value) => headers.set(name, value),
+  };
+  const url = new URL(oauthAuthorizationUrl({ headers: {} }, response, 'google', { next: '/v3/account/?state=install' }));
+  assert.equal(url.pathname, '/auth/v1/authorize');
+  assert.equal(url.searchParams.get('provider'), 'google');
+  assert.equal(url.searchParams.get('code_challenge_method'), 's256');
+  assert.ok(url.searchParams.get('code_challenge')?.length >= 43);
+  assert.match(url.searchParams.get('redirect_to'), /\/api\/auth\/callback/);
+  assert.doesNotMatch(url.toString(), /no3d_auth_pkce/);
+  assert.match(String(headers.get('Set-Cookie')), /no3d_auth_pkce=/);
+});
+
+test('oauthAuthorizationUrl rejects providers outside the approved account methods', () => {
+  assert.throws(() => oauthAuthorizationUrl({ headers: {} }, { getHeader: () => null, setHeader: () => {} }, 'unknown'), /Unsupported OAuth provider/);
 });

@@ -8,6 +8,6 @@ export default async function handler(req, res) {
     });
     if (!response.ok) return res.status(response.status).json(payload);
     const origin = process.env.SITE_URL || 'https://no3dtools.com';
-    return res.status(201).json({ ...payload, approvalUrl: `${origin}/connect-purchases.html?code=${encodeURIComponent(payload.deviceCode)}` });
+    return res.status(201).json({ ...payload, approvalUrl: `${origin}/v3/account/?state=connect&code=${encodeURIComponent(payload.deviceCode)}` });
   } catch (error) { return commerceError(res, error); }
 }

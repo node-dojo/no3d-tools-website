@@ -4,35 +4,72 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f1f0eb">
-  <title>Account — NO3D Tools V3</title>
+  <title>My Library — NO3D Tools</title>
   <link rel="stylesheet" href="/v3/styles/v3.css">
 </head>
 <body>
-  <div class="v3-page mobile-account">
+  <div class="v3-page final-account-v3">
     <header class="v3-mast">
-      <a class="v3-wordmark" href="/v3/"><img src="/assets/light/no3d-tools.png" alt="NO3D Tools"></a>
-      <span class="v3-search technical">Account system / 01C</span>
-      <div class="v3-status"><a href="/v3/">Catalog</a>&nbsp;&nbsp; <button class="v3-search" type="button" data-session-action>Sign in</button></div>
+      <a class="v3-wordmark" href="/v3/" aria-label="NO3D Tools home"><img src="/assets/light/no3d-tools.png" alt="NO3D Tools"></a>
+      <a class="v3-search" href="/v3/">Catalog</a>
+      <div class="v3-status"><span data-account-email>Account</span> ● &nbsp; <button class="session-action" type="button" data-session-action>Sign out</button></div>
     </header>
-    <main>
-      <section class="account-identity">
-        <span class="technical">Authenticated instrument inventory</span>
-        <h1>My Tools / Working Library</h1>
-        <div class="identity-data"><span class="technical">Identity</span><strong data-identity>Guest library</strong><span class="technical">State</span><span data-identity-state>Checking access</span></div>
-      </section>
-      <div class="account-layout">
-        <nav class="account-nav" aria-label="Account sections"><button class="active" type="button">My library</button><a href="#connect">Blender connection</a><a href="#owned">Purchases</a><a href="/subscribe.html">Membership</a></nav>
-        <section class="account-main">
-          <span class="technical" data-account-state>Checking library</span>
-          <h2>Instrument inventory</h2>
-          <div class="account-state" aria-live="polite" data-account-message>Resolving account and entitlement state.</div>
-          <article class="account-state" data-latest-order hidden><span class="technical" data-order-state>Latest purchase</span><h3 data-order-title>Preparing purchase</h3><p data-order-detail>Confirming payment and preparing your instrument.</p><a class="account-action" data-order-action hidden>Download →</a></article>
-          <div class="flow-steps" id="connect"><article class="flow-step"><b>01 / Install</b><p>Install NO3D Tools through Blender Extensions.</p></article><article class="flow-step"><b>02 / Connect</b><p>Connect this library from the add-on preferences.</p></article><article class="flow-step"><b>03 / Sync</b><p>Owned and membership instruments appear in the Asset Browser.</p></article></div>
-          <section id="owned" aria-labelledby="owned-title"><h3 class="technical" id="owned-title">Owned instruments</h3><div class="account-tools"><input type="search" data-account-search aria-label="Search owned instruments" placeholder="Search library"><select data-account-sort aria-label="Sort instruments"><option value="newest">Newest first</option><option value="name">Name A–Z</option><option value="access">Access type</option></select></div><div class="account-items" data-account-items></div><p data-account-empty>Loading owned instruments.</p></section>
-          <section class="sign-in-panel" data-sign-in><h3 class="technical">Save / restore library</h3><p>Use the purchase email attached to your library. No password required.</p><form data-sign-in-form><input type="email" name="email" autocomplete="email" required placeholder="Purchase email"><button class="v3-button" type="submit">Email sign-in link</button></form><p aria-live="polite" data-sign-in-message></p></section>
+
+    <section class="final-account-identity">
+      <div><span class="technical">Account / Authenticated identity</span><h1 data-account-email>Your NO3D Account</h1><div class="identity-data"><span class="technical">Membership</span><span data-account-membership>Free / Manual updates</span><span class="technical">Library</span><span data-library-count>00 tools</span><span class="technical">Blender</span><span data-identity-blender>Not connected</span></div></div>
+      <div class="identity-void">Account territory / Active</div>
+    </section>
+
+    <div class="final-account-shell">
+      <aside class="final-account-nav"><a class="active" href="#library">01 / My library</a><a href="#connected-blender">02 / Blender connections</a><a href="/subscribe.html">03 / Membership</a><a href="#orders">04 / Orders</a><a href="#account-details">05 / Account</a><a href="#support">06 / Support</a></aside>
+      <main class="final-account-main">
+        <section class="account-setup" data-setup-panel="install" hidden>
+          <header class="setup-index"><div><strong>2/3</strong><span>Final Steps....</span></div><span>NO3D Tools / Setup</span></header>
+          <div class="wizard-viewport">
+            <div class="wizard-slide" data-wizard-slide="version">
+              <div class="wizard-prompt"><h2>Which Blender Do You Use?</h2><span>Choose one to continue</span></div>
+              <div class="version-choices" role="radiogroup" aria-label="Blender version"><label><input type="radio" name="blender-version" value="5.2+"><span>Blender 5.2+</span><b>Recommended / Native extension</b></label><label><input type="radio" name="blender-version" value="4.2–5.1"><span>Blender 4.2–5.1</span><b>Native extension</b></label><label><input type="radio" name="blender-version" value="Before 4.2"><span>Before Blender 4.2</span><b>Legacy installation</b></label></div>
+            </div>
+            <div class="wizard-slide" data-wizard-slide="install-action" hidden>
+              <div class="wizard-prompt"><h2>Install NO3D Tools</h2><span data-selected-version>Blender 5.2+</span></div>
+              <div class="install-actions"><a class="setup-primary" data-install-primary href="blender://extensions/add-repo?url=https%3A%2F%2Fno3dtools.com%2Fextensions%2Findex.json">Open In Blender ↗</a><a class="setup-secondary" href="/api/download-addon">Download .zip ↓</a></div>
+              <div class="wizard-controls"><button type="button" data-wizard-back>← Change version</button><a href="?state=connect" data-connect-next>Installed? Connect My Library →</a></div>
+            </div>
+          </div>
         </section>
-      </div>
-    </main>
+
+        <section class="account-setup" data-setup-panel="connect" hidden>
+          <header class="setup-index"><div><strong>3/3</strong><span>Final Steps....</span></div><span>Library / Connection</span></header>
+          <div class="wizard-viewport">
+            <div class="wizard-slide connect-slide">
+              <div class="wizard-prompt"><h2 data-connect-title>Connecting Your Library</h2><span>No license keys or folder setup</span></div>
+              <div class="connection-progress" aria-live="polite"><div data-connect-account><b>Account + access</b><span>Complete ●</span></div><div class="working" data-connect-register><b>Registering Asset Library</b><span>Waiting ●</span></div><div data-connect-library><b>Loading collection</b><span>Waiting</span></div></div>
+              <div class="wizard-controls"><button type="button" data-show-recovery>Connection trouble?</button><span data-connect-message>Waiting for Blender to open this account.</span></div>
+            </div>
+            <div class="wizard-slide recovery-slide" data-recovery-slide hidden>
+              <div class="wizard-prompt"><h2>Connection Not Found</h2><span>Recovery / Only when needed</span></div>
+              <form class="recovery-body" data-recovery-form><label>Short code from Blender<input name="deviceCode" type="text" autocomplete="off" placeholder="NO3D–7K2M"></label><button type="submit">Connect This Blender →</button></form>
+              <div class="wizard-controls"><button type="button" data-hide-recovery>← Return to automatic connection</button><span>No added approval step</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="account-setup completion-territory" data-setup-panel="complete" hidden>
+          <header class="setup-index"><div><strong>3/3</strong><span>Setup Complete.</span></div><span>Library / Ready</span></header>
+          <div class="wizard-viewport"><div class="wizard-slide completion-slide"><div class="completion-copy"><span class="technical">Connected Blender / This installation</span><h2>Your Library Is Ready</h2><p><span data-completion-count>Your instruments</span> are now recorded below and available through NO3D Tools in Blender.</p></div><button class="setup-primary enter-library" type="button" data-enter-library>Enter My Library →</button></div></div>
+        </section>
+
+        <div data-ready-territory>
+          <section class="account-summary-strip" aria-label="Account summary"><div><b>Account</b><span data-account-tier>Free</span></div><div><b>Library</b><span data-library-count>00 tools</span></div><div><b>Blender</b><span data-summary-blender>Not connected</span></div><div><b>Updates</b><span data-update-mode>Manual</span></div></section>
+          <article class="account-state" data-latest-order id="orders" hidden><span class="technical" data-order-state>Latest purchase</span><h3 data-order-title>Preparing purchase</h3><p data-order-detail>Confirming payment and preparing your instrument.</p><a class="account-action" data-order-action hidden>Download →</a></article>
+          <section class="account-section" id="library" aria-labelledby="library-title"><header class="account-section-head"><h2 id="library-title">My Library</h2><span data-library-count>00 tools</span></header><div class="account-tools"><input type="search" data-account-search aria-label="Search your instruments" placeholder="Search my library"><select data-account-sort aria-label="Sort instruments"><option value="newest">Newest first</option><option value="name">Name A–Z</option><option value="access">Access type</option></select></div><div class="account-library-list" data-account-items aria-live="polite"></div><p class="account-empty" data-account-empty hidden>Your free collection will appear here as instruments are published.</p></section>
+        </div>
+
+        <h2 class="connected-title" id="connected-blender">Connected Blender</h2>
+        <section class="connected-blender"><div><b>Installation</b><span data-blender-installation>Not connected</span></div><div><b>Blender</b><span data-blender-version>—</span></div><div><b>NO3D Tools</b><span data-addon-version>—</span></div><div><b>Last contact</b><span data-blender-contact>—</span></div></section>
+        <section class="account-lower"><article id="account-details"><h3>Account Details</h3><p>Manage your email, connected sign-in methods, and account recovery.</p><button class="text-action" type="button" data-session-action>Sign out →</button></article><article><h3>Library Maintenance</h3><p>Free and individually purchased tools show available updates here. Membership keeps the full catalog active and updates automatically in Blender.</p><button class="text-action" type="button" data-manage-billing hidden>Manage billing →</button><a class="text-action" href="/subscribe.html">How membership works →</a></article></section>
+      </main>
+    </div>
     <img class="stone-mark" src="/assets/light/stone-logo.png" alt="Stone W mark">
   </div>
   <script type="module" src="/v3/js/account.js"></script>

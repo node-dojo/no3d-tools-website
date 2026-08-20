@@ -187,6 +187,35 @@ export async function requestSignIn(email, next = '/v3/account/') {
   });
 }
 
+export async function authenticateWithPassword({ email, password, mode = 'signup', next = '/v3/account/?state=install' }) {
+  return request('/api/auth/password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, mode, next }),
+  });
+}
+
+export function oauthUrl(provider, next = '/v3/account/?state=install') {
+  const query = new URLSearchParams({ provider, next });
+  return `/api/auth/oauth?${query}`;
+}
+
+export async function getAuthProviders() {
+  return request('/api/auth/providers');
+}
+
+export async function approveBlenderConnection(deviceCode) {
+  return request('/api/addon/connect/approve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ deviceCode }),
+  });
+}
+
+export async function createBillingPortal() {
+  return request('/api/commerce/portal', { method: 'POST' });
+}
+
 export async function signOut() {
   return request('/api/auth/logout', { method: 'POST' });
 }

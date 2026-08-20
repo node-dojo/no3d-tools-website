@@ -25,6 +25,10 @@ export default async function handler(req, res) {
       error: error instanceof Error ? error.message : 'unknown_error',
     });
     clearAuthCookies(res);
+    const next = safeAuthNext(req.query?.next);
+    if (next?.startsWith('/v3/')) {
+      return res.redirect(303, `/v3/onboarding/create-account/?auth=invalid&next=${encodeURIComponent(next)}`);
+    }
     return res.redirect(303, '/account?auth=invalid');
   }
 }

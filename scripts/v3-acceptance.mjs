@@ -91,11 +91,22 @@ async function structuralAudit(page, label) {
 const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu'] });
 try {
   const page = await browser.newPage();
-  await installMocks(page);
+  await installMocks(page, { authenticated: true });
 
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
   await page.goto(`${origin}/v3/`, { waitUntil: 'networkidle0' });
   await structuralAudit(page, 'home mobile');
+  const catalogCards = await page.evaluate(() => [...document.querySelectorAll('.product-card')].map(card => {
+    const media = card.querySelector('.product-media');
+    const title = card.querySelector('h3');
+    const mediaRect = media.getBoundingClientRect();
+    const titleRect = title.getBoundingClientRect();
+    return { delta: Math.abs(mediaRect.width - mediaRect.height), mediaBackground: getComputedStyle(media).backgroundColor, titleCrossesBoundary: titleRect.top < mediaRect.bottom && titleRect.bottom > mediaRect.bottom };
+  }));
+  assert.ok(catalogCards.length >= 4);
+  assert.ok(catalogCards.every(card => card.delta < 1), 'home product media must be square');
+  assert.ok(catalogCards.every(card => card.mediaBackground === 'rgba(0, 0, 0, 0)'), 'home product media must be transparent');
+  assert.ok(catalogCards.every(card => card.titleCrossesBoundary), 'home product titles must cross the square boundary');
   const closedTop = await page.$eval('.home-hero', node => node.getBoundingClientRect().top);
   await page.click('[data-catalog-toggle]');
   const openTop = await page.$eval('.home-hero', node => node.getBoundingClientRect().top);
@@ -113,7 +124,8 @@ try {
     const hero = document.querySelector('.product-hero').getBoundingClientRect();
     const lines = document.querySelector('[data-ascii-plate]').textContent.split('\n');
     const functions = getComputedStyle(document.querySelector('.product-functions'));
-    return { titleBeforeHero: title.top < hero.top, widths: [...new Set(lines.map(line => line.length))], inputSockets: lines.filter(line => line.startsWith('o ')).length, outputSockets: lines.filter(line => line.endsWith('o')).length, price: document.querySelector('[data-price-block]')?.textContent, sideBorders: [functions.borderLeftWidth, functions.borderRightWidth], hero: document.querySelector('[data-product-hero]').getAttribute('src') };
+    const individualAction = document.querySelector('[data-download]');
+    return { titleBeforeHero: title.top < hero.top, widths: [...new Set(lines.map(line => line.length))], inputSockets: lines.filter(line => line.startsWith('o ')).length, outputSockets: lines.filter(line => line.endsWith('o')).length, price: document.querySelector('[data-price-block]')?.textContent, sideBorders: [functions.borderLeftWidth, functions.borderRightWidth], hero: document.querySelector('[data-product-hero]').getAttribute('src'), individualAction: individualAction.textContent.trim(), individualActionBackground: getComputedStyle(individualAction).backgroundColor, catalogAction: document.querySelector('[data-catalog-checkout]').textContent.trim() };
   });
   assert.equal(paid.titleBeforeHero, true);
   assert.deepEqual(paid.widths, [48]);
@@ -121,16 +133,44 @@ try {
   assert.match(paid.price, /\$7\.77/);
   assert.deepEqual(paid.sideBorders, ['0px', '0px']);
   assert.equal(paid.hero, '/v3/assets/dojo-bolt-disassembly.gif');
+  assert.match(paid.individualAction, /Add to Library/);
+  assert.equal(paid.individualActionBackground, 'rgb(245, 255, 0)');
+  assert.match(paid.catalogAction, /Get Full Catalog/);
   await page.screenshot({ path: join(outputDir, 'product-paid-mobile.png') });
 
-  await page.setViewport({ width: 1440, height: 1100, deviceScaleFactor: 1 });
-  for (const [name, path] of [['home-desktop', '/v3/'], ['product-paid-desktop', '/v3/product/?handle=dojo-bolt-gen-v05-obj']]) {
+  for (const [name, path] of [
+    ['onboarding-account-mobile', '/v3/onboarding/create-account/'],
+    ['onboarding-install-mobile', '/v3/account/?state=install'],
+    ['onboarding-connect-mobile', '/v3/account/?state=connect'],
+    ['onboarding-complete-mobile', '/v3/account/?state=complete'],
+    ['account-library-mobile', '/v3/account/'],
+  ]) {
     await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
     await structuralAudit(page, name);
-    await page.screenshot({ path: join(outputDir, `${name}.png`) });
+    if (name === 'onboarding-install-mobile') {
+      assert.equal(await page.$$eval('.version-choices input', nodes => nodes.length), 3);
+      await page.click('.version-choices input[value="5.2+"]');
+      assert.equal(await page.$eval('[data-wizard-slide="install-action"]', node => node.hidden), false);
+    }
+    await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
   }
 
-  console.log(JSON.stringify({ status: 'passed', tranche: 'home-02d-and-product-04d', outputDir, routes: 2, viewports: ['390x844', '1440x1100'] }));
+  await page.setViewport({ width: 1440, height: 1100, deviceScaleFactor: 1 });
+  for (const [name, path] of [
+    ['home-desktop', '/v3/'],
+    ['product-paid-desktop', '/v3/product/?handle=dojo-bolt-gen-v05-obj'],
+    ['onboarding-account-desktop', '/v3/onboarding/create-account/'],
+    ['onboarding-install-desktop', '/v3/account/?state=install'],
+    ['onboarding-connect-desktop', '/v3/account/?state=connect'],
+    ['onboarding-complete-desktop', '/v3/account/?state=complete'],
+    ['account-library-desktop', '/v3/account/'],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
+    await structuralAudit(page, name);
+    await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: name.startsWith('onboarding') || name.startsWith('account-library') });
+  }
+
+  console.log(JSON.stringify({ status: 'passed', tranche: 'home-product-and-real-onboarding-account', outputDir, routes: 7, viewports: ['390x844', '1440x1100'] }));
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

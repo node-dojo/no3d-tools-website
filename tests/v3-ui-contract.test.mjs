@@ -35,12 +35,43 @@ test('resolves hosted media shapes and ships a canonical paid-product fallback',
   assert.equal(bolt.price, '7.77');
 });
 
-test('all adjacent route documents use the shared V3 stylesheet', async () => {
-  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/type/index.html']) {
+test('all rendered adjacent route documents use the shared V3 stylesheet', async () => {
+  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/type/index.html', 'v3/onboarding/create-account/index.html']) {
     const html = await load(path);
     assert.match(html, /\/v3\/styles\/v3\.css/);
     assert.doesNotMatch(html, /(?:color\s*=\s*["']blue|#0000ff|#00f\b)/i);
   }
+});
+
+test('onboarding follows account, install, automatic connection, and library without redundant consent', async () => {
+  const createAccount = await load('v3/onboarding/create-account/index.html');
+  const account = await load('v3/account/index.html');
+  assert.match(createAccount, /Create free account/i);
+  assert.match(createAccount, /Continue with Google/i);
+  assert.match(createAccount, /Continue with GitHub/i);
+  assert.match(account, /Connect My Library/i);
+  assert.match(account, /No license keys or folder setup/i);
+  assert.match(account, /No added approval step/i);
+  assert.doesNotMatch(account, /Establish sync|Approve this Blender|Pairing code/i);
+  assert.match(account, /My Library/i);
+  assert.match(account, /updates automatically/i);
+});
+
+test('Home uses one story headline and transparent square catalog media', async () => {
+  const html = await load('v3/index.html');
+  const css = await load('v3/styles/v3.css');
+  assert.equal((html.match(/Tools For the Future Old School/gi) || []).length, 1);
+  assert.doesNotMatch(html, /<h2[^>]*>Tools for Old School of the Future/i);
+  assert.match(css, /\.product-media\{[^}]*aspect-ratio:1[^}]*background:transparent/);
+  assert.match(css, /\.product-card h3\{[^}]*transform:translateY\(-50%\)[^}]*background:transparent/);
+});
+
+test('acquisition language and yellow follow the library-first V3 decision', async () => {
+  const html = await load('v3/product/index.html');
+  const css = await load('v3/styles/v3.css');
+  assert.match(html, />Add to Library</);
+  assert.match(html, />Get Full Catalog</);
+  assert.match(css, /--yellow:#f5ff00/);
 });
 
 test('ASCII parameter plate is fixed width with boundary-centered sockets', async () => {
@@ -57,10 +88,15 @@ test('ASCII parameter plate is fixed width with boundary-centered sockets', asyn
 test('V3 reuses existing catalog, commerce, auth, account, recovery, and download endpoints', async () => {
   const api = await load('v3/js/api.js');
   const account = await load('v3/js/account.js');
-  for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/create-checkout', '/api/auth/session', '/api/commerce/account', '/api/auth/request-link', '/api/auth/recovery-link']) {
+  const callback = await load('api/auth/callback.js');
+  const password = await load('api/auth/password.js');
+  for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/commerce/portal', '/api/create-checkout', '/api/auth/session', '/api/auth/providers', '/api/commerce/account', '/api/auth/password', '/api/auth/oauth', '/api/auth/recovery-link', '/api/addon/connect/approve']) {
     assert.ok(`${api}\n${account}`.includes(endpoint), endpoint);
   }
   assert.match(account, /\/api\/commerce\/download\//);
+  assert.match(callback, /\/v3\/onboarding\/create-account\/\?auth=invalid/);
+  assert.match(password, /claimPurchasingGuest/);
+  assert.match(password, /account_claim_failed/);
 });
 
 test('Vercel keeps V3 adjacent behind explicit routes', async () => {
@@ -69,6 +105,9 @@ test('Vercel keeps V3 adjacent behind explicit routes', async () => {
   assert.equal(rewrites.get('/v3'), '/v3/index.html');
   assert.equal(rewrites.get('/v3/product'), '/v3/product/index.html');
   assert.equal(rewrites.get('/v3/account'), '/v3/account/index.html');
+  assert.equal(rewrites.get('/v3/onboarding/create-account'), '/v3/onboarding/create-account/index.html');
+  assert.equal(rewrites.get('/v3/onboarding/install'), '/v3/account/index.html?state=install');
+  assert.equal(rewrites.get('/v3/onboarding/connect'), '/v3/account/index.html?state=connect');
   assert.equal(rewrites.get('/v3/type'), '/v3/type/index.html');
   assert.ok(config.rewrites.some(rule => rule.source === '/account'));
 });
