@@ -10,6 +10,7 @@
     "test:auth": "node --test tests/auth-session.test.mjs tests/effective-manifest.test.mjs tests/purchase-flow.test.mjs",
     "test:v3": "node --test tests/v3-ui-contract.test.mjs tests/v3-access.test.mjs",
     "acceptance:v3": "node scripts/v3-acceptance.mjs",
+    "acceptance:v3:commerce": "node scripts/v3-commerce-acceptance.mjs",
     "update-commit": "node scripts/update-commit-hash.js",
     "fix-vercel": "node scripts/fix-vercel-settings.js",
     "fix-vercel:doppler": "doppler run -- node scripts/fix-vercel-settings.js",

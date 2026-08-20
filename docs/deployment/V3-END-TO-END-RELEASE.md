@@ -36,6 +36,9 @@ The release is complete only when both an individual purchaser and a member can 
 
 - `npm test`
 - `npm run acceptance:v3`
+- `NO3D_E2E_EMAIL=<owner email> npm run acceptance:v3:commerce -- --apply`
+  creates a Stripe test-mode product order, waits for Commerce fulfillment,
+  verifies the signed download, and confirms membership Checkout remains test-only.
 - `npm audit`
 - `git diff --check`
 - Mobile and desktop checks for Home, Product, Membership, account entry, install, connect, completion, free/purchased account, and active-member account.
