@@ -6,11 +6,13 @@ import puppeteer from 'puppeteer';
 const apply = process.argv.includes('--apply');
 const baseUrl = (process.env.NO3D_V3_ACCEPTANCE_URL || 'https://v3.no3dtools.com').replace(/\/$/, '');
 const email = process.env.NO3D_E2E_EMAIL?.trim();
+const password = process.env.NO3D_E2E_PASSWORD;
 const handle = process.env.NO3D_E2E_HANDLE?.trim() || 'dojo-knob';
 const expectedUnitAmount = handle === 'chrome-crayon' ? 2222 : 777;
 
 if (!apply) throw new Error('This creates a Stripe test order. Re-run with --apply.');
 if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('NO3D_E2E_EMAIL is required.');
+if (!password || password.length < 20) throw new Error('NO3D_E2E_PASSWORD is required.');
 
 const priceResponse = await fetch(`${baseUrl}/api/get-subscription-price`);
 const price = await priceResponse.json();
@@ -103,6 +105,32 @@ try {
   assert.ok([200, 206].includes(assetResponse.status), `Asset delivery returned ${assetResponse.status}`);
   await assetResponse.body?.cancel();
 
+  const accountClaim = await page.evaluate(async ({ emailAddress, passwordValue }) => {
+    const response = await fetch('/api/auth/password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: emailAddress,
+        mode: 'signin',
+        next: '/v3/account/',
+        password: passwordValue,
+      }),
+    });
+    return { status: response.status, payload: await response.json() };
+  }, { emailAddress: email, passwordValue: password });
+  assert.equal(accountClaim.status, 200, accountClaim.payload.error || 'Acceptance account sign-in failed');
+  assert.equal(accountClaim.payload.authenticated, true);
+  assert.equal(accountClaim.payload.claimStatus, 'claimed');
+
+  const accountResponse = await page.evaluate(async () => {
+    const response = await fetch('/api/commerce/account');
+    return { status: response.status, payload: await response.json() };
+  });
+  assert.equal(accountResponse.status, 200, accountResponse.payload.error || 'Claimed account lookup failed');
+  const ownedProduct = accountResponse.payload.products?.find((product) => product.handle === handle);
+  assert.equal(ownedProduct?.owned, true, 'Claimed product is missing from the account library');
+  assert.equal(ownedProduct?.permanent, true, 'Individual purchase must remain permanent');
+
   const membershipResponse = await fetch(`${baseUrl}/api/create-checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -122,6 +150,8 @@ try {
       paymentStatus: order.payload.paymentStatus,
       fulfillmentStatus: order.payload.fulfillmentStatus,
       downloadStatus: assetResponse.status,
+      accountClaim: accountClaim.payload.claimStatus,
+      accountLibrary: 'owned',
     },
     membership: { checkout: 'cs_test' },
   })}\n`);
