@@ -53,7 +53,7 @@ The release boundary now also includes `/v3/membership/`, individual Checkout re
 ### Deliberate external boundaries
 
 - Google and GitHub must be enabled in the deployed Supabase project and the deployed callback URL must be allowlisted before those buttons work in production.
-- Commerce remains the only source of owned products and membership. The UI must not fabricate a free starter library; it stays empty until the canonical free entitlements are designated and returned by Commerce.
+- Commerce remains the only source of owned products. The existing website subscription rail temporarily remains authoritative for recurring membership until that lifecycle migrates into Commerce; V3 may combine those two verified server-side results but may not invent access. The UI must not fabricate a free starter library; it stays empty until the canonical free entitlements are designated and returned by Commerce.
 - The current Commerce account summary does not expose a rich connected-device record. Until that contract grows, the page may show the locally selected Blender version and connection state, but must not imply authoritative device health or last-contact data.
 
 ### Runtime authority

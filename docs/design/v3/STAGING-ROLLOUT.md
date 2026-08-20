@@ -127,6 +127,9 @@ Verified on **2026-08-20**:
 - It subscribes only to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `charge.refunded`, matching the Commerce handler registry.
 - Stripe's signing secret is stored in Doppler `no3d-commerce/stg` and Vercel Preview; no secret value belongs in this document or repository.
 - A fresh Stripe-originated `checkout.session.completed` event reached the endpoint, entered the isolated Commerce database, and completed once with no processing error.
+- The temporary membership-compatibility endpoint is `https://v3.no3dtools.com/api/stripe-webhook`; it receives test-mode `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`, and `customer.subscription.deleted` events until recurring membership moves into Commerce.
+- A complete test subscription activated the account and connected Blender library, opened the billing portal, canceled immediately, and expired membership-only access while retaining the permanent Apple MagSafe purchase.
+- A separate full Stripe refund changed the disposable Dojo Knob order from `paid`/`fulfilled` to `refunded`/`revoked`, removed it from the connected Blender manifest and download authorization, and left the Apple MagSafe entitlement intact.
 - An older test endpoint containing a Vercel automation-bypass credential was removed after that credential appeared in diagnostic output; the owning `no3d-app` bypass was revoked and now has zero active automation-bypass credentials.
 
 ## Acceptance matrix
@@ -141,8 +144,8 @@ Run these in order against staging:
 6. The free library appears in both Blender and the Account screen.
 7. Stripe test Checkout purchases one product; its paid webhook creates the order and entitlement exactly once.
 8. The account and Blender library show the purchased asset, with an individual download/install date and a manual update action.
-9. Stripe test subscription fills the eligible catalog and exposes automatic updates.
-10. Billing portal, cancellation, expiry, refund, recovery, repeat purchase, and refresh-token rotation behave correctly.
+9. Stripe test subscription fills the eligible catalog and exposes automatic updates. **Passed 2026-08-20:** 50 Account entries and 47 currently published Blender assets.
+10. Billing portal, cancellation, expiry, refund, and refresh-token rotation behave correctly. **Passed 2026-08-20.** Recovery and repeat purchase remain separate open checks.
 11. Mobile and desktop V3 visual acceptance passes with no browser-blue controls or horizontal overflow.
 12. Production URLs, data, Stripe customers, entitlements, and extension clients remain unchanged.
 

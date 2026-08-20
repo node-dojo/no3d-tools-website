@@ -45,6 +45,14 @@ The release is complete only when both an individual purchaser and a member can 
   acceptance account to approve a Blender device grant, verify the purchased
   asset in the filtered manifest, exercise its signed download, and rotate the
   device refresh token.
+- `npm run acceptance:v3:membership -- --apply` creates and fulfills a Stripe
+  test subscription, verifies full-catalog Account and Blender access, opens
+  the authenticated billing portal, cancels the subscription, and proves that
+  membership-only access expires while a permanent purchase survives.
+- `npm run acceptance:v3:refund -- --apply` purchases a disposable product,
+  verifies Account and Blender ownership, issues a full Stripe test refund,
+  and proves that fulfillment, entitlement, manifest, and download access are
+  revoked without affecting an unrelated permanent purchase.
 - `npm audit`
 - `git diff --check`
 - Mobile and desktop checks for Home, Product, Membership, account entry, install, connect, completion, free/purchased account, and active-member account.
@@ -55,9 +63,13 @@ Verified on 2026-08-20: owner gate; Commerce-backed public price; individual
 Stripe test Checkout; Commerce `paid`/`fulfilled` projection; signed product
 download; guest-purchase claim into a managed account; permanent inventory in
 Account; device grant start, approval, and exchange; purchase-filtered Blender
-manifest; device-authenticated download; refresh-token rotation; and test-only
-membership Checkout creation. Completed membership fulfillment, billing
-lifecycle, and refund/revocation remain open gates below.
+manifest; device-authenticated download; refresh-token rotation; membership
+activation; authenticated billing portal; immediate cancellation and expiry;
+full-catalog Account expansion (50 entries); full published Blender catalog
+(47 assets); fallback to the permanent Apple MagSafe purchase; and full refund
+revocation of a disposable Dojo Knob order. Recovery and repeat-purchase edge
+checks remain open; the free-library rows remain intentionally unpopulated
+until canonical free entitlements are designated.
 
 1. Signed-out and non-owner access fail closed; an owner account enters once through NO3D Auth.
 2. Mobile account creation sends desktop setup continuation and proceeds into the usable account.
