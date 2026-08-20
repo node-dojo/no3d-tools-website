@@ -1,6 +1,6 @@
 # V3 Private Staging Rollout
 
-Status: isolated Supabase and Vercel Preview foundations active; Stripe test webhook and final security gate pending.
+Status: isolated Supabase and Vercel Preview foundations active; owner gate and Commerce health route reachable; Stripe test webhook and final security gate pending.
 
 ## Approved staging envelope
 
@@ -36,13 +36,26 @@ If Pro is retained, record the justification and compare its value against anoth
 | Concern | Website staging | Commerce staging |
 |---|---|---|
 | Vercel | Preview deployment for `feat/v3-adjacent` | Preview deployment from the Commerce source |
-| Persistent host | `v3.no3dtools.com` | staging Commerce URL recorded in `COMMERCE_API_URL` |
+| Persistent host | `v3.no3dtools.com` | `commerce-v3.no3dtools.com` |
 | Doppler | `no3dtools/stg` | `no3d-commerce/stg` |
 | Supabase | isolated branch of the website Auth project | isolated branch of the Commerce project |
 | Stripe | test mode | test mode, test webhook endpoint |
 | Access | exact `V3_OWNER_EMAILS` allowlist | trusted site backend plus signed assertions |
 
 The Vercel project already uses its one custom-environment slot for `mvp-site`, so this release candidate uses branch-specific Preview variables rather than deleting or repurposing that existing environment without a separate decision.
+
+### Vercel deployment-protection routing
+
+Keep project-level Vercel Authentication enabled for ordinary generated Preview URLs. Register the two staging hosts as ordinary project custom domains and pin them to the approved deployments instead of configuring them as Git-branch domains. Vercel treats branch-bound domains as Preview URLs and places its own authentication challenge in front of Routing Middleware; that prevents the NO3D owner gate from loading and blocks unsigned network access to Commerce endpoints before their application-level verification can run.
+
+Verified on **2026-08-19**:
+
+- `https://v3.no3dtools.com/` redirects to `/v3/`.
+- `https://v3.no3dtools.com/v3/` redirects to the NO3D `/v3/access/` owner gate.
+- `https://v3.no3dtools.com/v3/access/` returns `200`.
+- `https://commerce-v3.no3dtools.com/api/health` returns `200` with the expected Commerce health payload.
+
+Do not disable Vercel Authentication across either project merely to expose these hosts. Commerce remains protected by its signed webhook, trusted-site, assertion, cron, and operations credentials; the website remains protected by the NO3D Supabase session and exact owner-email allowlist.
 
 ## Required staging variables
 
