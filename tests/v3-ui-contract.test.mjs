@@ -102,6 +102,22 @@ test('product detail uses a cached handle endpoint and defers commerce from iden
   assert.match(productScript, /await getProduct\(handle\)/);
 });
 
+test('product detail price is resolved by Commerce and fails closed without it', async () => {
+  const api = await load('v3/js/api.js');
+  const productScript = await load('v3/js/product.js');
+  const offerEndpoint = await load('api/commerce/offer.js');
+  const commerceClient = await load('api/commerce/lib/client.js');
+  assert.match(api, /\/api\/commerce\/offer\?handle=/);
+  assert.match(api, /pricingSource: 'commerce'/);
+  assert.match(api, /pricingSource: 'unavailable'/);
+  assert.match(api, /purchasable: false/);
+  assert.match(productScript, /dataset\.pricingSource = pricingSource/);
+  assert.match(offerEndpoint, /commerceBackendFetch/);
+  assert.match(offerEndpoint, /Cache-Control', 'private, no-store'/);
+  assert.doesNotMatch(offerEndpoint, /priceId/);
+  assert.match(commerceClient, /'X-NO3D-Site': commerceSiteKey\(\)/);
+});
+
 test('V3 static media, code, styles, fonts, and catalog data have explicit cache policy', async () => {
   const config = JSON.parse(await load('vercel.json'));
   const sources = config.headers.map(rule => rule.source);
@@ -172,11 +188,12 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   assert.match(password, /account_claim_failed/);
 });
 
-test('V3 catalog prefers purchasable products and keeps unpublished studies out of Checkout', async () => {
+test('V3 catalog prefers live metadata and keeps unpriced studies out of Checkout', async () => {
   const api = await load('v3/js/api.js');
   const product = await load('v3/js/product.js');
   assert.ok(api.indexOf("request('/api/products?limit=100')") < api.indexOf("request('/api/get-all-products')"));
-  assert.match(api, /purchasable: catalog\.source === 'live' && Boolean\(catalogProduct\)/);
+  assert.match(api, /product: product \? \{ \.\.\.product, price: '' \} : null/);
+  assert.match(api, /purchasable: false/);
   assert.match(product, /get\('handle'\) \|\| 'chrome-crayon'/);
   assert.match(product, /This design study is not yet published for individual checkout/);
 });

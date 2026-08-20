@@ -36,7 +36,7 @@ function setButtonState(button, busy, idle) {
 }
 
 const commercePromise = getCommerceConfig();
-const { product, purchasable, source } = await getProduct(handle);
+const { product, purchasable, pricingSource, source } = await getProduct(handle);
 
 if (!product) {
   $('[data-product-title]').textContent = 'Instrument unavailable';
@@ -111,4 +111,5 @@ if (!product) {
 }
 
 document.body.dataset.catalogSource = source;
+document.body.dataset.pricingSource = pricingSource;
 document.body.dataset.purchaseAvailability = purchasable ? 'available' : 'design-study';

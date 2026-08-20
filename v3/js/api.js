@@ -132,16 +132,40 @@ export async function getCatalog() {
 
 export async function getProduct(handle) {
   try {
-    const payload = await request(`/api/products/${encodeURIComponent(handle)}`);
+    const [payload, pricing] = await Promise.all([
+      request(`/api/products/${encodeURIComponent(handle)}`),
+      request(`/api/commerce/offer?handle=${encodeURIComponent(handle)}`).catch(() => null),
+    ]);
     if (!payload.product) throw new Error('product_not_found');
-    return { product: normalizeProduct(payload.product), purchasable: true, source: 'live' };
+    const product = normalizeProduct(payload.product);
+    if (!pricing?.offer) {
+      return {
+        product: { ...product, price: '', priceCurrency: '', priceUnitAmount: null },
+        purchasable: false,
+        pricingSource: 'unavailable',
+        source: 'live',
+      };
+    }
+    return {
+      product: {
+        ...product,
+        price: (pricing.offer.unitAmount / 100).toFixed(2),
+        priceCurrency: pricing.offer.currency,
+        priceUnitAmount: pricing.offer.unitAmount,
+      },
+      purchasable: true,
+      pricingSource: 'commerce',
+      source: 'live',
+    };
   } catch {
     const catalog = await getCatalog();
     const catalogProduct = catalog.products.find(product => product.handle === handle);
     const designStudy = FALLBACK_PRODUCTS.map(normalizeProduct).find(product => product.handle === handle);
+    const product = catalogProduct || designStudy || catalog.products[0] || null;
     return {
-      product: catalogProduct || designStudy || catalog.products[0],
-      purchasable: catalog.source === 'live' && Boolean(catalogProduct),
+      product: product ? { ...product, price: '' } : null,
+      purchasable: false,
+      pricingSource: 'unavailable',
       source: catalog.source,
     };
   }

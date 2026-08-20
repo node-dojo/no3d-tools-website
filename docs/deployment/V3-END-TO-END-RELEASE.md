@@ -13,7 +13,7 @@ The release is complete only when both an individual purchaser and a member can 
 | Customer need | V3 route | Authority |
 | --- | --- | --- |
 | Browse and search | `/v3/` | Website catalog |
-| Evaluate an instrument | `/v3/product/?handle=...` | Website catalog + Commerce availability |
+| Evaluate an instrument | `/v3/product/?handle=...` | Website catalog metadata + Commerce/Stripe price and availability |
 | Understand full-catalog access | `/v3/membership/` | Website presentation + Stripe price |
 | Create or enter an account | `/v3/onboarding/create-account/` | Website Supabase Auth |
 | Install and connect Blender | `/v3/account/?state=install` and `?state=connect` | Website session + Commerce device grant |
@@ -25,6 +25,7 @@ The release is complete only when both an individual purchaser and a member can 
 ## Authority boundary
 
 - NO3D Commerce remains authoritative for individual orders, Stripe Customer mappings, permanent entitlements, refunds, recovery grants, and Blender device grants.
+- Stripe Price objects remain the financial record; V3 reads their validated public amount through Commerce and never treats the website catalog price column as purchasable authority.
 - Website Supabase Auth remains authoritative for the managed site session.
 - The existing website subscription table remains a temporary compatibility source for membership status while the already-live subscription rail is moved into Commerce. V3 reads it only after verified authentication and never accepts a browser-supplied email for membership lookup or portal access.
 - Active membership expands the account inventory from the live catalog; permanent purchases retain their distinct source and survive membership cancellation.

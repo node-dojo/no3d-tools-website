@@ -58,6 +58,14 @@ async function installMocks(page, { authenticated = false, membershipActive = fa
     let payload = {};
     if (url.pathname === '/api/get-all-products') payload = products;
     else if (url.pathname === '/api/products') payload = { products };
+    else if (url.pathname.startsWith('/api/products/')) {
+      const handle = url.pathname.split('/').pop();
+      payload = { product: products.find(product => product.handle === handle) };
+    }
+    else if (url.pathname === '/api/commerce/offer') {
+      const handle = url.searchParams.get('handle');
+      payload = { offer: { currency: 'usd', offerKey: `no3dtools.product.${handle}`, resourceId: handle, unitAmount: handle === 'chrome-crayon' ? 2222 : 777 } };
+    }
     else if (url.pathname === '/api/commerce/config') payload = { individualProductsEnabled: true };
     else if (url.pathname === '/api/get-subscription-price') payload = { formatted: '$22.22' };
     else if (url.pathname === '/api/auth/session') payload = account.session;

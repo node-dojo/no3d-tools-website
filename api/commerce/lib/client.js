@@ -65,6 +65,21 @@ export async function commerceFetch(req, res, path, options = {}) {
   return { response, payload };
 }
 
+export async function commerceBackendFetch(path, options = {}) {
+  const baseUrl = requiredEnv('COMMERCE_API_URL').replace(/\/$/, '');
+  const backendSecret = requiredEnv('COMMERCE_SITE_BACKEND_SECRET');
+  const response = await fetch(`${baseUrl}${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${backendSecret}`,
+      'X-NO3D-Site': commerceSiteKey(),
+      ...(options.headers || {}),
+    },
+  });
+  const payload = await response.json().catch(() => ({ error: 'invalid_commerce_response' }));
+  return { response, payload };
+}
+
 export function validProductRecovery(order) {
   const recovery = order?.recovery;
   const handle = order?.resourceId;
