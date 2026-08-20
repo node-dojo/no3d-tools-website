@@ -51,10 +51,13 @@ The release is complete only when both an individual purchaser and a member can 
 
 ### Staging transaction matrix
 
-Verified on 2026-08-20: owner gate, individual Stripe test Checkout, Commerce
-`paid`/`fulfilled` projection, signed product download, and test-only membership
-Checkout creation. Account claim, completed membership fulfillment, device
-connection, billing lifecycle, and refund/revocation remain open gates below.
+Verified on 2026-08-20: owner gate; Commerce-backed public price; individual
+Stripe test Checkout; Commerce `paid`/`fulfilled` projection; signed product
+download; guest-purchase claim into a managed account; permanent inventory in
+Account; device grant start, approval, and exchange; purchase-filtered Blender
+manifest; device-authenticated download; refresh-token rotation; and test-only
+membership Checkout creation. Completed membership fulfillment, billing
+lifecycle, and refund/revocation remain open gates below.
 
 1. Signed-out and non-owner access fail closed; an owner account enters once through NO3D Auth.
 2. Mobile account creation sends desktop setup continuation and proceeds into the usable account.
