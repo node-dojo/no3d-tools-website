@@ -9,7 +9,8 @@ const FALLBACK_PRODUCTS = [
     tags: ['Geometry', 'Object edition'],
     release_status: 'stable',
     release_version: '05.3',
-    image: '/v3/assets/dojo-bolt-disassembly.gif',
+    image: '/v3/assets/dojo-bolt-disassembly.webp?v=perf-20260820',
+    video: '/v3/assets/dojo-bolt-disassembly.webm?v=perf-20260820',
     thumbnail_image: '/assets/product-images/icon_Dojo Bolt Gen v05_Obj.png',
     carousel_media: ['/v3/assets/dojo-bolt-disassembly.gif'],
   },
@@ -90,6 +91,7 @@ export function normalizeProduct(product = {}) {
     releaseStatus: product.release_status || product.releaseStatus || 'stable',
     releaseVersion: product.release_version || product.releaseVersion || '',
     image,
+    video: resolveMedia(product.video),
     thumbnail,
     carousel,
     hostedMedia: product.hosted_media || {},
@@ -112,19 +114,36 @@ async function request(path, options = {}, timeout = 10000) {
 
 export async function getCatalog() {
   try {
-    const payload = await request('/api/get-all-products');
+    const payload = await request('/api/products');
     const list = Array.isArray(payload) ? payload : payload.products;
     if (!Array.isArray(list) || list.length === 0) throw new Error('empty_catalog');
     return { products: list.map(normalizeProduct), source: 'live' };
   } catch (primaryError) {
     try {
-      const payload = await request('/api/products');
+      const payload = await request('/api/get-all-products');
       const list = Array.isArray(payload) ? payload : payload.products;
       if (!Array.isArray(list) || list.length === 0) throw primaryError;
-      return { products: list.map(normalizeProduct), source: 'live' };
+      return { products: list.map(normalizeProduct), source: 'legacy' };
     } catch {
       return { products: FALLBACK_PRODUCTS.map(normalizeProduct), source: 'sample' };
     }
+  }
+}
+
+export async function getProduct(handle) {
+  try {
+    const payload = await request(`/api/products/${encodeURIComponent(handle)}`);
+    if (!payload.product) throw new Error('product_not_found');
+    return { product: normalizeProduct(payload.product), purchasable: true, source: 'live' };
+  } catch {
+    const catalog = await getCatalog();
+    const catalogProduct = catalog.products.find(product => product.handle === handle);
+    const designStudy = FALLBACK_PRODUCTS.map(normalizeProduct).find(product => product.handle === handle);
+    return {
+      product: catalogProduct || designStudy || catalog.products[0],
+      purchasable: catalog.source === 'live' && Boolean(catalogProduct),
+      source: catalog.source,
+    };
   }
 }
 

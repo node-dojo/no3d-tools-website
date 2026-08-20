@@ -31,7 +31,8 @@ test('keeps the approved Chain Generator presentation alias local to V3', () => 
 test('resolves hosted media shapes and ships a canonical paid-product fallback', () => {
   assert.equal(resolveMedia({ secure_url: 'https://media.example/a.gif' }), 'https://media.example/a.gif');
   const bolt = FALLBACK_PRODUCTS.map(normalizeProduct).find(product => product.handle === 'dojo-bolt-gen-v05-obj');
-  assert.equal(bolt.image, '/v3/assets/dojo-bolt-disassembly.gif');
+  assert.equal(bolt.image, '/v3/assets/dojo-bolt-disassembly.webp');
+  assert.equal(bolt.video, '/v3/assets/dojo-bolt-disassembly.webm');
   assert.equal(bolt.price, '7.77');
 });
 
@@ -85,6 +86,30 @@ test('acquisition language and yellow follow the library-first V3 decision', asy
   assert.match(css, /--yellow:#f5ff00/);
   assert.match(membership, /The Entire Library\. Always Current\./i);
   assert.match(membership, /Automatic Updates/i);
+});
+
+test('product detail uses a cached handle endpoint and defers commerce from identity rendering', async () => {
+  const html = await load('v3/product/index.html');
+  const productScript = await load('v3/js/product.js');
+  const api = await load('v3/js/api.js');
+  const endpoint = await load('api/products/[handle].js');
+  assert.match(api, /api\/products\/\$\{encodeURIComponent\(handle\)\}/);
+  assert.match(endpoint, /\.eq\('handle', handle\)/);
+  assert.match(endpoint, /s-maxage=300/);
+  assert.doesNotMatch(html, /data-product-hero[^>]+src=/);
+  assert.match(html, /<video data-product-video/);
+  assert.match(productScript, /const commercePromise = getCommerceConfig\(\)/);
+  assert.match(productScript, /await getProduct\(handle\)/);
+});
+
+test('V3 static media, code, styles, fonts, and catalog data have explicit cache policy', async () => {
+  const config = JSON.parse(await load('vercel.json'));
+  const sources = config.headers.map(rule => rule.source);
+  assert.ok(sources.some(source => source.startsWith('/v3/assets/')));
+  assert.ok(sources.some(source => source.startsWith('/v3/(js|styles)/')));
+  assert.ok(sources.some(source => source.startsWith('/fonts/')));
+  const catalog = await load('api/get-all-products.js');
+  assert.match(catalog, /s-maxage=300/);
 });
 
 test('V3 membership remains inside V3 and reads only verified account membership state', async () => {
@@ -145,6 +170,15 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   assert.match(callback, /\/v3\/onboarding\/create-account\/\?auth=invalid/);
   assert.match(password, /claimPurchasingGuest/);
   assert.match(password, /account_claim_failed/);
+});
+
+test('V3 catalog prefers purchasable products and keeps unpublished studies out of Checkout', async () => {
+  const api = await load('v3/js/api.js');
+  const product = await load('v3/js/product.js');
+  assert.ok(api.indexOf("request('/api/products')") < api.indexOf("request('/api/get-all-products')"));
+  assert.match(api, /purchasable: catalog\.source === 'live' && Boolean\(catalogProduct\)/);
+  assert.match(product, /get\('handle'\) \|\| 'chrome-crayon'/);
+  assert.match(product, /This design study is not yet published for individual checkout/);
 });
 
 test('Vercel keeps V3 adjacent behind explicit routes', async () => {

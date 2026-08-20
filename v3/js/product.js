@@ -1,8 +1,8 @@
-import { beginMembershipCheckout, beginProductCheckout, getCatalog, getCommerceConfig } from './api.js';
+import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js';
 import './shell.js';
 
 const $ = selector => document.querySelector(selector);
-const handle = new URLSearchParams(location.search).get('handle') || 'dojo-bolt-gen-v05-obj';
+const handle = new URLSearchParams(location.search).get('handle') || 'chrome-crayon';
 
 function metafield(product, key) {
   return product.metafields.find(field => field.key === key)?.value || '';
@@ -35,8 +35,8 @@ function setButtonState(button, busy, idle) {
   button.querySelector('span').textContent = busy ? 'Opening…' : idle;
 }
 
-const [{ products, source }, commerce] = await Promise.all([getCatalog(), getCommerceConfig()]);
-const product = products.find(item => item.handle === handle) || products[0];
+const commercePromise = getCommerceConfig();
+const { product, purchasable, source } = await getProduct(handle);
 
 if (!product) {
   $('[data-product-title]').textContent = 'Instrument unavailable';
@@ -55,8 +55,18 @@ if (!product) {
   $('[data-changelog]').textContent = product.releaseVersion ? `Release ${product.releaseVersion}` : 'Current catalog release';
   $('[data-purpose]').textContent = product.description.split(/\n\s*\n/)[0] || 'A ready-to-use instrument for adjustable production geometry.';
   const hero = $('[data-product-hero]');
-  if (product.image || product.thumbnail) hero.src = product.image || product.thumbnail;
-  hero.alt = `${product.title} product animation`;
+  const video = $('[data-product-video]');
+  if (product.video) {
+    $('[data-product-video-source]').src = product.video;
+    video.poster = product.image || product.thumbnail || '/v3/assets/dojo-bolt-disassembly.webp?v=perf-20260820';
+    video.hidden = false;
+    video.load();
+    video.play().catch(() => {});
+  } else if (product.image || product.thumbnail) {
+    hero.src = product.image || product.thumbnail;
+    hero.alt = `${product.title} product image`;
+    hero.hidden = false;
+  }
   const description = $('[data-description]');
   description.replaceChildren(descriptionParagraphs(product.description));
 
@@ -70,10 +80,8 @@ if (!product) {
   } else {
     $('[data-product-price]').textContent = price;
   }
-  if (!commerce.individualProductsEnabled) {
-    download.disabled = true;
-    download.title = 'Individual checkout is not currently enabled';
-  }
+  download.disabled = true;
+  download.title = 'Loading purchase options';
   download.addEventListener('click', async () => {
     if (download.disabled) return;
     setButtonState(download, true, 'Download');
@@ -81,19 +89,26 @@ if (!product) {
     catch { setButtonState(download, false, 'Try again'); }
   });
   const catalogButton = $('[data-catalog-checkout]');
-  $('[data-membership-price]').textContent = commerce.membershipPrice ? `${commerce.membershipPrice} / month →` : '→';
-  const stagingRequiresTestPrice = location.hostname === 'v3.no3dtools.com';
-  const membershipCheckoutIsSafe = !stagingRequiresTestPrice || commerce.membershipEnvironment === 'test';
-  if (!membershipCheckoutIsSafe) {
-    catalogButton.disabled = true;
-    catalogButton.title = 'Membership checkout is paused while the staging payment connection is verified';
-  }
+  catalogButton.disabled = true;
+  catalogButton.title = 'Loading purchase options';
   catalogButton.addEventListener('click', async () => {
     if (catalogButton.disabled) return;
     setButtonState(catalogButton, true, 'Entire catalog');
     try { location.href = await beginMembershipCheckout(); }
     catch { setButtonState(catalogButton, false, 'Try again'); }
   });
+  commercePromise.then(commerce => {
+    download.disabled = !commerce.individualProductsEnabled || !purchasable;
+    download.title = !purchasable
+      ? 'This design study is not yet published for individual checkout'
+      : download.disabled ? 'Individual checkout is not currently enabled' : '';
+    $('[data-membership-price]').textContent = commerce.membershipPrice ? `${commerce.membershipPrice} / month →` : '→';
+    const requiresTestPrice = location.hostname === 'v3.no3dtools.com';
+    const membershipCheckoutIsSafe = !requiresTestPrice || commerce.membershipEnvironment === 'test';
+    catalogButton.disabled = !membershipCheckoutIsSafe;
+    catalogButton.title = membershipCheckoutIsSafe ? '' : 'Membership checkout is paused while the staging payment connection is verified';
+  });
 }
 
 document.body.dataset.catalogSource = source;
+document.body.dataset.purchaseAvailability = purchasable ? 'available' : 'design-study';
