@@ -1,13 +1,27 @@
 # V3 Private Staging Rollout
 
-Status: implementation ready; infrastructure binding pending Supabase Pro and the owner-email allowlist.
+Status: isolated Supabase and Vercel Preview foundations active; Stripe test webhook and final security gate pending.
 
 ## Approved staging envelope
 
 - Two Supabase preview branches are approved at `$0.01344` per branch-hour.
 - Maximum lifetime: 30 days, ending no later than **2026-09-18**.
 - Estimated maximum branch usage: **$19.63** before any applicable credits or taxes.
-- Supabase Pro is a separate organization-plan cost and remains unapproved; no preview branch exists or is accruing cost yet.
+- Supabase Pro was activated on **2026-08-19** with **THE WELL TAROT, LLC** as the subscribing business.
+- Website Auth/catalog branch: `v3-staging-30d` (`eydsnjawjhahtlbzwvlo`).
+- Commerce branch: `v3-staging-30d` (`lqidrljskdpjlshtwfbv`).
+- Both branches are data-isolated. The website branch contains the public product catalog seed only; no customer, Auth, order, entitlement, payment, analytics, or event data was copied.
+
+## Pro-plan decision checkpoint
+
+Treat Pro as temporary through the staging window. Review it no later than **2026-09-18** and downgrade to Free after branch teardown unless one of these measured production needs justifies keeping it:
+
+- preventing production projects from pausing;
+- automatic backups or another recovery requirement;
+- production usage exceeds Free quotas;
+- a continuing staging or preview environment saves enough release risk or labor to justify the plan.
+
+If Pro is retained, record the justification and compare its value against another currently active subscription. Do not cancel another subscription merely to offset this cost; inventory its actual use and obtain a separate cancellation decision first.
 
 ## Boundaries
 
@@ -62,6 +76,18 @@ The gate uses the real NO3D Supabase session and an exact, normalized email allo
 - Static V3 assets required to render the access screen remain reachable.
 - Account-creation and passwordless endpoints refuse to send or create for non-allowlisted addresses while staging mode is enabled.
 - Failure to inspect a session fails closed.
+
+## Security gate before payment acceptance
+
+Supabase currently reports `public.order_recovery_grants` in the Commerce schema with RLS disabled. Do not begin public or payment acceptance testing until the source migration and staging branch deliberately choose and verify the access model. The proposed server-only posture is:
+
+```sql
+alter table public.order_recovery_grants enable row level security;
+revoke all on table public.order_recovery_grants from anon, authenticated;
+grant all on table public.order_recovery_grants to service_role;
+```
+
+No browser-facing policy is required for this table because recovery is mediated by the signed Commerce service endpoints.
 
 ## Acceptance matrix
 
