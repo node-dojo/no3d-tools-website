@@ -110,6 +110,9 @@ async function blogPreviewMiddleware(request) {
 
 export default async function middleware(request) {
   const { pathname } = new URL(request.url);
+  if (pathname === '/' && v3OwnerGateEnabled()) {
+    return Response.redirect(new URL('/v3/', request.url), 307);
+  }
   if (pathname === '/v3' || pathname.startsWith('/v3/')) return v3AccessMiddleware(request);
   return blogPreviewMiddleware(request);
 }
@@ -123,5 +126,5 @@ function escapeHtml(value) {
 }
 
 export const config = {
-  matcher: ['/v3', '/v3/:path*', '/blog/:slug*'],
+  matcher: ['/', '/v3', '/v3/:path*', '/blog/:slug*'],
 };

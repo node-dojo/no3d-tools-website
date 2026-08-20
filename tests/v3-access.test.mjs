@@ -40,6 +40,17 @@ test('middleware leaves the public production V3 unchanged when the gate is disa
   assert.equal(response.headers.get('x-middleware-next'), '1');
 });
 
+test('private staging root enters the guarded V3 route while production root remains unchanged', async () => {
+  delete process.env.V3_ACCESS_MODE;
+  const production = await middleware(new Request('https://no3dtools.com/'));
+  assert.equal(production.headers.get('x-middleware-next'), '1');
+
+  process.env.V3_ACCESS_MODE = 'owner';
+  const staging = await middleware(new Request('https://v3.no3dtools.com/'));
+  assert.equal(staging.status, 307);
+  assert.equal(new URL(staging.headers.get('location')).pathname, '/v3/');
+});
+
 test('middleware permits gate assets and redirects an unauthenticated V3 request', async () => {
   process.env.V3_ACCESS_MODE = 'owner';
   process.env.V3_OWNER_EMAILS = 'owner@example.com';
