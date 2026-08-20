@@ -2,6 +2,16 @@
 
 Status: isolated Supabase and Vercel Preview foundations active; owner gate, Commerce health route, recovery-table security gate, and Stripe test webhook verified.
 
+## Implemented V3 release tranche
+
+The deliberately testable implementation scope is:
+
+- Home 02D, backed by the isolated live catalog rather than sample products;
+- paid Product Detail 04D, using the existing product handle and Commerce contracts;
+- the approved account-creation modal, owner-gated onboarding state, and final account/library page.
+
+The type specimen and other approved design-language artifacts remain canonical references, but they are not additional public routes in this first release tranche. On **2026-08-20**, the staged catalog endpoint returned all **52 active products**, and the V3 acceptance suite passed seven routes at `390x844` and `1440x1100` under the tranche name `home-product-and-real-onboarding-account`.
+
 ## Approved staging envelope
 
 - Two Supabase preview branches are approved at `$0.01344` per branch-hour.
