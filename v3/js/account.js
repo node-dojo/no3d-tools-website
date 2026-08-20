@@ -238,6 +238,10 @@ if (!state.authenticated) {
       $('#library').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 420);
   });
+  $$('[data-skip-setup]').forEach(button => button.addEventListener('click', () => {
+    setSetup('ready', { replace: true });
+    $('#library').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
   const deviceCode = params.get('code');
   if (requestedState === 'connect' && deviceCode) void completeConnection(deviceCode);
 }

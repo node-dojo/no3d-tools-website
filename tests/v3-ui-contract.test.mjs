@@ -54,6 +54,7 @@ test('onboarding follows account, install, automatic connection, and library wit
   assert.match(account, /No added approval step/i);
   assert.doesNotMatch(account, /Establish sync|Approve this Blender|Pairing code/i);
   assert.match(account, /My Library/i);
+  assert.match(account, /Skip setup/i);
   assert.match(account, /updates automatically/i);
 });
 
