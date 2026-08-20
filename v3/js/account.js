@@ -1,4 +1,4 @@
-import { approveBlenderConnection, createBillingPortal, getAccountState, getOrder, requestRecovery, signOut } from './api.js';
+import { approveBlenderConnection, createBillingPortal, getAccountState, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -88,6 +88,29 @@ function setSetup(nextState, { replace = false } = {}) {
     else url.searchParams.set('state', nextState);
     url.searchParams.delete('code');
     history.replaceState({}, '', url);
+  }
+}
+
+async function prepareMobileInstall(email, { force = false } = {}) {
+  if (requestedState !== 'install' || !window.matchMedia('(max-width: 650px)').matches) return;
+  $$('[data-wizard-slide]').forEach(slide => { slide.hidden = slide.dataset.wizardSlide !== 'mobile-handoff'; });
+  const message = $('[data-mobile-handoff-message]');
+  const resend = $('[data-send-desktop-link]');
+  const deliveryKey = `no3d_desktop_setup_sent_${email.toLowerCase()}`;
+  if (!force && sessionStorage.getItem(deliveryKey)) {
+    message.textContent = `A desktop setup link was emailed to ${email}. Open it when you are at your Blender workstation.`;
+    return;
+  }
+  resend.disabled = true;
+  message.textContent = `Emailing the setup link to ${email}…`;
+  try {
+    await sendDesktopSetupLink();
+    sessionStorage.setItem(deliveryKey, '1');
+    message.textContent = `A desktop setup link was emailed to ${email}. Open it when you are at your Blender workstation.`;
+  } catch {
+    message.textContent = 'The setup email could not be sent. Try again, or return to your library for now.';
+  } finally {
+    resend.disabled = false;
   }
 }
 
@@ -194,6 +217,7 @@ if (!state.authenticated) {
   renderLibrary();
   renderAccountNotice();
   setSetup(requestedState);
+  void prepareMobileInstall(email);
   void monitorOrder();
 
   $$('[data-session-action]').forEach(button => button.addEventListener('click', async () => {
@@ -242,6 +266,7 @@ if (!state.authenticated) {
     setSetup('ready', { replace: true });
     $('#library').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }));
+  $('[data-send-desktop-link]').addEventListener('click', () => { void prepareMobileInstall(email, { force: true }); });
   const deviceCode = params.get('code');
   if (requestedState === 'connect' && deviceCode) void completeConnection(deviceCode);
 }

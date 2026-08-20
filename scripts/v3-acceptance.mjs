@@ -65,6 +65,7 @@ async function installMocks(page, { authenticated = false } = {}) {
     else if (url.pathname.startsWith('/api/commerce/order/')) payload = { orderId: url.pathname.split('/').pop(), resourceId: 'dojo-bolt-gen-v05-obj', paymentStatus: 'paid', fulfillmentStatus: 'fulfilled', recovery: true };
     else if (url.pathname === '/api/commerce/checkout') payload = { checkoutUrl: `${origin}/v3/product/?checkout=individual`, orderId: '11111111-1111-4111-8111-111111111111' };
     else if (url.pathname === '/api/create-checkout') payload = { checkout_url: `${origin}/v3/?checkout=membership` };
+    else if (url.pathname === '/api/onboarding/desktop-link') payload = { sent: true };
     request.respond({ status: account.summary === null && url.pathname === '/api/commerce/account' ? 401 : 200, contentType: 'application/json', body: JSON.stringify(payload) });
   });
 }
@@ -148,9 +149,9 @@ try {
     await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
     await structuralAudit(page, name);
     if (name === 'onboarding-install-mobile') {
-      assert.equal(await page.$$eval('.version-choices input', nodes => nodes.length), 3);
-      await page.click('.version-choices input[value="5.2+"]');
-      assert.equal(await page.$eval('[data-wizard-slide="install-action"]', node => node.hidden), false);
+      assert.equal(await page.$eval('[data-wizard-slide="version"]', node => node.hidden), true);
+      assert.equal(await page.$eval('[data-wizard-slide="mobile-handoff"]', node => node.hidden), false);
+      assert.match(await page.$eval('[data-mobile-handoff-message]', node => node.textContent), /emailed to operator@example\.com/i);
     }
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
   }
@@ -167,6 +168,10 @@ try {
   ]) {
     await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
     await structuralAudit(page, name);
+    if (name === 'onboarding-install-desktop') {
+      assert.equal(await page.$eval('[data-wizard-slide="version"]', node => node.hidden), false);
+      assert.equal(await page.$eval('[data-wizard-slide="mobile-handoff"]', node => node.hidden), true);
+    }
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: name.startsWith('onboarding') || name.startsWith('account-library') });
   }
 

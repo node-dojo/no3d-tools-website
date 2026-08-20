@@ -46,6 +46,8 @@ test('all rendered adjacent route documents use the shared V3 stylesheet', async
 test('onboarding follows account, install, automatic connection, and library without redundant consent', async () => {
   const createAccount = await load('v3/onboarding/create-account/index.html');
   const account = await load('v3/account/index.html');
+  const accountScript = await load('v3/js/account.js');
+  const desktopLink = await load('api/onboarding/desktop-link.js');
   assert.match(createAccount, /Create free account/i);
   assert.match(createAccount, /Continue with Google/i);
   assert.match(createAccount, /Continue with GitHub/i);
@@ -55,6 +57,11 @@ test('onboarding follows account, install, automatic connection, and library wit
   assert.doesNotMatch(account, /Establish sync|Approve this Blender|Pairing code/i);
   assert.match(account, /My Library/i);
   assert.match(account, /Skip setup/i);
+  assert.match(account, /Continue On Your Desktop/i);
+  assert.match(accountScript, /matchMedia\('\(max-width: 650px\)'\)/);
+  assert.match(accountScript, /sendDesktopSetupLink/);
+  assert.match(desktopLink, /authenticatedSession/);
+  assert.match(desktopLink, /sendEmail/);
   assert.match(account, /updates automatically/i);
 });
 
@@ -96,7 +103,7 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   const account = await load('v3/js/account.js');
   const callback = await load('api/auth/callback.js');
   const password = await load('api/auth/password.js');
-  for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/commerce/portal', '/api/create-checkout', '/api/auth/session', '/api/auth/providers', '/api/commerce/account', '/api/auth/password', '/api/auth/oauth', '/api/auth/recovery-link', '/api/addon/connect/approve']) {
+  for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/commerce/portal', '/api/create-checkout', '/api/auth/session', '/api/auth/providers', '/api/commerce/account', '/api/auth/password', '/api/auth/oauth', '/api/auth/recovery-link', '/api/addon/connect/approve', '/api/onboarding/desktop-link']) {
     assert.ok(`${api}\n${account}`.includes(endpoint), endpoint);
   }
   assert.match(account, /\/api\/commerce\/download\//);

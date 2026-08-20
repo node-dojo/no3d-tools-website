@@ -212,6 +212,10 @@ export async function approveBlenderConnection(deviceCode) {
   });
 }
 
+export async function sendDesktopSetupLink() {
+  return request('/api/onboarding/desktop-link', { method: 'POST' });
+}
+
 export async function createBillingPortal() {
   return request('/api/commerce/portal', { method: 'POST' });
 }
