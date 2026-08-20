@@ -49,7 +49,7 @@ function accountPayload(authenticated) {
   };
 }
 
-async function installMocks(page, { authenticated = false } = {}) {
+async function installMocks(page, { authenticated = false, membershipActive = false } = {}) {
   const account = accountPayload(authenticated);
   await page.setRequestInterception(true);
   page.on('request', request => {
@@ -62,6 +62,9 @@ async function installMocks(page, { authenticated = false } = {}) {
     else if (url.pathname === '/api/get-subscription-price') payload = { formatted: '$22.22' };
     else if (url.pathname === '/api/auth/session') payload = account.session;
     else if (url.pathname === '/api/commerce/account') payload = account.summary || { error: 'not_authenticated' };
+    else if (url.pathname === '/api/membership/account') payload = membershipActive
+      ? { active: true, status: 'active', expiresAt: '2026-09-20T00:00:00Z', graceUntil: null }
+      : { active: false, status: 'invalid', expiresAt: null, graceUntil: null };
     else if (url.pathname.startsWith('/api/commerce/order/')) payload = { orderId: url.pathname.split('/').pop(), resourceId: 'dojo-bolt-gen-v05-obj', paymentStatus: 'paid', fulfillmentStatus: 'fulfilled', recovery: true };
     else if (url.pathname === '/api/commerce/checkout') payload = { checkoutUrl: `${origin}/v3/product/?checkout=individual`, orderId: '11111111-1111-4111-8111-111111111111' };
     else if (url.pathname === '/api/create-checkout') payload = { checkout_url: `${origin}/v3/?checkout=membership` };
@@ -140,6 +143,7 @@ try {
   await page.screenshot({ path: join(outputDir, 'product-paid-mobile.png') });
 
   for (const [name, path] of [
+    ['membership-mobile', '/v3/membership/'],
     ['onboarding-account-mobile', '/v3/onboarding/create-account/'],
     ['onboarding-install-mobile', '/v3/account/?state=install'],
     ['onboarding-connect-mobile', '/v3/account/?state=connect'],
@@ -167,6 +171,7 @@ try {
   for (const [name, path] of [
     ['home-desktop', '/v3/'],
     ['product-paid-desktop', '/v3/product/?handle=dojo-bolt-gen-v05-obj'],
+    ['membership-desktop', '/v3/membership/'],
     ['onboarding-account-desktop', '/v3/onboarding/create-account/'],
     ['onboarding-install-desktop', '/v3/account/?state=install'],
     ['onboarding-connect-desktop', '/v3/account/?state=connect'],
@@ -182,7 +187,17 @@ try {
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: name.startsWith('onboarding') || name.startsWith('account-library') });
   }
 
-  console.log(JSON.stringify({ status: 'passed', tranche: 'home-product-and-real-onboarding-account', outputDir, routes: 7, viewports: ['390x844', '1440x1100'] }));
+  const memberPage = await browser.newPage();
+  await installMocks(memberPage, { authenticated: true, membershipActive: true });
+  await memberPage.setViewport({ width: 1440, height: 1100, deviceScaleFactor: 1 });
+  await memberPage.goto(`${origin}/v3/account/`, { waitUntil: 'networkidle0' });
+  await structuralAudit(memberPage, 'account active member desktop');
+  assert.match(await memberPage.$eval('[data-account-membership]', node => node.textContent), /Automatic updates/i);
+  assert.equal(await memberPage.$$eval('.library-card', nodes => nodes.length), products.length);
+  await memberPage.screenshot({ path: join(outputDir, 'account-member-desktop.png'), fullPage: true });
+  await memberPage.close();
+
+  console.log(JSON.stringify({ status: 'passed', tranche: 'end-to-end-v3-customer-core', outputDir, routes: 8, viewports: ['390x844', '1440x1100'] }));
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

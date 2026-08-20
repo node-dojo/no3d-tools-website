@@ -1,4 +1,4 @@
-import { approveBlenderConnection, createBillingPortal, getAccountState, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js';
+import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -6,7 +6,7 @@ const params = new URLSearchParams(location.search);
 const pathOrder = location.pathname.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1];
 const orderId = params.get('commerce_order') || pathOrder || '';
 const requestedState = ['install', 'connect', 'complete'].includes(params.get('state')) ? params.get('state') : 'ready';
-const state = { products: [], catalog: new Map(), authenticated: false, setup: requestedState };
+const state = { products: [], catalog: new Map(), authenticated: false, membership: null, setup: requestedState };
 
 function readableHandle(handle = '') {
   return handle.replace(/[-_]+/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
@@ -16,6 +16,8 @@ function accessLabel(item) {
   if (item.free) return 'Free tool';
   if (item.paymentStatus === 'refunded') return 'Refunded / access removed';
   if (item.entitlementStatus === 'revoked' || !item.owned) return 'Access revoked';
+  if (item.membership && item.permanent) return 'Membership + permanent access';
+  if (item.membership) return 'Membership access';
   return item.permanent ? 'Permanent access' : 'Membership access';
 }
 
@@ -52,8 +54,12 @@ function renderLibrary() {
     row.querySelector('h3').textContent = product?.title || readableHandle(item.handle);
     row.querySelector('.library-card-copy span').textContent = `${accessLabel(item)}${item.purchasedAt ? ` / Added ${new Date(item.purchasedAt).toLocaleDateString()}` : ' / Ready to install'}`;
     const action = row.querySelector('a');
-    action.href = item.orderId ? `/api/commerce/download/${encodeURIComponent(item.orderId)}` : `/v3/product/?handle=${encodeURIComponent(item.handle)}`;
-    action.textContent = item.lastInstalledAt ? 'Check for update →' : item.owned ? 'Install →' : 'Details →';
+    action.href = item.membership && !item.permanent
+      ? '/v3/account/?state=install'
+      : item.orderId ? `/api/commerce/download/${encodeURIComponent(item.orderId)}` : `/v3/product/?handle=${encodeURIComponent(item.handle)}`;
+    action.textContent = item.membership && !item.permanent
+      ? 'Available in Blender →'
+      : item.lastInstalledAt ? 'Check for update →' : item.owned ? 'Install →' : 'Details →';
     items.append(row);
   }
   $('[data-account-empty]').hidden = products.length > 0;
@@ -188,7 +194,54 @@ async function monitorOrder() {
   }
 }
 
-const { session, catalog, summary } = await getAccountState();
+function showMembershipNotice({ active = false, mismatch = false } = {}) {
+  const panel = $('[data-latest-order]');
+  panel.hidden = false;
+  $('[data-order-state]').textContent = 'Full catalog membership';
+  $('[data-order-title]').textContent = mismatch
+    ? 'Sign in with the checkout email'
+    : active ? 'Your full catalog is active' : 'Activating your full catalog';
+  $('[data-order-detail]').textContent = mismatch
+    ? 'The signed-in account differs from the membership checkout. Your payment is safe; sign in with the email used at checkout to attach this library.'
+    : active
+      ? 'Automatic updates and the eligible catalog are now available through NO3D Tools in Blender.'
+      : 'Stripe confirmed your return. Waiting for durable membership fulfillment.';
+  const action = $('[data-order-action]');
+  action.hidden = !active;
+  if (active) {
+    action.href = '/v3/account/?state=install';
+    action.textContent = 'Install / Connect Blender →';
+  }
+}
+
+async function monitorMembershipCheckout(email) {
+  if (params.get('membership') === 'active') {
+    showMembershipNotice({ active: true });
+    return;
+  }
+  const sessionId = params.get('session_id');
+  if (params.get('membership_checkout') !== 'success' || !sessionId) return;
+  showMembershipNotice();
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      const result = await getMembershipCheckout(sessionId);
+      if (result.status && ['active', 'grace'].includes(result.status)) {
+        if (result.email?.trim().toLowerCase() !== email.trim().toLowerCase()) {
+          showMembershipNotice({ mismatch: true });
+          return;
+        }
+        location.replace('/v3/account/?membership=active');
+        return;
+      }
+    } catch {
+      // Durable fulfillment may still be catching up.
+    }
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  $('[data-order-detail]').textContent = 'Membership is still processing. It will appear here automatically after Stripe fulfillment completes.';
+}
+
+const { session, catalog, summary, membership } = await getAccountState();
 state.authenticated = session.authenticated === true;
 if (!state.authenticated) {
   const next = `${location.pathname}${location.search}`;
@@ -196,9 +249,19 @@ if (!state.authenticated) {
 } else {
   state.catalog = catalog;
   state.products = summary?.products || [];
+  state.membership = membership;
   const email = session.email || summary?.account?.contactEmail || 'Your NO3D account';
   $$('[data-account-email]').forEach(node => { node.textContent = email; });
-  const member = Boolean(summary?.memberships?.some(item => ['active', 'trialing'].includes(item.status)));
+  const member = membership?.active === true || Boolean(summary?.memberships?.some(item => ['active', 'trialing'].includes(item.status)));
+  if (member) {
+    const owned = new Map(state.products.map(item => [item.handle, item]));
+    for (const product of state.catalog.values()) {
+      if (product.releaseStatus === 'archived') continue;
+      const existing = owned.get(product.handle);
+      if (existing) existing.membership = true;
+      else state.products.push({ handle: product.handle, membership: true, owned: true, permanent: false });
+    }
+  }
   $('[data-account-tier]').textContent = member ? 'Member' : 'Free';
   $('[data-account-membership]').textContent = member ? 'Member / Automatic updates' : 'Free / Manual updates';
   $('[data-update-mode]').textContent = member ? 'Automatic' : 'Manual';
@@ -208,7 +271,9 @@ if (!state.authenticated) {
     billing.disabled = true;
     billing.textContent = 'Opening secure billing…';
     try {
-      const portal = await createBillingPortal();
+      const portal = membership?.status && membership.status !== 'invalid'
+        ? await createMembershipBillingPortal()
+        : await createBillingPortal();
       location.assign(portal.url);
     } catch {
       billing.disabled = false;
@@ -220,6 +285,7 @@ if (!state.authenticated) {
   setSetup(requestedState);
   void prepareMobileInstall(email);
   void monitorOrder();
+  void monitorMembershipCheckout(email);
 
   $$('[data-session-action]').forEach(button => button.addEventListener('click', async () => {
     await signOut().catch(() => null);

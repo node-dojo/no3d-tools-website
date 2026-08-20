@@ -2,7 +2,7 @@
 
 ## Current boundary
 
-V3 is isolated under `/v3` on branch `feat/v3-adjacent`. Existing production routes and API handlers remain unchanged. The first testable tranche contains only Home 02D and paid Product Detail 04D. This permits realistic catalog and individual-product Commerce integration without replacing the live interface or pulling account-state work into the first gate.
+V3 remains isolated under `/v3` on branch `feat/v3-adjacent`, and existing production entry routes remain unchanged. Home 02D and paid Product Detail 04D were the first visual gate; the active gate is now the end-to-end customer core documented in [`V3-END-TO-END-RELEASE.md`](./V3-END-TO-END-RELEASE.md).
 
 ## Preview sequence
 

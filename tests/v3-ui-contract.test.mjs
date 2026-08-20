@@ -36,7 +36,7 @@ test('resolves hosted media shapes and ships a canonical paid-product fallback',
 });
 
 test('all rendered adjacent route documents use the shared V3 stylesheet', async () => {
-  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/type/index.html', 'v3/onboarding/create-account/index.html', 'v3/access/index.html']) {
+  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/membership/index.html', 'v3/type/index.html', 'v3/onboarding/create-account/index.html', 'v3/access/index.html']) {
     const html = await load(path);
     assert.match(html, /\/v3\/styles\/v3\.css/);
     assert.doesNotMatch(html, /(?:color\s*=\s*["']blue|#0000ff|#00f\b)/i);
@@ -78,10 +78,27 @@ test('Home uses one story headline and transparent square catalog media', async 
 
 test('acquisition language and yellow follow the library-first V3 decision', async () => {
   const html = await load('v3/product/index.html');
+  const membership = await load('v3/membership/index.html');
   const css = await load('v3/styles/v3.css');
   assert.match(html, />Add to Library</);
   assert.match(html, />Get Full Catalog</);
   assert.match(css, /--yellow:#f5ff00/);
+  assert.match(membership, /The Entire Library\. Always Current\./i);
+  assert.match(membership, /Automatic Updates/i);
+});
+
+test('V3 membership remains inside V3 and reads only verified account membership state', async () => {
+  const api = await load('v3/js/api.js');
+  const account = await load('api/membership/account.js');
+  const portal = await load('api/membership/portal.js');
+  const checkout = await load('api/create-checkout.js');
+  assert.match(api, /JSON\.stringify\(\{ returnTarget: 'v3' \}\)/);
+  assert.match(account, /authenticatedSession/);
+  assert.match(account, /computeAccessState/);
+  assert.match(portal, /authenticatedSession/);
+  assert.match(portal, /stripe_customer_id/);
+  assert.match(checkout, /membership_checkout=success/);
+  assert.match(checkout, /\/v3\/membership\/\?checkout=cancelled/);
 });
 
 test('component display rules cannot override the native hidden state', async () => {
@@ -105,7 +122,7 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   const account = await load('v3/js/account.js');
   const callback = await load('api/auth/callback.js');
   const password = await load('api/auth/password.js');
-  for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/commerce/portal', '/api/create-checkout', '/api/auth/session', '/api/auth/providers', '/api/commerce/account', '/api/auth/password', '/api/auth/oauth', '/api/auth/recovery-link', '/api/addon/connect/approve', '/api/onboarding/desktop-link']) {
+  for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/commerce/portal', '/api/create-checkout', '/api/auth/session', '/api/auth/providers', '/api/commerce/account', '/api/membership/account', '/api/membership/portal', '/api/auth/password', '/api/auth/oauth', '/api/auth/recovery-link', '/api/addon/connect/approve', '/api/onboarding/desktop-link']) {
     assert.ok(`${api}\n${account}`.includes(endpoint), endpoint);
   }
   assert.match(account, /\/api\/commerce\/download\//);
@@ -120,6 +137,7 @@ test('Vercel keeps V3 adjacent behind explicit routes', async () => {
   assert.equal(rewrites.get('/v3'), '/v3/index.html');
   assert.equal(rewrites.get('/v3/access'), '/v3/access/index.html');
   assert.equal(rewrites.get('/v3/product'), '/v3/product/index.html');
+  assert.equal(rewrites.get('/v3/membership'), '/v3/membership/index.html');
   assert.equal(rewrites.get('/v3/account'), '/v3/account/index.html');
   assert.equal(rewrites.get('/v3/onboarding/create-account'), '/v3/onboarding/create-account/index.html');
   assert.equal(rewrites.get('/v3/onboarding/install'), '/v3/account/index.html?state=install');

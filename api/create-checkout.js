@@ -48,15 +48,16 @@ export default async function handler(req, res) {
       'https://no3dtools.com'
     );
 
-    const successUrl =
-      STRIPE_SUCCESS_URL?.trim() ||
-      `${siteUrl}/success.html?checkout_success=true&session_id={CHECKOUT_SESSION_ID}`;
-
-    const cancelUrl =
-      STRIPE_CANCEL_URL?.trim() ||
-      `${siteUrl}/subscribe.html?checkout_success=false&session_id={CHECKOUT_SESSION_ID}`;
-
     const body = req.method === 'POST' && req.body && typeof req.body === 'object' ? req.body : {};
+    const v3Return = body.returnTarget === 'v3';
+    const successUrl = v3Return
+      ? `${siteUrl.replace(/\/$/, '')}/v3/account/?membership_checkout=success&session_id={CHECKOUT_SESSION_ID}`
+      : STRIPE_SUCCESS_URL?.trim() || `${siteUrl}/success.html?checkout_success=true&session_id={CHECKOUT_SESSION_ID}`;
+
+    const cancelUrl = v3Return
+      ? `${siteUrl.replace(/\/$/, '')}/v3/membership/?checkout=cancelled`
+      : STRIPE_CANCEL_URL?.trim() || `${siteUrl}/subscribe.html?checkout_success=false&session_id={CHECKOUT_SESSION_ID}`;
+
     const customerEmail =
       body.customer_email ||
       body.customerEmail ||

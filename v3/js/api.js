@@ -162,7 +162,7 @@ export async function beginMembershipCheckout() {
   const data = await request('/api/create-checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: '{}',
+    body: JSON.stringify({ returnTarget: 'v3' }),
   });
   const checkoutUrl = data.checkout_url || data.url;
   if (!checkoutUrl) throw new Error('checkout_url_missing');
@@ -170,13 +170,14 @@ export async function beginMembershipCheckout() {
 }
 
 export async function getAccountState() {
-  const [session, catalog, summary] = await Promise.all([
+  const [session, catalog, summary, membership] = await Promise.all([
     request('/api/auth/session').catch(() => ({ authenticated: false })),
     request('/api/products').catch(() => ({ products: [] })),
     request('/api/commerce/account').catch(() => null),
+    request('/api/membership/account').catch(() => null),
   ]);
   const products = (catalog.products || []).map(normalizeProduct);
-  return { session, catalog: new Map(products.map(product => [product.handle, product])), summary };
+  return { session, catalog: new Map(products.map(product => [product.handle, product])), summary, membership };
 }
 
 export async function requestSignIn(email, next = '/v3/account/') {
@@ -218,6 +219,14 @@ export async function sendDesktopSetupLink() {
 
 export async function createBillingPortal() {
   return request('/api/commerce/portal', { method: 'POST' });
+}
+
+export async function createMembershipBillingPortal() {
+  return request('/api/membership/portal', { method: 'POST' });
+}
+
+export async function getMembershipCheckout(sessionId) {
+  return request(`/api/get-license-by-session?session_id=${encodeURIComponent(sessionId)}`);
 }
 
 export async function signOut() {

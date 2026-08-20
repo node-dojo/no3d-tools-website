@@ -45,6 +45,10 @@ The flow uses the existing server-managed Supabase session, adds email/password 
 
 The previous standalone Install and Connect pages are redirects into this unified Account surface. Do not recreate a second onboarding shell.
 
+## End-to-end customer core
+
+The release boundary now also includes `/v3/membership/`, individual Checkout return through `/v3/account/orders/:orderId`, membership return through the authenticated V3 Account, active-member full-catalog inventory, and billing management. The executable acceptance tranche is named `end-to-end-v3-customer-core`; see [`../../deployment/V3-END-TO-END-RELEASE.md`](../../deployment/V3-END-TO-END-RELEASE.md).
+
 ### Deliberate external boundaries
 
 - Google and GitHub must be enabled in the deployed Supabase project and the deployed callback URL must be allowlisted before those buttons work in production.
