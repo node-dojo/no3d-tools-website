@@ -50,6 +50,19 @@ export default async function handler(req, res) {
 
     const body = req.method === 'POST' && req.body && typeof req.body === 'object' ? req.body : {};
     const v3Return = body.returnTarget === 'v3';
+
+    // The owner-gated V3 deployment is a real integration environment, but it
+    // must never create a live membership Checkout session during acceptance.
+    if (v3Return && process.env.V3_ACCESS_MODE === 'owner') {
+      const price = await stripe.prices.retrieve(STRIPE_PRICE_ID);
+      if (price.livemode) {
+        return res.status(503).json({
+          error: 'V3 staging requires a Stripe test-mode membership price',
+          url: null,
+        });
+      }
+    }
+
     const successUrl = v3Return
       ? `${siteUrl.replace(/\/$/, '')}/v3/account/?membership_checkout=success&session_id={CHECKOUT_SESSION_ID}`
       : STRIPE_SUCCESS_URL?.trim() || `${siteUrl}/success.html?checkout_success=true&session_id={CHECKOUT_SESSION_ID}`;

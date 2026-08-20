@@ -92,6 +92,7 @@ test('V3 membership remains inside V3 and reads only verified account membership
   const account = await load('api/membership/account.js');
   const portal = await load('api/membership/portal.js');
   const checkout = await load('api/create-checkout.js');
+  const price = await load('api/get-subscription-price.js');
   assert.match(api, /JSON\.stringify\(\{ returnTarget: 'v3' \}\)/);
   assert.match(account, /authenticatedSession/);
   assert.match(account, /computeAccessState/);
@@ -99,6 +100,8 @@ test('V3 membership remains inside V3 and reads only verified account membership
   assert.match(portal, /stripe_customer_id/);
   assert.match(checkout, /membership_checkout=success/);
   assert.match(checkout, /\/v3\/membership\/\?checkout=cancelled/);
+  assert.match(checkout, /V3 staging requires a Stripe test-mode membership price/);
+  assert.match(price, /environment: price\.livemode \? 'live' : 'test'/);
 });
 
 test('component display rules cannot override the native hidden state', async () => {

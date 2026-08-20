@@ -4,7 +4,7 @@
  * Endpoint: GET /api/get-subscription-price
  *
  * Returns:
- *   { amount: 1111, currency: "usd", formatted: "$11.11", interval: "month" }
+ *   { amount: 1111, currency: "usd", formatted: "$11.11", interval: "month", environment: "test" }
  */
 
 import Stripe from 'stripe';
@@ -42,6 +42,7 @@ export default async function handler(req, res) {
       currency,
       formatted,
       interval,
+      environment: price.livemode ? 'live' : 'test',
     });
   } catch (error) {
     console.error('Failed to fetch Stripe price:', error?.message || error);

@@ -136,6 +136,7 @@ export async function getCommerceConfig() {
   return {
     individualProductsEnabled: config.individualProductsEnabled === true,
     membershipPrice: membership.formatted || membership.price || membership.display || '',
+    membershipEnvironment: membership.environment || 'unknown',
   };
 }
 

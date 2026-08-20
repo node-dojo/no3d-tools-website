@@ -82,7 +82,14 @@ if (!product) {
   });
   const catalogButton = $('[data-catalog-checkout]');
   $('[data-membership-price]').textContent = commerce.membershipPrice ? `${commerce.membershipPrice} / month →` : '→';
+  const stagingRequiresTestPrice = location.hostname === 'v3.no3dtools.com';
+  const membershipCheckoutIsSafe = !stagingRequiresTestPrice || commerce.membershipEnvironment === 'test';
+  if (!membershipCheckoutIsSafe) {
+    catalogButton.disabled = true;
+    catalogButton.title = 'Membership checkout is paused while the staging payment connection is verified';
+  }
   catalogButton.addEventListener('click', async () => {
+    if (catalogButton.disabled) return;
     setButtonState(catalogButton, true, 'Entire catalog');
     try { location.href = await beginMembershipCheckout(); }
     catch { setButtonState(catalogButton, false, 'Try again'); }
