@@ -109,6 +109,7 @@ export default async function handler(req, res) {
         email,
         license_key: licenseKey,
         status: 'active',
+        tier: 'subscriber',
         expires_at: expiresAt.toISOString(),
         grace_until: null,
       },

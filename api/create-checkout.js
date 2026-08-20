@@ -16,6 +16,7 @@
 
 import Stripe from 'stripe';
 import { setCorsHeaders } from './lib/cors.js';
+import { authenticatedSession } from './auth/lib/session.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -71,7 +72,15 @@ export default async function handler(req, res) {
       ? `${siteUrl.replace(/\/$/, '')}/v3/membership/?checkout=cancelled`
       : STRIPE_CANCEL_URL?.trim() || `${siteUrl}/subscribe.html?checkout_success=false&session_id={CHECKOUT_SESSION_ID}`;
 
-    const customerEmail =
+    let authenticatedEmail;
+    try {
+      const auth = await authenticatedSession(req, res);
+      authenticatedEmail = auth?.user?.email_confirmed_at ? auth.user.email?.trim().toLowerCase() : undefined;
+    } catch {
+      // Checkout remains available to signed-out visitors; Stripe will collect
+      // their email through its familiar hosted form.
+    }
+    const customerEmail = authenticatedEmail ||
       body.customer_email ||
       body.customerEmail ||
       body.email ||

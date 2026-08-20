@@ -7,7 +7,8 @@
 import { getSupabaseServiceClient } from '../lib/supabaseAdmin.js';
 import {
   computeAccessState,
-  fetchSubscriptionByLicenseKey
+  fetchSubscriptionByLicenseKey,
+  fetchSubscriptionByVerifiedEmail
 } from '../lib/subscriptionAccess.js';
 import { getLicenseKeyFromRequest } from '../lib/licenseRequest.js';
 import { isR2Configured, presignGetObject } from '../lib/r2.js';
@@ -49,8 +50,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server misconfigured: Supabase service role missing' });
   }
 
-  const row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
-  const access = computeAccessState(row);
+  let row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
   let purchased = false;
   if (typeof deviceToken === 'string' && deviceToken.length >= 32) {
     try {
@@ -58,10 +58,12 @@ export default async function handler(req, res) {
         headers: { 'X-NO3D-Device-Token': deviceToken }
       });
       purchased = response.ok && Array.isArray(payload?.products) && payload.products.some((product) => product?.handle === handle);
+      if (response.ok) row = await fetchSubscriptionByVerifiedEmail(supabase, payload?.account?.contactEmail);
     } catch (e) {
       console.error('purchase entitlement lookup failed:', e?.message || e);
     }
   }
+  const access = computeAccessState(row);
   if (!access.allowed && !purchased) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(403).json({ error: 'No active membership or purchased product', status: access.effectiveStatus });

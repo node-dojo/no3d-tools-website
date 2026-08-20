@@ -7,7 +7,8 @@
 import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
 import {
   computeAccessState,
-  fetchSubscriptionByLicenseKey
+  fetchSubscriptionByLicenseKey,
+  fetchSubscriptionByVerifiedEmail
 } from './lib/subscriptionAccess.js';
 import { getLicenseKeyFromRequest } from './lib/licenseRequest.js';
 import { commerceFetch } from './commerce/lib/client.js';
@@ -55,8 +56,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server misconfigured: Supabase service role missing' });
   }
 
-  const row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
-  const access = computeAccessState(row);
+  let row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
   let purchasedHandles = new Set();
   if (typeof deviceToken === 'string' && deviceToken.length >= 32) {
     try {
@@ -65,11 +65,13 @@ export default async function handler(req, res) {
       });
       if (response.ok && Array.isArray(payload?.products)) {
         purchasedHandles = new Set(payload.products.map((product) => product?.handle).filter(Boolean));
+        row = await fetchSubscriptionByVerifiedEmail(supabase, payload?.account?.contactEmail);
       }
     } catch (error) {
       console.error('purchase entitlement lookup failed:', error?.message || error);
     }
   }
+  const access = computeAccessState(row);
   if (!access.allowed && purchasedHandles.size === 0) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(403).json({ error: 'No active membership or purchased products', status: access.effectiveStatus });

@@ -91,6 +91,33 @@ export async function fetchSubscriptionByLicenseKey(supabase, licenseKey) {
 }
 
 /**
+ * Resolve the temporary website membership rail for a verified Commerce
+ * account. The email comes only from Commerce after it validates the device
+ * token; browser-supplied email is never accepted as membership authority.
+ *
+ * @param {import('@supabase/supabase-js').SupabaseClient} supabase
+ * @param {string | null | undefined} email
+ * @returns {Promise<SubscriptionRow | null>}
+ */
+export async function fetchSubscriptionByVerifiedEmail(supabase, email) {
+  const normalized = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (!normalized) return null;
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('stripe_customer_id, stripe_sub_id, email, license_key, status, expires_at, grace_until, tier')
+    .eq('email', normalized)
+    .neq('tier', 'free')
+    .order('expires_at', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error('verified membership lookup error:', error.message);
+    return null;
+  }
+  return data?.[0] ?? null;
+}
+
+/**
  * Library version for validate responses: env NO3D_LIBRARY_VERSION (e.g. semver), else manifest version is maintained separately.
  * @returns {string}
  */
