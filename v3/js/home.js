@@ -1,5 +1,5 @@
-import { getCatalog } from './api.js';
-import { renderCatalogNavigation, setDataStatus } from './shell.js';
+import { getCatalog } from './api.js?v=perf-20260820';
+import { renderCatalogNavigation, setDataStatus } from './shell.js?v=perf-20260820';
 
 const grid = document.querySelector('[data-product-grid]');
 const empty = document.querySelector('[data-empty]');

@@ -175,7 +175,7 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
 test('V3 catalog prefers purchasable products and keeps unpublished studies out of Checkout', async () => {
   const api = await load('v3/js/api.js');
   const product = await load('v3/js/product.js');
-  assert.ok(api.indexOf("request('/api/products')") < api.indexOf("request('/api/get-all-products')"));
+  assert.ok(api.indexOf("request('/api/products?limit=100')") < api.indexOf("request('/api/get-all-products')"));
   assert.match(api, /purchasable: catalog\.source === 'live' && Boolean\(catalogProduct\)/);
   assert.match(product, /get\('handle'\) \|\| 'chrome-crayon'/);
   assert.match(product, /This design study is not yet published for individual checkout/);

@@ -1,4 +1,4 @@
-import { beginMembershipCheckout, getCommerceConfig } from './api.js';
+import { beginMembershipCheckout, getCommerceConfig } from './api.js?v=perf-20260820';
 
 const config = await getCommerceConfig();
 document.querySelector('[data-membership-price]').textContent = config.membershipPrice

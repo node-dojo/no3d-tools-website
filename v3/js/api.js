@@ -114,7 +114,7 @@ async function request(path, options = {}, timeout = 10000) {
 
 export async function getCatalog() {
   try {
-    const payload = await request('/api/products');
+    const payload = await request('/api/products?limit=100');
     const list = Array.isArray(payload) ? payload : payload.products;
     if (!Array.isArray(list) || list.length === 0) throw new Error('empty_catalog');
     return { products: list.map(normalizeProduct), source: 'live' };

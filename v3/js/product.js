@@ -1,5 +1,5 @@
-import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js';
-import './shell.js';
+import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=perf-20260820';
+import './shell.js?v=perf-20260820';
 
 const $ = selector => document.querySelector(selector);
 const handle = new URLSearchParams(location.search).get('handle') || 'chrome-crayon';

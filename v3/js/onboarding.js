@@ -1,4 +1,4 @@
-import { authenticateWithPassword, getAuthProviders, oauthUrl } from './api.js';
+import { authenticateWithPassword, getAuthProviders, oauthUrl } from './api.js?v=perf-20260820';
 
 const params = new URLSearchParams(location.search);
 const requestedNext = params.get('next');

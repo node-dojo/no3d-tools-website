@@ -24,7 +24,7 @@ Later mobile decisions override stale mobile captures in the original HTML sampl
 
 - `/v3/` — Home 02D catalog
 - `/v3/product/?handle=chrome-crayon` — live paid Product Detail 04D
-- `/v3/product/?handle=dojo-bolt-gen-v05-obj` — preserved design study; Checkout stays disabled until publication
+- `/v3/product/?handle=dojo-bolt-gen-v05-obj` — live paid Bolt object-edition study
 
 These two pages form the first review and release gate. Together they test the shared masthead, mobile push-down catalog, responsive display typography, hero treatment, product grid, product metadata, ASCII node plate, and the individual-product Commerce entry point without introducing account-state complexity yet.
 
