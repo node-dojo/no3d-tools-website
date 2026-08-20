@@ -7,6 +7,7 @@ const apply = process.argv.includes('--apply');
 const baseUrl = (process.env.NO3D_V3_ACCEPTANCE_URL || 'https://v3.no3dtools.com').replace(/\/$/, '');
 const email = process.env.NO3D_E2E_EMAIL?.trim();
 const handle = process.env.NO3D_E2E_HANDLE?.trim() || 'dojo-knob';
+const expectedUnitAmount = handle === 'chrome-crayon' ? 2222 : 777;
 
 if (!apply) throw new Error('This creates a Stripe test order. Re-run with --apply.');
 if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('NO3D_E2E_EMAIL is required.');
@@ -18,6 +19,14 @@ assert.equal(price.environment, 'test', 'V3 membership must be bound to Stripe t
 const commerceResponse = await fetch(`${baseUrl}/api/commerce/config`);
 const commerce = await commerceResponse.json();
 assert.equal(commerce.individualProductsEnabled, true, 'Individual product Checkout must be enabled');
+
+const offerResponse = await fetch(`${baseUrl}/api/commerce/offer?handle=${encodeURIComponent(handle)}`);
+const publicOffer = await offerResponse.json();
+assert.equal(offerResponse.status, 200, publicOffer.error || 'Commerce offer lookup failed');
+assert.equal(publicOffer.offer?.resourceId, handle);
+assert.equal(publicOffer.offer?.unitAmount, expectedUnitAmount);
+assert.equal(publicOffer.offer?.currency, 'usd');
+assert.equal('priceId' in publicOffer.offer, false, 'Public offer must not expose a Stripe Price ID');
 
 const browser = await puppeteer.launch({ headless: true });
 
@@ -109,6 +118,7 @@ try {
     environment: price.environment,
     product: {
       handle,
+      unitAmount: publicOffer.offer.unitAmount,
       paymentStatus: order.payload.paymentStatus,
       fulfillmentStatus: order.payload.fulfillmentStatus,
       downloadStatus: assetResponse.status,

@@ -49,6 +49,15 @@ Review the first complete billing period no later than **2026-09-18**, remove th
 
 The Vercel project already uses its one custom-environment slot for `mvp-site`, so this release candidate uses branch-specific Preview variables rather than deleting or repurposing that existing environment without a separate decision.
 
+Local CLI Preview deployments do not reliably inherit variables scoped to the
+`feat/v3-adjacent` Git branch. Deploy this staging branch through the connected
+Git integration, or explicitly inject the approved `no3dtools/stg` Doppler
+runtime set. Before moving the `v3.no3dtools.com` alias, verify both that
+`/api/commerce/offer?handle=apple-magsafe-charger` returns `777` cents without a
+Stripe Price ID and that an unauthenticated `/v3/product/` request redirects to
+the NO3D access gate. A generic CLI Preview with missing branch variables must
+never be promoted to the staging alias.
+
 ### Vercel deployment-protection routing
 
 Keep project-level Vercel Authentication enabled for ordinary generated Preview URLs. Register the two staging hosts as ordinary project custom domains and pin them to the approved deployments instead of configuring them as Git-branch domains. Vercel treats branch-bound domains as Preview URLs and places its own authentication challenge in front of Routing Middleware; that prevents the NO3D owner gate from loading and blocks unsigned network access to Commerce endpoints before their application-level verification can run.
