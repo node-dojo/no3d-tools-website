@@ -104,6 +104,19 @@ test('V3 membership remains inside V3 and reads only verified account membership
   assert.match(price, /environment: price\.livemode \? 'live' : 'test'/);
 });
 
+test('Commerce site identity is environment-bound across checkout, claim, and recovery', async () => {
+  const site = await load('api/lib/commerceSite.js');
+  const client = await load('api/commerce/lib/client.js');
+  const claim = await load('api/auth/lib/claim.js');
+  const recovery = await load('api/auth/lib/recovery.js');
+  assert.match(site, /process\.env\.COMMERCE_SITE_KEY/);
+  assert.match(site, /\|\| 'no3dtools'/);
+  for (const source of [client, claim, recovery]) {
+    assert.match(source, /commerceSiteKey\(\)/);
+    assert.doesNotMatch(source, /'X-NO3D-Site': 'no3dtools'/);
+  }
+});
+
 test('component display rules cannot override the native hidden state', async () => {
   const css = await load('v3/styles/v3.css');
   assert.match(css, /html \[hidden\]\{display:none!important\}/);

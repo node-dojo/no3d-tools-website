@@ -72,6 +72,7 @@ Website:
 - branch-specific Supabase URL, publishable/anon key, and service-role key
 - test Stripe price, secret, and webhook secret
 - staging Commerce URL, site-backend secret, assertion key ID, and assertion secret
+- `COMMERCE_SITE_KEY=no3dtools-v3-staging`, matching the Commerce trusted-site record
 - staging site/auth issuer URLs
 - existing R2 and email variables only where the tested flow genuinely needs them
 

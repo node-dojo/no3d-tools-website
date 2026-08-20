@@ -1,4 +1,5 @@
 import { identityAssertion, readCookie } from './session.js';
+import { commerceSiteKey } from '../../lib/commerceSite.js';
 
 function requiredEnv(name) {
   const value = process.env[name]?.trim();
@@ -12,7 +13,7 @@ function headers(guestToken, assertion) {
     'Content-Type': 'application/json',
     'X-NO3D-Guest-Token': guestToken,
     'X-NO3D-Identity': assertion,
-    'X-NO3D-Site': 'no3dtools',
+    'X-NO3D-Site': commerceSiteKey(),
   };
 }
 
@@ -26,7 +27,7 @@ export async function claimPurchasingGuest(req, user) {
     headers: {
       Authorization: `Bearer ${backendSecret}`,
       'X-NO3D-Guest-Token': guestToken,
-      'X-NO3D-Site': 'no3dtools',
+      'X-NO3D-Site': commerceSiteKey(),
     },
   });
   const guest = await guestResponse.json().catch(() => null);

@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { authenticatedIdentityAssertion } from '../../auth/lib/session.js';
+import { commerceSiteKey } from '../../lib/commerceSite.js';
 
 const GUEST_COOKIE = 'no3d_commerce_guest';
 const PRODUCT_HANDLE = /^[a-z0-9][a-z0-9-]{1,100}$/;
@@ -55,7 +56,7 @@ export async function commerceFetch(req, res, path, options = {}) {
     ...options,
     headers: {
       Authorization: `Bearer ${backendSecret}`,
-      'X-NO3D-Site': 'no3dtools',
+      'X-NO3D-Site': commerceSiteKey(),
       ...(await commerceIdentityHeaders(req, res)),
       ...(options.headers || {}),
     },

@@ -1,4 +1,5 @@
 import { identityAssertion } from './session.js';
+import { commerceSiteKey } from '../../lib/commerceSite.js';
 
 function requiredEnv(name) {
   const value = process.env[name]?.trim();
@@ -10,7 +11,7 @@ function commerceHeaders(extra = {}) {
   return {
     Authorization: `Bearer ${requiredEnv('COMMERCE_SITE_BACKEND_SECRET')}`,
     'Content-Type': 'application/json',
-    'X-NO3D-Site': 'no3dtools',
+    'X-NO3D-Site': commerceSiteKey(),
     ...extra,
   };
 }
