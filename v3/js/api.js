@@ -90,6 +90,7 @@ export function normalizeProduct(product = {}) {
     tags: Array.isArray(product.tags) ? product.tags : [],
     releaseStatus: product.release_status || product.releaseStatus || 'stable',
     releaseVersion: product.release_version || product.releaseVersion || '',
+    accessPolicy: product.access_policy || product.accessPolicy || 'catalog',
     image,
     video: resolveMedia(product.video),
     thumbnail,
@@ -138,6 +139,14 @@ export async function getProduct(handle) {
     ]);
     if (!payload.product) throw new Error('product_not_found');
     const product = normalizeProduct(payload.product);
+    if (product.accessPolicy === 'free') {
+      return {
+        product: { ...product, price: '', priceCurrency: '', priceUnitAmount: 0 },
+        purchasable: false,
+        pricingSource: 'free',
+        source: 'live',
+      };
+    }
     if (!pricing?.offer) {
       return {
         product: { ...product, price: '', priceCurrency: '', priceUnitAmount: null },

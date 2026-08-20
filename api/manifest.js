@@ -58,12 +58,14 @@ export default async function handler(req, res) {
 
   let row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
   let purchasedHandles = new Set();
+  let deviceAuthenticated = false;
   if (typeof deviceToken === 'string' && deviceToken.length >= 32) {
     try {
       const { response, payload } = await commerceFetch(req, res, '/api/devices/entitlements', {
         headers: { 'X-NO3D-Device-Token': deviceToken },
       });
       if (response.ok && Array.isArray(payload?.products)) {
+        deviceAuthenticated = true;
         purchasedHandles = new Set(payload.products.map((product) => product?.handle).filter(Boolean));
         row = await fetchSubscriptionByVerifiedEmail(supabase, payload?.account?.contactEmail);
       }
@@ -72,7 +74,8 @@ export default async function handler(req, res) {
     }
   }
   const access = computeAccessState(row);
-  if (!access.allowed && purchasedHandles.size === 0) {
+  const accountAuthenticated = Boolean(row) || deviceAuthenticated;
+  if (!accountAuthenticated && !access.allowed && purchasedHandles.size === 0) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(403).json({ error: 'No active membership or purchased products', status: access.effectiveStatus });
   }
@@ -89,7 +92,7 @@ export default async function handler(req, res) {
   if (!r2Configured) {
     if (typeof inlineFallback === 'string' && inlineFallback.trim()) {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.status(200).send(filterEffectiveManifest(inlineFallback, access.allowed, purchasedHandles));
+      return res.status(200).send(filterEffectiveManifest(inlineFallback, access.allowed, purchasedHandles, accountAuthenticated));
     }
     res.setHeader('Content-Type', 'application/json');
     return res.status(503).json({
@@ -123,7 +126,7 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: `R2 returned ${status}` });
     }
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    return res.status(200).send(filterEffectiveManifest(body, access.allowed, purchasedHandles));
+    return res.status(200).send(filterEffectiveManifest(body, access.allowed, purchasedHandles, accountAuthenticated));
   } catch (e) {
     console.error('manifest fetch error:', e?.message || e);
     res.setHeader('Content-Type', 'application/json');

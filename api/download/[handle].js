@@ -52,11 +52,13 @@ export default async function handler(req, res) {
 
   let row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
   let purchased = false;
+  let deviceAuthenticated = false;
   if (typeof deviceToken === 'string' && deviceToken.length >= 32) {
     try {
       const { response, payload } = await commerceFetch(req, res, '/api/devices/entitlements', {
         headers: { 'X-NO3D-Device-Token': deviceToken }
       });
+      deviceAuthenticated = response.ok;
       purchased = response.ok && Array.isArray(payload?.products) && payload.products.some((product) => product?.handle === handle);
       if (response.ok) row = await fetchSubscriptionByVerifiedEmail(supabase, payload?.account?.contactEmail);
     } catch (e) {
@@ -64,19 +66,11 @@ export default async function handler(req, res) {
     }
   }
   const access = computeAccessState(row);
-  if (!access.allowed && !purchased) {
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(403).json({ error: 'No active membership or purchased product', status: access.effectiveStatus });
-  }
-
-  if (!isR2Configured()) {
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(503).json({ error: 'Download storage not configured (R2_* env)' });
-  }
+  const accountAuthenticated = Boolean(row) || deviceAuthenticated;
 
   const { data: product, error } = await supabase
     .from('products')
-    .select('handle, file_url, checksum, status')
+    .select('handle, file_url, checksum, status, access_policy')
     .eq('handle', handle)
     .maybeSingle();
 
@@ -89,6 +83,17 @@ export default async function handler(req, res) {
   if (!product || product.status !== 'active') {
     res.setHeader('Content-Type', 'application/json');
     return res.status(404).json({ error: 'Product not found' });
+  }
+
+  const free = product.access_policy === 'free' && accountAuthenticated;
+  if (!access.allowed && !purchased && !free) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(403).json({ error: 'No free, membership, or purchased access to this product', status: access.effectiveStatus });
+  }
+
+  if (!isR2Configured()) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(503).json({ error: 'Download storage not configured (R2_* env)' });
   }
 
   const objectKey = product.file_url;

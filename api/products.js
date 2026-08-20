@@ -63,7 +63,7 @@ export default async function handler(req, res) {
     // Build query
     let query = supabase
       .from('products')
-      .select('id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, created_at, updated_at', { count: 'exact' })
+      .select('id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, access_policy, created_at, updated_at', { count: 'exact' })
       .eq('status', 'active')
 
     // Filter by product type
@@ -129,6 +129,7 @@ export default async function handler(req, res) {
       excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
       main_image: p.metadata?.main_image || null,
       changelog: p.metadata?.changelog || [],
+      access_policy: p.access_policy || 'catalog',
       file_url: p.file_url ?? null,
       checksum: p.checksum ?? null
     }))

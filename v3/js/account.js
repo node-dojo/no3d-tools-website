@@ -54,10 +54,10 @@ function renderLibrary() {
     row.querySelector('h3').textContent = product?.title || readableHandle(item.handle);
     row.querySelector('.library-card-copy span').textContent = `${accessLabel(item)}${item.purchasedAt ? ` / Added ${new Date(item.purchasedAt).toLocaleDateString()}` : ' / Ready to install'}`;
     const action = row.querySelector('a');
-    action.href = item.membership && !item.permanent
+    action.href = (item.free || (item.membership && !item.permanent))
       ? '/v3/account/?state=install'
       : item.orderId ? `/api/commerce/download/${encodeURIComponent(item.orderId)}` : `/v3/product/?handle=${encodeURIComponent(item.handle)}`;
-    action.textContent = item.membership && !item.permanent
+    action.textContent = (item.free || (item.membership && !item.permanent))
       ? 'Available in Blender →'
       : item.lastInstalledAt ? 'Check for update →' : item.owned ? 'Install →' : 'Details →';
     items.append(row);
@@ -253,13 +253,23 @@ if (!state.authenticated) {
   const email = session.email || summary?.account?.contactEmail || 'Your NO3D account';
   $$('[data-account-email]').forEach(node => { node.textContent = email; });
   const member = membership?.active === true || Boolean(summary?.memberships?.some(item => ['active', 'trialing'].includes(item.status)));
+  const owned = new Map(state.products.map(item => [item.handle, item]));
+  for (const product of state.catalog.values()) {
+    if (product.releaseStatus === 'archived' || product.accessPolicy !== 'free' || owned.has(product.handle)) continue;
+    const freeItem = { handle: product.handle, free: true, owned: true, permanent: false };
+    state.products.push(freeItem);
+    owned.set(product.handle, freeItem);
+  }
   if (member) {
-    const owned = new Map(state.products.map(item => [item.handle, item]));
     for (const product of state.catalog.values()) {
       if (product.releaseStatus === 'archived') continue;
       const existing = owned.get(product.handle);
       if (existing) existing.membership = true;
-      else state.products.push({ handle: product.handle, membership: true, owned: true, permanent: false });
+      else {
+        const membershipItem = { handle: product.handle, membership: true, owned: true, permanent: false };
+        state.products.push(membershipItem);
+        owned.set(product.handle, membershipItem);
+      }
     }
   }
   $('[data-account-tier]').textContent = member ? 'Member' : 'Free';

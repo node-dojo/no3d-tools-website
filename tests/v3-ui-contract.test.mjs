@@ -88,6 +88,24 @@ test('acquisition language and yellow follow the library-first V3 decision', asy
   assert.match(membership, /Automatic Updates/i);
 });
 
+test('free catalog policy flows into account and product acquisition without Checkout', async () => {
+  const api = await load('v3/js/api.js');
+  const account = await load('v3/js/account.js');
+  const product = await load('v3/js/product.js');
+  const catalog = await load('api/products.js');
+  const manifest = await load('api/manifest.js');
+  const download = await load('api/download/[handle].js');
+  assert.match(api, /accessPolicy: product\.access_policy/);
+  assert.match(api, /pricingSource: 'free'/);
+  assert.match(account, /product\.accessPolicy !== 'free'/);
+  assert.match(account, /free: true, owned: true/);
+  assert.match(product, /Add Free Tool/);
+  assert.match(product, /if \(free\)/);
+  assert.match(catalog, /access_policy/);
+  assert.match(manifest, /accountAuthenticated/);
+  assert.match(download, /product\.access_policy === 'free'/);
+});
+
 test('product detail uses a cached handle endpoint and defers commerce from identity rendering', async () => {
   const html = await load('v3/product/index.html');
   const productScript = await load('v3/js/product.js');

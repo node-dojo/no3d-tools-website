@@ -74,6 +74,7 @@ if (!product) {
   const purchaseRow = $('[data-purchase-row]');
   const priceBlock = $('[data-price-block]');
   const download = $('[data-download]');
+  const free = product.accessPolicy === 'free';
   if (!price) {
     priceBlock.remove();
     purchaseRow.classList.add('action-only');
@@ -84,6 +85,10 @@ if (!product) {
   download.title = 'Loading purchase options';
   download.addEventListener('click', async () => {
     if (download.disabled) return;
+    if (free) {
+      location.href = `/v3/onboarding/create-account/?next=${encodeURIComponent('/v3/account/?state=install')}`;
+      return;
+    }
     setButtonState(download, true, 'Download');
     try { location.href = await beginProductCheckout(product.handle); }
     catch { setButtonState(download, false, 'Try again'); }
@@ -98,10 +103,16 @@ if (!product) {
     catch { setButtonState(catalogButton, false, 'Try again'); }
   });
   commercePromise.then(commerce => {
-    download.disabled = !commerce.individualProductsEnabled || !purchasable;
-    download.title = !purchasable
+    if (free) {
+      download.disabled = false;
+      download.title = 'Create or open your account to add this free tool';
+      download.querySelector('span').textContent = 'Add Free Tool';
+    } else {
+      download.disabled = !commerce.individualProductsEnabled || !purchasable;
+      download.title = !purchasable
       ? 'This design study is not yet published for individual checkout'
       : download.disabled ? 'Individual checkout is not currently enabled' : '';
+    }
     $('[data-membership-price]').textContent = commerce.membershipPrice ? `${commerce.membershipPrice} / month →` : '→';
     const requiresTestPrice = location.hostname === 'v3.no3dtools.com';
     const membershipCheckoutIsSafe = !requiresTestPrice || commerce.membershipEnvironment === 'test';
@@ -112,4 +123,4 @@ if (!product) {
 
 document.body.dataset.catalogSource = source;
 document.body.dataset.pricingSource = pricingSource;
-document.body.dataset.purchaseAvailability = purchasable ? 'available' : 'design-study';
+document.body.dataset.purchaseAvailability = product?.accessPolicy === 'free' ? 'free' : purchasable ? 'available' : 'design-study';

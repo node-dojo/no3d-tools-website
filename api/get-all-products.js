@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     // Fetch all active products (no pagination for this endpoint)
     const { data, error } = await supabase
       .from('products')
-      .select('id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, created_at, updated_at')
+      .select('id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, access_policy, created_at, updated_at')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
 
@@ -111,7 +111,8 @@ export default async function handler(req, res) {
       main_image: p.metadata?.main_image || null,
       changelog: p.metadata?.changelog || [],
       release_status: p.release_status || 'stable',
-      release_version: p.release_version || null
+      release_version: p.release_version || null,
+      access_policy: p.access_policy || 'catalog'
     }))
 
     const seenHandles = new Set()

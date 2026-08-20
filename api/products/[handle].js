@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { setCorsHeaders } from '../lib/cors.js';
 
-const PRODUCT_FIELDS = 'id, title, handle, description, vendor, product_type, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, release_status, release_version';
+const PRODUCT_FIELDS = 'id, title, handle, description, vendor, product_type, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, release_status, release_version, access_policy';
 
 function mapProductType(value) {
   const type = String(value || '').toLowerCase();
@@ -30,6 +30,7 @@ function serializeProduct(product) {
     metafields: product.metafields || [],
     release_status: product.release_status || 'stable',
     release_version: product.release_version || null,
+    access_policy: product.access_policy || 'catalog',
   };
 }
 
