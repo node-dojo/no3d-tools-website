@@ -58,6 +58,8 @@ test('onboarding follows account, install, automatic connection, and library wit
   assert.match(account, /My Library/i);
   assert.match(account, /Skip setup/i);
   assert.match(account, /Continue On Your Desktop/i);
+  assert.match(account, /data-proceed-mobile>Proceed →/i);
+  assert.doesNotMatch(account, /Send setup link again/i);
   assert.match(accountScript, /matchMedia\('\(max-width: 650px\)'\)/);
   assert.match(accountScript, /sendDesktopSetupLink/);
   assert.match(desktopLink, /authenticatedSession/);

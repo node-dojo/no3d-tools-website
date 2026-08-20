@@ -152,6 +152,13 @@ try {
       assert.equal(await page.$eval('[data-wizard-slide="version"]', node => node.hidden), true);
       assert.equal(await page.$eval('[data-wizard-slide="mobile-handoff"]', node => node.hidden), false);
       assert.match(await page.$eval('[data-mobile-handoff-message]', node => node.textContent), /emailed to operator@example\.com/i);
+      assert.equal(await page.$eval('[data-skip-setup]', node => getComputedStyle(node).display), 'none');
+      assert.equal(await page.$eval('[data-proceed-mobile]', node => node.textContent.trim()), 'Proceed →');
+      await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
+      await page.click('[data-proceed-mobile]');
+      assert.equal(await page.$eval('[data-setup-panel="install"]', node => node.hidden), true);
+      assert.equal(await page.$eval('[data-ready-territory]', node => getComputedStyle(node).pointerEvents), 'auto');
+      continue;
     }
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
   }

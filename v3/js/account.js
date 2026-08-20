@@ -91,26 +91,27 @@ function setSetup(nextState, { replace = false } = {}) {
   }
 }
 
-async function prepareMobileInstall(email, { force = false } = {}) {
+async function prepareMobileInstall(email) {
   if (requestedState !== 'install' || !window.matchMedia('(max-width: 650px)').matches) return;
+  document.documentElement.classList.add('mobile-install-active');
   $$('[data-wizard-slide]').forEach(slide => { slide.hidden = slide.dataset.wizardSlide !== 'mobile-handoff'; });
   const message = $('[data-mobile-handoff-message]');
-  const resend = $('[data-send-desktop-link]');
+  const proceed = $('[data-proceed-mobile]');
   const deliveryKey = `no3d_desktop_setup_sent_${email.toLowerCase()}`;
-  if (!force && sessionStorage.getItem(deliveryKey)) {
+  if (sessionStorage.getItem(deliveryKey)) {
     message.textContent = `A desktop setup link was emailed to ${email}. Open it when you are at your Blender workstation.`;
     return;
   }
-  resend.disabled = true;
+  proceed.disabled = true;
   message.textContent = `Emailing the setup link to ${email}…`;
   try {
     await sendDesktopSetupLink();
     sessionStorage.setItem(deliveryKey, '1');
     message.textContent = `A desktop setup link was emailed to ${email}. Open it when you are at your Blender workstation.`;
   } catch {
-    message.textContent = 'The setup email could not be sent. Try again, or return to your library for now.';
+    message.textContent = 'The setup email could not be sent. Proceed to your library; desktop setup remains available from your account.';
   } finally {
-    resend.disabled = false;
+    proceed.disabled = false;
   }
 }
 
@@ -266,7 +267,11 @@ if (!state.authenticated) {
     setSetup('ready', { replace: true });
     $('#library').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }));
-  $('[data-send-desktop-link]').addEventListener('click', () => { void prepareMobileInstall(email, { force: true }); });
+  $('[data-proceed-mobile]').addEventListener('click', () => {
+    document.documentElement.classList.remove('mobile-install-active');
+    setSetup('ready', { replace: true });
+    $('#library').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   const deviceCode = params.get('code');
   if (requestedState === 'connect' && deviceCode) void completeConnection(deviceCode);
 }
