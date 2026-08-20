@@ -36,7 +36,7 @@ test('resolves hosted media shapes and ships a canonical paid-product fallback',
 });
 
 test('all rendered adjacent route documents use the shared V3 stylesheet', async () => {
-  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/type/index.html', 'v3/onboarding/create-account/index.html']) {
+  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/type/index.html', 'v3/onboarding/create-account/index.html', 'v3/access/index.html']) {
     const html = await load(path);
     assert.match(html, /\/v3\/styles\/v3\.css/);
     assert.doesNotMatch(html, /(?:color\s*=\s*["']blue|#0000ff|#00f\b)/i);
@@ -74,6 +74,11 @@ test('acquisition language and yellow follow the library-first V3 decision', asy
   assert.match(css, /--yellow:#f5ff00/);
 });
 
+test('component display rules cannot override the native hidden state', async () => {
+  const css = await load('v3/styles/v3.css');
+  assert.match(css, /html \[hidden\]\{display:none!important\}/);
+});
+
 test('ASCII parameter plate is fixed width with boundary-centered sockets', async () => {
   const html = await load('v3/product/index.html');
   const plate = html.match(/<pre data-ascii-plate>([\s\S]*?)<\/pre>/)?.[1].replaceAll('&gt;', '>');
@@ -103,6 +108,7 @@ test('Vercel keeps V3 adjacent behind explicit routes', async () => {
   const config = JSON.parse(await load('vercel.json'));
   const rewrites = new Map(config.rewrites.map(rule => [rule.source, rule.destination]));
   assert.equal(rewrites.get('/v3'), '/v3/index.html');
+  assert.equal(rewrites.get('/v3/access'), '/v3/access/index.html');
   assert.equal(rewrites.get('/v3/product'), '/v3/product/index.html');
   assert.equal(rewrites.get('/v3/account'), '/v3/account/index.html');
   assert.equal(rewrites.get('/v3/onboarding/create-account'), '/v3/onboarding/create-account/index.html');
@@ -110,4 +116,13 @@ test('Vercel keeps V3 adjacent behind explicit routes', async () => {
   assert.equal(rewrites.get('/v3/onboarding/connect'), '/v3/account/index.html?state=connect');
   assert.equal(rewrites.get('/v3/type'), '/v3/type/index.html');
   assert.ok(config.rewrites.some(rule => rule.source === '/account'));
+});
+
+test('staging rollout expires and keeps the teaser outside the deployable repository', async () => {
+  const staging = await load('docs/design/v3/STAGING-ROLLOUT.md');
+  assert.match(staging, /2026-09-18/);
+  assert.match(staging, /teaser prototype is stored in the Vault/i);
+  assert.match(staging, /V3_ACCESS_MODE.*unset in production/i);
+  assert.match(staging, /Stripe test Checkout/i);
+  assert.match(staging, /Delete both Supabase branches/i);
 });

@@ -1,6 +1,7 @@
 import { claimPurchasingGuest } from './lib/claim.js';
 import { redeemPurchaseRecovery } from './lib/recovery.js';
 import { clearAuthCookies, exchangeAuthCode, safeAuthNext } from './lib/session.js';
+import { v3OwnerAllowed } from './lib/v3-access.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
@@ -9,6 +10,10 @@ export default async function handler(req, res) {
 
   try {
     const { user } = await exchangeAuthCode(req, res, code);
+    if (!v3OwnerAllowed(user.email)) {
+      clearAuthCookies(res);
+      return res.redirect(303, '/v3/access/?access=denied');
+    }
     const recoveryToken = typeof req.query?.recovery_token === 'string' ? req.query.recovery_token : '';
     const claim = recoveryToken
       ? await redeemPurchaseRecovery(user, recoveryToken)

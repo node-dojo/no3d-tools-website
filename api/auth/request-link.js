@@ -1,5 +1,6 @@
 import { requestSignInLink } from './lib/session.js';
 import { allowSignInRequest } from './lib/rate-limit.js';
+import { v3OwnerAllowed } from './lib/v3-access.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default async function handler(req, res) {
@@ -17,6 +18,7 @@ export default async function handler(req, res) {
   if (!EMAIL.test(email) || email.length > 254) {
     return res.status(202).json({ sent: true });
   }
+  if (!v3OwnerAllowed(email)) return res.status(202).json({ sent: true });
   try {
     await requestSignInLink(req, res, email, { next });
   } catch (error) {

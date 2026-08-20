@@ -1,6 +1,7 @@
 import { allowSignInRequest } from './lib/rate-limit.js';
 import { issuePurchaseRecovery } from './lib/recovery.js';
 import { requestSignInLink } from './lib/session.js';
+import { v3OwnerAllowed } from './lib/v3-access.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
   }
   try {
     const recovery = await issuePurchaseRecovery(req, orderId);
+    if (!v3OwnerAllowed(recovery.contactEmail)) return res.status(202).json({ sent: true });
     await requestSignInLink(req, res, recovery.contactEmail, {
       recoveryToken: recovery.token,
       next: `/account/orders/${orderId}`,

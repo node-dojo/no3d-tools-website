@@ -1,57 +1,79 @@
-/**
- * Vercel Edge Middleware — OG meta tags for blog posts.
- *
- * When a crawler (iMessage, Slack, Twitter, Facebook, Discord, LinkedIn, etc.)
- * requests /blog/:slug, this returns a small HTML page with the correct
- * og:title, og:description, og:image pulled from Supabase.
- *
- * Regular browsers get the normal blog.html SPA as before.
- */
+import { next } from '@vercel/functions';
+import { v3OwnerAllowed, v3OwnerGateEnabled } from './api/auth/lib/v3-access.js';
 
 const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Discordbot|Slackbot|WhatsApp|Telegram|iMessageBot|Applebot|Google-InspectionTool|Googlebot|bingbot|yandex|Pinterestbot|Embedly|Quora Link Preview|Showyoubot|outbrain|vkShare|W3C_Validator|redditbot|Mediapartners|AhrefsBot|SemrushBot|MJ12bot/i;
 
-export const config = {
-  matcher: '/blog/:slug*',
-};
+const PUBLIC_V3_PREFIXES = [
+  '/v3/access',
+  '/v3/assets/',
+  '/v3/js/',
+  '/v3/styles/',
+];
 
-export default async function middleware(request) {
+function isPublicV3Path(pathname) {
+  return PUBLIC_V3_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(prefix));
+}
+
+function accessRedirect(request, reason) {
+  const requested = new URL(request.url);
+  const access = new URL('/v3/access/', requested);
+  access.searchParams.set('next', `${requested.pathname}${requested.search}`);
+  access.searchParams.set('access', reason);
+  return Response.redirect(access, 307);
+}
+
+async function v3AccessMiddleware(request) {
+  if (!v3OwnerGateEnabled()) return next();
+  const url = new URL(request.url);
+  if (isPublicV3Path(url.pathname)) return next();
+
+  try {
+    const sessionResponse = await fetch(new URL('/api/auth/session', request.url), {
+      cache: 'no-store',
+      headers: { cookie: request.headers.get('cookie') || '' },
+    });
+    const session = await sessionResponse.json();
+    if (session.authenticated && v3OwnerAllowed(session.email)) return next();
+    return accessRedirect(request, session.authenticated ? 'denied' : 'required');
+  } catch {
+    return accessRedirect(request, 'required');
+  }
+}
+
+async function blogPreviewMiddleware(request) {
   const ua = request.headers.get('user-agent') || '';
-  if (!BOT_UA.test(ua)) return;          // regular browser — pass through
+  if (!BOT_UA.test(ua)) return next();
 
   const url = new URL(request.url);
-  const parts = url.pathname.split('/').filter(Boolean);  // ["blog", "slug"]
-  if (parts.length < 2) return;           // /blog listing — pass through
+  const parts = url.pathname.split('/').filter(Boolean);
+  if (parts.length < 2) return next();
 
   const slug = parts[1];
-
   try {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseAnonKey) return;
+    if (!supabaseUrl || !supabaseAnonKey) return next();
 
     const apiUrl = `${supabaseUrl}/rest/v1/articles?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=title,excerpt,featured_image,tags,published_at&limit=1`;
-
-    const res = await fetch(apiUrl, {
+    const response = await fetch(apiUrl, {
       headers: {
         apikey: supabaseAnonKey,
         Authorization: `Bearer ${supabaseAnonKey}`,
       },
     });
+    if (!response.ok) return next();
 
-    if (!res.ok) return;                  // fall through to normal page
-    const rows = await res.json();
-    if (!rows.length) return;
+    const rows = await response.json();
+    if (!rows.length) return next();
 
     const article = rows[0];
     const title = escapeHtml(article.title || 'NO3D Tools Blog');
-    const description = escapeHtml(
-      article.excerpt || 'Notes, research, and documentation from NO3D Tools.'
-    );
+    const description = escapeHtml(article.excerpt || 'Notes, research, and documentation from NO3D Tools.');
     const image = article.featured_image || 'https://no3dtools.com/assets/og-default.png';
     const canonical = `https://no3dtools.com/blog/${slug}`;
     const siteName = 'NO3D TOOLS';
 
-    const html = `<!DOCTYPE html>
+    return new Response(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -74,24 +96,32 @@ export default async function middleware(request) {
   <p>${description}</p>
   <p><a href="${canonical}">Read the full article</a></p>
 </body>
-</html>`;
-
-    return new Response(html, {
+</html>`, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
       },
     });
-  } catch (e) {
-    return;                               // any error → fall through
+  } catch {
+    return next();
   }
 }
 
-function escapeHtml(str) {
-  return str
+export default async function middleware(request) {
+  const { pathname } = new URL(request.url);
+  if (pathname === '/v3' || pathname.startsWith('/v3/')) return v3AccessMiddleware(request);
+  return blogPreviewMiddleware(request);
+}
+
+function escapeHtml(value) {
+  return value
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+
+export const config = {
+  matcher: ['/v3', '/v3/:path*', '/blog/:slug*'],
+};

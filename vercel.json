@@ -12,6 +12,7 @@
   ],
   "rewrites": [
     { "source": "/v3", "destination": "/v3/index.html" },
+    { "source": "/v3/access", "destination": "/v3/access/index.html" },
     { "source": "/v3/product", "destination": "/v3/product/index.html" },
     { "source": "/v3/account", "destination": "/v3/account/index.html" },
     { "source": "/v3/account/orders/:orderId", "destination": "/v3/account/index.html?commerce_order=:orderId" },

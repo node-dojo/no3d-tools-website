@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f0eb">
+  <meta name="robots" content="noindex,nofollow">
+  <title>V3 Access — NO3D Tools</title>
+  <link rel="stylesheet" href="/v3/styles/v3.css">
+</head>
+<body class="account-entry-page staging-access-page">
+  <div class="account-entry-wash" aria-hidden="true"></div>
+  <section class="account-entry-dialog" role="dialog" aria-modal="true" aria-labelledby="account-entry-title">
+    <header class="setup-index"><div><strong>V3</strong><span>Staging</span></div><span>Owner Access</span></header>
+    <div class="account-entry-body">
+      <h1 id="account-entry-title">NO3D Account</h1>
+      <p>Use the account approved for the private V3 release candidate.</p>
+      <nav class="account-mode" aria-label="Account access"><button class="active" type="button" data-auth-mode="signup">Create account</button><button type="button" data-auth-mode="signin">Sign in</button></nav>
+      <div class="account-providers" data-auth-providers hidden><a data-oauth="google" href="/api/auth/oauth?provider=google" hidden><span>Continue with Google</span><span>→</span></a><a data-oauth="github" href="/api/auth/oauth?provider=github" hidden><span>Continue with GitHub</span><span>→</span></a></div>
+      <div class="or-rule" data-email-rule>Continue with email</div>
+      <form class="account-entry-form" data-account-entry-form>
+        <label>Email address<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+        <label>Password<input name="password" type="password" autocomplete="new-password" required minlength="10" placeholder="At least 10 characters"></label>
+        <button class="account-entry-submit" type="submit"><span data-auth-submit>Create free account</span><span>→</span></button>
+      </form>
+      <p class="account-entry-message" data-auth-message aria-live="polite"></p>
+    </div>
+    <footer class="account-entry-foot"><img src="/assets/light/stone-logo.png" alt=""><span>Private Release Candidate</span></footer>
+  </section>
+  <script type="module" src="/v3/js/onboarding.js"></script>
+</body>
+</html>

@@ -59,6 +59,8 @@ The previous standalone Install and Connect pages are redirects into this unifie
 - The website keeps its existing Supabase Auth project and translates a verified website session into a short-lived Commerce identity assertion. Browser code never receives either service-role or Commerce backend credentials.
 - Email/password is the required managed-account path. Google and GitHub remain graceful optional entry points until their OAuth applications are configured and enabled in Supabase.
 
+Private release-candidate infrastructure and the 30-day teardown boundary are specified in [`STAGING-ROLLOUT.md`](./STAGING-ROLLOUT.md). The owner gate is staging-only and must remain a no-op in Production.
+
 Founder quotation blocks are written as spoken copy for a future personal video/voice asset. Correct obvious grammar and spelling while retaining colloquial phrasing.
 
 ## Canon snapshot

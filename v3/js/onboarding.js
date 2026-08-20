@@ -36,7 +36,12 @@ if (form) {
   document.querySelector('[data-auth-providers]').hidden = providerCount === 0;
   document.querySelector('[data-email-rule]').textContent = providerCount ? 'Or continue with email' : 'Continue with email';
 
-  if (params.get('auth') === 'unavailable') {
+  if (params.get('access') === 'denied') {
+    message.textContent = 'This account is not approved for the private V3 release candidate.';
+    setMode('signin');
+  } else if (params.get('access') === 'required') {
+    setMode('signin');
+  } else if (params.get('auth') === 'unavailable') {
     message.textContent = 'That sign-in method is not available. Use email or try another provider.';
   } else if (params.get('auth') === 'invalid') {
     message.textContent = 'That sign-in link could not be completed. Try again or use another method.';

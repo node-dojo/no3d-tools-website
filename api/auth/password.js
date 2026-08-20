@@ -1,6 +1,7 @@
 import { allowSignInRequest } from './lib/rate-limit.js';
 import { claimPurchasingGuest } from './lib/claim.js';
 import { clearAuthCookies, passwordSignIn, passwordSignUp, safeAuthNext } from './lib/session.js';
+import { v3OwnerAllowed } from './lib/v3-access.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
   if (!EMAIL.test(email) || email.length > 254 || password.length < 10 || password.length > 200) {
     return res.status(400).json({ error: 'invalid_credentials' });
   }
+  if (!v3OwnerAllowed(email)) return res.status(403).json({ error: 'staging_access_denied' });
   try {
     const result = mode === 'signin'
       ? await passwordSignIn(res, email, password)
