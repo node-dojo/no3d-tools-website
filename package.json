@@ -14,6 +14,7 @@
     "acceptance:v3:device": "node scripts/v3-device-acceptance.mjs",
     "acceptance:v3:membership": "node scripts/v3-membership-acceptance.mjs",
     "acceptance:v3:refund": "node scripts/v3-refund-acceptance.mjs",
+    "acceptance:v3:recovery": "node scripts/v3-recovery-acceptance.mjs",
     "update-commit": "node scripts/update-commit-hash.js",
     "fix-vercel": "node scripts/fix-vercel-settings.js",
     "fix-vercel:doppler": "doppler run -- node scripts/fix-vercel-settings.js",

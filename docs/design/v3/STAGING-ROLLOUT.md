@@ -145,7 +145,7 @@ Run these in order against staging:
 7. Stripe test Checkout purchases one product; its paid webhook creates the order and entitlement exactly once.
 8. The account and Blender library show the purchased asset, with an individual download/install date and a manual update action.
 9. Stripe test subscription fills the eligible catalog and exposes automatic updates. **Passed 2026-08-20:** 50 Account entries and 47 currently published Blender assets.
-10. Billing portal, cancellation, expiry, refund, and refresh-token rotation behave correctly. **Passed 2026-08-20.** Recovery and repeat purchase remain separate open checks.
+10. Billing portal, cancellation, expiry, refund, recovery, repeat purchase, and refresh-token rotation behave correctly. **Passed 2026-08-20.** Recovery used a fresh managed Auth fixture, a guest order, one-time Commerce recovery grant, verified identity redemption, replay rejection, refund cleanup, and Auth-user deletion.
 11. Mobile and desktop V3 visual acceptance passes with no browser-blue controls or horizontal overflow.
 12. Production URLs, data, Stripe customers, entitlements, and extension clients remain unchanged.
 

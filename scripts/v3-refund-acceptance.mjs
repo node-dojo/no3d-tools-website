@@ -5,6 +5,7 @@ import puppeteer from 'puppeteer';
 import Stripe from 'stripe';
 
 const apply = process.argv.includes('--apply');
+const requireRepeat = process.argv.includes('--require-repeat');
 const baseUrl = (process.env.NO3D_V3_ACCEPTANCE_URL || 'https://v3.no3dtools.com').replace(/\/$/, '');
 const email = process.env.NO3D_E2E_EMAIL?.trim();
 const password = process.env.NO3D_E2E_PASSWORD;
@@ -80,6 +81,10 @@ try {
     false,
     'Disposable refund product is already owned',
   );
+  const priorRefund = baseline.payload.products?.some(
+    (product) => product.handle === handle && product.paymentStatus === 'refunded' && product.entitlementStatus === 'revoked',
+  ) === true;
+  if (requireRepeat) assert.equal(priorRefund, true, 'No prior refunded order exists for the repeat-purchase check');
 
   const checkout = await pageFetch(page, '/api/commerce/checkout', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -172,6 +177,7 @@ try {
     product: handle,
     purchase: { paymentStatus: 'paid', fulfillmentStatus: 'fulfilled', deviceAccess: 'purchase' },
     refund: { stripe: 'succeeded', paymentStatus: 'refunded', fulfillmentStatus: 'revoked', downloadRemoved: true },
+    repeatPurchaseAfterRefund: priorRefund,
     control: { permanentPurchaseSurvived: permanentHandle },
   })}\n`);
 } finally {

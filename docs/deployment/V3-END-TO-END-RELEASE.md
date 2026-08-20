@@ -53,6 +53,13 @@ The release is complete only when both an individual purchaser and a member can 
   verifies Account and Blender ownership, issues a full Stripe test refund,
   and proves that fulfillment, entitlement, manifest, and download access are
   revoked without affecting an unrelated permanent purchase.
+- `npm run acceptance:v3:refund -- --apply --require-repeat` repeats the same
+  product purchase after a prior full refund and proves that a revoked source
+  order does not prevent a new paid entitlement from fulfilling normally.
+- `npm run acceptance:v3:recovery -- --apply` creates a temporary confirmed
+  Supabase Auth identity, fulfills a guest purchase, issues and redeems a
+  one-time Commerce recovery grant with verified identity proof, rejects token
+  replay, refunds the fixture order, and deletes the temporary Auth user.
 - `npm audit`
 - `git diff --check`
 - Mobile and desktop checks for Home, Product, Membership, account entry, install, connect, completion, free/purchased account, and active-member account.
@@ -66,10 +73,12 @@ Account; device grant start, approval, and exchange; purchase-filtered Blender
 manifest; device-authenticated download; refresh-token rotation; membership
 activation; authenticated billing portal; immediate cancellation and expiry;
 full-catalog Account expansion (50 entries); full published Blender catalog
-(47 assets); fallback to the permanent Apple MagSafe purchase; and full refund
-revocation of a disposable Dojo Knob order. Recovery and repeat-purchase edge
-checks remain open; the free-library rows remain intentionally unpopulated
-until canonical free entitlements are designated.
+(47 assets); fallback to the permanent Apple MagSafe purchase; full refund
+revocation of a disposable Dojo Knob order; successful repeat purchase after
+that refund; and one-time guest-order recovery into a fresh verified managed
+identity with replay rejection and cleanup. The free-library rows remain
+intentionally unpopulated until canonical free products and their access-policy
+contract are designated.
 
 1. Signed-out and non-owner access fail closed; an owner account enters once through NO3D Auth.
 2. Mobile account creation sends desktop setup continuation and proceeds into the usable account.
