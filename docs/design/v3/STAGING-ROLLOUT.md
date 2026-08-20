@@ -1,6 +1,6 @@
 # V3 Private Staging Rollout
 
-Status: isolated Supabase and Vercel Preview foundations active; owner gate and Commerce health route reachable; Stripe test webhook and final security gate pending.
+Status: isolated Supabase and Vercel Preview foundations active; owner gate, Commerce health route, recovery-table security gate, and Stripe test webhook verified.
 
 ## Approved staging envelope
 
@@ -14,14 +14,9 @@ Status: isolated Supabase and Vercel Preview foundations active; owner gate and 
 
 ## Pro-plan decision checkpoint
 
-Treat Pro as temporary through the staging window. Review it no later than **2026-09-18** and downgrade to Free after branch teardown unless one of these measured production needs justifies keeping it:
+The two preview branches are temporary; Supabase Pro is the intended production baseline for customer identity, orders, entitlements, and recovery. The accepted justification is preventing production projects from pausing and retaining automatic backups for customer and payment-adjacent state.
 
-- preventing production projects from pausing;
-- automatic backups or another recovery requirement;
-- production usage exceeds Free quotas;
-- a continuing staging or preview environment saves enough release risk or labor to justify the plan.
-
-If Pro is retained, record the justification and compare its value against another currently active subscription. Do not cancel another subscription merely to offset this cost; inventory its actual use and obtain a separate cancellation decision first.
+Review the first complete billing period no later than **2026-09-18**, remove the two preview branches, and confirm actual recurring compute and usage costs. Compare the retained infrastructure value against another currently active subscription, but do not cancel another subscription merely to offset this cost; inventory its actual use and obtain a separate cancellation decision first.
 
 ## Boundaries
 
@@ -90,9 +85,9 @@ The gate uses the real NO3D Supabase session and an exact, normalized email allo
 - Account-creation and passwordless endpoints refuse to send or create for non-allowlisted addresses while staging mode is enabled.
 - Failure to inspect a session fails closed.
 
-## Security gate before payment acceptance
+## Payment security gate
 
-Supabase currently reports `public.order_recovery_grants` in the Commerce schema with RLS disabled. Do not begin public or payment acceptance testing until the source migration and staging branch deliberately choose and verify the access model. The proposed server-only posture is:
+Resolved on **2026-08-20**. `public.order_recovery_grants` uses the following server-only posture in both the Commerce source migrations and isolated staging branch:
 
 ```sql
 alter table public.order_recovery_grants enable row level security;
@@ -101,6 +96,18 @@ grant all on table public.order_recovery_grants to service_role;
 ```
 
 No browser-facing policy is required for this table because recovery is mediated by the signed Commerce service endpoints.
+
+Verification confirmed that RLS is enabled, `anon` and `authenticated` have no direct table privileges, and `service_role` retains the required access. The Supabase advisor's informational “RLS enabled, no policy” notice is expected for this intentionally service-only table.
+
+## Stripe staging webhook
+
+Verified on **2026-08-20**:
+
+- The enabled test-mode endpoint is `https://commerce-v3.no3dtools.com/api/stripe/webhook`.
+- It subscribes only to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `charge.refunded`, matching the Commerce handler registry.
+- Stripe's signing secret is stored in Doppler `no3d-commerce/stg` and Vercel Preview; no secret value belongs in this document or repository.
+- A fresh Stripe-originated `checkout.session.completed` event reached the endpoint, entered the isolated Commerce database, and completed once with no processing error.
+- An older test endpoint containing a Vercel automation-bypass credential was removed after that credential appeared in diagnostic output; the owning `no3d-app` bypass was revoked and now has zero active automation-bypass credentials.
 
 ## Acceptance matrix
 
