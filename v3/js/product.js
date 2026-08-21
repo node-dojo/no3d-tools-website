@@ -106,7 +106,7 @@ if (!product) {
     if (free) {
       download.disabled = false;
       download.title = 'Create or open your account to add this free tool';
-      download.querySelector('span').textContent = 'Add Free Tool';
+      download.querySelector('span').textContent = 'Add to Library';
     } else {
       download.disabled = !commerce.individualProductsEnabled || !purchasable;
       download.title = !purchasable

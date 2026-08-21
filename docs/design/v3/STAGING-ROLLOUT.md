@@ -143,10 +143,10 @@ Before a CLI deployment, refresh branch-scoped Preview variables from Doppler wi
 3. Free acquisition claims the account without creating a paid entitlement.
 4. Blender 5.2+ installs through the native remote-extension path.
 5. Blender returns a connection code and the browser automatically approves the device grant.
-6. The free library appears in both Blender and the Account screen.
+6. The free library appears in both Blender and the Account screen. **Contract passed 2026-08-20:** an unowned fixture appeared in Account, entered the device manifest as `access_source: free`, downloaded successfully, and was restored to `catalog` with the original manifest bytes afterward. Canonical rows remain intentionally undesignated.
 7. Stripe test Checkout purchases one product; its paid webhook creates the order and entitlement exactly once.
 8. The account and Blender library show the purchased asset, with an individual download/install date and a manual update action.
-9. Stripe test subscription fills the eligible catalog and exposes automatic updates. **Passed 2026-08-20:** 50 Account entries and 47 currently published Blender assets.
+9. Stripe test subscription fills the eligible catalog and exposes automatic updates. **Passed 2026-08-20:** 52 Account entries and 51 currently published Blender assets.
 10. Billing portal, cancellation, expiry, refund, recovery, repeat purchase, and refresh-token rotation behave correctly. **Passed 2026-08-20.** Recovery used a fresh managed Auth fixture, a guest order, one-time Commerce recovery grant, verified identity redemption, replay rejection, refund cleanup, and Auth-user deletion.
 11. Mobile and desktop V3 visual acceptance passes with no browser-blue controls or horizontal overflow.
 12. Production URLs, data, Stripe customers, entitlements, and extension clients remain unchanged.

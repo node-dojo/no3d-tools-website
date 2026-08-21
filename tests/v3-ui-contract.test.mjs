@@ -100,8 +100,9 @@ test('free catalog policy flows into account and product acquisition without Che
   assert.match(api, /request\('\/api\/products\?limit=100'\)/);
   assert.match(account, /product\.accessPolicy !== 'free'/);
   assert.match(account, /free: true, owned: true/);
-  assert.match(product, /Add Free Tool/);
+  assert.match(product, /Add to Library/);
   assert.match(product, /if \(free\)/);
+  assert.match(await load('v3/js/home.js'), /product\.accessPolicy === 'free' \? 'FREE'/);
   assert.match(catalog, /access_policy/);
   assert.match(manifest, /accountAuthenticated/);
   assert.match(download, /product\.access_policy === 'free'/);

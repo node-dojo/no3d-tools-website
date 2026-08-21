@@ -26,7 +26,7 @@ function productCard(product, index) {
   title.textContent = product.title;
   const meta = document.createElement('div');
   meta.className = 'product-meta';
-  meta.innerHTML = `<span>${String(index + 1).padStart(2, '0')}</span><span>${product.releaseVersion || product.releaseStatus}</span>`;
+  meta.innerHTML = `<span>${String(index + 1).padStart(2, '0')}</span><span>${product.accessPolicy === 'free' ? 'FREE' : product.releaseVersion || product.releaseStatus}</span>`;
   card.append(media, title, meta);
   return card;
 }

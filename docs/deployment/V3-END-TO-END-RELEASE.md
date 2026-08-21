@@ -76,13 +76,15 @@ download; guest-purchase claim into a managed account; permanent inventory in
 Account; device grant start, approval, and exchange; purchase-filtered Blender
 manifest; device-authenticated download; refresh-token rotation; membership
 activation; authenticated billing portal; immediate cancellation and expiry;
-full-catalog Account expansion (50 entries); full published Blender catalog
-(47 assets); fallback to the permanent Apple MagSafe purchase; full refund
+full-catalog Account expansion (52 entries); full published Blender catalog
+(51 assets); fallback to the permanent Apple MagSafe purchase; full refund
 revocation of a disposable Dojo Knob order; successful repeat purchase after
 that refund; and one-time guest-order recovery into a fresh verified managed
-identity with replay rejection and cleanup. The free-library rows remain
-intentionally unpopulated until canonical free products and their access-policy
-contract are designated.
+identity with replay rejection and cleanup; and reversible free access for an
+unowned fixture in Account, the effective Blender manifest, and R2 delivery
+without Checkout. The test restored the fixture to `catalog`; canonical
+free-library rows remain intentionally unpopulated until the editorial list is
+approved.
 
 1. Signed-out and non-owner access fail closed; an owner account enters once through NO3D Auth.
 2. Mobile account creation sends desktop setup continuation and proceeds into the usable account.
