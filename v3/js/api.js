@@ -225,7 +225,7 @@ export async function beginMembershipCheckout() {
 export async function getAccountState() {
   const [session, catalog, summary, membership] = await Promise.all([
     request('/api/auth/session').catch(() => ({ authenticated: false })),
-    request('/api/products').catch(() => ({ products: [] })),
+    request('/api/products?limit=100').catch(() => ({ products: [] })),
     request('/api/commerce/account').catch(() => null),
     request('/api/membership/account').catch(() => null),
   ]);

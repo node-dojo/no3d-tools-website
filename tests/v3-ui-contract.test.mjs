@@ -97,6 +97,7 @@ test('free catalog policy flows into account and product acquisition without Che
   const download = await load('api/download/[handle].js');
   assert.match(api, /accessPolicy: product\.access_policy/);
   assert.match(api, /pricingSource: 'free'/);
+  assert.match(api, /request\('\/api\/products\?limit=100'\)/);
   assert.match(account, /product\.accessPolicy !== 'free'/);
   assert.match(account, /free: true, owned: true/);
   assert.match(product, /Add Free Tool/);

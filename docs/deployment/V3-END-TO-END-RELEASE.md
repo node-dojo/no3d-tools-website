@@ -60,6 +60,10 @@ The release is complete only when both an individual purchaser and a member can 
   Supabase Auth identity, fulfills a guest purchase, issues and redeems a
   one-time Commerce recovery grant with verified identity proof, rejects token
   replay, refunds the fixture order, and deletes the temporary Auth user.
+- `npm run acceptance:v3:free -- --apply` temporarily designates one unowned
+  staging fixture as free, verifies Account visibility, device-manifest access,
+  and R2 delivery without Checkout, then restores the original catalog policy
+  and manifest bytes in `finally`.
 - `npm audit`
 - `git diff --check`
 - Mobile and desktop checks for Home, Product, Membership, account entry, install, connect, completion, free/purchased account, and active-member account.

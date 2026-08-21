@@ -136,6 +136,8 @@ Verified on **2026-08-20**:
 
 Run these in order against staging:
 
+Before a CLI deployment, refresh branch-scoped Preview variables from Doppler with `doppler run --project no3dtools --config stg --silent -- npm run env:v3:staging -- --apply`. Deploy with `--meta githubDeployment=1 --meta githubCommitRef=feat/v3-adjacent`; Vercel CLI deployments without that Git metadata do not inherit branch-scoped variables.
+
 1. Owner gate denies a signed-out browser and a non-owner account.
 2. Approved owner creates or signs into a staged account and completes email verification.
 3. Free acquisition claims the account without creating a paid entitlement.
