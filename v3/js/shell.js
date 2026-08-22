@@ -47,6 +47,10 @@ export function renderCatalogNavigation(products, onSelect) {
     button.addEventListener('click', () => onSelect?.(name));
     list.append(button);
   }
+  const workbench = document.createElement('a');
+  workbench.href = '/v3/workbench/';
+  workbench.innerHTML = '<span>Shared Source Folder</span><span>→</span>';
+  list.append(workbench);
 }
 
 export function setDataStatus(source) {

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f0eb">
+  <title>The Shared Source Folder — NO3D Tools</title>
+  <link rel="stylesheet" href="/v3/styles/v3.css?v=workbench-20260822">
+</head>
+<body>
+  <div class="v3-page workbench-page">
+    <header class="v3-mast">
+      <a class="v3-wordmark" href="/v3/" aria-label="NO3D Tools home"><img src="/assets/light/no3d-tools.png" alt="NO3D Tools"></a>
+      <button class="v3-search" type="button" data-search-toggle aria-expanded="false"><span class="desktop-only">Command K / </span>Search</button>
+      <div class="v3-status"><a href="/v3/account/">Account ●</a><a href="#my-file">My File [<span data-file-count>0</span>]</a></div>
+    </header>
+    <div class="search-region" data-search-region hidden><label class="technical" for="site-search">Search the shared source folder</label><input id="site-search" type="search" placeholder="Filename, folder, state, or use"></div>
+    <div class="v3-shell">
+      <aside class="catalog-rail" data-catalog-panel>
+        <button class="catalog-toggle" type="button" data-catalog-toggle aria-controls="catalog-list" aria-expanded="false"><span data-catalog-glyph>☰</span><span>Catalog</span></button>
+        <div class="catalog-list" id="catalog-list" data-catalog-list>
+          <a href="/v3/"><span>Flagships</span><span>→</span></a>
+          <a href="/v3/workbench/" aria-current="page"><span>Shared Folder</span><span data-workbench-count>00</span></a>
+        </div>
+        <p class="catalog-note">The polished shelf above.<br><br>The living workbench below.</p>
+      </aside>
+      <main class="v3-main workbench-main">
+        <section class="shared-folder" aria-labelledby="shared-title">
+          <div class="source-window">
+            <header class="source-titlebar"><span id="shared-title">The Shared Source Folder</span><span data-source-status>Loading · NO3D://SHARED</span></header>
+            <p class="source-message">All my personal assets that I use the most as they develop and improve in real-time. Grab whatever you like. Or sign up to link the whole library and get constant updates every day.</p>
+            <div class="source-viewport" aria-label="Left-to-right shared source directory" tabindex="0">
+              <div class="source-browser">
+                <nav class="folder-column" aria-label="Parent folders">
+                  <div class="column-head"><span>Parent folders</span><span data-folder-count>00</span></div>
+                  <ul class="folder-list" data-folder-list></ul>
+                </nav>
+                <section class="asset-column" aria-label="Files in selected parent folder">
+                  <div class="column-head"><span data-active-path>/shared/</span><span data-active-count>00 items</span></div>
+                  <div class="property-head" aria-hidden="true"><span>Name</span><span>Modified</span><span>State</span><span></span></div>
+                  <ul class="file-list" data-active-files aria-live="polite"></ul>
+                  <p class="directory-empty" data-directory-empty hidden>No files match this view.</p>
+                </section>
+                <aside class="inspector" aria-label="Selected item properties">
+                  <div class="column-head"><span>Properties</span><span data-inspector-kind>Folder</span></div>
+                  <div class="inspector-preview"><img src="/v3/assets/shared-source-folder-black.png" alt="" data-inspector-icon><h3 data-inspector-title>Shared</h3><p class="inspector-path" data-inspector-path>/shared/</p></div>
+                  <dl>
+                    <div><dt>Date modified</dt><dd data-inspector-date>—</dd></div>
+                    <div><dt>Kind</dt><dd data-inspector-type>Parent folder</dd></div>
+                    <div><dt>Items</dt><dd data-inspector-items>00</dd></div>
+                    <div><dt>Access</dt><dd data-inspector-access>Shared</dd></div>
+                    <div><dt>Sync</dt><dd data-inspector-sync>Available</dd></div>
+                  </dl>
+                  <p class="inspector-note" data-inspector-note>Choose a parent folder from the left. Toggle files in the middle column, then add the selection to My File.</p>
+                </aside>
+              </div>
+            </div>
+            <footer class="transfer-tray" id="my-file" aria-live="polite">
+              <div><strong>My File/</strong>&nbsp;<span data-selected-count>0</span> selected · <span data-file-count>0</span> added</div>
+              <div class="selection-preview" data-selection-preview>Toggle files to begin a transfer</div>
+              <button class="move-button" type="button" data-move disabled>Add to My File →</button>
+            </footer>
+          </div>
+          <p class="workbench-source technical" data-data-status>Loading catalog</p>
+        </section>
+      </main>
+    </div>
+    <img class="stone-mark" src="/assets/light/stone-logo.png" alt="Stone W mark">
+  </div>
+  <script type="module" src="/v3/js/workbench.js?v=workbench-20260822"></script>
+</body>
+</html>

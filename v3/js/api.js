@@ -78,6 +78,11 @@ export function normalizeProduct(product = {}) {
     || resolveMedia(product.thumbnail_image)
     || hosted(product, product.animated_thumbnail)
     || image;
+  const presentation = product.presentation || product.metadata?.presentation || {};
+  const workbench = product.workbench || product.metadata?.workbench || {};
+  const filenameStem = String(workbench.filename || product.filename || sourceTitle || handle)
+    .replace(/\.no3d$/i, '')
+    .replace(/\s+/g, '_');
   return {
     ...product,
     id: product.id || handle,
@@ -97,6 +102,17 @@ export function normalizeProduct(product = {}) {
     carousel,
     hostedMedia: product.hosted_media || {},
     metafields: Array.isArray(product.metafields) ? product.metafields : [],
+    presentationMode: presentation.mode || 'flagship',
+    workbench: {
+      filename: `${filenameStem}.no3d`,
+      folder: workbench.folder || product.tags?.[0] || product.product_type || 'Unsorted',
+      modifiedAt: workbench.modified_at || product.updated_at || product.created_at || '',
+      maturity: workbench.maturity || product.release_status || 'experimental',
+      kind: workbench.kind || product.asset_type || product.product_type || 'NO3D source asset',
+      summary: workbench.summary || product.description || '',
+      size: workbench.size || product.file_size || '',
+      compatibility: workbench.compatibility || product.blender_version || '',
+    },
   };
 }
 

@@ -1,5 +1,6 @@
 import { getCatalog } from './api.js?v=perf-20260820';
 import { renderCatalogNavigation, setDataStatus } from './shell.js?v=perf-20260820';
+import { WORKBENCH_SAMPLE } from '../data/workbench-sample.js?v=workbench-20260822';
 
 const grid = document.querySelector('[data-product-grid]');
 const empty = document.querySelector('[data-empty]');
@@ -44,7 +45,9 @@ function render() {
 }
 
 const catalog = await getCatalog();
-products = catalog.products.filter(product => product.releaseStatus !== 'archived');
+const liveWorkbench = catalog.products.filter(product => product.releaseStatus !== 'archived' && product.presentationMode === 'workbench');
+const workbench = liveWorkbench.length ? liveWorkbench : WORKBENCH_SAMPLE;
+products = catalog.products.filter(product => product.releaseStatus !== 'archived' && product.presentationMode !== 'workbench');
 setDataStatus(catalog.source);
 renderCatalogNavigation(products, selected => {
   category = selected;
@@ -53,3 +56,15 @@ renderCatalogNavigation(products, selected => {
 });
 search?.addEventListener('input', render);
 render();
+
+const folderList = document.querySelector('[data-home-folder-list]');
+const workbenchFolders = [...new Set(workbench.map(product => product.workbench.folder))].slice(0, 5);
+folderList?.replaceChildren(...workbenchFolders.map(folder => {
+  const link = document.createElement('a');
+  const folderCount = workbench.filter(product => product.workbench.folder === folder).length;
+  link.href = `/v3/workbench/?folder=${encodeURIComponent(folder)}`;
+  link.innerHTML = `<img src="/v3/assets/shared-source-folder-black.png" alt=""><span><strong>${folder}</strong><small>${String(folderCount).padStart(2, '0')} files</small></span><span>›</span>`;
+  return link;
+}));
+document.querySelector('[data-home-workbench-count]').textContent = String(workbench.length).padStart(2, '0');
+document.querySelector('[data-home-workbench-status]').textContent = `${liveWorkbench.length ? 'Connected' : 'Preview'} · NO3D://SHARED`;

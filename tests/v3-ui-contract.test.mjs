@@ -37,11 +37,29 @@ test('resolves hosted media shapes and ships a canonical paid-product fallback',
 });
 
 test('all rendered adjacent route documents use the shared V3 stylesheet', async () => {
-  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/membership/index.html', 'v3/type/index.html', 'v3/onboarding/create-account/index.html', 'v3/access/index.html']) {
+  for (const path of ['v3/index.html', 'v3/product/index.html', 'v3/account/index.html', 'v3/membership/index.html', 'v3/type/index.html', 'v3/workbench/index.html', 'v3/onboarding/create-account/index.html', 'v3/access/index.html']) {
     const html = await load(path);
     assert.match(html, /\/v3\/styles\/v3\.css/);
     assert.doesNotMatch(html, /(?:color\s*=\s*["']blue|#0000ff|#00f\b)/i);
   }
+});
+
+test('Shared Source Folder is additive, filename-led, and reuses the existing product catalog', async () => {
+  const home = await load('v3/index.html');
+  const workbench = await load('v3/workbench/index.html');
+  const client = await load('v3/js/workbench.js');
+  const api = await load('v3/js/api.js');
+  const catalog = await load('api/products.js');
+  assert.match(home, /The Shared Source Folder/);
+  assert.match(home, /\/v3\/workbench\//);
+  assert.match(workbench, /Add to My File/);
+  assert.match(workbench, /source-browser/);
+  assert.match(client, /getCatalog\(\)/);
+  assert.match(client, /presentationMode === 'workbench'/);
+  assert.match(client, /no3d_my_file_handles/);
+  assert.match(api, /presentationMode: presentation\.mode \|\| 'flagship'/);
+  assert.match(catalog, /presentation: p\.metadata\?\.presentation/);
+  assert.match(catalog, /workbench: p\.metadata\?\.workbench/);
 });
 
 test('onboarding follows account, install, automatic connection, and library without redundant consent', async () => {
