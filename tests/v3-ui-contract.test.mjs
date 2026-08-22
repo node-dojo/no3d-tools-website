@@ -63,6 +63,23 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(catalog, /workbench: p\.metadata\?\.workbench/);
 });
 
+test('account My File reuses Directory.001 without creating a second collection', async () => {
+  const account = await load('v3/account/index.html');
+  const client = await load('v3/js/account.js');
+  const view = await load('v3/js/account-library.js');
+  assert.match(account, /<h2 id="library-title">My File<\/h2>/);
+  assert.match(account, /source-window account-file-window/);
+  assert.match(account, /source-browser account-file-browser/);
+  assert.match(account, /Parent folders/);
+  assert.match(account, /Last install/);
+  assert.match(client, /state\.products\.map\(item => accountFileView/);
+  assert.match(client, /summary\?\.products \|\| \[\]/);
+  assert.match(client, /state\.member = member/);
+  assert.doesNotMatch(client, /no3d_my_file_handles|localStorage[^\n]*my_file/i);
+  assert.doesNotMatch(account, /Add to My File/i);
+  assert.doesNotMatch(view, /selected|inFile|localStorage/);
+});
+
 test('Workbench live inventory replaces previews and excludes archived records', () => {
   const preview = [{ handle: 'preview-only' }];
   const flagship = { handle: 'flagship', presentationMode: 'flagship', releaseStatus: 'stable' };
@@ -87,7 +104,7 @@ test('onboarding follows account, install, automatic connection, and library wit
   assert.match(account, /No license keys or folder setup/i);
   assert.match(account, /No added approval step/i);
   assert.doesNotMatch(account, /Establish sync|Approve this Blender|Pairing code/i);
-  assert.match(account, /My Library/i);
+  assert.match(account, /My File/i);
   assert.match(account, /Skip setup/i);
   assert.match(account, /Continue On Your Desktop/i);
   assert.match(account, /data-proceed-mobile>Proceed →/i);

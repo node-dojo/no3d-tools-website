@@ -215,7 +215,9 @@ try {
   await memberPage.goto(`${origin}/v3/account/`, { waitUntil: 'networkidle0' });
   await structuralAudit(memberPage, 'account active member desktop');
   assert.match(await memberPage.$eval('[data-account-membership]', node => node.textContent), /Automatic updates/i);
-  assert.equal(await memberPage.$$eval('.library-card', nodes => nodes.length), products.length);
+  assert.match(await memberPage.$eval('[data-library-count]', node => node.textContent), new RegExp(`^0?${products.length} tools$`));
+  assert.ok(await memberPage.$$eval('.library-card', nodes => nodes.length) > 0, 'selected My File folder must render its effective assets');
+  assert.ok(await memberPage.$$eval('[data-account-folders] .folder-entry', nodes => nodes.length) > 1, 'effective library must retain its catalog folders');
   await memberPage.screenshot({ path: join(outputDir, 'account-member-desktop.png'), fullPage: true });
   await memberPage.close();
 

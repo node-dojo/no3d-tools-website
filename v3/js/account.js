@@ -1,4 +1,5 @@
 import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=perf-20260820';
+import { accountFileFolders, accountFileView, filterAccountFiles, readableHandle } from './account-library.js?v=directory-001-20260822';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -6,20 +7,15 @@ const params = new URLSearchParams(location.search);
 const pathOrder = location.pathname.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1];
 const orderId = params.get('commerce_order') || pathOrder || '';
 const requestedState = ['install', 'connect', 'complete'].includes(params.get('state')) ? params.get('state') : 'ready';
-const state = { products: [], catalog: new Map(), authenticated: false, membership: null, setup: requestedState };
-
-function readableHandle(handle = '') {
-  return handle.replace(/[-_]+/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-}
-
-function accessLabel(item) {
-  if (item.free) return 'Free tool';
-  if (item.paymentStatus === 'refunded') return 'Refunded / access removed';
-  if (item.entitlementStatus === 'revoked' || !item.owned) return 'Access revoked';
-  if (item.membership && item.permanent) return 'Membership + permanent access';
-  if (item.membership) return 'Membership access';
-  return item.permanent ? 'Permanent access' : 'Membership access';
-}
+const state = { products: [], files: [], catalog: new Map(), authenticated: false, member: false, membership: null, setup: requestedState, activeFolder: '', inspectedHandle: '' };
+const folderIcon = '/v3/assets/shared-source-folder-black.png';
+const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+const pathSegment = value => String(value || 'unsorted').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+const displayDate = (value, fallback = '—') => {
+  if (!value) return fallback;
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? String(value) : new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).format(date);
+};
 
 function updateCount() {
   const label = `${String(state.products.length).padStart(2, '0')} tool${state.products.length === 1 ? '' : 's'}`;
@@ -29,41 +25,100 @@ function updateCount() {
     : 'Your free collection';
 }
 
+function inspectFolder(folder) {
+  const files = state.files.filter(file => file.folder === folder);
+  const latest = files.map(file => file.installedAt).filter(Boolean).sort().at(-1);
+  $('[data-account-inspector-image]').src = folderIcon;
+  $('[data-account-inspector-image]').alt = '';
+  $('[data-account-inspector-kind]').textContent = 'Library folder';
+  $('[data-account-inspector-title]').textContent = folder || 'My File';
+  $('[data-account-inspector-path]').textContent = `/my_file/${pathSegment(folder)}/`;
+  $('[data-account-inspector-date]').textContent = displayDate(latest, 'Not installed');
+  $('[data-account-inspector-type]').textContent = 'Entitled assets';
+  $('[data-account-inspector-items]').textContent = String(files.length).padStart(2, '0');
+  $('[data-account-inspector-access]').textContent = 'This account';
+  $('[data-account-inspector-sync]').textContent = state.member ? 'Automatic' : 'Manual';
+  $('[data-account-inspector-note]').textContent = state.member
+    ? 'This folder mirrors your effective account library and stays current automatically in connected Blender installations.'
+    : 'This folder mirrors the assets available to your account. Install and update actions use the existing entitlement record.';
+  $('[data-account-inspector-action]').hidden = true;
+}
+
+function inspectFile(file) {
+  state.inspectedHandle = file.handle;
+  $$('[data-account-file]').forEach(row => row.classList.toggle('active', row.dataset.accountFile === file.handle));
+  const image = $('[data-account-inspector-image]');
+  image.src = file.thumbnail || folderIcon;
+  image.alt = '';
+  $('[data-account-inspector-kind]').textContent = 'NO3D account file';
+  $('[data-account-inspector-title]').textContent = file.filename;
+  $('[data-account-inspector-path]').textContent = `/my_file/${pathSegment(file.folder)}/${file.filename}`;
+  $('[data-account-inspector-date]').textContent = displayDate(file.installedAt, 'Not installed');
+  $('[data-account-inspector-type]').textContent = file.kind;
+  $('[data-account-inspector-items]').textContent = '01';
+  $('[data-account-inspector-access]').textContent = file.access;
+  $('[data-account-inspector-sync]').textContent = file.sync;
+  $('[data-account-inspector-note]').textContent = file.summary;
+  const action = $('[data-account-inspector-action]');
+  action.hidden = false;
+  action.href = file.action.href;
+  action.textContent = file.action.label;
+}
+
+function renderAccountFolders() {
+  const folders = accountFileFolders(state.files);
+  if (!folders.some(folder => folder.name === state.activeFolder)) state.activeFolder = folders[0]?.name || '';
+  $('[data-account-folder-count]').textContent = String(folders.length).padStart(2, '0');
+  $('[data-account-folders]').replaceChildren(...folders.map(folder => {
+    const item = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `folder-entry${folder.name === state.activeFolder ? ' active' : ''}`;
+    button.setAttribute('aria-pressed', String(folder.name === state.activeFolder));
+    button.innerHTML = `<img src="${folderIcon}" alt=""><span><strong>${escapeHtml(folder.name)}</strong><small>/my_file/${escapeHtml(pathSegment(folder.name))}/ · ${String(folder.count).padStart(2, '0')}</small></span><span class="folder-arrow">›</span>`;
+    button.addEventListener('click', () => {
+      state.activeFolder = folder.name;
+      state.inspectedHandle = '';
+      renderLibrary();
+    });
+    item.append(button);
+    return item;
+  }));
+}
+
 function renderLibrary() {
-  const term = $('[data-account-search]').value.trim().toLowerCase();
+  state.files = state.products.map(item => accountFileView(item, state.catalog.get(item.handle)));
+  renderAccountFolders();
+  const term = $('[data-account-search]').value;
   const sort = $('[data-account-sort]').value;
-  const products = state.products.filter(item => readableHandle(item.handle).toLowerCase().includes(term));
-  products.sort((a, b) => {
-    if (sort === 'name') return readableHandle(a.handle).localeCompare(readableHandle(b.handle));
-    if (sort === 'access') return accessLabel(a).localeCompare(accessLabel(b));
-    return new Date(b.purchasedAt || 0) - new Date(a.purchasedAt || 0);
-  });
-  const items = $('[data-account-items]');
-  items.replaceChildren();
-  for (const [index, item] of products.entries()) {
-    const product = state.catalog.get(item.handle);
-    const row = document.createElement('article');
-    row.className = 'library-card';
-    row.innerHTML = `<span>${String(index + 1).padStart(2, '0')}</span><div class="library-card-media"></div><div class="library-card-copy"><h3></h3><span></span></div><a class="library-card-action"></a>`;
-    if (product?.thumbnail) {
-      const image = document.createElement('img');
-      image.src = product.thumbnail;
-      image.alt = '';
-      row.querySelector('.library-card-media').append(image);
-    }
-    row.querySelector('h3').textContent = product?.title || readableHandle(item.handle);
-    row.querySelector('.library-card-copy span').textContent = `${accessLabel(item)}${item.purchasedAt ? ` / Added ${new Date(item.purchasedAt).toLocaleDateString()}` : ' / Ready to install'}`;
-    const action = row.querySelector('a');
-    action.href = (item.free || (item.membership && !item.permanent))
-      ? '/v3/account/?state=install'
-      : item.orderId ? `/api/commerce/download/${encodeURIComponent(item.orderId)}` : `/v3/product/?handle=${encodeURIComponent(item.handle)}`;
-    action.textContent = (item.free || (item.membership && !item.permanent))
-      ? 'Available in Blender →'
-      : item.lastInstalledAt ? 'Check for update →' : item.owned ? 'Install →' : 'Details →';
-    items.append(row);
-  }
-  $('[data-account-empty]').hidden = products.length > 0;
-  $('[data-account-empty]').textContent = state.products.length ? 'No instruments match this search.' : 'Your free collection will appear here as instruments are published.';
+  const files = filterAccountFiles(state.files, { folder: state.activeFolder, term, sort });
+  $('[data-account-active-path]').textContent = state.activeFolder ? `/my_file/${pathSegment(state.activeFolder)}/` : '/my_file/';
+  $('[data-account-active-count]').textContent = `${String(files.length).padStart(2, '0')} items`;
+  $('[data-account-items]').replaceChildren(...files.map(file => {
+    const row = document.createElement('li');
+    row.className = `library-card file-row account-file-row${state.inspectedHandle === file.handle ? ' active' : ''}`;
+    row.dataset.accountFile = file.handle;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'account-file-label';
+    button.setAttribute('aria-pressed', String(state.inspectedHandle === file.handle));
+    button.innerHTML = `<span class="file-name">${escapeHtml(file.filename)}</span><span class="file-date">${escapeHtml(displayDate(file.installedAt, 'Not installed'))}</span><span class="file-state">${escapeHtml(file.access)}</span>`;
+    button.addEventListener('click', () => inspectFile(file));
+    const action = document.createElement('a');
+    action.className = 'account-file-action';
+    action.href = file.action.href;
+    action.textContent = file.action.label;
+    row.append(button, action);
+    return row;
+  }));
+  $('[data-account-empty]').hidden = files.length > 0;
+  $('[data-account-empty]').textContent = state.products.length ? 'No files match this folder and search.' : 'Your free collection will appear here as instruments are published.';
+  $('[data-account-file-status]').textContent = `${state.member ? 'Automatic updates' : 'Manual updates'} · ${String(state.products.length).padStart(2, '0')} effective assets`;
+  if (state.inspectedHandle) {
+    const inspected = state.files.find(file => file.handle === state.inspectedHandle);
+    if (inspected && inspected.folder === state.activeFolder) inspectFile(inspected);
+    else inspectFolder(state.activeFolder);
+  } else inspectFolder(state.activeFolder);
   updateCount();
 }
 
@@ -253,6 +308,7 @@ if (!state.authenticated) {
   const email = session.email || summary?.account?.contactEmail || 'Your NO3D account';
   $$('[data-account-email]').forEach(node => { node.textContent = email; });
   const member = membership?.active === true || Boolean(summary?.memberships?.some(item => ['active', 'trialing'].includes(item.status)));
+  state.member = member;
   const owned = new Map(state.products.map(item => [item.handle, item]));
   for (const product of state.catalog.values()) {
     if (product.releaseStatus === 'archived' || product.accessPolicy !== 'free' || owned.has(product.handle)) continue;
