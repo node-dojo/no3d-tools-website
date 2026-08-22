@@ -1,5 +1,5 @@
 import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=perf-20260820';
-import { accountFileFolders, accountFileView, filterAccountFiles, readableHandle } from './account-library.js?v=directory-001-20260822';
+import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, readableHandle } from './account-library.js?v=account-library-20260822b';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -303,31 +303,23 @@ if (!state.authenticated) {
   location.replace(`/v3/onboarding/create-account/?next=${encodeURIComponent(next)}`);
 } else {
   state.catalog = catalog;
-  state.products = summary?.products || [];
+  const effectiveCandidates = [...(summary?.products || [])];
   state.membership = membership;
   const email = session.email || summary?.account?.contactEmail || 'Your NO3D account';
   $$('[data-account-email]').forEach(node => { node.textContent = email; });
   const member = membership?.active === true || Boolean(summary?.memberships?.some(item => ['active', 'trialing'].includes(item.status)));
   state.member = member;
-  const owned = new Map(state.products.map(item => [item.handle, item]));
   for (const product of state.catalog.values()) {
-    if (product.releaseStatus === 'archived' || product.accessPolicy !== 'free' || owned.has(product.handle)) continue;
-    const freeItem = { handle: product.handle, free: true, owned: true, permanent: false };
-    state.products.push(freeItem);
-    owned.set(product.handle, freeItem);
+    if (product.releaseStatus === 'archived' || product.accessPolicy !== 'free') continue;
+    effectiveCandidates.push({ handle: product.handle, free: true, owned: true, permanent: false });
   }
   if (member) {
     for (const product of state.catalog.values()) {
       if (product.releaseStatus === 'archived') continue;
-      const existing = owned.get(product.handle);
-      if (existing) existing.membership = true;
-      else {
-        const membershipItem = { handle: product.handle, membership: true, owned: true, permanent: false };
-        state.products.push(membershipItem);
-        owned.set(product.handle, membershipItem);
-      }
+      effectiveCandidates.push({ handle: product.handle, membership: true, owned: true, permanent: false });
     }
   }
+  state.products = mergeEffectiveAccountLibrary(effectiveCandidates);
   $('[data-account-tier]').textContent = member ? 'Member' : 'Free';
   $('[data-account-membership]').textContent = member ? 'Member / Automatic updates' : 'Free / Manual updates';
   $('[data-update-mode]').textContent = member ? 'Automatic' : 'Manual';

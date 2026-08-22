@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { accountFileFolders, accountFileView, filterAccountFiles } from '../v3/js/account-library.js';
+import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary } from '../v3/js/account-library.js';
 
 const catalog = {
   handle: 'dojo-bolt-gen-v05-obj',
@@ -59,6 +59,66 @@ test('revoked records remain legible without exposing a download action', () => 
     orderId: '11111111-1111-4111-8111-111111111111',
   }, catalog);
   assert.equal(file.access, 'Access revoked');
+  assert.equal(file.action.label, 'Access status →');
+  assert.match(file.action.href, /^\/v3\/product\//);
+  assert.doesNotMatch(file.action.href, /download/);
+});
+
+test('an active purchase outranks a later revoked duplicate without inheriting its unsafe order', () => {
+  const records = mergeEffectiveAccountLibrary([
+    {
+      handle: catalog.handle,
+      owned: true,
+      permanent: true,
+      paymentStatus: 'paid',
+      orderId: '11111111-1111-4111-8111-111111111111',
+      purchasedAt: '2026-08-01T00:00:00Z',
+      lastInstalledAt: '2026-08-20T00:00:00Z',
+    },
+    {
+      handle: catalog.handle,
+      owned: false,
+      permanent: true,
+      paymentStatus: 'refunded',
+      orderId: '22222222-2222-4222-8222-222222222222',
+      purchasedAt: '2026-08-15T00:00:00Z',
+      lastInstalledAt: '2026-08-21T00:00:00Z',
+    },
+  ]);
+  assert.equal(records.length, 1);
+  assert.equal(records[0].owned, true);
+  assert.equal(records[0].permanent, true);
+  assert.equal(records[0].paymentStatus, 'paid');
+  assert.equal(records[0].orderId, '11111111-1111-4111-8111-111111111111');
+  assert.equal(records[0].lastInstalledAt, '2026-08-21T00:00:00Z');
+  assert.equal(records[0].purchasedAt, '2026-08-15T00:00:00Z');
+  assert.match(accountFileView(records[0], catalog).action.href, /11111111-1111-4111-8111-111111111111/);
+});
+
+test('permanent purchase and membership duplicates become one combined effective file', () => {
+  const [record] = mergeEffectiveAccountLibrary([
+    { handle: catalog.handle, owned: true, permanent: true, orderId: '11111111-1111-4111-8111-111111111111' },
+    { handle: catalog.handle, owned: true, membership: true },
+  ]);
+  assert.equal(record.owned, true);
+  assert.equal(record.permanent, true);
+  assert.equal(record.membership, true);
+  assert.equal(record.orderId, '11111111-1111-4111-8111-111111111111');
+  const file = accountFileView(record, catalog);
+  assert.equal(file.access, 'Membership + permanent');
+  assert.equal(file.sync, 'Automatic');
+  assert.match(file.action.href, /^\/api\/commerce\/download\//);
+});
+
+test('all-revoked duplicates retain one safe status row', () => {
+  const records = mergeEffectiveAccountLibrary([
+    { handle: catalog.handle, owned: false, entitlementStatus: 'revoked', orderId: '11111111-1111-4111-8111-111111111111' },
+    { handle: catalog.handle, owned: false, paymentStatus: 'refunded', orderId: '22222222-2222-4222-8222-222222222222' },
+  ]);
+  assert.equal(records.length, 1);
+  assert.equal(records[0].owned, false);
+  const file = accountFileView(records[0], catalog);
+  assert.match(file.access, /revoked|refunded/i);
   assert.equal(file.action.label, 'Access status →');
   assert.match(file.action.href, /^\/v3\/product\//);
   assert.doesNotMatch(file.action.href, /download/);

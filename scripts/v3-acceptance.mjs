@@ -40,11 +40,14 @@ const products = [
   { id: 'bench-grid', handle: 'dojo-bounding-grid', title: 'Dojo Bounding Grid', description: 'A living workbench utility.', product_type: 'Geometry Nodes', tags: ['Utilities'], release_status: 'experimental', presentation: { mode: 'workbench' }, workbench: { filename: 'dojo_bounding_grid.no3d', folder: 'Utilities', maturity: 'experimental', kind: 'Geometry Nodes asset', modified_at: '2026-08-22T00:00:00Z' } },
 ];
 
+const accountEmail = 'v3-acceptance-owner-with-long-address@no3dtools.com';
+
 function accountPayload(authenticated) {
   return {
-    session: authenticated ? { authenticated: true, email: 'operator@example.com' } : { authenticated: false },
-    summary: authenticated ? { account: { contactEmail: 'operator@example.com' }, memberships: [{ status: 'active' }], products: [
+    session: authenticated ? { authenticated: true, email: accountEmail } : { authenticated: false },
+    summary: authenticated ? { account: { contactEmail: accountEmail }, memberships: [{ status: 'active' }], products: [
       { handle: 'dojo-bolt-gen-v05-obj', orderId: '11111111-1111-4111-8111-111111111111', owned: true, permanent: true, purchasedAt: '2026-08-01T00:00:00Z' },
+      { handle: 'dojo-bolt-gen-v05-obj', orderId: '33333333-3333-4333-8333-333333333333', owned: false, permanent: true, paymentStatus: 'refunded', purchasedAt: '2026-08-20T00:00:00Z' },
       { handle: 'dojo-knob', orderId: '22222222-2222-4222-8222-222222222222', owned: true, permanent: false, purchasedAt: '2026-07-01T00:00:00Z' },
     ] } : null,
   };
@@ -100,6 +103,25 @@ async function structuralAudit(page, label) {
   assert.match(result.bodyFont, /DotoV3/);
   if (label.includes('workbench')) assert.match(result.headingFont, /DotoV3/);
   else assert.match(result.headingFont, /(?:DrukV3|SilkaV3)/);
+}
+
+async function mobileMastAudit(page, label) {
+  const result = await page.evaluate(() => {
+    const wordmark = document.querySelector('.v3-wordmark').getBoundingClientRect();
+    const status = document.querySelector('.v3-status').getBoundingClientRect();
+    const mast = document.querySelector('.v3-mast').getBoundingClientRect();
+    const account = document.querySelector('.v3-status [data-account-email]');
+    return {
+      overlaps: wordmark.left < status.right && wordmark.right > status.left && wordmark.top < status.bottom && wordmark.bottom > status.top,
+      contained: status.left >= mast.left && status.right <= mast.right,
+      textOverflow: account ? getComputedStyle(account).textOverflow : '',
+      accountClamped: account ? account.scrollWidth > account.clientWidth : false,
+    };
+  });
+  assert.equal(result.overlaps, false, `${label}: account status collides with wordmark`);
+  assert.equal(result.contained, true, `${label}: account status escapes mast`);
+  assert.equal(result.textOverflow, 'ellipsis', `${label}: long account identity is not safely clamped`);
+  assert.equal(result.accountClamped, true, `${label}: acceptance identity must exercise the long-email clamp`);
 }
 
 const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu'] });
@@ -166,7 +188,7 @@ try {
     if (name === 'onboarding-install-mobile') {
       assert.equal(await page.$eval('[data-wizard-slide="version"]', node => node.hidden), true);
       assert.equal(await page.$eval('[data-wizard-slide="mobile-handoff"]', node => node.hidden), false);
-      assert.match(await page.$eval('[data-mobile-handoff-message]', node => node.textContent), /emailed to operator@example\.com/i);
+      assert.match(await page.$eval('[data-mobile-handoff-message]', node => node.textContent), new RegExp(`emailed to ${accountEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i'));
       assert.equal(await page.$eval('[data-skip-setup]', node => getComputedStyle(node).display), 'none');
       assert.equal(await page.$eval('[data-proceed-mobile]', node => node.textContent.trim()), 'Proceed →');
       await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
@@ -184,6 +206,10 @@ try {
       assert.equal(await page.$eval('[data-file-count]', node => node.textContent), '1');
       await page.reload({ waitUntil: 'networkidle0' });
       assert.equal(await page.$eval('[data-file-count]', node => node.textContent), '1');
+    }
+    if (name === 'account-library-mobile') {
+      await mobileMastAudit(page, name);
+      assert.equal(await page.$$eval('[data-account-file]', nodes => new Set(nodes.map(node => node.dataset.accountFile)).size), await page.$$eval('[data-account-file]', nodes => nodes.length), 'selected My File folder must not repeat an asset handle');
     }
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
   }

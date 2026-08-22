@@ -10,17 +10,102 @@ export function readableHandle(handle = '') {
   return titleFromHandle(handle);
 }
 
+const isRevokedRecord = (item = {}) => ['refunded', 'disputed'].includes(item.paymentStatus) ||
+  item.entitlementStatus === 'revoked' || item.owned === false;
+
+const hasEffectiveAccess = (item = {}) => !isRevokedRecord(item) && Boolean(
+  item.owned === true || item.free || item.membership || item.permanent,
+);
+
+const timestamp = value => {
+  const parsed = Date.parse(value || '');
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const latestValue = (items, keys) => items
+  .flatMap(item => keys.map(key => item[key]).filter(Boolean))
+  .sort((a, b) => timestamp(b) - timestamp(a))[0] || '';
+
+const accessRank = item => (
+  (item.orderId && item.permanent ? 32 : 0) +
+  (item.orderId ? 16 : 0) +
+  (item.permanent ? 8 : 0) +
+  (item.membership ? 4 : 0) +
+  (item.free ? 2 : 0) +
+  (item.owned === true ? 1 : 0)
+);
+
+const strongestRecord = items => [...items].sort((a, b) =>
+  accessRank(b) - accessRank(a) ||
+  timestamp(b.lastInstalledAt || b.purchasedAt || b.addedAt) - timestamp(a.lastInstalledAt || a.purchasedAt || a.addedAt),
+)[0];
+
+/**
+ * Collapse Commerce entitlement history to one effective library file per
+ * asset. This is a read projection only: it does not create a second library
+ * store or replace Commerce as the access authority.
+ */
+export function mergeEffectiveAccountLibrary(records = []) {
+  const grouped = new Map();
+  for (const record of records) {
+    const handle = String(record?.handle || '').trim();
+    if (!handle) continue;
+    if (!grouped.has(handle)) grouped.set(handle, []);
+    grouped.get(handle).push(record);
+  }
+
+  return [...grouped.entries()].map(([handle, duplicates]) => {
+    const effective = duplicates.filter(hasEffectiveAccess);
+    const installedAt = latestValue(duplicates, ['lastInstalledAt', 'installedAt']);
+    const addedAt = latestValue(duplicates, ['purchasedAt', 'addedAt']);
+
+    if (effective.length) {
+      const base = strongestRecord(effective);
+      const activeOrder = strongestRecord(effective.filter(item => item.orderId));
+      const merged = {
+        ...base,
+        handle,
+        owned: true,
+        free: effective.some(item => item.free === true),
+        membership: effective.some(item => item.membership === true),
+        permanent: effective.some(item => item.permanent === true),
+      };
+      if (activeOrder?.orderId) merged.orderId = activeOrder.orderId;
+      else delete merged.orderId;
+      if (activeOrder?.paymentStatus) merged.paymentStatus = activeOrder.paymentStatus;
+      else if (isRevokedRecord(merged)) delete merged.paymentStatus;
+      if (merged.entitlementStatus === 'revoked') delete merged.entitlementStatus;
+      if (installedAt) merged.lastInstalledAt = installedAt;
+      if (addedAt) {
+        merged.purchasedAt = addedAt;
+        merged.addedAt = addedAt;
+      }
+      return merged;
+    }
+
+    const revoked = strongestRecord(duplicates);
+    const merged = { ...revoked, handle, owned: false };
+    if (!isRevokedRecord(merged)) merged.entitlementStatus = 'revoked';
+    if (installedAt) merged.lastInstalledAt = installedAt;
+    if (addedAt) {
+      merged.purchasedAt = addedAt;
+      merged.addedAt = addedAt;
+    }
+    return merged;
+  });
+}
+
 export function accessLabel(item = {}) {
-  if (item.free) return 'Free tool';
   if (item.paymentStatus === 'refunded') return 'Refunded / access removed';
-  if (item.entitlementStatus === 'revoked' || !item.owned) return 'Access revoked';
+  if (isRevokedRecord(item)) return 'Access revoked';
+  if (item.free) return 'Free tool';
   if (item.membership && item.permanent) return 'Membership + permanent';
   if (item.membership) return 'Membership access';
   return item.permanent ? 'Permanent access' : 'Membership access';
 }
 
 export function accountFileAction(item = {}) {
-  if (item.paymentStatus === 'refunded' || item.entitlementStatus === 'revoked' || item.owned === false) {
+  if (isRevokedRecord(item)) {
     return {
       href: `/v3/product/?handle=${encodeURIComponent(item.handle || '')}`,
       label: 'Access status →',
