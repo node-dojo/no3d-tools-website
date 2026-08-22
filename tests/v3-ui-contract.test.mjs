@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { FALLBACK_PRODUCTS, normalizeProduct, resolveMedia } from '../v3/js/api.js';
+import { FALLBACK_PRODUCTS, normalizeProduct, resolveMedia, selectWorkbenchInventory } from '../v3/js/api.js';
 
 const root = new URL('../', import.meta.url);
 const load = path => readFile(new URL(path, root), 'utf8');
@@ -55,11 +55,24 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(workbench, /Add to My File/);
   assert.match(workbench, /source-browser/);
   assert.match(client, /getCatalog\(\)/);
-  assert.match(client, /presentationMode === 'workbench'/);
+  assert.match(client, /selectWorkbenchInventory/);
   assert.match(client, /no3d_my_file_handles/);
   assert.match(api, /presentationMode: presentation\.mode \|\| 'flagship'/);
+  assert.match(api, /presentationMode === 'workbench'/);
   assert.match(catalog, /presentation: p\.metadata\?\.presentation/);
   assert.match(catalog, /workbench: p\.metadata\?\.workbench/);
+});
+
+test('Workbench live inventory replaces previews and excludes archived records', () => {
+  const preview = [{ handle: 'preview-only' }];
+  const flagship = { handle: 'flagship', presentationMode: 'flagship', releaseStatus: 'stable' };
+  const archived = { handle: 'old-file', presentationMode: 'workbench', releaseStatus: 'archived' };
+  assert.deepEqual(selectWorkbenchInventory({ products: [flagship, archived] }, preview), { entries: preview, live: [], state: 'preview' });
+  const live = { handle: 'real-file', presentationMode: 'workbench', releaseStatus: 'experimental' };
+  const result = selectWorkbenchInventory({ products: [flagship, archived, live] }, preview);
+  assert.deepEqual(result.entries, [live]);
+  assert.equal(result.state, 'live');
+  assert.equal(selectWorkbenchInventory({ products: [], error: 'offline' }, preview).state, 'offline-preview');
 });
 
 test('onboarding follows account, install, automatic connection, and library without redundant consent', async () => {

@@ -40,9 +40,16 @@ The website derives missing workbench presentation without blocking publication:
 
 - Existing `access_policy`, offers, subscriptions, purchases, and entitlements remain authoritative.
 - “My File” is a presentation-level selection tray. It never fabricates an entitlement.
+- Guest selections persist on that device. After a verified sign-in, the guest tray is merged into an account-scoped device tray without claiming server ownership or cross-device sync.
 - Members receive the existing complete effective manifest and automatic updates.
 - Free and individually owned products continue through the existing account, manifest, checkout, and download endpoints.
 - A workbench entry does not require a product-detail page.
+
+## Live transition
+
+- Any active, non-archived product with `metadata.presentation.mode: "workbench"` switches the directory from design-preview inventory to live catalog inventory.
+- Preview records are never mixed with live products.
+- API failure retains the design preview and explicitly labels it `Offline preview`; it never presents sample files as owned or downloadable.
 
 ## SOLVET publish boundary
 

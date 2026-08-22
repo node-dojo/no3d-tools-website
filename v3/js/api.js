@@ -116,6 +116,16 @@ export function normalizeProduct(product = {}) {
   };
 }
 
+export function selectWorkbenchInventory(catalog = {}, preview = []) {
+  const products = Array.isArray(catalog.products) ? catalog.products : [];
+  const live = products.filter(product => product.presentationMode === 'workbench' && product.releaseStatus !== 'archived');
+  return {
+    entries: live.length ? live : preview,
+    live,
+    state: live.length ? 'live' : catalog.error ? 'offline-preview' : 'preview',
+  };
+}
+
 async function request(path, options = {}, timeout = 10000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
@@ -141,8 +151,12 @@ export async function getCatalog() {
       const list = Array.isArray(payload) ? payload : payload.products;
       if (!Array.isArray(list) || list.length === 0) throw primaryError;
       return { products: list.map(normalizeProduct), source: 'legacy' };
-    } catch {
-      return { products: FALLBACK_PRODUCTS.map(normalizeProduct), source: 'sample' };
+    } catch (fallbackError) {
+      return {
+        products: FALLBACK_PRODUCTS.map(normalizeProduct),
+        source: 'sample',
+        error: fallbackError instanceof Error ? fallbackError.message : 'catalog_unavailable',
+      };
     }
   }
 }

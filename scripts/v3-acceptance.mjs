@@ -37,6 +37,7 @@ const products = [
   { id: 'bolt', handle: 'dojo-bolt-gen-v05', title: 'Dojo Bolt Gen V05', description: 'A live node instrument for printable bolts.', price: '7.77', product_type: 'Geometry Nodes', tags: ['Geometry', 'Node edition'], release_status: 'stable', release_version: '05.3', image: '/assets/product-images/Dojo Bolt Gen v05.gif', thumbnail_image: '/assets/product-images/icon_Dojo Bolt Gen v05.png' },
   { id: 'knob', handle: 'dojo-knob', title: 'Dojo Knob', description: 'A flexible parametric knob generator.', price: '7.77', product_type: 'Geometry Nodes', tags: ['Geometry', 'Generator'], release_status: 'stable', image: '/assets/product-images/Dojo Knob.gif', thumbnail_image: '/assets/product-images/icon_Dojo Knob.png' },
   { id: 'chrome', handle: 'chrome-crayon', title: 'Chrome Crayon', description: 'A linked-form generator for procedural chain studies.', price: '', product_type: 'Geometry Nodes', tags: ['Geometry', 'Generator'], release_status: 'stable', image: '/assets/product-images/icon_Dojo Crv Wrapper v4.png', thumbnail_image: '/assets/product-images/icon_Dojo Crv Wrapper v4.png' },
+  { id: 'bench-grid', handle: 'dojo-bounding-grid', title: 'Dojo Bounding Grid', description: 'A living workbench utility.', product_type: 'Geometry Nodes', tags: ['Utilities'], release_status: 'experimental', presentation: { mode: 'workbench' }, workbench: { filename: 'dojo_bounding_grid.no3d', folder: 'Utilities', maturity: 'experimental', kind: 'Geometry Nodes asset', modified_at: '2026-08-22T00:00:00Z' } },
 ];
 
 function accountPayload(authenticated) {
@@ -97,7 +98,8 @@ async function structuralAudit(page, label) {
   assert.ok(result.scrollWidth <= result.innerWidth, `${label}: horizontal overflow ${result.scrollWidth}/${result.innerWidth}`);
   assert.deepEqual(result.blue, [], `${label}: browser-blue controls`);
   assert.match(result.bodyFont, /DotoV3/);
-  assert.match(result.headingFont, /(?:DrukV3|SilkaV3)/);
+  if (label.includes('workbench')) assert.match(result.headingFont, /DotoV3/);
+  else assert.match(result.headingFont, /(?:DrukV3|SilkaV3)/);
 }
 
 const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu'] });
@@ -157,6 +159,7 @@ try {
     ['onboarding-connect-mobile', '/v3/account/?state=connect'],
     ['onboarding-complete-mobile', '/v3/account/?state=complete'],
     ['account-library-mobile', '/v3/account/'],
+    ['workbench-mobile', '/v3/workbench/'],
   ]) {
     await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
     await structuralAudit(page, name);
@@ -172,6 +175,16 @@ try {
       assert.equal(await page.$eval('[data-ready-territory]', node => getComputedStyle(node).pointerEvents), 'auto');
       continue;
     }
+    if (name === 'workbench-mobile') {
+      assert.equal(await page.$$eval('.folder-entry', nodes => nodes.length), 1);
+      assert.equal(await page.$$eval('.file-row', nodes => nodes.length), 1);
+      await page.click('.file-toggle');
+      assert.equal(await page.$eval('[data-selected-count]', node => node.textContent), '1');
+      await page.click('[data-move]');
+      assert.equal(await page.$eval('[data-file-count]', node => node.textContent), '1');
+      await page.reload({ waitUntil: 'networkidle0' });
+      assert.equal(await page.$eval('[data-file-count]', node => node.textContent), '1');
+    }
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
   }
 
@@ -185,6 +198,7 @@ try {
     ['onboarding-connect-desktop', '/v3/account/?state=connect'],
     ['onboarding-complete-desktop', '/v3/account/?state=complete'],
     ['account-library-desktop', '/v3/account/'],
+    ['workbench-desktop', '/v3/workbench/'],
   ]) {
     await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
     await structuralAudit(page, name);

@@ -1,11 +1,12 @@
-import { getAccountState, getCatalog } from './api.js?v=workbench-20260822';
+import { getAccountState, getCatalog, selectWorkbenchInventory } from './api.js?v=workbench-20260822';
 import { WORKBENCH_SAMPLE } from '../data/workbench-sample.js?v=workbench-20260822';
 import './shell.js?v=workbench-20260822';
 
 const folderIcon = '/v3/assets/shared-source-folder-black.png';
-const storageKey = 'no3d_my_file_handles';
+const guestStorageKey = 'no3d_my_file_handles';
 const selected = new Set();
-const inFile = new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'));
+let inFile = new Set();
+let storageKey = guestStorageKey;
 let entries = [];
 let activeFolder = '';
 let account = { session: { authenticated: false }, membership: null };
@@ -16,6 +17,36 @@ const search = document.querySelector('#site-search');
 const move = document.querySelector('[data-move]');
 const preview = document.querySelector('[data-selection-preview]');
 const empty = document.querySelector('[data-directory-empty]');
+const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+
+function readStoredHandles(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value.filter(handle => typeof handle === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredHandles() {
+  try { localStorage.setItem(storageKey, JSON.stringify([...inFile])); } catch {}
+}
+
+function accountStorageKey() {
+  const email = account.session?.email || account.summary?.account?.contactEmail || '';
+  return email ? `no3d_my_file_handles:${String(email).trim().toLowerCase()}` : guestStorageKey;
+}
+
+function restoreMyFile() {
+  storageKey = accountStorageKey();
+  const accountHandles = readStoredHandles(storageKey);
+  const guestHandles = storageKey === guestStorageKey ? [] : readStoredHandles(guestStorageKey);
+  inFile = new Set([...accountHandles, ...guestHandles]);
+  writeStoredHandles();
+  if (storageKey !== guestStorageKey && guestHandles.length) {
+    try { localStorage.removeItem(guestStorageKey); } catch {}
+  }
+}
 
 const displayDate = value => {
   if (!value) return '—';
@@ -85,9 +116,12 @@ function renderFolders() {
     button.className = `folder-entry${folder === activeFolder ? ' active' : ''}`;
     button.dataset.folder = folder;
     button.setAttribute('aria-pressed', String(folder === activeFolder));
-    button.innerHTML = `<img src="${folderIcon}" alt=""><span><strong>${folder}</strong><small>/shared/${folder.toLowerCase().replace(/\s+/g, '_')}/ · ${String(count).padStart(2, '0')}</small></span><span class="folder-arrow">›</span>`;
+    button.innerHTML = `<img src="${folderIcon}" alt=""><span><strong>${escapeHtml(folder)}</strong><small>/shared/${escapeHtml(folder.toLowerCase().replace(/\s+/g, '_'))}/ · ${String(count).padStart(2, '0')}</small></span><span class="folder-arrow">›</span>`;
     button.addEventListener('click', () => {
       activeFolder = folder;
+      const url = new URL(location.href);
+      url.searchParams.set('folder', folder);
+      history.replaceState({}, '', url);
       renderFolders();
       renderFiles();
       inspectFolder(folder);
@@ -108,7 +142,7 @@ function renderFiles() {
     li.className = `file-row${inFile.has(entry.handle) ? ' in-file' : ''}`;
     const label = document.createElement('label');
     label.className = 'file-label';
-    label.innerHTML = `<input class="file-toggle" type="checkbox" ${selected.has(entry.handle) ? 'checked' : ''} aria-label="Select ${entry.workbench.filename}"><span class="file-name">${entry.workbench.filename}</span><span class="file-date">${displayDate(entry.workbench.modifiedAt)}</span><span class="file-state">${entry.workbench.maturity}</span><span class="file-arrow">›</span>`;
+    label.innerHTML = `<input class="file-toggle" type="checkbox" ${selected.has(entry.handle) ? 'checked' : ''} aria-label="Select ${escapeHtml(entry.workbench.filename)}"><span class="file-name">${escapeHtml(entry.workbench.filename)}</span><span class="file-date">${escapeHtml(displayDate(entry.workbench.modifiedAt))}</span><span class="file-state">${escapeHtml(entry.workbench.maturity)}</span><span class="file-arrow">›</span>`;
     label.addEventListener('click', () => inspectFile(entry));
     label.querySelector('input').addEventListener('change', event => {
       event.target.checked ? selected.add(entry.handle) : selected.delete(entry.handle);
@@ -124,7 +158,7 @@ move.addEventListener('click', () => {
   for (const handle of selected) inFile.add(handle);
   const added = selected.size;
   selected.clear();
-  localStorage.setItem(storageKey, JSON.stringify([...inFile]));
+  writeStoredHandles();
   renderFiles();
   if (account.membership?.active) updateTray(`${added} added · your linked library receives ongoing updates automatically.`);
   else if (account.session?.authenticated) updateTray(`${added} added · membership links the whole folder and keeps it current automatically.`);
@@ -135,13 +169,25 @@ search?.addEventListener('input', renderFiles);
 
 const [catalog, accountResult] = await Promise.all([getCatalog(), getAccountState().catch(() => account)]);
 account = accountResult || account;
-const liveWorkbench = catalog.products.filter(product => product.presentationMode === 'workbench' && product.releaseStatus !== 'archived');
-entries = liveWorkbench.length ? liveWorkbench : WORKBENCH_SAMPLE;
+restoreMyFile();
+const inventory = selectWorkbenchInventory(catalog, WORKBENCH_SAMPLE);
+const liveWorkbench = inventory.live;
+entries = inventory.entries;
+if (liveWorkbench.length) {
+  const previewHandles = new Set(WORKBENCH_SAMPLE.map(entry => entry.handle));
+  inFile = new Set([...inFile].filter(handle => !previewHandles.has(handle)));
+  writeStoredHandles();
+}
 const requestedFolder = new URLSearchParams(location.search).get('folder');
 activeFolder = folders().find(folder => folder.toLowerCase() === requestedFolder?.toLowerCase()) || folders()[0] || 'Shared';
 document.querySelector('[data-workbench-count]').textContent = String(entries.length).padStart(2, '0');
-document.querySelector('[data-source-status]').textContent = `${liveWorkbench.length ? 'Connected' : 'Preview'} · NO3D://SHARED`;
-document.querySelector('[data-data-status]').textContent = liveWorkbench.length ? 'Live shared catalog' : 'Preview inventory / publish workbench entries from SOLVET to replace';
+const sourceState = inventory.state === 'live' ? 'Connected' : inventory.state === 'offline-preview' ? 'Offline preview' : 'Preview';
+document.querySelector('[data-source-status]').textContent = `${sourceState} · NO3D://SHARED`;
+document.querySelector('[data-data-status]').textContent = liveWorkbench.length
+  ? `Live shared catalog / ${liveWorkbench.length} published file${liveWorkbench.length === 1 ? '' : 's'}`
+  : catalog.error
+    ? 'Catalog unavailable / retained preview inventory / selections remain on this device'
+    : 'Preview inventory / publish workbench entries from SOLVET to replace';
 renderFolders();
 renderFiles();
 inspectFolder(activeFolder);

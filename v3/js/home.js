@@ -1,4 +1,4 @@
-import { getCatalog } from './api.js?v=perf-20260820';
+import { getCatalog, selectWorkbenchInventory } from './api.js?v=perf-20260820';
 import { renderCatalogNavigation, setDataStatus } from './shell.js?v=perf-20260820';
 import { WORKBENCH_SAMPLE } from '../data/workbench-sample.js?v=workbench-20260822';
 
@@ -45,8 +45,9 @@ function render() {
 }
 
 const catalog = await getCatalog();
-const liveWorkbench = catalog.products.filter(product => product.releaseStatus !== 'archived' && product.presentationMode === 'workbench');
-const workbench = liveWorkbench.length ? liveWorkbench : WORKBENCH_SAMPLE;
+const workbenchInventory = selectWorkbenchInventory(catalog, WORKBENCH_SAMPLE);
+const liveWorkbench = workbenchInventory.live;
+const workbench = workbenchInventory.entries;
 products = catalog.products.filter(product => product.releaseStatus !== 'archived' && product.presentationMode !== 'workbench');
 setDataStatus(catalog.source);
 renderCatalogNavigation(products, selected => {
@@ -67,4 +68,4 @@ folderList?.replaceChildren(...workbenchFolders.map(folder => {
   return link;
 }));
 document.querySelector('[data-home-workbench-count]').textContent = String(workbench.length).padStart(2, '0');
-document.querySelector('[data-home-workbench-status]').textContent = `${liveWorkbench.length ? 'Connected' : 'Preview'} · NO3D://SHARED`;
+document.querySelector('[data-home-workbench-status]').textContent = `${workbenchInventory.state === 'live' ? 'Connected' : workbenchInventory.state === 'offline-preview' ? 'Offline preview' : 'Preview'} · NO3D://SHARED`;
