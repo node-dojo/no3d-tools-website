@@ -165,7 +165,8 @@ test('product detail uses a cached handle endpoint and defers commerce from iden
   assert.match(endpoint, /\.eq\('handle', handle\)/);
   assert.match(endpoint, /s-maxage=300/);
   assert.doesNotMatch(html, /data-product-hero[^>]+src=/);
-  assert.match(html, /<video data-product-video/);
+  assert.doesNotMatch(html, /data-product-video/);
+  assert.match(html, /Main product thumbnail/);
   assert.match(productScript, /const commercePromise = getCommerceConfig\(\)/);
   assert.match(productScript, /await getProduct\(handle\)/);
 });

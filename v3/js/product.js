@@ -55,15 +55,8 @@ if (!product) {
   $('[data-changelog]').textContent = product.releaseVersion ? `Release ${product.releaseVersion}` : 'Current catalog release';
   $('[data-purpose]').textContent = product.description.split(/\n\s*\n/)[0] || 'A ready-to-use instrument for adjustable production geometry.';
   const hero = $('[data-product-hero]');
-  const video = $('[data-product-video]');
-  if (product.video) {
-    $('[data-product-video-source]').src = product.video;
-    video.poster = product.image || product.thumbnail || '/v3/assets/dojo-bolt-disassembly.webp?v=perf-20260820';
-    video.hidden = false;
-    video.load();
-    video.play().catch(() => {});
-  } else if (product.image || product.thumbnail) {
-    hero.src = product.image || product.thumbnail;
+  if (product.thumbnail || product.image) {
+    hero.src = product.thumbnail || product.image;
     hero.alt = `${product.title} product image`;
     hero.hidden = false;
   }

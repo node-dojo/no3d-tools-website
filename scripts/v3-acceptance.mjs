@@ -168,7 +168,7 @@ try {
   assert.ok(paid.inputSockets >= 10 && paid.outputSockets >= 8);
   assert.match(paid.price, /\$7\.77/);
   assert.deepEqual(paid.sideBorders, ['0px', '0px']);
-  assert.equal(paid.hero, '/v3/assets/dojo-bolt-disassembly.gif');
+  assert.equal(paid.hero, '/assets/product-images/icon_Dojo Bolt Gen v05_Obj.png');
   assert.match(paid.individualAction, /Add to Library/);
   assert.equal(paid.individualActionBackground, 'rgb(245, 255, 0)');
   assert.match(paid.catalogAction, /Get Full Catalog/);
