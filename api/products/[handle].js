@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { setCorsHeaders } from '../lib/cors.js';
 
-const PRODUCT_FIELDS = 'id, title, handle, description, vendor, product_type, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, release_status, release_version, access_policy';
+const PRODUCT_FIELDS = 'id, title, handle, description, vendor, product_type, status, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, release_status, release_version, access_policy';
+const LEGACY_PRODUCT_FIELDS = 'id, title, handle, description, vendor, product_type, status, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, release_status, release_version';
 
 function mapProductType(value) {
   const type = String(value || '').toLowerCase();
@@ -44,7 +45,13 @@ export default async function handler(req, res) {
 
   try {
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-    const { data, error } = await supabase.from('products').select(PRODUCT_FIELDS).eq('status', 'active').eq('handle', handle).maybeSingle();
+    let { data, error } = await supabase.from('products').select(PRODUCT_FIELDS).eq('status', 'active').eq('handle', handle).maybeSingle();
+    if (error) {
+      console.warn('V3 product fields unavailable; retrying with legacy schema:', error.message || error);
+      const fallback = await supabase.from('products').select(LEGACY_PRODUCT_FIELDS).eq('status', 'active').eq('handle', handle).maybeSingle();
+      data = fallback.data;
+      error = fallback.error;
+    }
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'product_not_found' });
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');

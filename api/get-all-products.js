@@ -16,6 +16,11 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
 // Feature flag for gradual rollout
 const USE_SUPABASE = process.env.USE_SUPABASE === 'true'
 
+// Production still has the original products schema. Keep the V3 enrichment
+// fields in a best-effort select so the catalog remains readable there.
+const PRODUCT_FIELDS = 'id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, access_policy, file_url, checksum, created_at, updated_at'
+const LEGACY_PRODUCT_FIELDS = 'id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, created_at, updated_at'
+
 export default async function handler(req, res) {
   if (setCorsHeaders(req, res, { methods: 'GET, OPTIONS' })) return;
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400')
@@ -43,11 +48,22 @@ export default async function handler(req, res) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
     // Fetch all active products (no pagination for this endpoint)
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('products')
-      .select('id, title, handle, description, vendor, product_type, status, asset_type, blender_version, price, sku, icon_url, preview_image_url, video_url, tags, metafields, metadata, version, cloudinary_icon_hash, cloudinary_video_hash, internal_product_code, release_status, release_version, access_policy, file_url, checksum, created_at, updated_at')
+      .select(PRODUCT_FIELDS)
       .eq('status', 'active')
       .order('created_at', { ascending: false })
+
+    if (error) {
+      console.warn('⚠️ V3 product fields unavailable; retrying with legacy schema:', error.message || error)
+      const fallback = await supabase
+        .from('products')
+        .select(LEGACY_PRODUCT_FIELDS)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+      data = fallback.data
+      error = fallback.error
+    }
 
     if (error) {
       console.error('❌ Supabase query error:', error)
