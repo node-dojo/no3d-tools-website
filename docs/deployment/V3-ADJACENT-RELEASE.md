@@ -31,9 +31,21 @@ Keep the V3 implementation intact and change routing in one small release. Prefe
 
 Do not delete legacy pages during the cutover release.
 
+The root switch is controlled by `V3_PRODUCTION_LAUNCH`. It is unset (or any
+value other than `1`, `true`, `yes`, `on`, or `enabled`) by default, so the
+legacy production root remains active. An explicit production environment
+change to `V3_PRODUCTION_LAUNCH=true` makes `/` redirect to `/v3/`; `/v3/*`
+and all legacy files/routes remain available for diagnosis and rollback. This
+flag is separate from `V3_ACCESS_MODE`, which continues to control the V3
+owner gate. Owner-gated staging also continues to route `/` into `/v3/`, so
+the existing private staging entry does not require the production flag.
+
 ## Rollback
 
-Rollback is the inverse routing change: restore the legacy entry routes while leaving the V3 code and API contracts untouched. Because V3 has no independent data model, rollback does not require catalog, entitlement, order, or customer-data migration.
+Rollback is the inverse environment change: unset `V3_PRODUCTION_LAUNCH` (or
+set it to `false`) to restore the legacy root while leaving the V3 code and API
+contracts untouched. Because V3 has no independent data model, rollback does
+not require catalog, entitlement, order, or customer-data migration.
 
 Rollback immediately for checkout failure, broken return targets, catalog failure, or a material mobile layout failure. Visual imperfections that do not affect access or purchase can be repaired in the next V3 patch.
 

@@ -1,5 +1,9 @@
 import { next } from '@vercel/functions';
-import { v3OwnerAllowed, v3OwnerGateEnabled } from './api/auth/lib/v3-access.js';
+import {
+  v3OwnerAllowed,
+  v3OwnerGateEnabled,
+  v3ProductionLaunchEnabled,
+} from './api/auth/lib/v3-access.js';
 
 const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Discordbot|Slackbot|WhatsApp|Telegram|iMessageBot|Applebot|Google-InspectionTool|Googlebot|bingbot|yandex|Pinterestbot|Embedly|Quora Link Preview|Showyoubot|outbrain|vkShare|W3C_Validator|redditbot|Mediapartners|AhrefsBot|SemrushBot|MJ12bot/i;
 
@@ -110,7 +114,7 @@ async function blogPreviewMiddleware(request) {
 
 export default async function middleware(request) {
   const { pathname } = new URL(request.url);
-  if (pathname === '/' && v3OwnerGateEnabled()) {
+  if (pathname === '/' && (v3ProductionLaunchEnabled() || v3OwnerGateEnabled())) {
     return Response.redirect(new URL('/v3/', request.url), 307);
   }
   if (pathname === '/v3' || pathname.startsWith('/v3/')) return v3AccessMiddleware(request);

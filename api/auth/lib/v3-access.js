@@ -2,6 +2,12 @@ export function v3OwnerGateEnabled(env = process.env) {
   return env.V3_ACCESS_MODE?.trim().toLowerCase() === 'owner';
 }
 
+export function v3ProductionLaunchEnabled(env = process.env) {
+  return ['1', 'true', 'yes', 'on', 'enabled'].includes(
+    env.V3_PRODUCTION_LAUNCH?.trim().toLowerCase(),
+  );
+}
+
 export function v3OwnerEmails(env = process.env) {
   return new Set(
     (env.V3_OWNER_EMAILS || '')

@@ -2,11 +2,16 @@ import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
 
 import middleware from '../middleware.js';
-import { v3OwnerAllowed, v3OwnerGateEnabled } from '../api/auth/lib/v3-access.js';
+import {
+  v3OwnerAllowed,
+  v3OwnerGateEnabled,
+  v3ProductionLaunchEnabled,
+} from '../api/auth/lib/v3-access.js';
 
 const originalFetch = globalThis.fetch;
 const originalMode = process.env.V3_ACCESS_MODE;
 const originalEmails = process.env.V3_OWNER_EMAILS;
+const originalProductionLaunch = process.env.V3_PRODUCTION_LAUNCH;
 const originalSupabaseUrl = process.env.SUPABASE_URL;
 const originalSupabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
@@ -16,6 +21,8 @@ afterEach(() => {
   else process.env.V3_ACCESS_MODE = originalMode;
   if (originalEmails === undefined) delete process.env.V3_OWNER_EMAILS;
   else process.env.V3_OWNER_EMAILS = originalEmails;
+  if (originalProductionLaunch === undefined) delete process.env.V3_PRODUCTION_LAUNCH;
+  else process.env.V3_PRODUCTION_LAUNCH = originalProductionLaunch;
   if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
   else process.env.SUPABASE_URL = originalSupabaseUrl;
   if (originalSupabaseAnonKey === undefined) delete process.env.SUPABASE_ANON_KEY;
@@ -34,21 +41,33 @@ test('owner allowlist compares normalized exact email addresses', () => {
   assert.equal(v3OwnerAllowed(undefined, env), false);
 });
 
+test('production launch is opt-in and accepts only explicit true-like values', () => {
+  assert.equal(v3ProductionLaunchEnabled({}), false);
+  assert.equal(v3ProductionLaunchEnabled({ V3_PRODUCTION_LAUNCH: 'false' }), false);
+  assert.equal(v3ProductionLaunchEnabled({ V3_PRODUCTION_LAUNCH: ' enabled ' }), true);
+});
+
 test('middleware leaves the public production V3 unchanged when the gate is disabled', async () => {
   delete process.env.V3_ACCESS_MODE;
   const response = await middleware(new Request('https://no3dtools.com/v3/'));
   assert.equal(response.headers.get('x-middleware-next'), '1');
 });
 
-test('private staging root enters the guarded V3 route while production root remains unchanged', async () => {
+test('production root remains legacy by default and switches only with the launch flag', async () => {
   delete process.env.V3_ACCESS_MODE;
   const production = await middleware(new Request('https://no3dtools.com/'));
   assert.equal(production.headers.get('x-middleware-next'), '1');
 
+  process.env.V3_PRODUCTION_LAUNCH = 'true';
+  const launched = await middleware(new Request('https://no3dtools.com/'));
+  assert.equal(launched.status, 307);
+  assert.equal(new URL(launched.headers.get('location')).pathname, '/v3/');
+
+  delete process.env.V3_PRODUCTION_LAUNCH;
   process.env.V3_ACCESS_MODE = 'owner';
-  const staging = await middleware(new Request('https://v3.no3dtools.com/'));
-  assert.equal(staging.status, 307);
-  assert.equal(new URL(staging.headers.get('location')).pathname, '/v3/');
+  const ownerGateOnly = await middleware(new Request('https://v3.no3dtools.com/'));
+  assert.equal(ownerGateOnly.status, 307);
+  assert.equal(new URL(ownerGateOnly.headers.get('location')).pathname, '/v3/');
 });
 
 test('middleware permits gate assets and redirects an unauthenticated V3 request', async () => {
