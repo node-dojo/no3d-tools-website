@@ -8,6 +8,39 @@ Promote the approved V3 surfaces from a visual adjacent tranche into one staged 
 
 The release is complete only when both an individual purchaser and a member can leave, return, authenticate, and recover the same effective library.
 
+## Current handoff state — 2026-08-23
+
+- V3 Home, Product, managed account entry, Account/My File, install guidance,
+  individual checkout return, and the Directory.001 account library are present
+  on `feat/v3-adjacent` through commit `b0f9ae8`.
+- Account creation/sign-in retry handling, product-thumbnail selection, and the
+  per-purchase account delivery surface have been repaired in the current
+  candidate.
+- A real individual purchase reached the account successfully. The account
+  library is now the intended delivery surface; redundant purchase-summary
+  presentation should continue to be collapsed into Directory.001.
+- The free collection is published as 12 free assets. The stored delivery
+  manifest contains 53 assets total, with 41 remaining catalog-only.
+- The public Blender extension repository and version 2.7.3 archive respond
+  successfully. The repository distributes the add-on only; account/device
+  authorization controls the asset manifest and individual downloads.
+- SOLVET V3 expansion is frozen for launch. Continue using the existing local
+  catalog and sync path; do not make launch depend on the unfinished Core/CLI
+  redesign.
+
+### Remaining launch-critical verification
+
+1. Remove or filter the unused raw-manifest redirect path.
+2. Pair a non-member account to an empty Blender library directory and verify
+   that exactly the 12 free assets appear.
+3. Define safe behavior for pre-existing unmanaged files and for switching a
+   Blender installation between accounts.
+4. Re-run the free, per-purchase, member, refund, recovery, and device smoke
+   tests against the actual production candidate.
+5. Complete the optional per-product ASCII-diagram projection described in the
+   project handoff. A product with no diagram must render no exposed-parameters
+   panel.
+
 ## Customer routes
 
 | Customer need | V3 route | Authority |

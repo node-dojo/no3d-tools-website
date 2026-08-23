@@ -68,18 +68,64 @@ Private release-candidate infrastructure and the 30-day teardown boundary are sp
 
 Founder quotation blocks are written as spoken copy for a future personal video/voice asset. Correct obvious grammar and spelling while retaining colloquial phrasing.
 
+## Home banner slot
+
+`/v3/` ships an empty, hidden `<section class="home-banner" data-home-banner hidden>`
+directly above the catalog.
+
+The hero that previously occupied this slot was a layout study used while
+iterating on the V3 home. It was never approved as customer-facing copy or art
+and must not be restored into the page.
+
+Its **band geometry is approved** and is recorded in the canon package as
+`HOME-BANNER.md` — desktop and mobile band heights, padding,
+headline, artwork, action, stacking order, and flow behaviour — with the
+structural values also entered in canon `TOKENS.md` under `banner.*`. A
+replacement banner implements that specification; it does not re-derive it.
+
+What remains **unapproved**: the arrival-to-catalog contraction motion, the
+contracted-state geometry and its `FlagshipShelf` occupant, the reduced-motion
+policy, and the banner's final content. `DEFERRED-TASKS.md` D-001 owns the
+motion and states explicitly that its calibration figures are starting points,
+not tokens; D-002 owns the free add-on launch banner content. No collapse
+behaviour was ever implemented in `/v3/`.
+
+The slot stays hidden until the addon messaging banner is designed. Reveal it
+only by rendering real banner content into it and removing `hidden` in the same
+change — never by unhiding an empty or placeholder banner. `html [hidden]` is
+`display:none!important` and is guarded by a contract test, so the hidden state
+cannot be overridden from a stylesheet.
+
+While the slot is empty, Home carries its document heading in
+`.v3-page-title`, a visually hidden `<h1>` set in the display face. The
+`.catalog-head h2` grid title remains styled but `display:none`; turning it on
+is a separate approved design decision, not a side effect of hiding the banner.
+
+The retired `.home-hero` rules remain in `v3/styles/v3.css` as the raw
+extraction record behind `HOME-BANNER.md`. They are unreferenced by any markup.
+
 ## Canon snapshot
 
-Snapshot recorded 2026-08-18. SHA-256 values make later drift explicit.
+Snapshot re-taken 2026-08-23. SHA-256 values make later drift explicit.
+
+The previous snapshot was recorded 2026-08-18. Between those dates `CANON.md`,
+`TOKENS.md`, `COMPONENTS.md`, and `SCREEN-ROADMAP.md` changed in the canon
+without the snapshot being reconciled — the mechanism worked, the reconciliation
+was simply never run. Today's banner change edits `TOKENS.md`, `COMPONENTS.md`,
+and `DEFERRED-TASKS.md` and adds `HOME-BANNER.md`. All eleven original masters
+plus the two newly load-bearing documents are re-recorded below. The five HTML
+masters are unchanged since 2026-08-18.
 
 | Canon file | SHA-256 |
 | --- | --- |
-| `CANON.md` | `793f7521266699521e94fe1e520f0b18a8aabc5c4272a579b18f4e02bf5d940f` |
+| `CANON.md` | `190b1b565b7d57f1e148e1d58e5786c643847269a313c99cfe06b722a4ee9a4e` |
 | `DESIGN-LANGUAGE.md` | `20ecdb40bd3adc9ea453044ec5d408251b6ae9eaa8f353a5e6171b0a0c96105c` |
 | `MOBILE-DECISIONS.md` | `c73330c3fc814d622e06ac723020fe3aca71a73838230c82260ffb61eefaa399` |
-| `TOKENS.md` | `23c0fb3ef61899f90e6f5a22f1866aa4369f68617526fbe5cb999a58cfd26d7e` |
-| `COMPONENTS.md` | `017d6a888c3fc49df1509b91cd440e99a86840e78312c8d2ddabd627c77e6bfb` |
-| `SCREEN-ROADMAP.md` | `ab9fb4ae7192f7026986cde5a59dd9ad881193f8694485cd4843dbe7619522af` |
+| `TOKENS.md` | `3556ba0716c9e262d18b76be0994f398ee6fdc1fd765f019bc19b1465c598864` |
+| `COMPONENTS.md` | `40a499403abc04a0e8a2d7296c013058bc011effcf3d102f7410889f80e1cc4a` |
+| `SCREEN-ROADMAP.md` | `d396bf93905294737e1680be54df8344552e02e87687a04af62c069299bc9f3f` |
+| `DEFERRED-TASKS.md` | `bd321db260e27ebb38a9e3b8d8ee09388374be0c141cb7c62179151b9950d4df` |
+| `HOME-BANNER.md` | `bad374728865a97fe6c122dd34f3777d486f99028271bff8af6b0862edaff9e9` |
 | `home-02d-site-rail.html` | `55f53ab0a6bf82b0f3ba5f8ef05515c70096ba881a250beae54e2de088474c5a` |
 | `account-01c-flow-states.html` | `1d447985cbb859736205264cc18607ef3b5cb3a20bab683b4395e7b7a356ff1c` |
 | `product-detail-04d-assembled-manual.html` | `cf3d155333972841c5455d91fb632e97a6c948b8830b9f1fb8877d792a0886e5` |

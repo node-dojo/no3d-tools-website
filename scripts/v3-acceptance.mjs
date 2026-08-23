@@ -143,13 +143,13 @@ try {
   assert.ok(catalogCards.every(card => card.delta < 1), 'home product media must be square');
   assert.ok(catalogCards.every(card => card.mediaBackground === 'rgba(0, 0, 0, 0)'), 'home product media must be transparent');
   assert.ok(catalogCards.every(card => card.titleCrossesBoundary), 'home product titles must cross the square boundary');
-  const closedTop = await page.$eval('.home-hero', node => node.getBoundingClientRect().top);
+  const closedTop = await page.$eval('.catalog-section', node => node.getBoundingClientRect().top);
   await page.click('[data-catalog-toggle]');
-  const openTop = await page.$eval('.home-hero', node => node.getBoundingClientRect().top);
+  const openTop = await page.$eval('.catalog-section', node => node.getBoundingClientRect().top);
   assert.ok(openTop > closedTop + 40, `mobile catalog must push content downward (${closedTop} -> ${openTop})`);
   await page.screenshot({ path: join(outputDir, 'home-mobile-open.png') });
   await page.click('[data-catalog-toggle]');
-  const restoredTop = await page.$eval('.home-hero', node => node.getBoundingClientRect().top);
+  const restoredTop = await page.$eval('.catalog-section', node => node.getBoundingClientRect().top);
   assert.equal(restoredTop, closedTop, 'mobile catalog must restore document flow when closed');
   await page.screenshot({ path: join(outputDir, 'home-mobile.png') });
 

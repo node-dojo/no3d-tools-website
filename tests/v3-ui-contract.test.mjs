@@ -125,11 +125,11 @@ test('onboarding installs first and exposes connection only to a Blender-issued 
   assert.match(account, /updates automatically/i);
 });
 
-test('Home uses one story headline and transparent square catalog media', async () => {
+test('Home keeps a document heading and transparent square catalog media', async () => {
   const html = await load('v3/index.html');
   const css = await load('v3/styles/v3.css');
-  assert.equal((html.match(/Tools For the Future Old School/gi) || []).length, 1);
-  assert.doesNotMatch(html, /<h2[^>]*>Tools for Old School of the Future/i);
+  assert.equal((html.match(/<h1[^>]*>/g) || []).length, 1);
+  assert.match(css, /\.v3-page-title\{[^}]*var\(--display\)/);
   assert.match(css, /\.product-media\{[^}]*aspect-ratio:1[^}]*background:transparent/);
   assert.match(css, /\.product-card h3\{[^}]*transform:translateY\(-50%\)[^}]*background:transparent/);
 });
@@ -304,4 +304,20 @@ test('staging rollout expires and keeps the teaser outside the deployable reposi
   assert.match(staging, /V3_ACCESS_MODE.*unset in production/i);
   assert.match(staging, /Stripe test Checkout/i);
   assert.match(staging, /Delete both Supabase branches/i);
+});
+
+test('the Home banner slot ships hidden and empty until a real banner exists', async () => {
+  const html = await load('v3/index.html');
+  const banner = html.match(/<section class="home-banner"[^>]*>([\s\S]*?)<\/section>/);
+  assert.ok(banner, 'Home must keep an addressable banner slot');
+  assert.match(banner[0], /\shidden(\s|>)/, 'the banner slot must ship hidden');
+  assert.equal(banner[1].trim(), '', 'the banner slot must ship empty');
+});
+
+test('the retired home hero fixture cannot reach a customer', async () => {
+  const html = await load('v3/index.html');
+  assert.doesNotMatch(html, /Story fixture/i);
+  assert.doesNotMatch(html, /Tools For the Future Old School/i);
+  assert.doesNotMatch(html, /home-hero/);
+  assert.doesNotMatch(html, /mace\.png/);
 });

@@ -13,6 +13,7 @@
     "acceptance:v3:commerce": "node scripts/v3-commerce-acceptance.mjs",
     "acceptance:v3:device": "node scripts/v3-device-acceptance.mjs",
     "acceptance:v3:free": "node scripts/v3-free-access-acceptance.mjs",
+    "acceptance:v3:isolation": "node scripts/v3-free-isolation-acceptance.mjs",
     "acceptance:v3:membership": "node scripts/v3-membership-acceptance.mjs",
     "acceptance:v3:refund": "node scripts/v3-refund-acceptance.mjs",
     "acceptance:v3:recovery": "node scripts/v3-recovery-acceptance.mjs",

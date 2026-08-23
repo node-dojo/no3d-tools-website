@@ -1,7 +1,8 @@
 /**
  * GET /api/manifest
  * Auth: X-License-Key header, Authorization: Bearer, or ?license_key=
- * Returns manifest JSON (from R2). Align NO3D_LIBRARY_VERSION with manifest.version when publishing.
+ * Returns the entitlement-filtered manifest JSON (from R2). Never the raw object.
+ * Align NO3D_LIBRARY_VERSION with manifest.version when publishing.
  */
 
 import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
@@ -80,8 +81,6 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'No active membership or purchased products', status: access.effectiveStatus });
   }
 
-  const redirect = req.query?.redirect === '1' || req.query?.redirect === 'true';
-
   const inlineFallback = process.env.NO3D_MANIFEST_JSON;
   const r2Configured = Boolean(
     process.env.R2_ENDPOINT &&
@@ -103,17 +102,11 @@ export default async function handler(req, res) {
   const { getManifestObjectKey, presignGetObject } = await import('./lib/r2.js');
   const key = getManifestObjectKey();
 
-  if (redirect) {
-    try {
-      const url = await presignGetObject(key, 600);
-      res.setHeader('Location', url);
-      return res.status(302).end();
-    } catch (e) {
-      console.error('manifest presign error:', e?.message || e);
-      res.setHeader('Content-Type', 'application/json');
-      return res.status(500).json({ error: 'Failed to create manifest URL' });
-    }
-  }
+  // No unfiltered escape hatch: the raw R2 manifest is policy-bearing and lists
+  // every published asset. A presigned redirect would hand the complete catalog
+  // to any authenticated free or single-product account. Every 200 response on
+  // this route must pass through filterEffectiveManifest. Requests carrying a
+  // legacy `?redirect=1` fall through to that same filtered response.
 
   try {
     // Use presigned URL + node:https (not fetch) to avoid undici adding
