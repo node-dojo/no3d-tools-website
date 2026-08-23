@@ -32,8 +32,11 @@
             </div>
             <div class="wizard-slide" data-wizard-slide="install-action" hidden>
               <div class="wizard-prompt"><h2>Install NO3D Tools</h2><span data-selected-version>Blender 5.2+</span></div>
-              <div class="install-actions"><a class="setup-primary" data-install-primary href="blender://extensions/add-repo?url=https%3A%2F%2Fno3dtools.com%2Fextensions%2Findex.json">Open In Blender ↗</a><a class="setup-secondary" href="/api/download-addon">Download .zip ↓</a></div>
-              <div class="wizard-controls"><button type="button" data-wizard-back>← Change version</button><a href="?state=connect" data-connect-next>Installed? Connect My Library →</a></div>
+              <div class="install-actions">
+                <div class="install-action setup-primary"><a data-install-primary data-install-mode="repository" href="https://no3dtools.com/extensions/index.json">Copy Repository Link ↗</a><ol data-install-primary-help><li>Open Blender</li><li>Open Get Extensions</li><li>Repositories → Add Remote Repository</li><li>Paste the copied link</li></ol></div>
+                <div class="install-action setup-secondary"><a href="/api/download-addon">Download .zip ↓</a><ol><li>Download the extension .zip</li><li>Drag the .zip into Blender</li><li>Confirm installation</li></ol></div>
+              </div>
+              <div class="wizard-controls"><button type="button" data-wizard-back>← Change version</button><button type="button" data-skip-setup>Continue to My File →</button></div>
             </div>
             <div class="wizard-slide mobile-desktop-handoff" data-wizard-slide="mobile-handoff" hidden>
               <div class="mobile-handoff-copy"><span class="technical">Blender workstation / Desktop required</span><h2>Continue On Your Desktop</h2><p data-mobile-handoff-message aria-live="polite">Preparing your desktop setup link…</p></div>

@@ -99,7 +99,7 @@ test('Workbench live inventory replaces previews and excludes archived records',
   assert.equal(selectWorkbenchInventory({ products: [], error: 'offline' }, preview).state, 'offline-preview');
 });
 
-test('onboarding follows account, install, automatic connection, and library without redundant consent', async () => {
+test('onboarding installs first and exposes connection only to a Blender-issued code', async () => {
   const createAccount = await load('v3/onboarding/create-account/index.html');
   const account = await load('v3/account/index.html');
   const accountScript = await load('v3/js/account.js');
@@ -108,7 +108,8 @@ test('onboarding follows account, install, automatic connection, and library wit
   assert.match(await load('v3/js/onboarding.js'), /Too many account attempts from this connection/);
   assert.match(createAccount, /Continue with Google/i);
   assert.match(createAccount, /Continue with GitHub/i);
-  assert.match(account, /Connect My Library/i);
+  assert.match(account, /Continue to My File/i);
+  assert.match(accountScript, /requestedStateParam === 'connect' && !params\.get\('code'\) \? 'ready'/);
   assert.match(account, /No license keys or folder setup/i);
   assert.match(account, /No added approval step/i);
   assert.doesNotMatch(account, /Establish sync|Approve this Blender|Pairing code/i);

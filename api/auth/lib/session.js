@@ -3,6 +3,7 @@ import crypto from 'crypto';
 const ACCESS_COOKIE = 'no3d_auth_access';
 const REFRESH_COOKIE = 'no3d_auth_refresh';
 const VERIFIER_COOKIE = 'no3d_auth_pkce';
+const NEXT_COOKIE = 'no3d_auth_next';
 
 function requiredEnv(name) {
   const value = process.env[name]?.trim();
@@ -82,7 +83,16 @@ export function clearAuthCookies(res, { includeGuest = false } = {}) {
   clearCookie(res, ACCESS_COOKIE);
   clearCookie(res, REFRESH_COOKIE);
   clearCookie(res, VERIFIER_COOKIE);
+  clearCookie(res, NEXT_COOKIE);
   if (includeGuest) clearCookie(res, 'no3d_commerce_guest');
+}
+
+export function readAuthNext(req) {
+  return safeAuthNext(readCookie(req, NEXT_COOKIE));
+}
+
+export function clearAuthNext(res) {
+  clearCookie(res, NEXT_COOKIE);
 }
 
 export function safeAuthNext(value) {
@@ -121,6 +131,8 @@ function callbackUrl(req, recoveryToken, next) {
 
 export async function requestSignInLink(req, res, email, { recoveryToken, next } = {}) {
   const challenge = pkceChallenge(res);
+  const safeNext = safeAuthNext(next);
+  if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
   const redirectTo = encodeURIComponent(callbackUrl(req, recoveryToken, next));
   await authFetch(`/otp?redirect_to=${redirectTo}`, {
     body: {
@@ -134,6 +146,8 @@ export async function requestSignInLink(req, res, email, { recoveryToken, next }
 
 export async function passwordSignUp(req, res, email, password, { next } = {}) {
   const challenge = pkceChallenge(res);
+  const safeNext = safeAuthNext(next);
+  if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
   const redirectTo = encodeURIComponent(callbackUrl(req, undefined, next));
   const payload = await authFetch(`/signup?redirect_to=${redirectTo}`, {
     body: { email, password, code_challenge: challenge, code_challenge_method: 's256', data: {} },
@@ -142,6 +156,7 @@ export async function passwordSignUp(req, res, email, password, { next } = {}) {
   if (session) {
     storeSession(res, session);
     clearCookie(res, VERIFIER_COOKIE);
+    clearCookie(res, NEXT_COOKIE);
   }
   const user = payload.user || session?.user || null;
   const accountExists = Boolean(user && Array.isArray(user.identities) && user.identities.length === 0);
@@ -159,12 +174,15 @@ export async function passwordSignIn(res, email, password) {
   if (!session) throw new Error('Password sign-in returned no session');
   storeSession(res, session);
   clearCookie(res, VERIFIER_COOKIE);
+  clearCookie(res, NEXT_COOKIE);
   return { authenticated: true, user: payload.user || session.user || null };
 }
 
 export function oauthAuthorizationUrl(req, res, provider, { next } = {}) {
   if (!['google', 'github'].includes(provider)) throw new Error('Unsupported OAuth provider');
   const challenge = pkceChallenge(res);
+  const safeNext = safeAuthNext(next);
+  if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
   const redirectTo = callbackUrl(req, undefined, next);
   const query = new URLSearchParams({
     provider,

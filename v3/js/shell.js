@@ -20,6 +20,7 @@ export function initShell() {
       const opening = searchRegion.hidden;
       searchRegion.hidden = !opening;
       searchButton.setAttribute('aria-expanded', String(opening));
+      document.querySelector('.mobile-home')?.classList.toggle('is-searching', opening);
       if (opening) searchRegion.querySelector('input')?.focus();
     });
   }

@@ -6,7 +6,8 @@ const $$ = selector => [...document.querySelectorAll(selector)];
 const params = new URLSearchParams(location.search);
 const pathOrder = location.pathname.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1];
 const orderId = params.get('commerce_order') || pathOrder || '';
-const requestedState = ['install', 'connect', 'complete'].includes(params.get('state')) ? params.get('state') : 'ready';
+const requestedStateParam = ['install', 'connect', 'complete'].includes(params.get('state')) ? params.get('state') : 'ready';
+const requestedState = requestedStateParam === 'connect' && !params.get('code') ? 'ready' : requestedStateParam;
 const state = { products: [], files: [], catalog: new Map(), authenticated: false, member: false, membership: null, accountKey: 'anonymous', setup: requestedState, activeFolder: '', inspectedHandle: '' };
 const folderIcon = '/v3/assets/shared-source-folder-black.png';
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
@@ -323,7 +324,15 @@ async function monitorMembershipCheckout(email) {
   $('[data-order-detail]').textContent = 'Membership is still processing. It will appear here automatically after Stripe fulfillment completes.';
 }
 
-const { session, catalog, summary, membership } = await getAccountState();
+const localSetupPreview = ['127.0.0.1', 'localhost'].includes(location.hostname) && params.get('preview') === 'setup';
+const { session, catalog, summary, membership } = localSetupPreview
+  ? {
+      session: { authenticated: true, email: 'preview@no3dtools.local' },
+      catalog: new Map(),
+      summary: { account: { id: 'local-setup-preview', contactEmail: 'preview@no3dtools.local' }, products: [], memberships: [] },
+      membership: null
+    }
+  : await getAccountState();
 state.authenticated = session.authenticated === true;
 if (!state.authenticated) {
   const next = `${location.pathname}${location.search}`;
@@ -385,12 +394,17 @@ if (!state.authenticated) {
     localStorage.setItem('no3d_blender_version', version);
     $('[data-selected-version]').textContent = version === 'Before 4.2' ? version : `Blender ${version}`;
     const primary = $('[data-install-primary]');
+    const primaryHelp = $('[data-install-primary-help]');
     if (version === 'Before 4.2') {
       primary.textContent = 'Download Legacy .zip ↓';
       primary.href = '/api/download-addon';
+      primary.dataset.installMode = 'download';
+      primaryHelp.innerHTML = '<li>Download the legacy add-on .zip</li><li>Open Blender Preferences → Add-ons</li><li>Choose Install from Disk</li><li>Select the downloaded .zip</li>';
     } else {
-      primary.textContent = 'Open In Blender ↗';
-      primary.href = 'blender://extensions/add-repo?url=https%3A%2F%2Fno3dtools.com%2Fextensions%2Findex.json';
+      primary.textContent = 'Copy Repository Link ↗';
+      primary.href = 'https://no3dtools.com/extensions/index.json';
+      primary.dataset.installMode = 'repository';
+      primaryHelp.innerHTML = '<li>Open Blender</li><li>Open Get Extensions</li><li>Repositories → Add Remote Repository</li><li>Paste the copied link</li>';
     }
     $('[data-wizard-slide="version"]').hidden = true;
     $('[data-wizard-slide="install-action"]').hidden = false;
@@ -400,6 +414,21 @@ if (!state.authenticated) {
     $$('.version-choices input').forEach(input => { input.checked = false; });
     $('[data-wizard-slide="install-action"]').hidden = true;
     $('[data-wizard-slide="version"]').hidden = false;
+  });
+  $('[data-install-primary]').addEventListener('click', async event => {
+    const link = event.currentTarget;
+    if (link.dataset.installMode !== 'repository') return;
+    event.preventDefault();
+    const label = link.textContent;
+    try {
+      await navigator.clipboard.writeText(link.href);
+      link.textContent = 'Repository Link Copied ✓';
+      window.setTimeout(() => { link.textContent = label; }, 1800);
+    } catch {
+      link.textContent = 'Copy Failed / Open Link ↗';
+      window.open(link.href, '_blank', 'noopener');
+      window.setTimeout(() => { link.textContent = label; }, 1800);
+    }
   });
   $('[data-show-recovery]').addEventListener('click', () => { $('.connect-slide').hidden = true; $('[data-recovery-slide]').hidden = false; });
   $('[data-hide-recovery]').addEventListener('click', () => { $('[data-recovery-slide]').hidden = true; $('.connect-slide').hidden = false; });

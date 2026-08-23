@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import test from 'node:test';
 
-import { identityAssertion, oauthAuthorizationUrl, safeAuthNext } from '../api/auth/lib/session.js';
+import { identityAssertion, oauthAuthorizationUrl, readAuthNext, safeAuthNext } from '../api/auth/lib/session.js';
 
 test('identityAssertion signs a short-lived verified Supabase identity', () => {
   process.env.COMMERCE_IDENTITY_ASSERTION_KID = 'sandbox-v1';
@@ -45,6 +45,12 @@ test('safeAuthNext permits local post-purchase routes and rejects redirects', ()
   assert.equal(safeAuthNext('https://attacker.example'), undefined);
 });
 
+test('email confirmation preserves a safe intended destination in an HttpOnly cookie', () => {
+  const request = { headers: { cookie: 'no3d_auth_next=%2Fv3%2Fproduct%2F%3Fhandle%3Ddojo-bolt-gen-v05-obj' } };
+  assert.equal(readAuthNext(request), '/v3/product/?handle=dojo-bolt-gen-v05-obj');
+  assert.equal(readAuthNext({ headers: { cookie: 'no3d_auth_next=https%3A%2F%2Fattacker.example' } }), undefined);
+});
+
 test('oauthAuthorizationUrl starts Google PKCE without exposing the verifier', () => {
   process.env.SUPABASE_URL = 'https://project.supabase.co';
   process.env.NO3D_SITE_URL = 'https://no3dtools.com';
@@ -61,6 +67,7 @@ test('oauthAuthorizationUrl starts Google PKCE without exposing the verifier', (
   assert.match(url.searchParams.get('redirect_to'), /\/api\/auth\/callback/);
   assert.doesNotMatch(url.toString(), /no3d_auth_pkce/);
   assert.match(String(headers.get('Set-Cookie')), /no3d_auth_pkce=/);
+  assert.match(String(headers.get('Set-Cookie')), /no3d_auth_next=/);
 });
 
 test('oauthAuthorizationUrl rejects providers outside the approved account methods', () => {

@@ -44,6 +44,22 @@ function render() {
   count.textContent = `${String(visible.length).padStart(2, '0')} instruments`;
 }
 
+function renderWorkbenchFolders(workbench) {
+  const folderList = document.querySelector('[data-home-folder-list]');
+  if (!folderList) return;
+  const term = search?.value.trim().toLowerCase() || '';
+  const folders = [...new Set(workbench.map(product => product.workbench.folder))]
+    .filter(folder => !term || workbench.some(product => product.workbench.folder === folder && [folder, product.workbench.filename, product.workbench.maturity, product.workbench.kind, product.workbench.summary].join(' ').toLowerCase().includes(term)))
+    .slice(0, 5);
+  folderList.replaceChildren(...folders.map(folder => {
+    const link = document.createElement('a');
+    const folderCount = workbench.filter(product => product.workbench.folder === folder && (!term || [folder, product.workbench.filename, product.workbench.maturity, product.workbench.kind, product.workbench.summary].join(' ').toLowerCase().includes(term))).length;
+    link.href = `/v3/workbench/?folder=${encodeURIComponent(folder)}${term ? `&q=${encodeURIComponent(term)}` : ''}`;
+    link.innerHTML = `<img src="/v3/assets/shared-source-folder-black.png" alt=""><span><strong>${folder}</strong><small>${String(folderCount).padStart(2, '0')} files</small></span><span>›</span>`;
+    return link;
+  }));
+}
+
 const catalog = await getCatalog();
 const workbenchInventory = selectWorkbenchInventory(catalog, WORKBENCH_SAMPLE);
 const liveWorkbench = workbenchInventory.live;
@@ -55,17 +71,12 @@ renderCatalogNavigation(products, selected => {
   render();
   document.querySelector('#catalog').scrollIntoView({ block: 'start' });
 });
-search?.addEventListener('input', render);
+search?.addEventListener('input', () => {
+  render();
+  renderWorkbenchFolders(workbench);
+});
 render();
 
-const folderList = document.querySelector('[data-home-folder-list]');
-const workbenchFolders = [...new Set(workbench.map(product => product.workbench.folder))].slice(0, 5);
-folderList?.replaceChildren(...workbenchFolders.map(folder => {
-  const link = document.createElement('a');
-  const folderCount = workbench.filter(product => product.workbench.folder === folder).length;
-  link.href = `/v3/workbench/?folder=${encodeURIComponent(folder)}`;
-  link.innerHTML = `<img src="/v3/assets/shared-source-folder-black.png" alt=""><span><strong>${folder}</strong><small>${String(folderCount).padStart(2, '0')} files</small></span><span>›</span>`;
-  return link;
-}));
+renderWorkbenchFolders(workbench);
 document.querySelector('[data-home-workbench-count]').textContent = String(workbench.length).padStart(2, '0');
 document.querySelector('[data-home-workbench-status]').textContent = `${workbenchInventory.state === 'live' ? 'Connected' : workbenchInventory.state === 'offline-preview' ? 'Offline preview' : 'Preview'} · NO3D://SHARED`;
