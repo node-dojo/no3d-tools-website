@@ -117,7 +117,7 @@ export function accountFileAction(item = {}) {
   if (item.orderId) {
     return {
       href: `/api/commerce/download/${encodeURIComponent(item.orderId)}`,
-      label: item.lastInstalledAt ? 'Check for update →' : 'Install →',
+      label: 'Download →',
     };
   }
   return {
@@ -137,6 +137,7 @@ export function accountFileView(item = {}, product = {}) {
     thumbnail: product.thumbnail || product.image || '',
     access: accessLabel(item),
     sync: item.membership ? 'Automatic' : 'Manual',
+    downloadedAt: item.lastDownloadedAt || item.downloadedAt || '',
     installedAt: item.lastInstalledAt || '',
     addedAt: item.purchasedAt || '',
     modifiedAt: item.lastInstalledAt || item.purchasedAt || workbench.modifiedAt || '',

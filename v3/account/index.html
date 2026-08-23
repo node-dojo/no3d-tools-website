@@ -65,10 +65,10 @@
 
         <div data-ready-territory>
           <section class="account-summary-strip" aria-label="Account summary"><div><b>Account</b><span data-account-tier>Free</span></div><div><b>Library</b><span data-library-count>00 tools</span></div><div><b>Blender</b><span data-summary-blender>Not connected</span></div><div><b>Updates</b><span data-update-mode>Manual</span></div></section>
-          <article class="account-state" data-latest-order id="orders" hidden><span class="technical" data-order-state>Latest purchase</span><h3 data-order-title>Preparing purchase</h3><p data-order-detail>Confirming payment and preparing your instrument.</p><a class="account-action" data-order-action hidden>Download →</a></article>
+          <article class="account-state" data-account-notice id="orders" hidden><span class="technical" data-order-state>Account notice</span><h3 data-order-title>Account update</h3><p data-order-detail></p><a class="account-action" data-order-action hidden></a></article>
           <section class="account-section account-file-section" id="library" aria-labelledby="library-title">
             <header class="account-section-head"><h2 id="library-title">My File</h2><span data-library-count>00 tools</span></header>
-            <div class="account-tools"><input type="search" data-account-search aria-label="Search your account library" placeholder="Search My File"><select data-account-sort aria-label="Sort account files"><option value="newest">Last installed</option><option value="name">Name A–Z</option><option value="access">Access type</option></select></div>
+            <div class="account-tools"><input type="search" data-account-search aria-label="Search your account library" placeholder="Search My File"><select data-account-sort aria-label="Sort account files"><option value="newest">Last downloaded</option><option value="name">Name A–Z</option><option value="access">Access type</option></select></div>
             <div class="source-window account-file-window" aria-label="My File account library directory">
               <header class="source-titlebar"><span>My File</span><span data-account-file-status>Manual updates · 00 effective assets</span></header>
               <div class="source-viewport" tabindex="0">
@@ -79,15 +79,15 @@
                   </nav>
                   <section aria-label="Files in selected folder">
                     <header class="column-head"><span data-account-active-path>/my_file/</span><span data-account-active-count>00 items</span></header>
-                    <div class="property-head account-property-head"><span>Name</span><span>Last install</span><span>Access</span><span>Action</span></div>
+                    <div class="property-head account-property-head"><span>Name</span><span>Downloaded</span><span>Access</span><span>Action</span></div>
                     <ul class="file-list account-library-list" data-account-items aria-live="polite"></ul>
                     <p class="account-empty directory-empty" data-account-empty hidden>Your free collection will appear here as instruments are published.</p>
                   </section>
                   <aside class="inspector account-file-inspector" aria-live="polite">
                     <div class="inspector-preview"><span data-account-inspector-kind>Library folder</span><img data-account-inspector-image src="/v3/assets/shared-source-folder-black.png" alt=""><h3 data-account-inspector-title>My File</h3><p class="inspector-path" data-account-inspector-path>/my_file/</p></div>
-                    <dl><div><dt>Last install</dt><dd data-account-inspector-date>—</dd></div><div><dt>Type</dt><dd data-account-inspector-type>Entitled assets</dd></div><div><dt>Items</dt><dd data-account-inspector-items>00</dd></div><div><dt>Access</dt><dd data-account-inspector-access>This account</dd></div><div><dt>Updates</dt><dd data-account-inspector-sync>Manual</dd></div></dl>
+                    <dl><div><dt>Downloaded</dt><dd data-account-inspector-date>—</dd></div><div><dt>Type</dt><dd data-account-inspector-type>Entitled assets</dd></div><div><dt>Items</dt><dd data-account-inspector-items>00</dd></div><div><dt>Access</dt><dd data-account-inspector-access>This account</dd></div><div><dt>Updates</dt><dd data-account-inspector-sync>Manual</dd></div></dl>
                     <p class="inspector-note" data-account-inspector-note>This directory mirrors the assets available to this account.</p>
-                    <a class="account-inspector-action" data-account-inspector-action hidden>Install →</a>
+                    <a class="account-inspector-action" data-account-inspector-action hidden>Download →</a>
                   </aside>
                 </div>
               </div>
@@ -103,6 +103,6 @@
     </div>
     <img class="stone-mark" src="/assets/light/stone-logo.png" alt="Stone W mark">
   </div>
-  <script type="module" src="/v3/js/account.js?v=account-library-20260822b"></script>
+  <script type="module" src="/v3/js/account.js?v=account-download-20260822"></script>
 </body>
 </html>

@@ -7,7 +7,7 @@ const params = new URLSearchParams(location.search);
 const pathOrder = location.pathname.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1];
 const orderId = params.get('commerce_order') || pathOrder || '';
 const requestedState = ['install', 'connect', 'complete'].includes(params.get('state')) ? params.get('state') : 'ready';
-const state = { products: [], files: [], catalog: new Map(), authenticated: false, member: false, membership: null, setup: requestedState, activeFolder: '', inspectedHandle: '' };
+const state = { products: [], files: [], catalog: new Map(), authenticated: false, member: false, membership: null, accountKey: 'anonymous', setup: requestedState, activeFolder: '', inspectedHandle: '' };
 const folderIcon = '/v3/assets/shared-source-folder-black.png';
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
 const pathSegment = value => String(value || 'unsorted').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
@@ -16,6 +16,7 @@ const displayDate = (value, fallback = '—') => {
   const date = new Date(value);
   return Number.isNaN(date.valueOf()) ? String(value) : new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).format(date);
 };
+const accountStorageKey = (kind, value = '') => `no3d_${kind}_${state.accountKey}_${value}`;
 
 function updateCount() {
   const label = `${String(state.products.length).padStart(2, '0')} tool${state.products.length === 1 ? '' : 's'}`;
@@ -27,20 +28,20 @@ function updateCount() {
 
 function inspectFolder(folder) {
   const files = state.files.filter(file => file.folder === folder);
-  const latest = files.map(file => file.installedAt).filter(Boolean).sort().at(-1);
+  const latest = files.map(file => file.downloadedAt).filter(Boolean).sort().at(-1);
   $('[data-account-inspector-image]').src = folderIcon;
   $('[data-account-inspector-image]').alt = '';
   $('[data-account-inspector-kind]').textContent = 'Library folder';
   $('[data-account-inspector-title]').textContent = folder || 'My File';
   $('[data-account-inspector-path]').textContent = `/my_file/${pathSegment(folder)}/`;
-  $('[data-account-inspector-date]').textContent = displayDate(latest, 'Not installed');
+  $('[data-account-inspector-date]').textContent = displayDate(latest, 'Not downloaded');
   $('[data-account-inspector-type]').textContent = 'Entitled assets';
   $('[data-account-inspector-items]').textContent = String(files.length).padStart(2, '0');
   $('[data-account-inspector-access]').textContent = 'This account';
   $('[data-account-inspector-sync]').textContent = state.member ? 'Automatic' : 'Manual';
   $('[data-account-inspector-note]').textContent = state.member
     ? 'This folder mirrors your effective account library and stays current automatically in connected Blender installations.'
-    : 'This folder mirrors the assets available to your account. Install and update actions use the existing entitlement record.';
+    : 'This folder mirrors the assets available to your account. Downloads use the existing permanent entitlement record.';
   $('[data-account-inspector-action]').hidden = true;
 }
 
@@ -53,7 +54,7 @@ function inspectFile(file) {
   $('[data-account-inspector-kind]').textContent = 'NO3D account file';
   $('[data-account-inspector-title]').textContent = file.filename;
   $('[data-account-inspector-path]').textContent = `/my_file/${pathSegment(file.folder)}/${file.filename}`;
-  $('[data-account-inspector-date]').textContent = displayDate(file.installedAt, 'Not installed');
+  $('[data-account-inspector-date]').textContent = displayDate(file.downloadedAt, 'Not downloaded');
   $('[data-account-inspector-type]').textContent = file.kind;
   $('[data-account-inspector-items]').textContent = '01';
   $('[data-account-inspector-access]').textContent = file.access;
@@ -63,6 +64,35 @@ function inspectFile(file) {
   action.hidden = false;
   action.href = file.action.href;
   action.textContent = file.action.label;
+  bindDownloadAction(action, file);
+}
+
+async function downloadAccountFile(event, file, action) {
+  event.preventDefault();
+  if (!file.action.href.startsWith('/api/commerce/download/')) return location.assign(file.action.href);
+  const original = action.textContent;
+  action.setAttribute('aria-disabled', 'true');
+  action.textContent = 'Preparing download…';
+  try {
+    const response = await fetch(file.action.href, { credentials: 'same-origin' });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || typeof payload.url !== 'string') throw new Error(payload.error || 'download_unavailable');
+    const target = new URL(payload.url);
+    if (target.protocol !== 'https:') throw new Error('invalid_download_url');
+    const downloadedAt = new Date().toISOString();
+    localStorage.setItem(accountStorageKey('downloaded', file.handle), downloadedAt);
+    file.downloadedAt = downloadedAt;
+    location.assign(target.href);
+  } catch {
+    action.removeAttribute('aria-disabled');
+    action.textContent = 'Download unavailable / Retry →';
+    window.setTimeout(() => { action.textContent = original; }, 4000);
+  }
+}
+
+function bindDownloadAction(action, file) {
+  if (!file.action.href.startsWith('/api/commerce/download/')) return;
+  action.addEventListener('click', event => void downloadAccountFile(event, file, action));
 }
 
 function renderAccountFolders() {
@@ -87,7 +117,11 @@ function renderAccountFolders() {
 }
 
 function renderLibrary() {
-  state.files = state.products.map(item => accountFileView(item, state.catalog.get(item.handle)));
+  state.files = state.products.map(item => {
+    const file = accountFileView(item, state.catalog.get(item.handle));
+    file.downloadedAt ||= localStorage.getItem(accountStorageKey('downloaded', file.handle)) || '';
+    return file;
+  });
   renderAccountFolders();
   const term = $('[data-account-search]').value;
   const sort = $('[data-account-sort]').value;
@@ -102,12 +136,13 @@ function renderLibrary() {
     button.type = 'button';
     button.className = 'account-file-label';
     button.setAttribute('aria-pressed', String(state.inspectedHandle === file.handle));
-    button.innerHTML = `<span class="file-name">${escapeHtml(file.filename)}</span><span class="file-date">${escapeHtml(displayDate(file.installedAt, 'Not installed'))}</span><span class="file-state">${escapeHtml(file.access)}</span>`;
+    button.innerHTML = `<span class="file-name">${escapeHtml(file.filename)}</span><span class="file-date">${escapeHtml(displayDate(file.downloadedAt, 'Not downloaded'))}</span><span class="file-state">${escapeHtml(file.access)}</span>`;
     button.addEventListener('click', () => inspectFile(file));
     const action = document.createElement('a');
     action.className = 'account-file-action';
     action.href = file.action.href;
     action.textContent = file.action.label;
+    bindDownloadAction(action, file);
     row.append(button, action);
     return row;
   }));
@@ -124,17 +159,18 @@ function renderLibrary() {
 
 function setBlenderRecord(mode) {
   const selected = localStorage.getItem('no3d_blender_version') || '—';
+  const connected = localStorage.getItem(accountStorageKey('blender_connected')) === 'true';
   const values = mode === 'install'
     ? ['Awaiting installation', selected, '—', 'Not connected']
     : mode === 'connect'
       ? ['This installation', selected, 'Installed', 'Connecting…']
-      : mode === 'ready'
+      : mode === 'ready' && connected
         ? ['This installation', selected, 'Installed', 'Today']
         : ['Not connected', '—', '—', '—'];
   const selectors = ['[data-blender-installation]', '[data-blender-version]', '[data-addon-version]', '[data-blender-contact]'];
   selectors.forEach((selector, index) => { $(selector).textContent = values[index]; });
-  $('[data-identity-blender]').textContent = mode === 'ready' ? '01 installation connected' : mode === 'connect' ? 'Connection in progress' : 'Not connected';
-  $('[data-summary-blender]').textContent = mode === 'ready' ? 'Connected ●' : 'Not connected';
+  $('[data-identity-blender]').textContent = mode === 'ready' && connected ? '01 installation connected' : mode === 'connect' ? 'Connection in progress' : 'Not connected';
+  $('[data-summary-blender]').textContent = mode === 'ready' && connected ? 'Connected ●' : state.member ? 'Sync inactive' : 'Sync inactive · Join for automatic updates';
 }
 
 function setSetup(nextState, { replace = false } = {}) {
@@ -187,6 +223,7 @@ async function completeConnection(deviceCode) {
     $('[data-connect-register] span').textContent = 'Complete ●';
     $('[data-connect-library]').className = 'working';
     $('[data-connect-library] span').textContent = 'Loading ●';
+    localStorage.setItem(accountStorageKey('blender_connected'), 'true');
     window.setTimeout(() => setSetup('complete', { replace: true }), 520);
   } catch {
     title.textContent = 'Connection Not Found';
@@ -197,20 +234,11 @@ async function completeConnection(deviceCode) {
 }
 
 function renderOrder(order) {
-  const panel = $('[data-latest-order]');
-  panel.hidden = false;
-  const product = state.catalog.get(order.resourceId);
-  $('[data-order-title]').textContent = product?.title || readableHandle(order.resourceId || 'Latest purchase');
   const ready = order.paymentStatus === 'paid' && order.fulfillmentStatus === 'fulfilled' && order.recovery;
-  if (ready) {
-    $('[data-order-state]').textContent = 'Latest purchase / Ready';
-    $('[data-order-detail]').textContent = 'Payment and durable fulfillment are confirmed. This instrument is retained in your library.';
-    const action = $('[data-order-action]');
-    action.hidden = false;
-    action.href = `/api/commerce/download/${encodeURIComponent(order.orderId)}`;
-    return true;
-  }
+  if (ready) return true;
   if (['refunded', 'disputed'].includes(order.paymentStatus)) {
+    const panel = $('[data-account-notice]');
+    panel.hidden = false;
     $('[data-order-state]').textContent = 'Purchase unavailable';
     $('[data-order-detail]').textContent = 'This order is not currently available for delivery.';
     return true;
@@ -221,7 +249,7 @@ function renderOrder(order) {
 
 function renderAccountNotice() {
   if (params.get('claim') !== 'review') return;
-  const panel = $('[data-latest-order]');
+  const panel = $('[data-account-notice]');
   panel.hidden = false;
   $('[data-order-state]').textContent = 'Account review / Library protected';
   $('[data-order-title]').textContent = 'We found two existing account records';
@@ -242,15 +270,14 @@ async function monitorOrder() {
         return;
       }
     } catch {
-      $('[data-latest-order]').hidden = false;
-      $('[data-order-detail]').textContent = 'The purchase status could not be checked. Retrying securely.';
+      // The directory remains the single visible source of account assets.
     }
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 }
 
 function showMembershipNotice({ active = false, mismatch = false } = {}) {
-  const panel = $('[data-latest-order]');
+  const panel = $('[data-account-notice]');
   panel.hidden = false;
   $('[data-order-state]').textContent = 'Full catalog membership';
   $('[data-order-title]').textContent = mismatch
@@ -306,6 +333,7 @@ if (!state.authenticated) {
   const effectiveCandidates = [...(summary?.products || [])];
   state.membership = membership;
   const email = session.email || summary?.account?.contactEmail || 'Your NO3D account';
+  state.accountKey = summary?.account?.id || String(email).trim().toLowerCase();
   $$('[data-account-email]').forEach(node => { node.textContent = email; });
   const member = membership?.active === true || Boolean(summary?.memberships?.some(item => ['active', 'trialing'].includes(item.status)));
   state.member = member;
@@ -320,8 +348,9 @@ if (!state.authenticated) {
     }
   }
   state.products = mergeEffectiveAccountLibrary(effectiveCandidates);
-  $('[data-account-tier]').textContent = member ? 'Member' : 'Free';
-  $('[data-account-membership]').textContent = member ? 'Member / Automatic updates' : 'Free / Manual updates';
+  const permanentCustomer = state.products.some(product => product.permanent);
+  $('[data-account-tier]').textContent = member ? 'Member' : permanentCustomer ? 'Customer' : 'Free';
+  $('[data-account-membership]').textContent = member ? 'Member / Automatic updates' : 'Inactive / Manual updates';
   $('[data-update-mode]').textContent = member ? 'Automatic' : 'Manual';
   const billing = $('[data-manage-billing]');
   billing.hidden = !member && state.products.length === 0;

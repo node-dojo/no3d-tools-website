@@ -30,7 +30,7 @@ test('My File view is derived only from an effective account-library item and ca
   assert.equal(file.folder, 'Hardware');
   assert.equal(file.access, 'Permanent access');
   assert.equal(file.sync, 'Manual');
-  assert.equal(file.action.label, 'Check for update →');
+  assert.equal(file.action.label, 'Download →');
   assert.match(file.action.href, /^\/api\/commerce\/download\//);
   assert.equal('selected' in file, false);
   assert.equal('inFile' in file, false);
