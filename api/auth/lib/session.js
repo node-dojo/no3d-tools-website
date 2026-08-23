@@ -143,7 +143,14 @@ export async function passwordSignUp(req, res, email, password, { next } = {}) {
     storeSession(res, session);
     clearCookie(res, VERIFIER_COOKIE);
   }
-  return { authenticated: Boolean(session), verificationRequired: !session, user: payload.user || session?.user || null };
+  const user = payload.user || session?.user || null;
+  const accountExists = Boolean(user && Array.isArray(user.identities) && user.identities.length === 0);
+  return {
+    authenticated: Boolean(session),
+    verificationRequired: !session && !accountExists,
+    accountExists,
+    user,
+  };
 }
 
 export async function passwordSignIn(res, email, password) {

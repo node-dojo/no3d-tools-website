@@ -256,6 +256,12 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   assert.match(callback, /\/v3\/onboarding\/create-account\/\?auth=invalid/);
   assert.match(password, /claimPurchasingGuest/);
   assert.match(password, /account_claim_failed/);
+  assert.match(password, /result\.accountExists/);
+  assert.match(password, /account_unverified/);
+  assert.match(password, /account_password_mismatch/);
+  assert.match(await load('api/auth/lib/session.js'), /user\.identities\.length === 0/);
+  const onboarding = await load('v3/js/onboarding.js');
+  assert.match(onboarding, /there is no need to switch forms/);
 });
 
 test('V3 catalog prefers live metadata and keeps unpriced studies out of Checkout', async () => {

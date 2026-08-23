@@ -23,9 +23,19 @@ export default async function handler(req, res) {
   }
   if (!v3OwnerAllowed(email)) return res.status(403).json({ error: 'staging_access_denied' });
   try {
-    const result = mode === 'signin'
+    let result = mode === 'signin'
       ? await passwordSignIn(res, email, password)
       : await passwordSignUp(req, res, email, password, { next });
+    if (mode === 'signup' && result.accountExists) {
+      try {
+        result = await passwordSignIn(res, email, password);
+      } catch (error) {
+        const message = error instanceof Error ? error.message.toLowerCase() : '';
+        return res.status(409).json({
+          error: message.includes('confirm') ? 'account_unverified' : 'account_password_mismatch',
+        });
+      }
+    }
     let destination = next;
     let claim = { status: 'verification_pending' };
     if (result.authenticated && result.user) {

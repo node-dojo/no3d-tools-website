@@ -70,6 +70,10 @@ if (form) {
         message.textContent = 'Your sign-in worked, but the purchasing library could not be attached. Sign in again to retry before continuing.';
       } else if (error instanceof Error && error.message === 'try_again_later') {
         message.textContent = 'Too many account attempts from this connection. Wait ten minutes, then retry the same email once.';
+      } else if (error instanceof Error && error.message === 'account_unverified') {
+        message.textContent = 'This account already exists but still needs email confirmation. Open the newest verification email to continue.';
+      } else if (error instanceof Error && error.message === 'account_password_mismatch') {
+        message.textContent = 'This account already exists. Check the password and continue here—there is no need to switch forms.';
       } else {
         message.textContent = mode === 'signup'
           ? 'The account could not be created. Try signing in if this email is already registered.'
