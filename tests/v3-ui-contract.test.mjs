@@ -98,6 +98,7 @@ test('onboarding follows account, install, automatic connection, and library wit
   const accountScript = await load('v3/js/account.js');
   const desktopLink = await load('api/onboarding/desktop-link.js');
   assert.match(createAccount, /Create free account/i);
+  assert.match(await load('v3/js/onboarding.js'), /Too many account attempts from this connection/);
   assert.match(createAccount, /Continue with Google/i);
   assert.match(createAccount, /Continue with GitHub/i);
   assert.match(account, /Connect My Library/i);

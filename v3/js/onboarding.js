@@ -68,6 +68,8 @@ if (form) {
     } catch (error) {
       if (error instanceof Error && error.message === 'account_claim_failed') {
         message.textContent = 'Your sign-in worked, but the purchasing library could not be attached. Sign in again to retry before continuing.';
+      } else if (error instanceof Error && error.message === 'try_again_later') {
+        message.textContent = 'Too many account attempts from this connection. Wait ten minutes, then retry the same email once.';
       } else {
         message.textContent = mode === 'signup'
           ? 'The account could not be created. Try signing in if this email is already registered.'

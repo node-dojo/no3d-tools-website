@@ -7,14 +7,16 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
+  const mode = req.body?.mode === 'signin' ? 'signin' : 'signup';
   try {
-    if (!await allowSignInRequest(req)) return res.status(429).json({ error: 'try_again_later' });
+    if (!await allowSignInRequest(req, { maxAttempts: mode === 'signup' ? 10 : 5 })) {
+      return res.status(429).json({ error: 'try_again_later' });
+    }
   } catch {
     return res.status(429).json({ error: 'try_again_later' });
   }
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
-  const mode = req.body?.mode === 'signin' ? 'signin' : 'signup';
   const next = safeAuthNext(req.body?.next) || '/v3/account/?state=install';
   if (!EMAIL.test(email) || email.length > 254 || password.length < 10 || password.length > 200) {
     return res.status(400).json({ error: 'invalid_credentials' });
