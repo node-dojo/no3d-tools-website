@@ -211,6 +211,8 @@
   .mobile-purchase-contract{margin:18px 12px 0;padding:16px 0;border-top:1px solid var(--ink);line-height:1.6}
   .mobile-purchase-contract a{color:inherit}
 }
+/* Direct product rows have no checkbox; keep filenames out of the retired checkbox column. */
+.file-label{grid-template-columns:minmax(200px,1fr) 82px 68px 52px}
 /* Inspector dimensions respond to the viewport, never to the hovered item. */
 .inspector-preview{height:clamp(270px,28vw,310px);min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;overflow:hidden}.inspector-preview img{width:150px;height:150px;flex:0 0 150px}.inspector-preview h3{display:-webkit-box;max-width:100%;min-height:2em;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2}.inspector-path{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 /* Hidden page title: keeps a real document heading on Home while the banner slot is empty. Uses the display face so heading audits read the approved font. */

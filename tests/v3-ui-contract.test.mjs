@@ -99,6 +99,7 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(client, /data-mobile-featured-empty/);
   assert.match(client, /data-mobile-files-empty/);
   assert.doesNotMatch(client, /type="checkbox"/);
+  assert.match(styles, /\.file-label\{grid-template-columns:minmax\(200px,1fr\) 82px 68px 52px\}/);
   assert.match(styles, /\.workbench-page \.catalog-rail,\.workbench-page \.shared-folder\{display:none\}/);
   assert.match(styles, /\.mobile-featured-tools\{display:grid;grid-template-rows:repeat\(2,250px\);grid-auto-flow:column;/);
   assert.match(styles, /\.mobile-featured-card>div\{[^}]*border-bottom:1px solid var\(--rule\)/);
