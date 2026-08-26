@@ -85,6 +85,8 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(home, /home-shared-folder/);
   assert.doesNotMatch(home, /Flagship NO3D Tools/);
   assert.match(home, /<span data-data-status hidden>Loading catalog<\/span>/);
+  assert.match(home, /A collection of Blender tools that use a Python add-on and sophisticated Geometry Nodes systems for intuitive and advanced 3D modeling and design workflows\./);
+  assert.match(styles, /\.catalog-purpose\{margin:52px 0 0;font:700 11px\/1\.5 var\(--body\)\}/);
   assert.match(home, /source-browser/);
   assert.doesNotMatch(home, /Open the Shared Source Folder/);
   assert.doesNotMatch(home, /data-product-count/);
