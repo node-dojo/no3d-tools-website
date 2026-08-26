@@ -1,17 +1,22 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
 import process from 'node:process';
 
 import { createClient } from '@supabase/supabase-js';
 import puppeteer from 'puppeteer';
 import Stripe from 'stripe';
+import { acceptanceBaseUrl } from './lib/v3-acceptance-target.mjs';
 
 import { identityAssertion } from '../api/auth/lib/session.js';
 
 const apply = process.argv.includes('--apply');
-const baseUrl = (process.env.NO3D_V3_ACCEPTANCE_URL || 'https://v3.no3dtools.com').replace(/\/$/, '');
+const useExistingAcceptanceAccount = process.argv.includes('--existing-acceptance-account');
+const useVisualCaptureAccount = process.argv.includes('--visual-capture-account');
+const baseUrl = acceptanceBaseUrl();
 const commerceUrl = process.env.COMMERCE_API_URL?.replace(/\/$/, '');
 const handle = process.env.NO3D_RECOVERY_HANDLE?.trim() || 'dojo-bolt-gen-v05-obj';
+const captureDir = '/tmp/no3d-v3-account-matrix';
 
 if (!apply) throw new Error('This creates, recovers, and refunds a Stripe test order. Re-run with --apply.');
 for (const name of ['COMMERCE_API_URL', 'COMMERCE_SITE_BACKEND_SECRET', 'COMMERCE_SITE_KEY', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']) {
@@ -22,8 +27,12 @@ if (!process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')) throw new Error('A S
 const browser = await puppeteer.launch({ headless: true });
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-const recoveryEmail = `v3-recovery-${Date.now()}@no3dtools.com`;
-const recoveryPassword = crypto.randomBytes(32).toString('base64url');
+const recoveryEmail = useExistingAcceptanceAccount
+  ? process.env.NO3D_E2E_EMAIL?.trim()
+  : useVisualCaptureAccount ? 'v3-recovery-capture@no3dtools.com' : `v3-recovery-${Date.now()}@no3dtools.com`;
+const recoveryPassword = useExistingAcceptanceAccount
+  ? process.env.NO3D_E2E_PASSWORD
+  : crypto.randomBytes(32).toString('base64url');
 let authUserId = null;
 let authUserDeleted = false;
 let paymentIntent = null;
@@ -62,13 +71,21 @@ async function commerceFetch(path, { identity, guestToken, method = 'GET', body 
 }
 
 try {
-  const { data: created, error: createError } = await supabase.auth.admin.createUser({
-    email: recoveryEmail,
-    email_confirm: true,
-    password: recoveryPassword,
-  });
-  if (createError) throw createError;
-  authUserId = created.user.id;
+  if (useExistingAcceptanceAccount) {
+    if (!recoveryEmail || !recoveryPassword) throw new Error('NO3D_E2E_EMAIL and NO3D_E2E_PASSWORD are required.');
+    const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (error) throw error;
+    authUserId = data.users.find((user) => user.email?.toLowerCase() === recoveryEmail.toLowerCase())?.id || null;
+    assert.ok(authUserId, 'Existing staging acceptance account was not found');
+  } else {
+    const { data: created, error: createError } = await supabase.auth.admin.createUser({
+      email: recoveryEmail,
+      email_confirm: true,
+      password: recoveryPassword,
+    });
+    if (createError) throw createError;
+    authUserId = created.user.id;
+  }
 
   const page = await browser.newPage();
   await page.goto(`${baseUrl}/v3/access/`, { waitUntil: 'domcontentloaded' });
@@ -148,6 +165,21 @@ try {
   });
   assert.equal(replay.status, 404, 'Consumed recovery token was accepted twice');
 
+  const signIn = await pageFetch(page, '/api/auth/password', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: recoveryEmail, mode: 'signin', next: '/v3/account/', password: recoveryPassword }),
+  });
+  assert.equal(signIn.status, 200, signIn.payload.error || 'Recovered account sign-in failed');
+  assert.equal(signIn.payload.authenticated, true);
+  await page.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
+  await page.goto(`${baseUrl}/v3/account/?purchase=recovered`, { waitUntil: 'networkidle2' });
+  await page.waitForFunction(() => document.querySelectorAll('.library-card').length > 0, { timeout: 20_000 });
+  await mkdir(captureDir, { recursive: true });
+  await page.screenshot({ path: `${captureDir}/recovered-purchase-desktop.png`, fullPage: true });
+  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
+  await page.reload({ waitUntil: 'networkidle2' });
+  await page.screenshot({ path: `${captureDir}/recovered-purchase-mobile.png`, fullPage: true });
+
   const sessions = await stripe.checkout.sessions.list({ limit: 100 });
   const checkoutSession = sessions.data.find((session) => session.client_reference_id === checkout.payload.orderId);
   assert.ok(checkoutSession, 'Recovery Checkout session was not found');
@@ -165,21 +197,23 @@ try {
     return order.status === 200 && order.payload.paymentStatus === 'refunded' && order.payload.fulfillmentStatus === 'revoked';
   }, 'Recovered fixture refund did not revoke fulfillment');
 
-  const { error: deleteError } = await supabase.auth.admin.deleteUser(authUserId);
-  if (deleteError) throw deleteError;
-  authUserDeleted = true;
-  authUserId = null;
+  if (!useExistingAcceptanceAccount) {
+    const { error: deleteError } = await supabase.auth.admin.deleteUser(authUserId);
+    if (deleteError) throw deleteError;
+    authUserDeleted = true;
+    authUserId = null;
+  }
 
   process.stdout.write(`${JSON.stringify({
     status: 'passed',
     purchase: { guest: true, paymentStatus: 'paid', fulfillmentStatus: 'fulfilled' },
-    recovery: { issued: true, verifiedIdentity: true, claimed: true, replayRejected: true },
-    cleanup: { paymentStatus: 'refunded', fulfillmentStatus: 'revoked', authUserDeleted },
+    recovery: { issued: true, verifiedIdentity: true, claimed: true, replayRejected: true, visualCaptures: 2 },
+    cleanup: { paymentStatus: 'refunded', fulfillmentStatus: 'revoked', authUserDeleted, existingAcceptanceAccount: useExistingAcceptanceAccount },
   })}\n`);
 } finally {
   if (paymentIntent && !refunded) {
     try { await stripe.refunds.create({ payment_intent: paymentIntent }); } catch {}
   }
-  if (authUserId) await supabase.auth.admin.deleteUser(authUserId).catch(() => null);
+  if (authUserId && !useExistingAcceptanceAccount) await supabase.auth.admin.deleteUser(authUserId).catch(() => null);
   await browser.close();
 }

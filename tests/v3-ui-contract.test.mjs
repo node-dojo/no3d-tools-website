@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { FALLBACK_PRODUCTS, normalizeProduct, resolveMedia, selectWorkbenchInventory } from '../v3/js/api.js';
+import { FALLBACK_PRODUCTS, normalizeProduct, resolveMedia, selectWorkbenchInventory, sortCatalogProducts } from '../v3/js/api.js';
 
 const root = new URL('../', import.meta.url);
 const load = path => readFile(new URL(path, root), 'utf8');
@@ -28,6 +28,23 @@ test('keeps the approved Chain Generator presentation alias local to V3', () => 
   assert.equal(product.handle, 'chrome-crayon');
 });
 
+test('catalog priority raises reviewed products without reordering unranked products', () => {
+  const products = [
+    normalizeProduct({ handle: 'unchanged-a' }),
+    normalizeProduct({ handle: 'priority-b', catalog: { priority: 2 } }),
+    normalizeProduct({ handle: 'unchanged-b' }),
+    normalizeProduct({ handle: 'priority-a', metadata: { catalog: { priority: 1 } } }),
+  ];
+  assert.deepEqual(
+    sortCatalogProducts(products).map(product => product.handle),
+    ['priority-a', 'priority-b', 'unchanged-a', 'unchanged-b'],
+  );
+});
+
+test('home fingerprints the single-page directory composition', async () => {
+  assert.match(await load('v3/index.html'), /home\.js\?v=home-directory-composition-20260824/);
+});
+
 test('resolves hosted media shapes and ships a canonical paid-product fallback', () => {
   assert.equal(resolveMedia({ secure_url: 'https://media.example/a.gif' }), 'https://media.example/a.gif');
   const bolt = FALLBACK_PRODUCTS.map(normalizeProduct).find(product => product.handle === 'dojo-bolt-gen-v05-obj');
@@ -44,15 +61,48 @@ test('all rendered adjacent route documents use the shared V3 stylesheet', async
   }
 });
 
+test('every V3 route records the page-view event that drives visit notifications', async () => {
+  const api = await load('v3/js/api.js');
+  const analytics = await load('v3/js/analytics.js');
+  for (const client of ['home', 'product', 'account', 'membership', 'onboarding', 'workbench']) {
+    assert.match(await load(`v3/js/${client}.js`), /from ['"]\.\/api\.js/);
+  }
+  assert.match(api, /import ['"]\.\/analytics\.js/);
+  assert.match(analytics, /track\('page_view'/);
+  assert.match(analytics, /fetch\('\/api\/track'/);
+  assert.match(analytics, /page: window\.location\.pathname \+ window\.location\.search/);
+  assert.match(analytics, /referrer: document\.referrer/);
+});
+
 test('Shared Source Folder is additive, filename-led, and reuses the existing product catalog', async () => {
   const home = await load('v3/index.html');
   const workbench = await load('v3/workbench/index.html');
   const client = await load('v3/js/workbench.js');
+  const styles = await load('v3/styles/v3.css');
   const api = await load('v3/js/api.js');
   const catalog = await load('api/products.js');
   assert.match(home, /The Shared Source Folder/);
-  assert.match(home, /\/v3\/workbench\//);
-  assert.match(workbench, /Add to My File/);
+  assert.match(home, /home-shared-folder/);
+  assert.match(home, /source-browser/);
+  assert.doesNotMatch(home, /Open the Shared Source Folder/);
+  assert.doesNotMatch(home, /data-product-count/);
+  assert.doesNotMatch(home, /data-catalog-toggle/);
+  assert.match(workbench, /mobile-directory/);
+  assert.match(workbench, /One tool opens one product page for individual checkout/);
+  assert.match(workbench, /full-catalog membership/);
+  assert.match(workbench, /data-mobile-featured-empty/);
+  assert.match(workbench, /data-mobile-files-empty/);
+  assert.match(client, /direct-product-link/);
+  assert.match(client, /\['All', 'Hardware', 'Generators', 'Primitives', 'Utilities', 'Brushes', 'Ready Mades', 'Assemblies', 'Lessons'\]/);
+  assert.match(client, /mobileLoopWidth = loop\.scrollWidth \/ 3/);
+  assert.match(client, /loop\.scrollLeft = mobileLoopWidth/);
+  assert.match(client, /data-mobile-featured-empty/);
+  assert.match(client, /data-mobile-files-empty/);
+  assert.doesNotMatch(client, /type="checkbox"/);
+  assert.match(styles, /\.workbench-page \.catalog-rail,\.workbench-page \.shared-folder\{display:none\}/);
+  assert.match(styles, /\.mobile-featured-tools\{display:grid;grid-template-rows:repeat\(2,250px\);grid-auto-flow:column;/);
+  assert.match(styles, /\.mobile-featured-card>div\{[^}]*border-bottom:1px solid var\(--rule\)/);
+  assert.doesNotMatch(styles, /\.mobile-featured-card\{[^}]*border:/);
   assert.match(workbench, /source-browser/);
   assert.match(client, /getCatalog\(\)/);
   assert.match(client, /selectWorkbenchInventory/);
@@ -61,13 +111,16 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(api, /presentationMode === 'workbench'/);
   assert.match(catalog, /presentation: p\.metadata\?\.presentation/);
   assert.match(catalog, /workbench: p\.metadata\?\.workbench/);
+  assert.match(catalog, /catalog: p\.metadata\?\.catalog/);
 });
 
-test('account My File reuses Directory.001 without creating a second collection', async () => {
+test('account My Folder reuses Directory.001 without creating a second collection', async () => {
   const account = await load('v3/account/index.html');
   const client = await load('v3/js/account.js');
   const view = await load('v3/js/account-library.js');
-  assert.match(account, /<h2 id="library-title">My File<\/h2>/);
+  const preview = await load('v3/js/product-preview.js');
+  const styles = await load('v3/styles/v3.css');
+  assert.match(account, /<h2 id="library-title">My Folder<\/h2>/);
   assert.match(account, /source-window account-file-window/);
   assert.match(account, /source-browser account-file-browser/);
   assert.match(account, /Parent folders/);
@@ -75,6 +128,12 @@ test('account My File reuses Directory.001 without creating a second collection'
   assert.doesNotMatch(account, /Latest purchase/);
   assert.match(client, /payload\.url/);
   assert.match(client, /location\.assign\(target\.href\)/);
+  assert.match(client, /action\.onclick = null/);
+  assert.match(client, /action\.onclick = event =>/);
+  assert.doesNotMatch(client, /action\.addEventListener\('click', event => void downloadAccountFile/);
+  assert.match(client, /if \(outcome === 'fulfilled'\)/);
+  assert.match(client, /location\.replace\('\/v3\/account\/\?purchase=ready'\)/);
+  assert.match(client, /if \(outcome === 'terminal'\)/);
   assert.match(client, /state\.products\.map\(item =>/);
   assert.match(client, /summary\?\.products \|\| \[\]/);
   assert.match(client, /state\.member = member/);
@@ -82,8 +141,29 @@ test('account My File reuses Directory.001 without creating a second collection'
   assert.match(client, /'Inactive \/ Manual updates'/);
   assert.match(client, /accountStorageKey\('blender_connected'\)/);
   assert.match(client, /accountStorageKey\('downloaded', file\.handle\)/);
+  assert.match(client, /pointerenter/);
+  assert.match(client, /focusin/);
+  assert.match(client, /restoreInspector\(\)/);
+  assert.match(client, /preloadProductPreviews\(files\)/);
+  assert.match(client, /localPreview === 'directory'/);
+  assert.match(client, /local-directory-preview/);
+  assert.match(preview, /product\.thumbnail \|\| product\.image/);
+  assert.match(preview, /PRODUCT_PREVIEW_FALLBACK/);
+  assert.match(preview, /image\.onerror/);
+  assert.match(styles, /\.inspector-preview\{height:clamp\(/);
+  assert.match(styles, /\.inspector-preview img\{width:150px;height:150px;flex:0 0 150px/);
+  assert.match(styles, /-webkit-line-clamp:2/);
+  assert.match(styles, /\.account-file-browser\{display:block;min-width:0;min-height:0\}/);
+  assert.match(styles, /\.account-file-window \.account-file-row\{grid-template-columns:1fr;min-height:0\}/);
+  assert.match(styles, /\.account-file-inspector\{display:none\}/);
+  assert.match(client, /action\.textContent = 'Download started ✓'/);
+  assert.match(client, /action\.removeAttribute\('aria-disabled'\)/);
+  assert.ok(
+    client.indexOf("action.textContent = 'Download started ✓'") < client.indexOf('location.assign(target.href)'),
+    'the visible success state must replace Preparing before navigation starts',
+  );
   assert.doesNotMatch(client, /no3d_my_file_handles|localStorage[^\n]*my_file/i);
-  assert.doesNotMatch(account, /Add to My File/i);
+  assert.doesNotMatch(account, /Add to My Folder/i);
   assert.doesNotMatch(view, /selected|inFile|localStorage/);
 });
 
@@ -108,12 +188,12 @@ test('onboarding installs first and exposes connection only to a Blender-issued 
   assert.match(await load('v3/js/onboarding.js'), /Too many account attempts from this connection/);
   assert.match(createAccount, /Continue with Google/i);
   assert.match(createAccount, /Continue with GitHub/i);
-  assert.match(account, /Continue to My File/i);
+  assert.match(account, /Continue to My Folder/i);
   assert.match(accountScript, /requestedStateParam === 'connect' && !params\.get\('code'\) \? 'ready'/);
   assert.match(account, /No license keys or folder setup/i);
   assert.match(account, /No added approval step/i);
   assert.doesNotMatch(account, /Establish sync|Approve this Blender|Pairing code/i);
-  assert.match(account, /My File/i);
+  assert.match(account, /My Folder/i);
   assert.match(account, /Skip setup/i);
   assert.match(account, /Continue On Your Desktop/i);
   assert.match(account, /data-proceed-mobile>Proceed →/i);
@@ -123,6 +203,15 @@ test('onboarding installs first and exposes connection only to a Blender-issued 
   assert.match(desktopLink, /authenticatedSession/);
   assert.match(desktopLink, /sendEmail/);
   assert.match(account, /updates automatically/i);
+});
+
+test('a paid-order return can request one recovery link without losing the order', async () => {
+  const html = await load('v3/onboarding/create-account/index.html');
+  const client = await load('v3/js/onboarding.js');
+  assert.match(html, /data-purchase-recovery hidden/);
+  assert.match(client, /const purchaseOrderId = next\.match/);
+  assert.match(client, /await requestRecovery\(purchaseOrderId\)/);
+  assert.match(client, /Your purchase remains attached/);
 });
 
 test('Home keeps a document heading and transparent square catalog media', async () => {
@@ -241,27 +330,63 @@ test('component display rules cannot override the native hidden state', async ()
   assert.match(css, /html \[hidden\]\{display:none!important\}/);
 });
 
-test('ASCII parameter plate is fixed width with boundary-centered sockets', async () => {
+test('the ASCII parameter panel ships empty and hidden, never a shared fixture', async () => {
   const html = await load('v3/product/index.html');
-  const plate = html.match(/<pre data-ascii-plate>([\s\S]*?)<\/pre>/)?.[1].replaceAll('&gt;', '>');
-  assert.ok(plate);
-  const lines = plate.split('\n');
-  assert.deepEqual([...new Set(lines.map(line => line.length))], [48]);
-  assert.ok(lines.filter(line => line.startsWith('o ')).length >= 10);
-  assert.ok(lines.filter(line => line.endsWith('o')).length >= 8);
-  assert.ok(lines.filter(line => line.includes('[^]')).length >= 6);
+  // The template previously inlined one product's diagram, so every product
+  // rendered Dojo Bolt's parameter map. The panel must now carry no diagram
+  // of its own and must start hidden.
+  const plate = html.match(/<pre data-ascii-plate>([\s\S]*?)<\/pre>/)?.[1];
+  assert.equal(plate, '', 'the plate must ship empty');
+  assert.match(html, /<section class="ascii-panel" data-ascii-panel hidden>/);
+  assert.doesNotMatch(html, /DOJO BOLT GEN/i, 'no product-specific diagram may live in the template');
+  assert.doesNotMatch(html, /Node instrument \/ Exposed parameter map/i, 'the diagram should not carry a redundant section heading');
+});
+
+test('a product renders only its own diagram, and none at all when it has none', async () => {
+  const product = await load('v3/js/product.js');
+  const api = await load('v3/js/api.js');
+  // Absent is a supported outcome: static assets have no node graph. The panel
+  // is removed outright rather than left as an empty frame, and there is no
+  // fallback to another product's map.
+  assert.match(product, /if \(product\.nodeDiagram\)/);
+  assert.match(product, /asciiPanel\.remove\(\)/);
+  // Diagram text is drawn characters, never markup.
+  assert.match(product, /\[data-ascii-plate\]'\)\.textContent = product\.nodeDiagram/);
+  assert.doesNotMatch(product, /data-ascii-plate'\)\.innerHTML/);
+  // Editorial state must not reach a customer through the projection. Checked
+  // against code with comments stripped, so the prose explaining *why* the
+  // status field is never read does not itself trip the assertion.
+  assert.match(api, /product\.metadata\?\.node_diagram\b/);
+  const apiCode = api.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  assert.doesNotMatch(apiCode, /node_diagram_status/);
+});
+
+test('product descriptions render one designed heading and use real prose for summaries', async () => {
+  const html = await load('v3/product/index.html');
+  const product = await load('v3/js/product.js');
+  assert.equal((html.match(/<h2>Description<\/h2>/g) || []).length, 1);
+  assert.match(html, /product\.js\?v=description-sections-20260824/);
+  assert.match(product, /function descriptionContent\(text\)/);
+  assert.match(product, /\^#\{1,6\}\\s\+description/);
+  assert.match(product, /const summary = descriptionSummary\(product\.description\)/);
+  assert.match(product, /\[data-product-lede\]'\)\.textContent = summary/);
+  assert.match(product, /\[data-purpose\]'\)\.textContent = summary/);
+  assert.doesNotMatch(product, /product\.description\.split\(\/\\n\\s\*\\n\/\)\[0\]/);
 });
 
 test('V3 reuses existing catalog, commerce, auth, account, recovery, and download endpoints', async () => {
   const api = await load('v3/js/api.js');
   const account = await load('v3/js/account.js');
   const callback = await load('api/auth/callback.js');
+  const recoveryLink = await load('api/auth/recovery-link.js');
   const password = await load('api/auth/password.js');
   for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/commerce/portal', '/api/create-checkout', '/api/auth/session', '/api/auth/providers', '/api/commerce/account', '/api/membership/account', '/api/membership/portal', '/api/auth/password', '/api/auth/oauth', '/api/auth/recovery-link', '/api/addon/connect/approve', '/api/onboarding/desktop-link']) {
     assert.ok(`${api}\n${account}`.includes(endpoint), endpoint);
   }
   assert.match(account, /\/api\/commerce\/download\//);
   assert.match(callback, /\/v3\/onboarding\/create-account\/\?auth=invalid/);
+  assert.match(recoveryLink, /next: `\/v3\/account\/orders\/\$\{orderId\}`/);
+  assert.match(await load('api/auth/lib/session.js'), /auth_state/);
   assert.match(password, /claimPurchasingGuest/);
   assert.match(password, /account_claim_failed/);
   assert.match(password, /result\.accountExists/);
@@ -320,4 +445,25 @@ test('the retired home hero fixture cannot reach a customer', async () => {
   assert.doesNotMatch(html, /Tools For the Future Old School/i);
   assert.doesNotMatch(html, /home-hero/);
   assert.doesNotMatch(html, /mace\.png/);
+});
+
+test('approved V3 customer terminology cannot drift back to My File or instrument copy', async () => {
+  const customerFiles = [
+    'v3/index.html',
+    'v3/product/index.html',
+    'v3/membership/index.html',
+    'v3/account/index.html',
+    'v3/workbench/index.html',
+    'v3/js/home.js',
+    'v3/js/product.js',
+    'v3/js/account.js',
+    'v3/js/workbench.js',
+    'v3/js/shell.js',
+    'v3/js/api.js',
+  ];
+  const customerCopy = (await Promise.all(customerFiles.map(load))).join('\n');
+  assert.doesNotMatch(customerCopy, /\bMy File\b/i);
+  assert.doesNotMatch(customerCopy, /\binstruments?\b/i);
+  assert.match(customerCopy, /My Folder/);
+  assert.match(customerCopy, /NO3D Tool/);
 });

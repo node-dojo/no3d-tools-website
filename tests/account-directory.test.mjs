@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary } from '../v3/js/account-library.js';
+import { PRODUCT_PREVIEW_FALLBACK, resolveProductPreview } from '../v3/js/product-preview.js';
 
 const catalog = {
   handle: 'dojo-bolt-gen-v05-obj',
@@ -17,7 +18,20 @@ const catalog = {
   },
 };
 
-test('My File view is derived only from an effective account-library item and catalog metadata', () => {
+test('product previews prefer thumbnails and preserve the pixel folder fallback', () => {
+  assert.deepEqual(resolveProductPreview({ title: 'Bolt', thumbnail: '/bolt.png', image: '/hero.png' }), {
+    alt: 'Bolt thumbnail',
+    fallback: false,
+    src: '/bolt.png',
+  });
+  assert.deepEqual(resolveProductPreview({ title: 'No image' }), {
+    alt: '',
+    fallback: true,
+    src: PRODUCT_PREVIEW_FALLBACK,
+  });
+});
+
+test('My Folder view is derived only from an effective account-library item and catalog metadata', () => {
   const file = accountFileView({
     handle: catalog.handle,
     owned: true,
@@ -46,7 +60,7 @@ test('membership, free, and purchased assets remain one grouped effective librar
     { name: 'Hardware', count: 1 },
     { name: 'Utilities', count: 2 },
   ]);
-  assert.equal(files.find(file => file.handle === 'free-tool').action.label, 'Available in Blender →');
+  assert.equal(files.find(file => file.handle === 'free-tool').action.label, 'Available via Add-on →');
   assert.equal(files.find(file => file.handle === 'member-tool').sync, 'Automatic');
 });
 

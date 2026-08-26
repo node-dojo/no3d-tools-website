@@ -1,4 +1,29 @@
+import './analytics.js?v=visits-20260824';
+
 const FALLBACK_PRODUCTS = [
+  {
+    id: 'fallback-gridfinity-bins',
+    handle: 'dojo-gridfinity-bins',
+    title: 'Dojo Gridfinity Bins',
+    description: 'Parametric Gridfinity-compatible bin generator with adjustable X/Y size and height.',
+    price: '7.77',
+    product_type: 'Geometry Nodes',
+    asset_type: 'OBJECT',
+    tags: ['3D Printable', 'Object edition'],
+    release_status: 'stable',
+    release_version: '1.0',
+    image: '/assets/product-images/icon_Dojo Gridfinity Bins.png',
+    thumbnail_image: '/assets/product-images/icon_Dojo Gridfinity Bins.png',
+    node_diagram: `+----------------------------------------------+
+| DOJO GRIDFINITY BINS - MODIFIER              |
++----------------------------------------------+
+|                                              |
+| [ Size X                     42 mm ]         |
+| [ Size Y                   80.8 mm ]         |
+| [ bin z                     33.968 ]         |
+| [ color                    #C0E700 ]         |
++----------------------------------------------+`,
+  },
   {
     id: 'fallback-bolt-object',
     handle: 'dojo-bolt-gen-v05-obj',
@@ -18,7 +43,7 @@ const FALLBACK_PRODUCTS = [
     id: 'fallback-bolt',
     handle: 'dojo-bolt-gen-v05',
     title: 'Dojo Bolt Gen V05',
-    description: 'A live Geometry Nodes instrument for generating printable bolts and fasteners.',
+    description: 'A live Geometry Nodes tool for generating printable bolts and fasteners.',
     price: '7.77',
     product_type: 'Geometry Nodes',
     tags: ['Geometry', 'Generator'],
@@ -63,8 +88,18 @@ function hosted(product, name) {
   return resolveMedia(product.hosted_media?.[name]);
 }
 
+/** The exposed-parameter diagram, or '' when this product has none.
+ *  Reads only `node_diagram`: `node_diagram_status` is internal editorial
+ *  state and must never reach a customer. A product with no diagram is a
+ *  normal, supported case — static and non-procedural assets have nothing
+ *  to draw — so the empty string is a valid answer, not a missing value. */
+function normalizedNodeDiagram(product) {
+  const raw = product.nodeDiagram ?? product.node_diagram ?? product.metadata?.node_diagram;
+  return typeof raw === 'string' && raw.trim() ? raw : '';
+}
+
 export function normalizeProduct(product = {}) {
-  const sourceTitle = product.title || product.name || product.handle || 'Untitled instrument';
+  const sourceTitle = product.title || product.name || product.handle || 'Untitled NO3D Tool';
   const handle = product.handle || String(sourceTitle).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const title = handle === 'chrome-crayon' ? 'Chain Generator' : sourceTitle;
   const carousel = Array.isArray(product.carousel_media) ? product.carousel_media : [];
@@ -80,6 +115,8 @@ export function normalizeProduct(product = {}) {
     || image;
   const presentation = product.presentation || product.metadata?.presentation || {};
   const workbench = product.workbench || product.metadata?.workbench || {};
+  const catalog = product.catalog || product.metadata?.catalog || {};
+  const parsedCatalogPriority = Number(catalog.priority);
   const filenameStem = String(workbench.filename || product.filename || sourceTitle || handle)
     .replace(/\.no3d$/i, '')
     .replace(/\s+/g, '_');
@@ -96,6 +133,7 @@ export function normalizeProduct(product = {}) {
     releaseStatus: product.release_status || product.releaseStatus || 'stable',
     releaseVersion: product.release_version || product.releaseVersion || '',
     accessPolicy: product.access_policy || product.accessPolicy || 'catalog',
+    nodeDiagram: normalizedNodeDiagram(product),
     image,
     video: resolveMedia(product.video),
     thumbnail,
@@ -103,6 +141,7 @@ export function normalizeProduct(product = {}) {
     hostedMedia: product.hosted_media || {},
     metafields: Array.isArray(product.metafields) ? product.metafields : [],
     presentationMode: presentation.mode || 'flagship',
+    catalogPriority: Number.isFinite(parsedCatalogPriority) ? parsedCatalogPriority : null,
     workbench: {
       filename: `${filenameStem}.no3d`,
       folder: workbench.folder || product.tags?.[0] || product.product_type || 'Unsorted',
@@ -114,6 +153,21 @@ export function normalizeProduct(product = {}) {
       compatibility: workbench.compatibility || product.blender_version || '',
     },
   };
+}
+
+export function sortCatalogProducts(products = []) {
+  return products
+    .map((product, sourceIndex) => ({ product, sourceIndex }))
+    .sort((a, b) => {
+      const aRanked = Number.isFinite(a.product.catalogPriority);
+      const bRanked = Number.isFinite(b.product.catalogPriority);
+      if (aRanked !== bRanked) return aRanked ? -1 : 1;
+      if (aRanked && a.product.catalogPriority !== b.product.catalogPriority) {
+        return a.product.catalogPriority - b.product.catalogPriority;
+      }
+      return a.sourceIndex - b.sourceIndex;
+    })
+    .map(({ product }) => product);
 }
 
 export function selectWorkbenchInventory(catalog = {}, preview = []) {

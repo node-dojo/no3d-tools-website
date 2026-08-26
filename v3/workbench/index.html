@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="0;url=/v3/#shared-source-folder">
+  <link rel="canonical" href="/v3/#shared-source-folder">
   <meta name="theme-color" content="#f1f0eb">
   <title>The Shared Source Folder — NO3D Tools</title>
-  <link rel="stylesheet" href="/v3/styles/v3.css?v=banner-hidden-20260823">
+  <link rel="stylesheet" href="/v3/styles/v3.css?v=directory-b4-responsive-20260824">
 </head>
 <body>
   <div class="v3-page workbench-page">
     <header class="v3-mast">
       <a class="v3-wordmark" href="/v3/" aria-label="NO3D Tools home"><img src="/assets/light/no3d-tools.png" alt="NO3D Tools"></a>
       <button class="v3-search" type="button" data-search-toggle aria-expanded="false"><span class="desktop-only">Command K / </span>Search</button>
-      <div class="v3-status"><a href="/v3/account/">Account ●</a><a href="#my-file">My File [<span data-file-count>0</span>]</a></div>
+      <div class="v3-status"><a href="/v3/account/">Account ●</a><a href="/v3/account/#library">My Folder</a></div>
     </header>
-    <div class="search-region" data-search-region hidden><label class="technical" for="site-search">Search the shared source folder</label><input id="site-search" type="search" placeholder="Filename, folder, state, or use"></div>
+    <div class="search-region" data-search-region hidden><label class="technical" for="site-search">Search the catalog</label><input id="site-search" type="search" placeholder="Tool, file, category, or use"></div>
     <div class="v3-shell">
       <aside class="catalog-rail" data-catalog-panel>
         <button class="catalog-toggle" type="button" data-catalog-toggle aria-controls="catalog-list" aria-expanded="false"><span data-catalog-glyph>☰</span><span>Catalog</span></button>
@@ -25,6 +27,20 @@
         <p class="catalog-note">The polished shelf above.<br><br>The living workbench below.</p>
       </aside>
       <main class="v3-main workbench-main">
+        <section class="mobile-directory" data-mobile-directory aria-label="NO3D Tools directory">
+          <div class="mobile-category-row">
+            <button class="mobile-category-menu" type="button" data-mobile-category-menu aria-expanded="false" aria-controls="mobile-category-overview" aria-label="Show all catalog categories">≡</button>
+            <div class="mobile-category-loop" data-mobile-category-loop aria-label="Scrollable catalog categories"></div>
+          </div>
+          <div class="mobile-category-overview" id="mobile-category-overview" data-mobile-category-overview hidden></div>
+          <div class="mobile-motion-cue" data-mobile-featured-cue>Swipe →</div>
+          <div class="mobile-featured-tools" data-mobile-featured-tools aria-live="polite"></div>
+          <p class="mobile-directory-empty" data-mobile-featured-empty hidden>No featured NO3D Tools in this category yet.</p>
+          <div class="mobile-motion-cue" data-mobile-files-cue>Scroll ↓</div>
+          <div class="mobile-working-files" data-mobile-working-files aria-live="polite"></div>
+          <p class="mobile-directory-empty" data-mobile-files-empty hidden>No working files in this category yet.</p>
+          <p class="mobile-purchase-contract technical">One tool opens one product page for individual checkout. Need multiple tools? <a href="/v3/membership/">Open the full-catalog membership →</a></p>
+        </section>
         <section class="shared-folder" aria-labelledby="shared-title">
           <div class="source-window">
             <header class="source-titlebar"><span id="shared-title">The Shared Source Folder</span><span data-source-status>Loading · NO3D://SHARED</span></header>
@@ -51,14 +67,14 @@
                     <div><dt>Access</dt><dd data-inspector-access>Shared</dd></div>
                     <div><dt>Sync</dt><dd data-inspector-sync>Available</dd></div>
                   </dl>
-                  <p class="inspector-note" data-inspector-note>Choose a parent folder from the left. Toggle files in the middle column, then add the selection to My File.</p>
+                  <p class="inspector-note" data-inspector-note>Choose a category, then open one working file to view its product page and individual checkout path.</p>
                 </aside>
               </div>
             </div>
-            <footer class="transfer-tray" id="my-file" aria-live="polite">
-              <div><strong>My File/</strong>&nbsp;<span data-selected-count>0</span> selected · <span data-file-count>0</span> added</div>
+            <footer class="transfer-tray" id="my-folder" aria-live="polite" hidden>
+              <div><strong>My Folder/</strong>&nbsp;<span data-selected-count>0</span> selected · <span data-file-count>0</span> added</div>
               <div class="selection-preview" data-selection-preview>Toggle files to begin a transfer</div>
-              <button class="move-button" type="button" data-move disabled>Add to My File →</button>
+              <button class="move-button" type="button" data-move disabled>Add to My Folder →</button>
             </footer>
           </div>
           <p class="workbench-source technical" data-data-status>Loading catalog</p>
@@ -67,6 +83,6 @@
     </div>
     <img class="stone-mark" src="/assets/light/stone-logo.png" alt="Stone W mark">
   </div>
-  <script type="module" src="/v3/js/workbench.js?v=workbench-20260822"></script>
+  <script type="module" src="/v3/js/workbench.js?v=directory-b4-responsive-20260824"></script>
 </body>
 </html>

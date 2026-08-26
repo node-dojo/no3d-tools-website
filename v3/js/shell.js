@@ -32,13 +32,13 @@ export function renderCatalogNavigation(products, onSelect) {
   if (!list) return;
   const groups = new Map();
   for (const product of products) {
-    const key = product.tags[0] || product.productType || 'All instruments';
+    const key = product.tags[0] || product.productType || 'All NO3D Tools';
     groups.set(key, (groups.get(key) || 0) + 1);
   }
   list.replaceChildren();
   const all = document.createElement('button');
   all.type = 'button';
-  all.innerHTML = `<span>All instruments</span><span>${String(products.length).padStart(2, '0')}</span>`;
+  all.innerHTML = `<span>All NO3D Tools</span><span>${String(products.length).padStart(2, '0')}</span>`;
   all.addEventListener('click', () => onSelect?.('all'));
   list.append(all);
   for (const [name, count] of groups) {
@@ -48,10 +48,6 @@ export function renderCatalogNavigation(products, onSelect) {
     button.addEventListener('click', () => onSelect?.(name));
     list.append(button);
   }
-  const workbench = document.createElement('a');
-  workbench.href = '/v3/workbench/';
-  workbench.innerHTML = '<span>Shared Source Folder</span><span>→</span>';
-  list.append(workbench);
 }
 
 export function setDataStatus(source) {

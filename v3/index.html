@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f1f0eb">
   <title>NO3D Tools V3 — Catalog</title>
-  <link rel="stylesheet" href="/v3/styles/v3.css?v=banner-hidden-20260823">
+  <link rel="stylesheet" href="/v3/styles/v3.css?v=home-directory-composition-20260824">
 </head>
 <body>
   <div class="v3-page mobile-home">
@@ -14,10 +14,10 @@
       <button class="v3-search" type="button" data-search-toggle aria-expanded="false"><span class="desktop-only">Command K / </span>Search</button>
       <div class="v3-status"><a href="/v3/account/">Account ●</a></div>
     </header>
-    <div class="search-region" data-search-region hidden><label class="technical" for="site-search">Search the catalog</label><input id="site-search" type="search" placeholder="Instrument, system, or use"></div>
+    <div class="search-region" data-search-region hidden><label class="technical" for="site-search">Search the catalog</label><input id="site-search" type="search" placeholder="NO3D Tool, Blender system, or use"></div>
     <div class="v3-shell">
       <aside class="catalog-rail" data-catalog-panel>
-        <button class="catalog-toggle" type="button" data-catalog-toggle aria-controls="catalog-list" aria-expanded="false"><span data-catalog-glyph>☰</span><span>Catalog</span></button>
+        <div class="catalog-label">Catalog</div>
         <div class="catalog-list" id="catalog-list" data-catalog-list></div>
         <p class="catalog-note">Blender 5.0+<br>Instant delivery<br>Updates included</p>
       </aside>
@@ -26,22 +26,35 @@
         <!-- Banner slot: intentionally empty and hidden. See docs/design/v3/README.md. -->
         <section class="home-banner" data-home-banner aria-label="Announcements" hidden></section>
         <section class="catalog-section" id="catalog" aria-labelledby="catalog-title">
-          <header class="catalog-head" id="catalog-title"><span class="technical">Category 01</span><span class="technical" data-product-count>00 instruments</span><span class="data-status" data-data-status>Loading catalog</span></header>
+          <header class="catalog-head" id="catalog-title"><span class="technical">Flagship NO3D Tools</span><span class="data-status" data-data-status>Loading catalog</span></header>
           <div class="product-grid" data-product-grid aria-live="polite"></div>
-          <p class="empty-state" data-empty hidden>No instruments match this view.</p>
+          <p class="empty-state" data-empty hidden>No NO3D Tools match this view.</p>
         </section>
-        <section class="home-workbench-preview" aria-labelledby="home-workbench-title">
+        <section class="mobile-directory home-mobile-directory" data-mobile-directory aria-label="NO3D Tools directory">
+          <div class="mobile-category-row"><button class="mobile-category-menu" type="button" data-mobile-category-menu aria-expanded="false" aria-controls="mobile-category-overview" aria-label="Show all catalog categories">≡</button><div class="mobile-category-loop" data-mobile-category-loop aria-label="Scrollable catalog categories"></div></div>
+          <div class="mobile-category-overview" id="mobile-category-overview" data-mobile-category-overview hidden></div>
+          <div class="mobile-motion-cue" data-mobile-featured-cue>Swipe →</div><div class="mobile-featured-tools" data-mobile-featured-tools aria-live="polite"></div><p class="mobile-directory-empty" data-mobile-featured-empty hidden>No featured NO3D Tools in this category yet.</p>
+          <div class="mobile-motion-cue" data-mobile-files-cue>Scroll ↓</div><div class="mobile-working-files" data-mobile-working-files aria-live="polite"></div><p class="mobile-directory-empty" data-mobile-files-empty hidden>No working files in this category yet.</p>
+          <p class="mobile-purchase-contract technical">One tool opens one product page for individual checkout. Need multiple tools? <a href="/v3/membership/">Open the full-catalog membership →</a></p>
+        </section>
+        <section class="shared-folder home-shared-folder" id="shared-source-folder" aria-labelledby="home-workbench-title">
           <div class="source-window">
             <header class="source-titlebar"><span id="home-workbench-title">The Shared Source Folder</span><span data-home-workbench-status>NO3D://SHARED</span></header>
             <p class="source-message">All my personal assets that I use the most as they develop and improve in real-time. Grab whatever you like. Or sign up to link the whole library and get constant updates every day.</p>
-            <div class="home-folder-list" data-home-folder-list></div>
-            <footer class="home-folder-action"><span><span data-home-workbench-count>00</span> files · living workbench</span><a href="/v3/workbench/">Open the Shared Source Folder →</a></footer>
+            <div class="source-viewport" aria-label="Left-to-right shared source directory" tabindex="0"><div class="source-browser">
+              <nav class="folder-column" aria-label="Parent folders"><div class="column-head"><span>Parent folders</span><span data-folder-count>00</span></div><ul class="folder-list" data-folder-list></ul></nav>
+              <section class="asset-column" aria-label="Files in selected parent folder"><div class="column-head"><span data-active-path>/shared/</span><span data-active-count>00 items</span></div><div class="property-head" aria-hidden="true"><span>Name</span><span>Modified</span><span>State</span><span></span></div><ul class="file-list" data-active-files aria-live="polite"></ul><p class="directory-empty" data-directory-empty hidden>No files match this view.</p></section>
+              <aside class="inspector" aria-label="Selected item properties"><div class="column-head"><span>Properties</span><span data-inspector-kind>Folder</span></div><div class="inspector-preview"><img src="/v3/assets/shared-source-folder-black.png" alt="" data-inspector-icon><h3 data-inspector-title>Shared</h3><p class="inspector-path" data-inspector-path>/shared/</p></div><dl><div><dt>Date modified</dt><dd data-inspector-date>—</dd></div><div><dt>Kind</dt><dd data-inspector-type>Parent folder</dd></div><div><dt>Items</dt><dd data-inspector-items>00</dd></div><div><dt>Access</dt><dd data-inspector-access>Shared</dd></div><div><dt>Sync</dt><dd data-inspector-sync>Available</dd></div></dl><p class="inspector-note" data-inspector-note>Choose a working file to view its product page and individual checkout path.</p></aside>
+            </div></div>
+            <footer class="transfer-tray" id="my-folder" aria-live="polite" hidden><div><strong>My Folder/</strong>&nbsp;<span data-selected-count>0</span> selected · <span data-file-count>0</span> added</div><div class="selection-preview" data-selection-preview>Toggle files to begin a transfer</div><button class="move-button" type="button" data-move disabled>Add to My Folder →</button></footer>
           </div>
+          <p class="workbench-source technical" data-directory-status>Loading catalog</p>
         </section>
       </main>
     </div>
     <img class="stone-mark" src="/assets/light/stone-logo.png" alt="Stone W mark">
   </div>
-  <script type="module" src="/v3/js/home.js?v=perf-20260820"></script>
+  <script type="module" src="/v3/js/home.js?v=home-directory-composition-20260824"></script>
+  <script type="module" src="/v3/js/workbench.js?v=home-directory-composition-20260824"></script>
 </body>
 </html>

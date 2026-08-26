@@ -1,4 +1,4 @@
-import { getAccountState, getCatalog, selectWorkbenchInventory } from './api.js?v=workbench-20260822';
+import { getAccountState, getCatalog, selectWorkbenchInventory, sortCatalogProducts } from './api.js?v=catalog-order-20260824';
 import { WORKBENCH_SAMPLE } from '../data/workbench-sample.js?v=workbench-20260822';
 import './shell.js?v=workbench-20260822';
 
@@ -10,6 +10,9 @@ let storageKey = guestStorageKey;
 let entries = [];
 let activeFolder = '';
 let account = { session: { authenticated: false }, membership: null };
+const customerCategories = ['All', 'Hardware', 'Generators', 'Primitives', 'Utilities', 'Brushes', 'Ready Mades', 'Assemblies', 'Lessons'];
+let mobileCategory = 'All';
+let mobileLoopWidth = 0;
 
 const foldersNode = document.querySelector('[data-folder-list]');
 const filesNode = document.querySelector('[data-active-files]');
@@ -102,7 +105,7 @@ function updateTray(message = '') {
   document.querySelectorAll('[data-file-count]').forEach(node => { node.textContent = inFile.size; });
   preview.textContent = message || (selected.size ? [...selected].map(handle => entries.find(entry => entry.handle === handle)?.workbench.filename || handle).join('  /  ') : 'Toggle files to begin a transfer');
   move.disabled = selected.size === 0;
-  move.textContent = selected.size ? `Add ${selected.size} to My File →` : 'Add to My File →';
+  move.textContent = selected.size ? `Add ${selected.size} to My Folder →` : 'Add to My Folder →';
 }
 
 function renderFolders() {
@@ -139,19 +142,124 @@ function renderFiles() {
   empty.hidden = list.length > 0;
   filesNode.replaceChildren(...list.map(entry => {
     const li = document.createElement('li');
-    li.className = `file-row${inFile.has(entry.handle) ? ' in-file' : ''}`;
-    const label = document.createElement('label');
-    label.className = 'file-label';
-    label.innerHTML = `<input class="file-toggle" type="checkbox" ${selected.has(entry.handle) ? 'checked' : ''} aria-label="Select ${escapeHtml(entry.workbench.filename)}"><span class="file-name">${escapeHtml(entry.workbench.filename)}</span><span class="file-date">${escapeHtml(displayDate(entry.workbench.modifiedAt))}</span><span class="file-state">${escapeHtml(entry.workbench.maturity)}</span><span class="file-arrow">›</span>`;
-    label.addEventListener('click', () => inspectFile(entry));
-    label.querySelector('input').addEventListener('change', event => {
-      event.target.checked ? selected.add(entry.handle) : selected.delete(entry.handle);
-      updateTray();
-    });
-    li.append(label);
+    li.className = 'file-row';
+    const link = document.createElement('a');
+    link.className = 'file-label direct-product-link';
+    link.href = `/v3/product/?handle=${encodeURIComponent(entry.handle)}`;
+    link.innerHTML = `<span class="file-name">${escapeHtml(entry.workbench.filename)}</span><span class="file-date">${escapeHtml(displayDate(entry.workbench.modifiedAt))}</span><span class="file-state">${escapeHtml(entry.workbench.maturity)}</span><span class="file-arrow">Open →</span>`;
+    link.addEventListener('pointerenter', () => inspectFile(entry));
+    link.addEventListener('focus', () => inspectFile(entry));
+    li.append(link);
     return li;
   }));
 }
+
+function matchesCategory(product, category) {
+  if (category === 'All') return true;
+  const values = [product.productType, product.workbench?.folder, ...(product.tags || [])]
+    .filter(Boolean)
+    .map(value => String(value).toLowerCase().replace(/[_-]+/g, ' ').trim());
+  const aliases = {
+    Hardware: ['hardware', 'object', 'objects'],
+    Generators: ['generator', 'generators', 'geometry nodes', 'geometry node'],
+    Primitives: ['primitive', 'primitives'],
+    Utilities: ['utility', 'utilities', 'tool', 'tools'],
+    Brushes: ['brush', 'brushes'],
+    'Ready Mades': ['ready made', 'ready mades', 'readymade', 'scene', 'scenes'],
+    Assemblies: ['assembly', 'assemblies'],
+    Lessons: ['lesson', 'lessons', 'tutorial', 'tutorials'],
+  };
+  return (aliases[category] || [category.toLowerCase()]).some(alias => values.some(value => value === alias || value.includes(alias)));
+}
+
+function mobileProductCard(product, index) {
+  const link = document.createElement('a');
+  link.className = 'mobile-featured-card';
+  link.href = `/v3/product/?handle=${encodeURIComponent(product.handle)}`;
+  link.innerHTML = `${product.thumbnail ? `<img src="${escapeHtml(product.thumbnail)}" alt="" loading="${index < 2 ? 'eager' : 'lazy'}">` : ''}<h3>${escapeHtml(product.title)}</h3><div><span>${String(index + 1).padStart(2, '0')}</span><span>${escapeHtml(product.accessPolicy === 'free' ? 'FREE' : product.releaseVersion || product.releaseStatus)}</span></div>`;
+  link.querySelector('img')?.addEventListener('error', event => event.currentTarget.remove(), { once: true });
+  return link;
+}
+
+function mobileWorkingLink(entry) {
+  const link = document.createElement('a');
+  link.className = 'mobile-working-link';
+  link.href = `/v3/product/?handle=${encodeURIComponent(entry.handle)}`;
+  link.innerHTML = `<span>${escapeHtml(entry.workbench.filename.replace(/\.no3d$/i, '.blend'))}</span><span>${escapeHtml(entry.workbench.kind || entry.workbench.maturity || 'Tool')}</span>`;
+  return link;
+}
+
+function rotateCategories(active) {
+  const index = customerCategories.indexOf(active);
+  return index < 0 ? customerCategories : [...customerCategories.slice(index), ...customerCategories.slice(0, index)];
+}
+
+function renderMobileCategoryLoop() {
+  const loop = document.querySelector('[data-mobile-category-loop]');
+  const overview = document.querySelector('[data-mobile-category-overview]');
+  if (!loop || !overview) return;
+  const cycle = rotateCategories(mobileCategory);
+  const repeated = [...cycle, ...cycle, ...cycle];
+  loop.replaceChildren(...repeated.map(category => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = category;
+    button.className = category === mobileCategory ? 'active' : '';
+    button.addEventListener('click', () => setMobileCategory(category));
+    return button;
+  }));
+  overview.replaceChildren(...customerCategories.map(category => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = category;
+    button.className = category === mobileCategory ? 'active' : '';
+    button.addEventListener('click', () => {
+      setMobileCategory(category);
+      overview.hidden = true;
+      document.querySelector('[data-mobile-category-menu]').setAttribute('aria-expanded', 'false');
+      document.querySelector('[data-mobile-category-menu]').textContent = '≡';
+    });
+    return button;
+  }));
+  requestAnimationFrame(() => {
+    mobileLoopWidth = loop.scrollWidth / 3;
+    loop.scrollLeft = mobileLoopWidth;
+  });
+}
+
+function renderMobileDirectory() {
+  const term = search?.value.trim().toLowerCase() || '';
+  const catalogProducts = sortCatalogProducts((catalog.products || []).filter(product => product.releaseStatus !== 'archived'));
+  const featured = catalogProducts.filter(product => product.presentationMode !== 'workbench' && matchesCategory(product, mobileCategory) && (!term || `${product.title} ${product.description} ${product.tags.join(' ')}`.toLowerCase().includes(term)));
+  const working = entries.filter(entry => matchesCategory(entry, mobileCategory) && (!term || `${entry.workbench.filename} ${entry.workbench.kind} ${entry.workbench.summary}`.toLowerCase().includes(term)));
+  document.querySelector('[data-mobile-featured-tools]')?.replaceChildren(...featured.map(mobileProductCard));
+  document.querySelector('[data-mobile-working-files]')?.replaceChildren(...working.map(mobileWorkingLink));
+  document.querySelector('[data-mobile-featured-empty]').hidden = featured.length > 0;
+  document.querySelector('[data-mobile-files-empty]').hidden = working.length > 0;
+  document.querySelector('[data-mobile-featured-cue]').hidden = featured.length < 2;
+  document.querySelector('[data-mobile-files-cue]').hidden = working.length === 0;
+}
+
+function setMobileCategory(category) {
+  mobileCategory = customerCategories.includes(category) ? category : 'All';
+  renderMobileCategoryLoop();
+  renderMobileDirectory();
+}
+
+document.querySelector('[data-mobile-category-loop]')?.addEventListener('scroll', event => {
+  if (!mobileLoopWidth) return;
+  const loop = event.currentTarget;
+  if (loop.scrollLeft < mobileLoopWidth * 0.45) loop.scrollLeft += mobileLoopWidth;
+  else if (loop.scrollLeft > mobileLoopWidth * 1.55) loop.scrollLeft -= mobileLoopWidth;
+});
+
+document.querySelector('[data-mobile-category-menu]')?.addEventListener('click', event => {
+  const overview = document.querySelector('[data-mobile-category-overview]');
+  const open = overview.hidden;
+  overview.hidden = !open;
+  event.currentTarget.setAttribute('aria-expanded', String(open));
+  event.currentTarget.textContent = open ? '×' : '≡';
+});
 
 move.addEventListener('click', () => {
   if (!selected.size) return;
@@ -162,10 +270,13 @@ move.addEventListener('click', () => {
   renderFiles();
   if (account.membership?.active) updateTray(`${added} added · your linked library receives ongoing updates automatically.`);
   else if (account.session?.authenticated) updateTray(`${added} added · membership links the whole folder and keeps it current automatically.`);
-  else updateTray(`${added} added on this device · create an account when you are ready to keep My File.`);
+  else updateTray(`${added} added on this device · create an account when you are ready to keep My Folder.`);
 });
 
-search?.addEventListener('input', renderFiles);
+search?.addEventListener('input', () => {
+  renderFiles();
+  renderMobileDirectory();
+});
 
 const [catalog, accountResult] = await Promise.all([getCatalog(), getAccountState().catch(() => account)]);
 account = accountResult || account;
@@ -180,10 +291,14 @@ if (liveWorkbench.length) {
 }
 const requestedFolder = new URLSearchParams(location.search).get('folder');
 activeFolder = folders().find(folder => folder.toLowerCase() === requestedFolder?.toLowerCase()) || folders()[0] || 'Shared';
-document.querySelector('[data-workbench-count]').textContent = String(entries.length).padStart(2, '0');
+mobileCategory = customerCategories.find(category => category.toLowerCase() === requestedFolder?.toLowerCase()) || 'All';
+const workbenchCount = document.querySelector('[data-workbench-count]');
+if (workbenchCount) workbenchCount.textContent = String(entries.length).padStart(2, '0');
 const sourceState = inventory.state === 'live' ? 'Connected' : inventory.state === 'offline-preview' ? 'Offline preview' : 'Preview';
-document.querySelector('[data-source-status]').textContent = `${sourceState} · NO3D://SHARED`;
-document.querySelector('[data-data-status]').textContent = liveWorkbench.length
+const sourceStatus = document.querySelector('[data-source-status], [data-home-workbench-status]');
+if (sourceStatus) sourceStatus.textContent = `${sourceState} · NO3D://SHARED`;
+const directoryStatus = document.querySelector('[data-directory-status]') || document.querySelector('[data-data-status]');
+directoryStatus.textContent = liveWorkbench.length
   ? `Live shared catalog / ${liveWorkbench.length} published file${liveWorkbench.length === 1 ? '' : 's'}`
   : catalog.error
     ? 'Catalog unavailable / retained preview inventory / selections remain on this device'
@@ -192,3 +307,5 @@ renderFolders();
 renderFiles();
 inspectFolder(activeFolder);
 updateTray();
+renderMobileCategoryLoop();
+renderMobileDirectory();

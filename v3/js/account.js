@@ -1,5 +1,6 @@
 import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=perf-20260820';
 import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, readableHandle } from './account-library.js?v=account-library-20260822b';
+import { preloadProductPreviews, PRODUCT_PREVIEW_FALLBACK, setProductPreview } from './product-preview.js?v=preview-20260823';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -9,7 +10,7 @@ const orderId = params.get('commerce_order') || pathOrder || '';
 const requestedStateParam = ['install', 'connect', 'complete'].includes(params.get('state')) ? params.get('state') : 'ready';
 const requestedState = requestedStateParam === 'connect' && !params.get('code') ? 'ready' : requestedStateParam;
 const state = { products: [], files: [], catalog: new Map(), authenticated: false, member: false, membership: null, accountKey: 'anonymous', setup: requestedState, activeFolder: '', inspectedHandle: '' };
-const folderIcon = '/v3/assets/shared-source-folder-black.png';
+const folderIcon = PRODUCT_PREVIEW_FALLBACK;
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
 const pathSegment = value => String(value || 'unsorted').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
 const displayDate = (value, fallback = '—') => {
@@ -30,10 +31,9 @@ function updateCount() {
 function inspectFolder(folder) {
   const files = state.files.filter(file => file.folder === folder);
   const latest = files.map(file => file.downloadedAt).filter(Boolean).sort().at(-1);
-  $('[data-account-inspector-image]').src = folderIcon;
-  $('[data-account-inspector-image]').alt = '';
+  setProductPreview($('[data-account-inspector-image]'));
   $('[data-account-inspector-kind]').textContent = 'Library folder';
-  $('[data-account-inspector-title]').textContent = folder || 'My File';
+  $('[data-account-inspector-title]').textContent = folder || 'My Folder';
   $('[data-account-inspector-path]').textContent = `/my_file/${pathSegment(folder)}/`;
   $('[data-account-inspector-date]').textContent = displayDate(latest, 'Not downloaded');
   $('[data-account-inspector-type]').textContent = 'Entitled assets';
@@ -46,12 +46,12 @@ function inspectFolder(folder) {
   $('[data-account-inspector-action]').hidden = true;
 }
 
-function inspectFile(file) {
-  state.inspectedHandle = file.handle;
-  $$('[data-account-file]').forEach(row => row.classList.toggle('active', row.dataset.accountFile === file.handle));
-  const image = $('[data-account-inspector-image]');
-  image.src = file.thumbnail || folderIcon;
-  image.alt = '';
+function inspectFile(file, { commit = true } = {}) {
+  if (commit) {
+    state.inspectedHandle = file.handle;
+    $$('[data-account-file]').forEach(row => row.classList.toggle('active', row.dataset.accountFile === file.handle));
+  }
+  setProductPreview($('[data-account-inspector-image]'), file);
   $('[data-account-inspector-kind]').textContent = 'NO3D account file';
   $('[data-account-inspector-title]').textContent = file.filename;
   $('[data-account-inspector-path]').textContent = `/my_file/${pathSegment(file.folder)}/${file.filename}`;
@@ -66,6 +66,12 @@ function inspectFile(file) {
   action.href = file.action.href;
   action.textContent = file.action.label;
   bindDownloadAction(action, file);
+}
+
+function restoreInspector() {
+  const selected = state.files.find(file => file.handle === state.inspectedHandle && file.folder === state.activeFolder);
+  if (selected) inspectFile(selected, { commit: false });
+  else inspectFolder(state.activeFolder);
 }
 
 async function downloadAccountFile(event, file, action) {
@@ -83,6 +89,18 @@ async function downloadAccountFile(event, file, action) {
     const downloadedAt = new Date().toISOString();
     localStorage.setItem(accountStorageKey('downloaded', file.handle), downloadedAt);
     file.downloadedAt = downloadedAt;
+    $$('[data-account-file]').filter(row => row.dataset.accountFile === file.handle).forEach(row => {
+      const date = row.querySelector('.file-date');
+      if (date) date.textContent = displayDate(downloadedAt);
+    });
+    if (state.inspectedHandle === file.handle) {
+      $('[data-account-inspector-date]').textContent = displayDate(downloadedAt);
+    }
+    action.textContent = 'Download started ✓';
+    window.setTimeout(() => {
+      action.removeAttribute('aria-disabled');
+      action.textContent = original;
+    }, 4000);
     location.assign(target.href);
   } catch {
     action.removeAttribute('aria-disabled');
@@ -92,8 +110,11 @@ async function downloadAccountFile(event, file, action) {
 }
 
 function bindDownloadAction(action, file) {
+  // The inspector reuses one persistent anchor as the selected file changes.
+  // Replace its handler so an old selection can never issue a second download.
+  action.onclick = null;
   if (!file.action.href.startsWith('/api/commerce/download/')) return;
-  action.addEventListener('click', event => void downloadAccountFile(event, file, action));
+  action.onclick = event => void downloadAccountFile(event, file, action);
 }
 
 function renderAccountFolders() {
@@ -129,7 +150,7 @@ function renderLibrary() {
   const files = filterAccountFiles(state.files, { folder: state.activeFolder, term, sort });
   $('[data-account-active-path]').textContent = state.activeFolder ? `/my_file/${pathSegment(state.activeFolder)}/` : '/my_file/';
   $('[data-account-active-count]').textContent = `${String(files.length).padStart(2, '0')} items`;
-  $('[data-account-items]').replaceChildren(...files.map(file => {
+  const rows = files.map(file => {
     const row = document.createElement('li');
     row.className = `library-card file-row account-file-row${state.inspectedHandle === file.handle ? ' active' : ''}`;
     row.dataset.accountFile = file.handle;
@@ -144,11 +165,21 @@ function renderLibrary() {
     action.href = file.action.href;
     action.textContent = file.action.label;
     bindDownloadAction(action, file);
+    row.addEventListener('pointerenter', () => inspectFile(file, { commit: false }));
+    row.addEventListener('pointerleave', () => {
+      if (!row.contains(document.activeElement)) restoreInspector();
+    });
+    row.addEventListener('focusin', () => inspectFile(file, { commit: false }));
+    row.addEventListener('focusout', event => {
+      if (!row.contains(event.relatedTarget)) restoreInspector();
+    });
     row.append(button, action);
     return row;
-  }));
+  });
+  $('[data-account-items]').replaceChildren(...rows);
+  preloadProductPreviews(files);
   $('[data-account-empty]').hidden = files.length > 0;
-  $('[data-account-empty]').textContent = state.products.length ? 'No files match this folder and search.' : 'Your free collection will appear here as instruments are published.';
+  $('[data-account-empty]').textContent = state.products.length ? 'No files match this category and search.' : 'Your free collection will appear here as NO3D Tools are published.';
   $('[data-account-file-status]').textContent = `${state.member ? 'Automatic updates' : 'Manual updates'} · ${String(state.products.length).padStart(2, '0')} effective assets`;
   if (state.inspectedHandle) {
     const inspected = state.files.find(file => file.handle === state.inspectedHandle);
@@ -236,16 +267,16 @@ async function completeConnection(deviceCode) {
 
 function renderOrder(order) {
   const ready = order.paymentStatus === 'paid' && order.fulfillmentStatus === 'fulfilled' && order.recovery;
-  if (ready) return true;
+  if (ready) return 'fulfilled';
   if (['refunded', 'disputed'].includes(order.paymentStatus)) {
     const panel = $('[data-account-notice]');
     panel.hidden = false;
     $('[data-order-state]').textContent = 'Purchase unavailable';
     $('[data-order-detail]').textContent = 'This order is not currently available for delivery.';
-    return true;
+    return 'terminal';
   }
   $('[data-order-state]').textContent = order.paymentStatus === 'paid' ? 'Payment received / Preparing' : 'Confirming purchase';
-  return false;
+  return 'pending';
 }
 
 function renderAccountNotice() {
@@ -263,11 +294,19 @@ async function monitorOrder() {
   for (let attempt = 0; attempt < 15; attempt += 1) {
     try {
       const order = await getOrder(orderId);
-      if (renderOrder(order)) {
+      const outcome = renderOrder(order);
+      if (outcome === 'fulfilled') {
         if (!localStorage.getItem(`no3d_v3_recovery_${orderId}`)) {
           await requestRecovery(orderId).catch(() => null);
           localStorage.setItem(`no3d_v3_recovery_${orderId}`, '1');
         }
+        // The initial account summary may predate durable fulfillment. Reload
+        // without the order route so My Folder is rebuilt from fresh Commerce
+        // entitlements and the monitor cannot enter a refresh loop.
+        location.replace('/v3/account/?purchase=ready');
+        return;
+      }
+      if (outcome === 'terminal') {
         return;
       }
     } catch {
@@ -324,15 +363,31 @@ async function monitorMembershipCheckout(email) {
   $('[data-order-detail]').textContent = 'Membership is still processing. It will appear here automatically after Stripe fulfillment completes.';
 }
 
-const localSetupPreview = ['127.0.0.1', 'localhost'].includes(location.hostname) && params.get('preview') === 'setup';
-const { session, catalog, summary, membership } = localSetupPreview
+const localPreview = ['127.0.0.1', 'localhost'].includes(location.hostname) ? params.get('preview') : '';
+const localDirectoryCatalog = new Map([
+  ['preview-thumbnail', { handle: 'preview-thumbnail', title: 'Thumbnail Product', productType: 'Blender', thumbnail: '/assets/product-images/icon_Dojo Bolt Gen v05_Obj.png', releaseStatus: 'active', accessPolicy: 'paid', workbench: { filename: 'Thumbnail_Product.no3d', folder: 'Blender', kind: 'NO3D asset', summary: 'Catalog thumbnail preview.' } }],
+  ['preview-image', { handle: 'preview-image', title: 'Alternate Image Product', productType: 'Blender', image: '/v3/assets/dojo-bolt-disassembly.webp?v=perf-20260820', releaseStatus: 'active', accessPolicy: 'paid', workbench: { filename: 'Alternate_Image_Product.no3d', folder: 'Blender', kind: 'NO3D asset', summary: 'Alternate product image preview.' } }],
+  ['preview-fallback', { handle: 'preview-fallback', title: 'No Thumbnail Product', productType: 'Blender', releaseStatus: 'active', accessPolicy: 'free', workbench: { filename: 'No_Thumbnail_Product.no3d', folder: 'Blender', kind: 'NO3D asset', summary: 'Pixel folder fallback preview.' } }],
+]);
+const localPreviewState = localPreview === 'directory'
+  ? {
+      session: { authenticated: true, email: 'preview@no3dtools.local' },
+      catalog: localDirectoryCatalog,
+      summary: { account: { id: 'local-directory-preview', contactEmail: 'preview@no3dtools.local' }, products: [
+        { handle: 'preview-thumbnail', owned: true, permanent: true, orderId: '11111111-1111-4111-8111-111111111111' },
+        { handle: 'preview-image', owned: true, membership: true },
+      ], memberships: [{ status: 'active' }] },
+      membership: { active: true, status: 'active' },
+    }
+  : localPreview === 'setup'
   ? {
       session: { authenticated: true, email: 'preview@no3dtools.local' },
       catalog: new Map(),
       summary: { account: { id: 'local-setup-preview', contactEmail: 'preview@no3dtools.local' }, products: [], memberships: [] },
       membership: null
     }
-  : await getAccountState();
+  : null;
+const { session, catalog, summary, membership } = localPreviewState || await getAccountState();
 state.authenticated = session.authenticated === true;
 if (!state.authenticated) {
   const next = `${location.pathname}${location.search}`;

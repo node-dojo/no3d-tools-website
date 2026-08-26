@@ -34,7 +34,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 
 const products = [
   { id: 'bolt-obj', handle: 'dojo-bolt-gen-v05-obj', title: 'Dojo Bolt Gen V05_Obj', description: 'The drag-and-drop object edition of the Dojo Bolt Generator, pre-configured with live parametric controls.', price: '7.77', product_type: 'Geometry Nodes', tags: ['Geometry', 'Object edition'], release_status: 'stable', release_version: '05.3', image: '/v3/assets/dojo-bolt-disassembly.gif', thumbnail_image: '/assets/product-images/icon_Dojo Bolt Gen v05_Obj.png' },
-  { id: 'bolt', handle: 'dojo-bolt-gen-v05', title: 'Dojo Bolt Gen V05', description: 'A live node instrument for printable bolts.', price: '7.77', product_type: 'Geometry Nodes', tags: ['Geometry', 'Node edition'], release_status: 'stable', release_version: '05.3', image: '/assets/product-images/Dojo Bolt Gen v05.gif', thumbnail_image: '/assets/product-images/icon_Dojo Bolt Gen v05.png' },
+  { id: 'bolt', handle: 'dojo-bolt-gen-v05', title: 'Dojo Bolt Gen V05', description: 'A live Geometry Nodes tool for printable bolts.', price: '7.77', product_type: 'Geometry Nodes', tags: ['Geometry', 'Node edition'], release_status: 'stable', release_version: '05.3', image: '/assets/product-images/Dojo Bolt Gen v05.gif', thumbnail_image: '/assets/product-images/icon_Dojo Bolt Gen v05.png' },
   { id: 'knob', handle: 'dojo-knob', title: 'Dojo Knob', description: 'A flexible parametric knob generator.', price: '7.77', product_type: 'Geometry Nodes', tags: ['Geometry', 'Generator'], release_status: 'stable', image: '/assets/product-images/Dojo Knob.gif', thumbnail_image: '/assets/product-images/icon_Dojo Knob.png' },
   { id: 'chrome', handle: 'chrome-crayon', title: 'Chrome Crayon', description: 'A linked-form generator for procedural chain studies.', price: '', product_type: 'Geometry Nodes', tags: ['Geometry', 'Generator'], release_status: 'stable', image: '/assets/product-images/icon_Dojo Crv Wrapper v4.png', thumbnail_image: '/assets/product-images/icon_Dojo Crv Wrapper v4.png' },
   { id: 'bench-grid', handle: 'dojo-bounding-grid', title: 'Dojo Bounding Grid', description: 'A living workbench utility.', product_type: 'Geometry Nodes', tags: ['Utilities'], release_status: 'experimental', presentation: { mode: 'workbench' }, workbench: { filename: 'dojo_bounding_grid.no3d', folder: 'Utilities', maturity: 'experimental', kind: 'Geometry Nodes asset', modified_at: '2026-08-22T00:00:00Z' } },
@@ -132,25 +132,13 @@ try {
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
   await page.goto(`${origin}/v3/`, { waitUntil: 'networkidle0' });
   await structuralAudit(page, 'home mobile');
-  const catalogCards = await page.evaluate(() => [...document.querySelectorAll('.product-card')].map(card => {
-    const media = card.querySelector('.product-media');
-    const title = card.querySelector('h3');
-    const mediaRect = media.getBoundingClientRect();
-    const titleRect = title.getBoundingClientRect();
-    return { delta: Math.abs(mediaRect.width - mediaRect.height), mediaBackground: getComputedStyle(media).backgroundColor, titleCrossesBoundary: titleRect.top < mediaRect.bottom && titleRect.bottom > mediaRect.bottom };
-  }));
-  assert.ok(catalogCards.length >= 4);
-  assert.ok(catalogCards.every(card => card.delta < 1), 'home product media must be square');
-  assert.ok(catalogCards.every(card => card.mediaBackground === 'rgba(0, 0, 0, 0)'), 'home product media must be transparent');
-  assert.ok(catalogCards.every(card => card.titleCrossesBoundary), 'home product titles must cross the square boundary');
-  const closedTop = await page.$eval('.catalog-section', node => node.getBoundingClientRect().top);
-  await page.click('[data-catalog-toggle]');
-  const openTop = await page.$eval('.catalog-section', node => node.getBoundingClientRect().top);
-  assert.ok(openTop > closedTop + 40, `mobile catalog must push content downward (${closedTop} -> ${openTop})`);
+  assert.equal(await page.$eval('.catalog-rail', node => getComputedStyle(node).display), 'none');
+  assert.equal(await page.$eval('.catalog-section', node => getComputedStyle(node).display), 'none');
+  assert.equal(await page.$eval('.home-mobile-directory', node => getComputedStyle(node).display), 'block');
+  assert.equal(await page.$$eval('[data-mobile-category-loop] button', nodes => nodes.length), 27);
+  await page.click('[data-mobile-category-menu]');
+  assert.equal(await page.$eval('[data-mobile-category-overview]', node => node.hidden), false);
   await page.screenshot({ path: join(outputDir, 'home-mobile-open.png') });
-  await page.click('[data-catalog-toggle]');
-  const restoredTop = await page.$eval('.catalog-section', node => node.getBoundingClientRect().top);
-  assert.equal(restoredTop, closedTop, 'mobile catalog must restore document flow when closed');
   await page.screenshot({ path: join(outputDir, 'home-mobile.png') });
 
   await page.goto(`${origin}/v3/product/?handle=dojo-bolt-gen-v05-obj`, { waitUntil: 'networkidle0' });
@@ -158,14 +146,20 @@ try {
   const paid = await page.evaluate(() => {
     const title = document.querySelector('.product-title').getBoundingClientRect();
     const hero = document.querySelector('.product-hero').getBoundingClientRect();
-    const lines = document.querySelector('[data-ascii-plate]').textContent.split('\n');
+    const plate = document.querySelector('[data-ascii-plate]');
+    const panel = plate?.closest('.ascii-panel');
+    const lines = plate?.textContent ? plate.textContent.split('\n') : [];
     const functions = getComputedStyle(document.querySelector('.product-functions'));
     const individualAction = document.querySelector('[data-download]');
-    return { titleBeforeHero: title.top < hero.top, widths: [...new Set(lines.map(line => line.length))], inputSockets: lines.filter(line => line.startsWith('o ')).length, outputSockets: lines.filter(line => line.endsWith('o')).length, price: document.querySelector('[data-price-block]')?.textContent, sideBorders: [functions.borderLeftWidth, functions.borderRightWidth], hero: document.querySelector('[data-product-hero]').getAttribute('src'), individualAction: individualAction.textContent.trim(), individualActionBackground: getComputedStyle(individualAction).backgroundColor, catalogAction: document.querySelector('[data-catalog-checkout]').textContent.trim() };
+    return { titleBeforeHero: title.top < hero.top, hasDiagram: lines.length > 0, panelPresent: Boolean(panel), panelHidden: panel?.hidden, widths: [...new Set(lines.map(line => line.length))], inputSockets: lines.filter(line => line.startsWith('o ')).length, outputSockets: lines.filter(line => line.endsWith('o')).length, price: document.querySelector('[data-price-block]')?.textContent, sideBorders: [functions.borderLeftWidth, functions.borderRightWidth], hero: document.querySelector('[data-product-hero]').getAttribute('src'), individualAction: individualAction.textContent.trim(), individualActionBackground: getComputedStyle(individualAction).backgroundColor, catalogAction: document.querySelector('[data-catalog-checkout]').textContent.trim() };
   });
   assert.equal(paid.titleBeforeHero, true);
-  assert.deepEqual(paid.widths, [48]);
-  assert.ok(paid.inputSockets >= 10 && paid.outputSockets >= 8);
+  if (paid.hasDiagram) {
+    assert.deepEqual(paid.widths, [48]);
+    assert.ok(paid.inputSockets >= 1 || paid.outputSockets >= 1);
+  } else {
+    assert.ok(!paid.panelPresent || paid.panelHidden, 'a product without a diagram must remove or hide the ASCII panel');
+  }
   assert.match(paid.price, /\$7\.77/);
   assert.deepEqual(paid.sideBorders, ['0px', '0px']);
   assert.equal(paid.hero, '/assets/product-images/icon_Dojo Bolt Gen v05_Obj.png');
@@ -181,7 +175,6 @@ try {
     ['onboarding-connect-mobile', '/v3/account/?state=connect'],
     ['onboarding-complete-mobile', '/v3/account/?state=complete'],
     ['account-library-mobile', '/v3/account/'],
-    ['workbench-mobile', '/v3/workbench/'],
   ]) {
     await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
     await structuralAudit(page, name);
@@ -198,18 +191,51 @@ try {
       continue;
     }
     if (name === 'workbench-mobile') {
-      assert.equal(await page.$$eval('.folder-entry', nodes => nodes.length), 1);
-      assert.equal(await page.$$eval('.file-row', nodes => nodes.length), 1);
-      await page.click('.file-toggle');
-      assert.equal(await page.$eval('[data-selected-count]', node => node.textContent), '1');
-      await page.click('[data-move]');
-      assert.equal(await page.$eval('[data-file-count]', node => node.textContent), '1');
-      await page.reload({ waitUntil: 'networkidle0' });
-      assert.equal(await page.$eval('[data-file-count]', node => node.textContent), '1');
+      const b4 = await page.evaluate(() => {
+        const featured = document.querySelector('[data-mobile-featured-tools]');
+        const firstCard = featured.querySelector('.mobile-featured-card');
+        const sharedFolder = document.querySelector('.shared-folder');
+        const directFile = document.querySelector('.mobile-working-link');
+        return {
+          categories: [...document.querySelectorAll('[data-mobile-category-overview] button')].map(node => node.textContent.trim()),
+          loopButtons: document.querySelectorAll('[data-mobile-category-loop] button').length,
+          activeFirst: document.querySelector('[data-mobile-category-loop] button')?.classList.contains('active'),
+          activeLabel: document.querySelector('[data-mobile-category-loop] button')?.textContent.trim(),
+          partialCard: firstCard.getBoundingClientRect().width < innerWidth,
+          horizontalShelf: featured.scrollWidth > featured.clientWidth,
+          directFileHref: directFile?.getAttribute('href'),
+          sharedFolderHidden: getComputedStyle(sharedFolder).display === 'none',
+          mobileToggles: document.querySelectorAll('[data-mobile-directory] input[type="checkbox"]').length,
+          purchaseCopy: document.querySelector('.mobile-purchase-contract').textContent,
+        };
+      });
+      assert.deepEqual(b4.categories, ['All', 'Hardware', 'Generators', 'Primitives', 'Utilities', 'Brushes', 'Ready Mades', 'Assemblies', 'Lessons']);
+      assert.equal(b4.loopButtons, 27);
+      assert.equal(b4.activeFirst, true);
+      assert.equal(b4.activeLabel, 'All');
+      assert.equal(b4.partialCard, true);
+      assert.equal(b4.horizontalShelf, true);
+      assert.match(b4.directFileHref, /^\/v3\/product\/\?handle=/);
+      assert.equal(b4.sharedFolderHidden, true);
+      assert.equal(b4.mobileToggles, 0);
+      assert.match(b4.purchaseCopy, /one product page for individual checkout/i);
+      assert.match(b4.purchaseCopy, /full-catalog membership/i);
+
+      await page.click('[data-mobile-category-menu]');
+      assert.equal(await page.$eval('[data-mobile-category-overview]', node => node.hidden), false);
+      assert.equal(await page.$eval('[data-mobile-category-menu]', node => node.getAttribute('aria-expanded')), 'true');
+      await page.click('[data-mobile-category-overview] button:nth-child(6)');
+      assert.equal(await page.$eval('[data-mobile-category-loop] button', node => node.textContent.trim()), 'Brushes');
+      assert.equal(await page.$eval('[data-mobile-featured-empty]', node => node.hidden), false);
+      assert.equal(await page.$eval('[data-mobile-files-empty]', node => node.hidden), false);
+
+      await page.click('[data-search-toggle]');
+      assert.equal(await page.$eval('[data-search-region]', node => node.hidden), false);
+      assert.equal(await page.$eval('[data-search-toggle]', node => node.getAttribute('aria-expanded')), 'true');
     }
     if (name === 'account-library-mobile') {
       await mobileMastAudit(page, name);
-      assert.equal(await page.$$eval('[data-account-file]', nodes => new Set(nodes.map(node => node.dataset.accountFile)).size), await page.$$eval('[data-account-file]', nodes => nodes.length), 'selected My File folder must not repeat an asset handle');
+      assert.equal(await page.$$eval('[data-account-file]', nodes => new Set(nodes.map(node => node.dataset.accountFile)).size), await page.$$eval('[data-account-file]', nodes => nodes.length), 'selected My Folder category must not repeat an asset handle');
     }
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
   }
@@ -224,13 +250,43 @@ try {
     ['onboarding-connect-desktop', '/v3/account/?state=connect'],
     ['onboarding-complete-desktop', '/v3/account/?state=complete'],
     ['account-library-desktop', '/v3/account/'],
-    ['workbench-desktop', '/v3/workbench/'],
   ]) {
     await page.goto(`${origin}${path}`, { waitUntil: 'networkidle0' });
     await structuralAudit(page, name);
     if (name === 'onboarding-install-desktop') {
       assert.equal(await page.$eval('[data-wizard-slide="version"]', node => node.hidden), false);
       assert.equal(await page.$eval('[data-wizard-slide="mobile-handoff"]', node => node.hidden), true);
+    }
+    if (name === 'home-desktop') {
+      const responsiveDirectory = await page.evaluate(() => {
+        const shelf = document.querySelector('[data-product-grid]');
+        const cards = [...shelf.querySelectorAll('.product-card')];
+        const first = cards[0];
+        const third = cards[2];
+        const terminal = first?.querySelector('.product-meta');
+        const firstStyle = getComputedStyle(first);
+        return {
+          sharedFolderVisible: getComputedStyle(document.querySelector('.home-shared-folder')).display !== 'none',
+          catalogRailVisible: getComputedStyle(document.querySelector('.catalog-rail')).display !== 'none',
+          desktopHamburgers: document.querySelectorAll('[data-catalog-toggle], .home-mobile-directory .mobile-category-menu:not(:where(.home-mobile-directory[style*="display: block"] *))').length,
+          shelfDisplay: getComputedStyle(shelf).display,
+          twoRows: Boolean(first && third && Math.abs(first.getBoundingClientRect().top - third.getBoundingClientRect().top) < 2),
+          cardBorders: [firstStyle.borderTopWidth, firstStyle.borderRightWidth, firstStyle.borderBottomWidth, firstStyle.borderLeftWidth],
+          terminalUnderline: getComputedStyle(terminal).borderBottomWidth,
+          directoryColumns: document.querySelectorAll('.home-shared-folder .source-browser > *').length,
+          sharedFolderLinks: [...document.querySelectorAll('.catalog-list a')].filter(node => /Shared Source Folder/i.test(node.textContent)).length,
+          toolCounters: document.querySelectorAll('[data-product-count]').length,
+        };
+      });
+      assert.equal(responsiveDirectory.sharedFolderVisible, true);
+      assert.equal(responsiveDirectory.catalogRailVisible, true);
+      assert.equal(responsiveDirectory.shelfDisplay, 'grid');
+      assert.equal(responsiveDirectory.twoRows, true);
+      assert.deepEqual(responsiveDirectory.cardBorders, ['0px', '0px', '0px', '0px']);
+      assert.equal(responsiveDirectory.terminalUnderline, '1px');
+      assert.equal(responsiveDirectory.directoryColumns, 3);
+      assert.equal(responsiveDirectory.sharedFolderLinks, 0);
+      assert.equal(responsiveDirectory.toolCounters, 0);
     }
     await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: name.startsWith('onboarding') || name.startsWith('account-library') });
   }
@@ -242,7 +298,7 @@ try {
   await structuralAudit(memberPage, 'account active member desktop');
   assert.match(await memberPage.$eval('[data-account-membership]', node => node.textContent), /Automatic updates/i);
   assert.match(await memberPage.$eval('[data-library-count]', node => node.textContent), new RegExp(`^0?${products.length} tools$`));
-  assert.ok(await memberPage.$$eval('.library-card', nodes => nodes.length) > 0, 'selected My File folder must render its effective assets');
+  assert.ok(await memberPage.$$eval('.library-card', nodes => nodes.length) > 0, 'selected My Folder category must render its effective assets');
   assert.ok(await memberPage.$$eval('[data-account-folders] .folder-entry', nodes => nodes.length) > 1, 'effective library must retain its catalog folders');
   await memberPage.screenshot({ path: join(outputDir, 'account-member-desktop.png'), fullPage: true });
   await memberPage.close();

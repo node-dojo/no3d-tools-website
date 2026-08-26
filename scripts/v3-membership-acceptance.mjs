@@ -1,14 +1,20 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
 import process from 'node:process';
 
 import puppeteer from 'puppeteer';
 import Stripe from 'stripe';
+import { acceptanceBaseUrl } from './lib/v3-acceptance-target.mjs';
 
 const apply = process.argv.includes('--apply');
-const baseUrl = (process.env.NO3D_V3_ACCEPTANCE_URL || 'https://v3.no3dtools.com').replace(/\/$/, '');
+const baseUrl = acceptanceBaseUrl();
 const email = process.env.NO3D_E2E_EMAIL?.trim();
 const password = process.env.NO3D_E2E_PASSWORD;
 const permanentHandle = process.env.NO3D_E2E_HANDLE?.trim() || 'apple-magsafe-charger';
+const exactArtifactHandle = process.env.NO3D_EXACT_ARTIFACT_HANDLE?.trim() || '';
+const exactArtifactChecksum = process.env.NO3D_EXACT_ARTIFACT_CHECKSUM?.trim() || '';
+const captureDir = '/tmp/no3d-v3-account-matrix';
 
 if (!apply) throw new Error('This creates and cancels a Stripe test subscription. Re-run with --apply.');
 if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('NO3D_E2E_EMAIL is required.');
@@ -64,8 +70,23 @@ try {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, mode: 'signin', next: '/v3/account/', password }),
   });
-  assert.equal(signIn.status, 200, signIn.payload.error || 'Acceptance account sign-in failed');
-  assert.equal(signIn.payload.authenticated, true);
+  if (signIn.status === 429) {
+    const response = await fetch(`${process.env.SUPABASE_URL.replace(/\/$/, '')}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { apikey: process.env.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const session = await response.json();
+    assert.equal(response.status, 200, session.error || 'Direct staging acceptance sign-in failed');
+    const domain = new URL(baseUrl).hostname;
+    await page.setCookie(
+      { name: 'no3d_auth_access', value: session.access_token, domain, path: '/', httpOnly: true, secure: true, sameSite: 'Lax' },
+      { name: 'no3d_auth_refresh', value: session.refresh_token, domain, path: '/', httpOnly: true, secure: true, sameSite: 'Lax' },
+    );
+  } else {
+    assert.equal(signIn.status, 200, signIn.payload.error || 'Acceptance account sign-in failed');
+    assert.equal(signIn.payload.authenticated, true);
+  }
 
   const baselineAccount = await pageFetch(page, '/api/commerce/account');
   assert.equal(baselineAccount.status, 200, baselineAccount.payload.error || 'Commerce account lookup failed');
@@ -133,10 +154,31 @@ try {
   const eligibleCatalogCount = (catalog.payload.products || []).filter((product) => product.releaseStatus !== 'archived').length;
   assert.ok(eligibleCatalogCount > 1, 'Staging catalog must contain multiple membership products');
 
+  const activeAccount = await pageFetch(page, '/api/commerce/account');
+  assert.equal(activeAccount.status, 200, activeAccount.payload.error || 'Active account lookup failed');
+  const effectiveLibraryCount = (activeAccount.payload.products || []).filter((product) => product.owned).length;
+  assert.ok(effectiveLibraryCount > 1, 'Active membership did not expand the account library');
+
   await page.goto(`${baseUrl}/v3/account/?membership=active`, { waitUntil: 'networkidle2' });
-  await page.waitForFunction((expected) => document.querySelectorAll('.library-card').length >= expected, { timeout: 20_000 }, eligibleCatalogCount);
+  await page.waitForFunction((expected) => document.querySelectorAll('.library-card').length >= expected, { timeout: 20_000 }, effectiveLibraryCount);
   const renderedLibraryCount = await page.$$eval('.library-card', (cards) => cards.length);
-  assert.ok(renderedLibraryCount >= eligibleCatalogCount, 'Account page did not expand to the eligible catalog');
+  assert.ok(renderedLibraryCount >= effectiveLibraryCount, 'Account page did not render the effective membership library');
+  if (exactArtifactHandle) {
+    const folderSelected = await page.$$eval('[data-account-folders] button', (buttons) => {
+      const folder = buttons.find((button) => button.textContent?.toLowerCase().includes('generators'));
+      folder?.click();
+      return Boolean(folder);
+    });
+    assert.equal(folderSelected, true, 'Exact acceptance artifact folder did not render');
+    await page.waitForSelector(`[data-account-file="${exactArtifactHandle}"]`, { timeout: 20_000 });
+  }
+  await mkdir(captureDir, { recursive: true });
+  await page.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
+  await page.reload({ waitUntil: 'networkidle2' });
+  await page.screenshot({ path: `${captureDir}/active-membership-desktop.png`, fullPage: true });
+  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
+  await page.reload({ waitUntil: 'networkidle2' });
+  await page.screenshot({ path: `${captureDir}/active-membership-mobile.png`, fullPage: true });
 
   const portal = await pageFetch(page, '/api/membership/portal', { method: 'POST' });
   assert.equal(portal.status, 200, portal.payload.error || 'Membership billing portal failed');
@@ -149,12 +191,32 @@ try {
   const activeManifest = await activeManifestResponse.json();
   assert.equal(activeManifestResponse.status, 200, activeManifest.error || 'Active member manifest failed');
   assert.equal(activeManifest.assets?.[permanentHandle]?.access_source, 'membership_and_purchase');
+  if (exactArtifactHandle) {
+    assert.equal(activeManifest.assets?.[exactArtifactHandle]?.access_source, 'membership');
+    if (exactArtifactChecksum) assert.equal(activeManifest.assets[exactArtifactHandle].checksum, exactArtifactChecksum);
+  }
   const membershipOnlyHandle = Object.keys(activeManifest.assets || {}).find((handle) => handle !== permanentHandle);
   assert.ok(membershipOnlyHandle, 'Active membership did not add any Blender-library assets');
   const memberDownload = await fetch(`${baseUrl}/api/download/${encodeURIComponent(membershipOnlyHandle)}`, {
     headers: { 'X-NO3D-Device-Token': deviceToken },
   });
   assert.equal(memberDownload.status, 200, 'Membership-only Blender download was denied');
+  let exactArtifactDownload = null;
+  if (exactArtifactHandle) {
+    const response = await fetch(`${baseUrl}/api/download/${encodeURIComponent(exactArtifactHandle)}`, {
+      headers: { 'X-NO3D-Device-Token': deviceToken },
+    });
+    assert.equal(response.status, 200, 'Exact acceptance artifact download was denied');
+    const download = await response.json();
+    assert.match(download.url || '', /^https:\/\//, 'Exact acceptance artifact did not return a signed URL');
+    if (exactArtifactChecksum) assert.equal(download.checksum, exactArtifactChecksum, 'Download receipt checksum differs from the authoring source');
+    const artifactResponse = await fetch(download.url);
+    assert.equal(artifactResponse.status, 200, 'Signed artifact download failed');
+    const bytes = Buffer.from(await artifactResponse.arrayBuffer());
+    const checksum = createHash('sha256').update(bytes).digest('hex');
+    if (exactArtifactChecksum) assert.equal(checksum, exactArtifactChecksum, 'Downloaded artifact checksum differs from the authoring source');
+    exactArtifactDownload = { handle: exactArtifactHandle, bytes: bytes.length, checksum, matchedSource: checksum === exactArtifactChecksum };
+  }
 
   await stripe.subscriptions.cancel(subscriptionId);
   subscriptionCancelled = true;
@@ -172,6 +234,7 @@ try {
     return payload.assets?.[permanentHandle]?.access_source === 'purchase' ? payload : null;
   }, 'Blender library did not fall back to permanent purchases', { attempts: 60 });
   assert.equal(canceledManifest.assets?.[membershipOnlyHandle], undefined);
+  if (exactArtifactHandle) assert.equal(canceledManifest.assets?.[exactArtifactHandle], undefined);
 
   const removedDownload = await fetch(`${baseUrl}/api/download/${encodeURIComponent(membershipOnlyHandle)}`, {
     headers: { 'X-NO3D-Device-Token': deviceToken },
@@ -193,8 +256,9 @@ try {
   process.stdout.write(`${JSON.stringify({
     status: 'passed',
     membership: { checkout: 'cs_test', activated: true, portal: true, canceled: true, expired: true },
-    account: { expandedCatalog: renderedLibraryCount, permanentPurchaseSurvived: permanentHandle },
+    account: { expandedCatalog: renderedLibraryCount, permanentPurchaseSurvived: permanentHandle, visualCaptures: 2 },
     blender: { activeCatalog: activeManifest.asset_count, fallbackCatalog: canceledManifest.asset_count, membershipDownloadRemoved: true },
+    exactArtifact: exactArtifactDownload,
   })}\n`);
 } finally {
   if (subscriptionId && !subscriptionCancelled) {

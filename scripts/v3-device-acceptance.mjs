@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import process from 'node:process';
 
 import puppeteer from 'puppeteer';
+import { acceptanceBaseUrl } from './lib/v3-acceptance-target.mjs';
 
 const apply = process.argv.includes('--apply');
-const baseUrl = (process.env.NO3D_V3_ACCEPTANCE_URL || 'https://v3.no3dtools.com').replace(/\/$/, '');
+const baseUrl = acceptanceBaseUrl();
 const email = process.env.NO3D_E2E_EMAIL?.trim();
 const password = process.env.NO3D_E2E_PASSWORD;
 const handle = process.env.NO3D_E2E_HANDLE?.trim() || 'apple-magsafe-charger';

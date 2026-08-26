@@ -112,7 +112,7 @@ export function accountFileAction(item = {}) {
     };
   }
   if (item.free || (item.membership && !item.permanent)) {
-    return { href: '/v3/account/?state=install', label: 'Available in Blender →' };
+    return { href: '/v3/account/?state=install', label: 'Available via Add-on →' };
   }
   if (item.orderId) {
     return {

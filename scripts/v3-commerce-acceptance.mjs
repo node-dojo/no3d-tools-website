@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import process from 'node:process';
 
 import puppeteer from 'puppeteer';
+import { acceptanceBaseUrl } from './lib/v3-acceptance-target.mjs';
 
 const apply = process.argv.includes('--apply');
-const baseUrl = (process.env.NO3D_V3_ACCEPTANCE_URL || 'https://v3.no3dtools.com').replace(/\/$/, '');
+const baseUrl = acceptanceBaseUrl();
 const email = process.env.NO3D_E2E_EMAIL?.trim();
 const password = process.env.NO3D_E2E_PASSWORD;
 const handle = process.env.NO3D_E2E_HANDLE?.trim() || 'dojo-knob';
@@ -36,6 +37,23 @@ try {
   const page = await browser.newPage();
   await page.goto(`${baseUrl}/v3/access/`, { waitUntil: 'domcontentloaded' });
 
+  const signIn = await page.evaluate(async ({ emailAddress, passwordValue }) => {
+    const response = await fetch('/api/auth/password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: emailAddress,
+        mode: 'signin',
+        next: '/v3/account/',
+        password: passwordValue,
+      }),
+    });
+    return { status: response.status, payload: await response.json() };
+  }, { emailAddress: email, passwordValue: password });
+  assert.equal(signIn.status, 200, signIn.payload.error || 'Acceptance account sign-in failed');
+  assert.equal(signIn.payload.authenticated, true);
+  assert.equal(signIn.payload.claimStatus, 'no_guest');
+
   const checkout = await page.evaluate(async (productHandle) => {
     const response = await fetch('/api/commerce/checkout', {
       method: 'POST',
@@ -50,7 +68,8 @@ try {
   assert.equal(new URL(checkout.payload.checkoutUrl).hostname, 'checkout.stripe.com');
 
   await page.goto(checkout.payload.checkoutUrl, { waitUntil: 'networkidle2' });
-  await page.type('input[name=email]', email, { delay: 20 });
+  const checkoutEmail = await page.$('input[name=email]');
+  if (checkoutEmail) await checkoutEmail.type(email, { delay: 20 });
   await page.$eval('button[aria-label="Pay with card"]', (element) => element.click());
   await page.waitForSelector('input[name=cardNumber]', { timeout: 10_000 });
   await page.type('input[name=cardNumber]', '4242424242424242', { delay: 20 });
@@ -105,28 +124,12 @@ try {
   assert.ok([200, 206].includes(assetResponse.status), `Asset delivery returned ${assetResponse.status}`);
   await assetResponse.body?.cancel();
 
-  const accountClaim = await page.evaluate(async ({ emailAddress, passwordValue }) => {
-    const response = await fetch('/api/auth/password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: emailAddress,
-        mode: 'signin',
-        next: '/v3/account/',
-        password: passwordValue,
-      }),
-    });
-    return { status: response.status, payload: await response.json() };
-  }, { emailAddress: email, passwordValue: password });
-  assert.equal(accountClaim.status, 200, accountClaim.payload.error || 'Acceptance account sign-in failed');
-  assert.equal(accountClaim.payload.authenticated, true);
-  assert.equal(accountClaim.payload.claimStatus, 'claimed');
-
+  await page.goto(`${baseUrl}/v3/access/`, { waitUntil: 'networkidle2' });
   const accountResponse = await page.evaluate(async () => {
     const response = await fetch('/api/commerce/account');
     return { status: response.status, payload: await response.json() };
   });
-  assert.equal(accountResponse.status, 200, accountResponse.payload.error || 'Claimed account lookup failed');
+  assert.equal(accountResponse.status, 200, accountResponse.payload.error || 'Authenticated account lookup failed');
   const ownedProduct = accountResponse.payload.products?.find((product) => product.handle === handle);
   assert.equal(ownedProduct?.owned, true, 'Claimed product is missing from the account library');
   assert.equal(ownedProduct?.permanent, true, 'Individual purchase must remain permanent');
@@ -150,7 +153,7 @@ try {
       paymentStatus: order.payload.paymentStatus,
       fulfillmentStatus: order.payload.fulfillmentStatus,
       downloadStatus: assetResponse.status,
-      accountClaim: accountClaim.payload.claimStatus,
+      accountClaim: signIn.payload.claimStatus,
       accountLibrary: 'owned',
     },
     membership: { checkout: 'cs_test' },

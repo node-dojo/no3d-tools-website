@@ -22,12 +22,13 @@
         <label>Email address<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
         <label>Password<input name="password" type="password" autocomplete="new-password" required minlength="10" placeholder="At least 10 characters"></label>
         <button class="account-entry-submit" type="submit"><span data-auth-submit>Create free account</span><span>→</span></button>
-      </form>
-      <p class="account-entry-message" data-auth-message aria-live="polite"></p>
-      <p class="account-entry-terms">By continuing, you agree to the Terms and acknowledge the Privacy Policy.</p>
+	      </form>
+	      <p class="account-entry-message" data-auth-message aria-live="polite"></p>
+	      <button class="text-action" type="button" data-purchase-recovery hidden>Email me a one-time sign-in link →</button>
+	      <p class="account-entry-terms">By continuing, you agree to the Terms and acknowledge the Privacy Policy.</p>
     </div>
     <footer class="account-entry-foot"><img src="/assets/light/stone-logo.png" alt=""><span>NO3D Account</span></footer>
   </section>
-  <script type="module" src="/v3/js/onboarding.js?v=unified-auth-20260822"></script>
+	  <script type="module" src="/v3/js/onboarding.js?v=purchase-recovery-20260823"></script>
 </body>
 </html>

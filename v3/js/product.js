@@ -1,4 +1,5 @@
 import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=perf-20260820';
+import { setProductPreview } from './product-preview.js?v=preview-20260823';
 import './shell.js?v=perf-20260820';
 
 const $ = selector => document.querySelector(selector);
@@ -8,9 +9,22 @@ function metafield(product, key) {
   return product.metafields.find(field => field.key === key)?.value || '';
 }
 
+function descriptionContent(text) {
+  const source = String(text || '').replace(/^---[\s\S]*?---\s*/, '').trim();
+  const lines = source.split('\n');
+  const descriptionHeading = lines.findIndex(line => /^#{1,6}\s+description\s*$/i.test(line.trim()));
+  if (descriptionHeading < 0) return source;
+  const nextHeading = lines.findIndex((line, index) => index > descriptionHeading && /^#{1,6}\s+/.test(line.trim()));
+  return lines.slice(descriptionHeading + 1, nextHeading < 0 ? lines.length : nextHeading).join('\n').trim();
+}
+
+function descriptionSummary(text) {
+  return descriptionContent(text).split(/\n\s*\n/).find(block => block.trim())?.replace(/[*_`]/g, '').replace(/\n/g, ' ').trim() || '';
+}
+
 function descriptionParagraphs(text) {
   const fragment = document.createDocumentFragment();
-  const cleaned = String(text || '').replace(/^---[\s\S]*?---\s*/, '').replace(/^#+\s*/gm, '').trim();
+  const cleaned = descriptionContent(text);
   for (const block of cleaned.split(/\n\s*\n/).filter(Boolean).slice(0, 8)) {
     const paragraph = document.createElement('p');
     paragraph.textContent = block.replace(/[*_`]/g, '').replace(/\n/g, ' ');
@@ -18,7 +32,7 @@ function descriptionParagraphs(text) {
   }
   if (!fragment.childNodes.length) {
     const paragraph = document.createElement('p');
-    paragraph.textContent = 'Documentation is being prepared for this instrument.';
+    paragraph.textContent = 'Documentation is being prepared for this NO3D Tool.';
     fragment.append(paragraph);
   }
   return fragment;
@@ -39,29 +53,37 @@ const commercePromise = getCommerceConfig();
 const { product, purchasable, pricingSource, source } = await getProduct(handle);
 
 if (!product) {
-  $('[data-product-title]').textContent = 'Instrument unavailable';
+  $('[data-product-title]').textContent = 'NO3D Tool unavailable';
   $('[data-product-lede]').textContent = 'The catalog did not return a product record.';
 } else {
+  const summary = descriptionSummary(product.description) || 'Current NO3D Tool.';
   document.title = `${product.title} — NO3D Tools V3`;
   $('[data-product-title]').textContent = product.title;
-  $('[data-product-lede]').textContent = product.description.split(/\n\s*\n/)[0] || 'Current NO3D instrument.';
+  $('[data-product-lede]').textContent = summary;
   $('[data-product-code]').textContent = `NO3D–${product.handle.toUpperCase().replace(/[^A-Z0-9]+/g, '–')}`;
-  $('[data-product-class]').textContent = `Tool / ${product.productType} / ${product.tags[1] || 'Instrument edition'}`;
+  $('[data-product-class]').textContent = `Tool / ${product.productType} / ${product.tags[1] || 'Blender edition'}`;
   $('[data-spec-system]').textContent = product.productType;
   $('[data-spec-revision]').textContent = product.releaseVersion || product.releaseStatus;
   $('[data-spec-control]').textContent = metafield(product, 'control') || (product.title.toLowerCase().includes('obj') ? 'Gizmos' : 'Parameters');
-  $('[data-doc-edition]').textContent = product.tags[1] || 'Instrument edition';
+  $('[data-doc-edition]').textContent = product.tags[1] || 'Blender edition';
   $('[data-doc-version]').textContent = product.releaseVersion || product.releaseStatus;
   $('[data-changelog]').textContent = product.releaseVersion ? `Release ${product.releaseVersion}` : 'Current catalog release';
-  $('[data-purpose]').textContent = product.description.split(/\n\s*\n/)[0] || 'A ready-to-use instrument for adjustable production geometry.';
+  $('[data-purpose]').textContent = summary;
   const hero = $('[data-product-hero]');
-  if (product.thumbnail || product.image) {
-    hero.src = product.thumbnail || product.image;
-    hero.alt = `${product.title} product image`;
-    hero.hidden = false;
-  }
+  setProductPreview(hero, product);
   const description = $('[data-description]');
   description.replaceChildren(descriptionParagraphs(product.description));
+
+  // The exposed-parameter panel is per-product or absent. Never fall back to
+  // another product's diagram — a wrong parameter map is worse than none.
+  // Assigned as textContent: this is drawn characters, never markup.
+  const asciiPanel = $('[data-ascii-panel]');
+  if (product.nodeDiagram) {
+    $('[data-ascii-plate]').textContent = product.nodeDiagram;
+    asciiPanel.hidden = false;
+  } else {
+    asciiPanel.remove();
+  }
 
   const price = displayPrice(product.price);
   const purchaseRow = $('[data-purchase-row]');

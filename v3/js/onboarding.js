@@ -1,18 +1,36 @@
-import { authenticateWithPassword, getAuthProviders, oauthUrl } from './api.js?v=perf-20260820';
+import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery } from './api.js?v=perf-20260820';
 
 const params = new URLSearchParams(location.search);
 const requestedNext = params.get('next');
 const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
   ? requestedNext
   : '/v3/account/?state=install';
+const purchaseOrderId = next.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1] || '';
 
 const form = document.querySelector('[data-account-entry-form]');
 if (form) {
   let mode = 'signup';
   const modeButtons = [...document.querySelectorAll('[data-auth-mode]')];
   const submitLabel = document.querySelector('[data-auth-submit]');
-  const password = form.elements.password;
-  const message = document.querySelector('[data-auth-message]');
+	  const password = form.elements.password;
+	  const message = document.querySelector('[data-auth-message]');
+	  const recovery = document.querySelector('[data-purchase-recovery]');
+
+	  if (purchaseOrderId) recovery.hidden = false;
+	  recovery?.addEventListener('click', async () => {
+	    recovery.disabled = true;
+	    message.textContent = 'Sending a one-time sign-in link…';
+	    try {
+	      await requestRecovery(purchaseOrderId);
+	      message.textContent = 'Check the checkout email for your one-time sign-in link. Your purchase remains attached.';
+	      recovery.hidden = true;
+	    } catch (error) {
+	      message.textContent = error instanceof Error && error.message === 'try_again_later'
+	        ? 'A sign-in link was requested recently. Wait a minute, then try once more.'
+	        : 'The sign-in link could not be sent. Your purchase remains safe; try again shortly.';
+	      recovery.disabled = false;
+	    }
+	  });
 
   const setMode = value => {
     mode = value;

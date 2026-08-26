@@ -4,9 +4,29 @@ This directory records the implementation boundary between the approved Obsidian
 
 ## Authority
 
+### Approved customer terminology — 2026-08-24
+
+- The customer collection is **My Folder**, never “My File.”
+- Catalog and product scope use **NO3D Tool** or **tools**.
+- Node-specific behavior uses **Geometry Nodes tool** or **node tool**.
+- Workflow-specific behavior uses **Blender tool**; delivered `.blend` content uses **Blender asset**.
+- Generic “instrument” copy is retired from active customer surfaces.
+- `flagship` and `workbench` remain implementation metadata only. Customer navigation uses catalog categories.
+- Text is never blue; links inherit the approved ink or warm-paper inverse state.
+
 The design authority remains the Vault package:
 
 `PROJECTS/NO3D SITE/No3dtools Design Language v3/V3 Canon Implementation Package`
+
+The newest mobile-directory authority is:
+
+`PROJECTS/NO3D SITE/No3dtools Design Language v3/NO3D Tools V3 Mobile Directory Iterations.canvas`
+
+Its approved B.4 Open Editorial Field composition supersedes B.2 and B.3 on
+mobile. Desktop uses B.4's two-row horizontal flagship shelf and terminal
+underline, followed directly on `/v3/` by the fully expanded `directory.001`
+browser. Desktop retains the original side navigation; tabs and hamburger are
+mobile-only. `/v3/workbench/` redirects to the Home directory anchor.
 
 The code in `/v3` is the executable implementation. If the code and canon disagree, resolve the discrepancy deliberately in the canon first, then update the implementation and this snapshot. Do not silently normalize the design toward the legacy website.
 
@@ -27,6 +47,15 @@ Later mobile decisions override stale mobile captures in the original HTML sampl
 - `/v3/product/?handle=dojo-bolt-gen-v05-obj` — live paid Bolt object-edition study
 
 These two pages form the first review and release gate. Together they test the shared masthead, mobile push-down catalog, responsive display typography, hero treatment, product grid, product metadata, ASCII node plate, and the individual-product Commerce entry point without introducing account-state complexity yet.
+
+### Product ASCII plate
+
+The product-specific ASCII diagram is presented without a separate section
+heading. The drawing identifies itself through its own title and structure;
+adding a second “Geometry Nodes / Exposed parameter map” heading above it repeats context and
+adds unnecessary articulation. The `.ascii-panel` remains hidden until a
+product supplies `nodeDiagram`, and products without one remove the panel
+entirely. Diagram content is assigned through `textContent`.
 
 The action-only Product 04F state and `/v3/type/` remain preserved as working reference routes. They are explicitly outside the first tranche’s release gate and must not delay or silently expand it.
 
@@ -106,7 +135,8 @@ extraction record behind `HOME-BANNER.md`. They are unreferenced by any markup.
 
 ## Canon snapshot
 
-Snapshot re-taken 2026-08-23. SHA-256 values make later drift explicit.
+Snapshot re-taken 2026-08-24 after the approved responsive B.4 desktop
+adaptation. SHA-256 values make later drift explicit.
 
 The previous snapshot was recorded 2026-08-18. Between those dates `CANON.md`,
 `TOKENS.md`, `COMPONENTS.md`, and `SCREEN-ROADMAP.md` changed in the canon
@@ -118,11 +148,11 @@ masters are unchanged since 2026-08-18.
 
 | Canon file | SHA-256 |
 | --- | --- |
-| `CANON.md` | `190b1b565b7d57f1e148e1d58e5786c643847269a313c99cfe06b722a4ee9a4e` |
+| `CANON.md` | `7ffa3f116efde6db15a65f33825a8bd21f0955b69ca45dfff073c3ff3ee25621` |
 | `DESIGN-LANGUAGE.md` | `20ecdb40bd3adc9ea453044ec5d408251b6ae9eaa8f353a5e6171b0a0c96105c` |
-| `MOBILE-DECISIONS.md` | `c73330c3fc814d622e06ac723020fe3aca71a73838230c82260ffb61eefaa399` |
+| `MOBILE-DECISIONS.md` | `2b392513813c6559560aee1f725a24b05221867acae0b3e9802242fc858837df` |
 | `TOKENS.md` | `3556ba0716c9e262d18b76be0994f398ee6fdc1fd765f019bc19b1465c598864` |
-| `COMPONENTS.md` | `40a499403abc04a0e8a2d7296c013058bc011effcf3d102f7410889f80e1cc4a` |
+| `COMPONENTS.md` | `6bd5982eedd3dce4f913b6a637de5371d4357d0f19a198dbf52f95b0f5ac9a42` |
 | `SCREEN-ROADMAP.md` | `d396bf93905294737e1680be54df8344552e02e87687a04af62c069299bc9f3f` |
 | `DEFERRED-TASKS.md` | `bd321db260e27ebb38a9e3b8d8ee09388374be0c141cb7c62179151b9950d4df` |
 | `HOME-BANNER.md` | `bad374728865a97fe6c122dd34f3777d486f99028271bff8af6b0862edaff9e9` |
@@ -131,6 +161,10 @@ masters are unchanged since 2026-08-18.
 | `product-detail-04d-assembled-manual.html` | `cf3d155333972841c5455d91fb632e97a6c948b8830b9f1fb8877d792a0886e5` |
 | `product-detail-04f-chain-generator-actions.html` | `ce4b06e9cd009de1fe997ab5c61af803e3a3c0590abdda894c198d8bc7a11f1b` |
 | `typography-doto-weight-lab.html` | `b22df65760fe43f01eb090eda22522f4acd365d3671d1ce8432a1785788ae360` |
+| `README.md` | `cb9f6a572d5d5a1be989fd6ef21c097d64fdc4b324e0ae2a2686f7c5c3012a41` |
+| `SHARED-FOLDER-CANDIDATE-01.md` | `c0d6c5f933eb5dcd37953bd8fe02d4f730f5f9c6429c11182b8674272cf9ba21` |
+| `manifest.json` | `2da8d139f4b216a39e3301d62526bb93484537e565cf9b25ebc081e14149cedc` |
+| `../NO3D Tools V3 Mobile Directory Iterations.canvas` | `7bb9f646dba871ddfd8e4e5e93f9b9698ba114b08c88df4904ad95bfe7235f4c` |
 
 ## Required checks
 

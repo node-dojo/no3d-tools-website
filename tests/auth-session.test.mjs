@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import test from 'node:test';
 
-import { identityAssertion, oauthAuthorizationUrl, readAuthNext, safeAuthNext } from '../api/auth/lib/session.js';
+import { exchangeAuthCode, identityAssertion, oauthAuthorizationUrl, readAuthNext, safeAuthNext } from '../api/auth/lib/session.js';
 
 test('identityAssertion signs a short-lived verified Supabase identity', () => {
   process.env.COMMERCE_IDENTITY_ASSERTION_KID = 'sandbox-v1';
@@ -54,6 +54,7 @@ test('email confirmation preserves a safe intended destination in an HttpOnly co
 test('oauthAuthorizationUrl starts Google PKCE without exposing the verifier', () => {
   process.env.SUPABASE_URL = 'https://project.supabase.co';
   process.env.NO3D_SITE_URL = 'https://no3dtools.com';
+  process.env.NO3D_AUTH_STATE_SECRET = 'sandbox-auth-state-secret-at-least-32-characters';
   const headers = new Map();
   const response = {
     getHeader: name => headers.get(name),
@@ -65,6 +66,7 @@ test('oauthAuthorizationUrl starts Google PKCE without exposing the verifier', (
   assert.equal(url.searchParams.get('code_challenge_method'), 's256');
   assert.ok(url.searchParams.get('code_challenge')?.length >= 43);
   assert.match(url.searchParams.get('redirect_to'), /\/api\/auth\/callback/);
+  assert.match(url.searchParams.get('redirect_to'), /auth_state=/);
   assert.doesNotMatch(url.toString(), /no3d_auth_pkce/);
   assert.match(String(headers.get('Set-Cookie')), /no3d_auth_pkce=/);
   assert.match(String(headers.get('Set-Cookie')), /no3d_auth_next=/);
@@ -72,4 +74,53 @@ test('oauthAuthorizationUrl starts Google PKCE without exposing the verifier', (
 
 test('oauthAuthorizationUrl rejects providers outside the approved account methods', () => {
   assert.throws(() => oauthAuthorizationUrl({ headers: {} }, { getHeader: () => null, setHeader: () => {} }, 'unknown'), /Unsupported OAuth provider/);
+});
+
+test('encrypted PKCE state completes a sign-in after the email opens in another browser', async () => {
+  process.env.SUPABASE_URL = 'https://project.supabase.co';
+  process.env.SUPABASE_ANON_KEY = 'sandbox-anon-key';
+  process.env.NO3D_SITE_URL = 'https://no3dtools.com';
+  process.env.NO3D_AUTH_STATE_SECRET = 'sandbox-auth-state-secret-at-least-32-characters';
+  const requestHeaders = new Map();
+  const requestResponse = {
+    getHeader: name => requestHeaders.get(name),
+    setHeader: (name, value) => requestHeaders.set(name, value),
+  };
+  const authorizationUrl = new URL(oauthAuthorizationUrl(
+    { headers: {} },
+    requestResponse,
+    'google',
+    { next: '/v3/account/' },
+  ));
+  const callbackUrl = new URL(authorizationUrl.searchParams.get('redirect_to'));
+  const authState = callbackUrl.searchParams.get('auth_state');
+  assert.ok(authState);
+
+  const callbackHeaders = new Map();
+  const callbackResponse = {
+    getHeader: name => callbackHeaders.get(name),
+    setHeader: (name, value) => callbackHeaders.set(name, value),
+  };
+  const originalFetch = global.fetch;
+  global.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    assert.equal(body.auth_code, 'one-time-code');
+    assert.match(body.code_verifier, /^[A-Za-z0-9_-]{43,128}$/);
+    return new Response(JSON.stringify({
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      user: { id: 'site-user-123', email: 'buyer@example.com' },
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  try {
+    const result = await exchangeAuthCode(
+      { headers: {}, query: { auth_state: authState } },
+      callbackResponse,
+      'one-time-code',
+    );
+    assert.equal(result.user.id, 'site-user-123');
+    assert.match(String(callbackHeaders.get('Set-Cookie')), /no3d_auth_access=/);
+  } finally {
+    global.fetch = originalFetch;
+  }
 });

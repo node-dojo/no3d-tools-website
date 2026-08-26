@@ -71,7 +71,37 @@ function pkceChallenge(res) {
   const verifier = crypto.randomBytes(48).toString('base64url');
   const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
   setCookie(res, VERIFIER_COOKIE, verifier, 60 * 10);
-  return challenge;
+  return { challenge, verifier };
+}
+
+function sealVerifier(verifier) {
+  const key = crypto.createHash('sha256').update(requiredEnv('NO3D_AUTH_STATE_SECRET')).digest();
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const payload = JSON.stringify({ exp: Date.now() + (10 * 60 * 1000), verifier });
+  const encrypted = Buffer.concat([cipher.update(payload, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `${iv.toString('base64url')}.${tag.toString('base64url')}.${encrypted.toString('base64url')}`;
+}
+
+function openVerifier(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)) return null;
+  try {
+    const [ivValue, tagValue, encryptedValue] = value.split('.');
+    const key = crypto.createHash('sha256').update(requiredEnv('NO3D_AUTH_STATE_SECRET')).digest();
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(ivValue, 'base64url'));
+    decipher.setAuthTag(Buffer.from(tagValue, 'base64url'));
+    const decrypted = Buffer.concat([
+      decipher.update(Buffer.from(encryptedValue, 'base64url')),
+      decipher.final(),
+    ]).toString('utf8');
+    const payload = JSON.parse(decrypted);
+    return Number(payload?.exp) > Date.now() && /^[A-Za-z0-9_-]{43,128}$/.test(payload?.verifier)
+      ? payload.verifier
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 function sessionPayload(payload) {
@@ -101,7 +131,7 @@ export function safeAuthNext(value) {
     : undefined;
 }
 
-function callbackUrl(req, recoveryToken, next) {
+function callbackUrl(req, recoveryToken, next, verifier) {
   const configured = process.env.NO3D_SITE_URL?.trim();
   let value;
   if (configured) {
@@ -126,14 +156,19 @@ function callbackUrl(req, recoveryToken, next) {
     url.searchParams.set('next', safeNext);
     value = url.toString();
   }
+  if (verifier) {
+    const url = new URL(value);
+    url.searchParams.set('auth_state', sealVerifier(verifier));
+    value = url.toString();
+  }
   return value;
 }
 
 export async function requestSignInLink(req, res, email, { recoveryToken, next } = {}) {
-  const challenge = pkceChallenge(res);
+  const { challenge, verifier } = pkceChallenge(res);
   const safeNext = safeAuthNext(next);
   if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
-  const redirectTo = encodeURIComponent(callbackUrl(req, recoveryToken, next));
+  const redirectTo = encodeURIComponent(callbackUrl(req, recoveryToken, next, verifier));
   await authFetch(`/otp?redirect_to=${redirectTo}`, {
     body: {
       code_challenge: challenge,
@@ -145,10 +180,10 @@ export async function requestSignInLink(req, res, email, { recoveryToken, next }
 }
 
 export async function passwordSignUp(req, res, email, password, { next } = {}) {
-  const challenge = pkceChallenge(res);
+  const { challenge, verifier } = pkceChallenge(res);
   const safeNext = safeAuthNext(next);
   if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
-  const redirectTo = encodeURIComponent(callbackUrl(req, undefined, next));
+  const redirectTo = encodeURIComponent(callbackUrl(req, undefined, next, verifier));
   const payload = await authFetch(`/signup?redirect_to=${redirectTo}`, {
     body: { email, password, code_challenge: challenge, code_challenge_method: 's256', data: {} },
   });
@@ -180,10 +215,10 @@ export async function passwordSignIn(res, email, password) {
 
 export function oauthAuthorizationUrl(req, res, provider, { next } = {}) {
   if (!['google', 'github'].includes(provider)) throw new Error('Unsupported OAuth provider');
-  const challenge = pkceChallenge(res);
+  const { challenge, verifier } = pkceChallenge(res);
   const safeNext = safeAuthNext(next);
   if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
-  const redirectTo = callbackUrl(req, undefined, next);
+  const redirectTo = callbackUrl(req, undefined, next, verifier);
   const query = new URLSearchParams({
     provider,
     redirect_to: redirectTo,
@@ -194,7 +229,7 @@ export function oauthAuthorizationUrl(req, res, provider, { next } = {}) {
 }
 
 export async function exchangeAuthCode(req, res, code) {
-  const verifier = readCookie(req, VERIFIER_COOKIE);
+  const verifier = readCookie(req, VERIFIER_COOKIE) || openVerifier(req.query?.auth_state);
   if (!verifier) throw new Error('Missing or expired sign-in verifier');
   const session = await authFetch('/token?grant_type=pkce', {
     body: { auth_code: code, code_verifier: verifier },

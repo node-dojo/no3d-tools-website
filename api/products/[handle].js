@@ -32,6 +32,7 @@ function serializeProduct(product) {
     release_status: product.release_status || 'stable',
     release_version: product.release_version || null,
     access_policy: product.access_policy || 'catalog',
+    nodeDiagram: typeof product.metadata?.node_diagram === 'string' ? product.metadata.node_diagram : null,
   };
 }
 

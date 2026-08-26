@@ -39,7 +39,11 @@ The website derives missing workbench presentation without blocking publication:
 ## Access boundary
 
 - Existing `access_policy`, offers, subscriptions, purchases, and entitlements remain authoritative.
-- “My File” is a presentation-level selection tray. It never fabricates an entitlement.
+- “My Folder” is the customer-facing collection and selection tray. A file is an individual asset and never names the collection. The tray never fabricates an entitlement.
+- `presentation.mode` remains backend-only metadata. Customer navigation uses catalog categories, never Flagship or Workbench.
+- Within a category, polished NO3D Tools occupy the horizontal grid and working files occupy the vertical list.
+- Customer copy uses the concrete term required by context: NO3D Tool, Geometry Nodes tool, node tool, Blender tool, or Blender asset. Generic “instrument” copy is prohibited.
+- Customer-facing text is never blue. Approved text states are ink, warm-paper inverse, rule gray, and canonical-yellow selection.
 - Guest selections persist on that device. After a verified sign-in, the guest tray is merged into an account-scoped device tray without claiming server ownership or cross-device sync.
 - Members receive the existing complete effective manifest and automatic updates.
 - Free and individually owned products continue through the existing account, manifest, checkout, and download endpoints.

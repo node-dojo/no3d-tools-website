@@ -131,6 +131,8 @@ export default async function handler(req, res) {
       changelog: p.metadata?.changelog || [],
       presentation: p.metadata?.presentation || null,
       workbench: p.metadata?.workbench || null,
+      catalog: p.metadata?.catalog || null,
+      node_diagram: typeof p.metadata?.node_diagram === 'string' ? p.metadata.node_diagram : null,
       asset_type: p.asset_type || null,
       blender_version: p.blender_version || null,
       version: p.version || p.release_version || null,

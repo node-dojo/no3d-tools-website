@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     if (!v3OwnerAllowed(recovery.contactEmail)) return res.status(202).json({ sent: true });
     await requestSignInLink(req, res, recovery.contactEmail, {
       recoveryToken: recovery.token,
-      next: `/account/orders/${orderId}`,
+      next: `/v3/account/orders/${orderId}`,
     });
   } catch (error) {
     console.error('Purchase recovery link request failed', {
