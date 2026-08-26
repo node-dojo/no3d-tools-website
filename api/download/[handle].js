@@ -13,8 +13,36 @@ import {
 import { getLicenseKeyFromRequest } from '../lib/licenseRequest.js';
 import { isR2Configured, presignGetObject } from '../lib/r2.js';
 import { commerceFetch } from '../commerce/lib/client.js';
+import { collectionAllowsHandle } from '../lib/membershipCollections.js';
+import https from 'node:https';
 
 const PRESIGN_TTL_SECONDS = 900;
+
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    const request = https.get(url, { headers: {} }, (response) => {
+      const chunks = [];
+      response.on('data', (chunk) => chunks.push(chunk));
+      response.on('end', () => resolve({ status: response.statusCode, body: Buffer.concat(chunks).toString('utf8') }));
+    });
+    request.on('error', reject);
+    request.end();
+  });
+}
+
+async function scopedMembershipAllows(handle, membershipScopes) {
+  if (!membershipScopes.length) return false;
+  const inline = process.env.NO3D_MANIFEST_JSON;
+  if (typeof inline === 'string' && inline.trim()) {
+    return collectionAllowsHandle(inline, membershipScopes, handle);
+  }
+  if (!isR2Configured()) return false;
+  const { getManifestObjectKey } = await import('../lib/r2.js');
+  const url = await presignGetObject(getManifestObjectKey(), 60);
+  const response = await httpsGet(url);
+  if (response.status < 200 || response.status >= 300) return false;
+  return collectionAllowsHandle(response.body, membershipScopes, handle);
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,6 +80,7 @@ export default async function handler(req, res) {
 
   let row = licenseKey ? await fetchSubscriptionByLicenseKey(supabase, licenseKey) : null;
   let purchased = false;
+  let membershipScopes = [];
   let deviceAuthenticated = false;
   if (typeof deviceToken === 'string' && deviceToken.length >= 32) {
     try {
@@ -60,6 +89,9 @@ export default async function handler(req, res) {
       });
       deviceAuthenticated = response.ok;
       purchased = response.ok && Array.isArray(payload?.products) && payload.products.some((product) => product?.handle === handle);
+      membershipScopes = response.ok && Array.isArray(payload?.membershipScopes)
+        ? payload.membershipScopes.filter((scope) => typeof scope === 'string')
+        : [];
       if (response.ok) row = await fetchSubscriptionByVerifiedEmail(supabase, payload?.account?.contactEmail);
     } catch (e) {
       console.error('purchase entitlement lookup failed:', e?.message || e);
@@ -86,7 +118,13 @@ export default async function handler(req, res) {
   }
 
   const free = product.access_policy === 'free' && accountAuthenticated;
-  if (!access.allowed && !purchased && !free) {
+  let scopedMembership = false;
+  try {
+    scopedMembership = await scopedMembershipAllows(handle, membershipScopes);
+  } catch (membershipError) {
+    console.error('scoped membership lookup failed:', membershipError?.message || membershipError);
+  }
+  if (!access.allowed && !scopedMembership && !purchased && !free) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(403).json({ error: 'No free, membership, or purchased access to this product', status: access.effectiveStatus });
   }

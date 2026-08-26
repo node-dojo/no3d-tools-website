@@ -1,16 +1,22 @@
-export function filterEffectiveManifest(manifestJson, membershipAllowed, purchasedHandles, accountAuthenticated = false) {
+export function filterEffectiveManifest(manifestJson, membershipAllowed, purchasedHandles, accountAuthenticated = false, membershipScopes = []) {
   const manifest = JSON.parse(manifestJson);
   const assets = manifest.assets || {};
+  const scopedHandles = new Set();
+  for (const scope of membershipScopes) {
+    const members = manifest.collections?.[scope];
+    if (Array.isArray(members)) for (const handle of members) scopedHandles.add(handle);
+  }
   const filteredAssets = {};
   for (const [handle, asset] of Object.entries(assets)) {
     const purchased = purchasedHandles.has(handle);
     const free = asset.access_policy === 'free' && accountAuthenticated;
-    if (!membershipAllowed && !purchased && !free) continue;
+    const membership = membershipAllowed || scopedHandles.has(handle);
+    if (!membership && !purchased && !free) continue;
     filteredAssets[handle] = {
       ...asset,
-      access_source: membershipAllowed && purchased
+      access_source: membership && purchased
         ? 'membership_and_purchase'
-        : membershipAllowed ? 'membership'
+        : membership ? 'membership'
           : purchased ? 'purchase' : 'free'
     };
   }

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { filterEffectiveManifest } from '../api/lib/effectiveManifest.js';
+import { collectionAllowsHandle } from '../api/lib/membershipCollections.js';
 
 const manifestHandlerSource = readFileSync(
   fileURLToPath(new URL('../api/manifest.js', import.meta.url)),
@@ -12,6 +13,10 @@ const manifestHandlerSource = readFileSync(
 
 const manifest = JSON.stringify({
   version: 'test',
+  collections: {
+    'no3dtools.membership.no3d-chrome': ['membership'],
+    'no3dtools.membership.node-dojo': ['purchased', 'membership'],
+  },
   assets: {
     purchased: { checksum: 'purchase' },
     membership: { checksum: 'membership' },
@@ -47,6 +52,29 @@ test('combined access preserves purchase source on the membership union', () => 
   assert.equal(result.asset_count, 3);
   assert.equal(result.assets.purchased.access_source, 'membership_and_purchase');
   assert.equal(result.assets.membership.access_source, 'membership');
+});
+
+test('scoped membership resolves only its SOLVET-authored collection', () => {
+  const result = JSON.parse(filterEffectiveManifest(
+    manifest,
+    false,
+    new Set(),
+    true,
+    ['no3dtools.membership.no3d-chrome'],
+  ));
+  assert.deepEqual(Object.keys(result.assets), ['membership', 'free']);
+  assert.equal(result.assets.membership.access_source, 'membership');
+});
+
+test('unknown membership scopes fail closed', () => {
+  const result = JSON.parse(filterEffectiveManifest(manifest, false, new Set(), true, ['unknown']));
+  assert.deepEqual(Object.keys(result.assets), ['free']);
+});
+
+test('per-product download authorization uses the same authored collections', () => {
+  assert.equal(collectionAllowsHandle(manifest, ['no3dtools.membership.no3d-chrome'], 'membership'), true);
+  assert.equal(collectionAllowsHandle(manifest, ['no3dtools.membership.no3d-chrome'], 'purchased'), false);
+  assert.equal(collectionAllowsHandle(manifest, ['unknown'], 'membership'), false);
 });
 
 test('the manifest route has no unfiltered escape hatch', () => {
