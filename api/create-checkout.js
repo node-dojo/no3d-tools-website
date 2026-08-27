@@ -70,7 +70,7 @@ export default async function handler(req, res) {
 
     const cancelUrl = v3Return
       ? `${siteUrl.replace(/\/$/, '')}/v3/membership/?checkout=cancelled`
-      : STRIPE_CANCEL_URL?.trim() || `${siteUrl}/subscribe.html?checkout_success=false&session_id={CHECKOUT_SESSION_ID}`;
+      : STRIPE_CANCEL_URL?.trim() || `${siteUrl}/v3/membership/?checkout=cancelled&session_id={CHECKOUT_SESSION_ID}`;
 
     let authenticatedEmail;
     try {

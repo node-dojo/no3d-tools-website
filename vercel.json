@@ -5,6 +5,8 @@
   "framework": null,
   "outputDirectory": ".",
   "redirects": [
+    { "source": "/subscribe", "destination": "/v3/membership/", "permanent": true },
+    { "source": "/subscribe.html", "destination": "/v3/membership/", "permanent": true },
     { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true },
     { "source": "/go/naming", "destination": "/blog/quick-print-naming-problem", "permanent": true },
     { "source": "/go/supports", "destination": "/blog/easy-engineered-supports", "permanent": true },

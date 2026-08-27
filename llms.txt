@@ -7,7 +7,7 @@
 ## Docs
 
 - [Getting Started](https://no3dtools.com/guide.html): Install the addon, enter your license key, sync your library
-- [Subscribe](https://no3dtools.com/subscribe.html): Get a No3d Tools subscription
+- [Membership](https://no3dtools.com/v3/membership/): Get full-catalog NO3D Tools membership
 - [Account & License](https://no3dtools.com/account.html): Manage subscription, recover license key
 - [AI Help](https://no3dtools.com/ai-help.html): How to give AI assistants No3d Tools context
 - [Full Reference](https://no3dtools.com/llms-full.txt): Complete product documentation for AI assistants

@@ -1603,7 +1603,7 @@ function initializeMemberCTA() {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         track('member_cta_click');
-        window.location.href = '/subscribe.html';
+        window.location.href = '/v3/membership/';
       });
     }
   });
@@ -1654,7 +1654,7 @@ function initializeAccountDropdown() {
   } else {
     menu.innerHTML = `
       <a href="/account" class="account-dropdown-item">LOGIN</a>
-      <a href="subscribe.html" class="account-dropdown-item">SUBSCRIBE</a>
+      <a href="/v3/membership/" class="account-dropdown-item">SUBSCRIBE</a>
     `;
   }
 

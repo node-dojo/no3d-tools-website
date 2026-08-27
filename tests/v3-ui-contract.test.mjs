@@ -421,7 +421,10 @@ test('V3 catalog prefers live metadata and keeps unpriced studies out of Checkou
 
 test('Vercel keeps V3 adjacent behind explicit routes', async () => {
   const config = JSON.parse(await load('vercel.json'));
+  const redirects = new Map(config.redirects.map(rule => [rule.source, rule]));
   const rewrites = new Map(config.rewrites.map(rule => [rule.source, rule.destination]));
+  assert.deepEqual(redirects.get('/subscribe'), { source: '/subscribe', destination: '/v3/membership/', permanent: true });
+  assert.deepEqual(redirects.get('/subscribe.html'), { source: '/subscribe.html', destination: '/v3/membership/', permanent: true });
   assert.equal(rewrites.get('/v3'), '/v3/index.html');
   assert.equal(rewrites.get('/v3/access'), '/v3/access/index.html');
   assert.equal(rewrites.get('/v3/product'), '/v3/product/index.html');

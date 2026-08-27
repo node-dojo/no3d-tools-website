@@ -126,7 +126,7 @@ Visit [no3dtools.com/account.html](https://no3dtools.com/account.html) to:
 
 ### Re-subscribe
 
-If your subscription expired, visit [no3dtools.com/subscribe.html](https://no3dtools.com/subscribe.html) to re-subscribe. Your existing license key will be reactivated — you don't need a new one.
+If your subscription expired, visit [the NO3D Tools membership page](https://no3dtools.com/v3/membership/) to re-subscribe. Your existing license key will be reactivated — you don't need a new one.
 
 ---
 

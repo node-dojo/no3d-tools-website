@@ -1064,12 +1064,12 @@ export async function sendSubscriptionCancelledEmail(email, expiresAt) {
       <p>You will have access until <strong>${expiryDate}</strong>.</p>
       <p>If you change your mind, you can re-subscribe at any time.</p>
       <div style="margin: 20px 0;">
-        <a href="https://no3dtools.com/subscribe.html" style="background: #f0ff00; color: #222; padding: 10px 24px; text-decoration: none; font-family: monospace; text-transform: uppercase; font-weight: bold;">RE-SUBSCRIBE</a>
+        <a href="https://no3dtools.com/v3/membership/" style="background: #f0ff00; color: #222; padding: 10px 24px; text-decoration: none; font-family: monospace; text-transform: uppercase; font-weight: bold;">RE-SUBSCRIBE</a>
       </div>
     </div>
   `;
 
-  const text = `Subscription Cancelled\n\nYour No3d Tools subscription has been cancelled.\nYou will have access until ${expiryDate}.\n\nRe-subscribe: https://no3dtools.com/subscribe.html`;
+  const text = `Subscription Cancelled\n\nYour No3d Tools subscription has been cancelled.\nYou will have access until ${expiryDate}.\n\nRe-subscribe: https://no3dtools.com/v3/membership/`;
 
   return sendEmail({
     to: email,

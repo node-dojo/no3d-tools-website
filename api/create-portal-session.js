@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
     'https://no3dtools.com';
 
-  const returnUrl = `${siteUrl.replace(/\/$/, '')}/subscribe.html`;
+  const returnUrl = `${siteUrl.replace(/\/$/, '')}/v3/membership/`;
 
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
