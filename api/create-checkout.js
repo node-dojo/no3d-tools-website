@@ -17,6 +17,8 @@
 import Stripe from 'stripe';
 import { setCorsHeaders } from './lib/cors.js';
 import { authenticatedSession } from './auth/lib/session.js';
+import { setCheckoutReceipt } from './lib/checkoutReceipt.js';
+import { allowRequest } from './auth/lib/rate-limit.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -24,6 +26,13 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed', url: null });
+  }
+  try {
+    if (!await allowRequest(req, { maxAttempts: 10, namespace: 'membership-checkout', windowSeconds: 300 })) {
+      return res.status(429).json({ error: 'Too many checkout requests', url: null });
+    }
+  } catch {
+    return res.status(429).json({ error: 'Too many checkout requests', url: null });
   }
 
   try {
@@ -102,6 +111,8 @@ export default async function handler(req, res) {
     if (!session?.url) {
       return res.status(500).json({ error: 'Stripe returned no checkout URL', url: null });
     }
+
+    setCheckoutReceipt(res, session.id);
 
     return res.status(200).json({
       checkout_url: session.url,

@@ -14,6 +14,7 @@ import crypto from 'crypto';
 import { getSupabaseServiceClient } from './lib/supabaseAdmin.js';
 import { sendLicenseKeyEmail, notifyAdminAcquisition } from './lib/email.js';
 import { setCorsHeaders } from './lib/cors.js';
+import { allowRequest } from './auth/lib/rate-limit.js';
 
 function generateLicenseKey() {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -22,29 +23,17 @@ function generateLicenseKey() {
   return `NO3D-${s.slice(0, 4)}-${s.slice(4, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}`;
 }
 
-// Simple per-IP rate limiter (resets on cold start — sufficient for serverless)
-const rateLimit = new Map();
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 5;
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const entry = rateLimit.get(ip);
-  if (!entry || now - entry.start > WINDOW_MS) {
-    rateLimit.set(ip, { start: now, count: 1 });
-    return false;
-  }
-  entry.count++;
-  return entry.count > MAX_REQUESTS;
-}
-
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   if (setCorsHeaders(req, res, { methods: 'POST, OPTIONS' })) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-  if (isRateLimited(ip)) {
+  if (Number(req.headers['content-length'] || 0) > 8_192) return res.status(413).json({ error: 'Payload too large' });
+  try {
+    if (!await allowRequest(req, { maxAttempts: 5, namespace: 'free-account', windowSeconds: 60 })) {
+      return res.status(429).json({ error: 'Too many requests. Try again in a minute.' });
+    }
+  } catch {
     return res.status(429).json({ error: 'Too many requests. Try again in a minute.' });
   }
 

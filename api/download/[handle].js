@@ -1,6 +1,6 @@
 /**
  * GET /api/download/:handle
- * Auth: X-License-Key, Authorization: Bearer, or ?license_key=
+ * Auth: X-License-Key, Authorization: Bearer, or X-NO3D-Device-Token.
  * Returns a short-lived presigned URL for the product .blend on R2 (products.file_url).
  */
 
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
   const deviceToken = req.headers['x-no3d-device-token'];
   if (!licenseKey && typeof deviceToken !== 'string') {
     res.setHeader('Content-Type', 'application/json');
-    return res.status(401).json({ error: 'license key required (X-License-Key or ?license_key=)' });
+    return res.status(401).json({ error: 'license key or device token required' });
   }
 
   const supabase = getSupabaseServiceClient();

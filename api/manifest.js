@@ -1,6 +1,6 @@
 /**
  * GET /api/manifest
- * Auth: X-License-Key header, Authorization: Bearer, or ?license_key=
+ * Auth: X-License-Key header, Authorization: Bearer, or X-NO3D-Device-Token.
  * Returns the entitlement-filtered manifest JSON (from R2). Never the raw object.
  * Align NO3D_LIBRARY_VERSION with manifest.version when publishing.
  */
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   const deviceToken = req.headers['x-no3d-device-token'];
   if (!licenseKey && typeof deviceToken !== 'string') {
     res.setHeader('Content-Type', 'application/json');
-    return res.status(401).json({ error: 'license key required (X-License-Key or ?license_key=)' });
+    return res.status(401).json({ error: 'license key or device token required' });
   }
 
   const supabase = getSupabaseServiceClient();

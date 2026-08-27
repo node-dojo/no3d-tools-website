@@ -25,6 +25,7 @@ function generateLicenseKey() {
 }
 
 import { setCorsHeaders } from './lib/cors.js';
+import { checkoutSessionOwnedByRequest } from './lib/checkoutReceipt.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -56,6 +57,9 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.retrieve(session_id, {
       expand: ['subscription'],
     });
+    if (!await checkoutSessionOwnedByRequest(req, res, session)) {
+      return res.status(403).json({ error: 'checkout_not_owned' });
+    }
     if (!session || !session.customer) {
       return res.status(404).json({ error: 'Session not found or no customer' });
     }

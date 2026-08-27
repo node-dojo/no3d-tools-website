@@ -9,21 +9,8 @@
 
 import Stripe from 'stripe';
 import { setCorsHeaders } from './lib/cors.js';
-
-const rateLimit = new Map();
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 5;
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const entry = rateLimit.get(ip);
-  if (!entry || now - entry.start > WINDOW_MS) {
-    rateLimit.set(ip, { start: now, count: 1 });
-    return false;
-  }
-  entry.count++;
-  return entry.count > MAX_REQUESTS;
-}
+import { authenticatedSession } from './auth/lib/session.js';
+import { allowRequest } from './auth/lib/rate-limit.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -33,27 +20,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-  if (isRateLimited(ip)) {
+  try {
+    if (!await allowRequest(req, { maxAttempts: 5, namespace: 'billing-portal', windowSeconds: 60 })) {
+      return res.status(429).json({ error: 'Too many requests. Try again in a minute.', portalUrl: null });
+    }
+  } catch {
     return res.status(429).json({ error: 'Too many requests. Try again in a minute.', portalUrl: null });
   }
 
-  const email =
-    typeof req.body?.email === 'string'
-      ? req.body.email.trim()
-      : typeof req.body === 'string'
-        ? (() => {
-            try {
-              return JSON.parse(req.body).email?.trim();
-            } catch {
-              return null;
-            }
-          })()
-        : null;
-
-  if (!email) {
-    return res.status(400).json({ error: 'email required', portalUrl: null });
-  }
+  const auth = await authenticatedSession(req, res).catch(() => null);
+  const email = auth?.user?.email_confirmed_at ? auth.user.email?.trim().toLowerCase() : null;
+  if (!email) return res.status(401).json({ error: 'not_authenticated', portalUrl: null });
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return res.status(500).json({ error: 'Server configuration error', portalUrl: null });

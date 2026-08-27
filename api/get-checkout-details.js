@@ -9,6 +9,7 @@
 
 import Stripe from 'stripe';
 import { setCorsHeaders } from './lib/cors.js';
+import { checkoutSessionOwnedByRequest } from './lib/checkoutReceipt.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -35,6 +36,9 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['line_items', 'line_items.data.price.product']
     });
+    if (!await checkoutSessionOwnedByRequest(req, res, session)) {
+      return res.status(403).json({ error: 'checkout_not_owned' });
+    }
 
     const customerId =
       typeof session.customer === 'string'

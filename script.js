@@ -1718,8 +1718,10 @@ function initializeDownloadButton() {
     try {
       const endpoint = commerceOrderId
         ? `/api/commerce/download/${encodeURIComponent(commerceOrderId)}`
-        : `/api/download/${product.handle}?license_key=${encodeURIComponent(licenseKey)}`;
-      const response = await fetch(endpoint);
+        : `/api/download/${product.handle}`;
+      const response = await fetch(endpoint, commerceOrderId ? undefined : {
+        headers: { 'X-License-Key': licenseKey },
+      });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 403 && !commerceOrderId) {

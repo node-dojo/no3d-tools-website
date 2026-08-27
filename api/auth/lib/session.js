@@ -63,7 +63,8 @@ async function authFetch(path, { accessToken, body, method = 'POST' } = {}) {
 }
 
 function storeSession(res, session) {
-  setCookie(res, ACCESS_COOKIE, session.access_token, 60 * 60 * 24 * 30);
+  const accessMaxAge = Math.max(60, Math.min(Number(session.expires_in) || 60 * 60, 60 * 60));
+  setCookie(res, ACCESS_COOKIE, session.access_token, accessMaxAge);
   setCookie(res, REFRESH_COOKIE, session.refresh_token, 60 * 60 * 24 * 30);
 }
 

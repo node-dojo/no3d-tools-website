@@ -1,6 +1,6 @@
 /**
  * License key from addon/serverless requests.
- * Supported: X-License-Key header, Authorization: Bearer <key>, query ?license_key=
+ * Supported: X-License-Key header or Authorization: Bearer <key>.
  *
  * @param {{ headers?: Record<string, string | string[] | undefined>, query?: Record<string, string | string[]> }} req
  * @returns {string | null}
@@ -15,9 +15,6 @@ export function getLicenseKeyFromRequest(req) {
     const token = auth.slice(7).trim();
     if (token) return token;
   }
-
-  const q = req.query && req.query.license_key;
-  if (typeof q === 'string' && q.trim()) return q.trim();
 
   return null;
 }

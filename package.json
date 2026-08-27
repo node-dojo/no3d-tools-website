@@ -7,7 +7,7 @@
     "test": "npm run test:auth && npm run test:v3",
     "build": "node scripts/update-commit-hash.js",
     "start": "doppler run -- npx vercel dev --listen 3001 --yes",
-    "test:auth": "node --test tests/auth-session.test.mjs tests/effective-manifest.test.mjs tests/purchase-flow.test.mjs",
+    "test:auth": "node --test tests/auth-session.test.mjs tests/effective-manifest.test.mjs tests/purchase-flow.test.mjs tests/security-hardening.test.mjs",
     "test:v3": "node --test tests/v3-ui-contract.test.mjs tests/v3-access.test.mjs tests/account-directory.test.mjs tests/analytics-privacy.test.mjs tests/collection-parity.test.mjs",
     "dashboard:business": "node scripts/update-obsidian-dashboard.mjs",
     "dashboard:business:dry": "node scripts/update-obsidian-dashboard.mjs --dry-run --no-notify",

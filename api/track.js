@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { sanitizeAnalyticsPage, sanitizeAnalyticsProperties, sanitizeAnalyticsReferrer } from './lib/analytics.js';
+import { allowRequest } from './auth/lib/rate-limit.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -9,6 +10,16 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+  if (Number(req.headers['content-length'] || 0) > 16_384) {
+    return res.status(413).json({ error: 'Payload too large' });
+  }
+  try {
+    if (!await allowRequest(req, { maxAttempts: 120, namespace: 'analytics', windowSeconds: 60 })) {
+      return res.status(429).json({ error: 'Too many requests' });
+    }
+  } catch {
+    return res.status(429).json({ error: 'Too many requests' });
   }
 
   const { event, properties, page, referrer, session_id } = req.body || {};
