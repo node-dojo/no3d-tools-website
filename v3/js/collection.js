@@ -6,7 +6,6 @@ const priceNode = document.querySelector('.membership-price');
 const heroNode = document.querySelector('[data-collection-hero]');
 const sourceNode = document.querySelector('[data-collection-source]');
 const sourceProductsNode = document.querySelector('[data-collection-source-products]');
-const sourceCountNode = document.querySelector('[data-collection-source-count]');
 
 if (heroNode) {
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -67,7 +66,6 @@ try {
   productsNode.replaceChildren(...illustrated.map(card));
   productsNode.hidden = illustrated.length === 0;
   sourceProductsNode.replaceChildren(...sourceProducts.map(sourceRow));
-  sourceCountNode.textContent = `${String(sourceProducts.length).padStart(2, '0')} tools`;
   sourceNode.hidden = sourceProducts.length === 0;
   if (collection.acquisition?.url) {
     acquireNode.href = collection.acquisition.url;

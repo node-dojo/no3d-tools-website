@@ -39,6 +39,8 @@ test('No3D Chrome site projection preserves SOLVET collection order and scope', 
     await handler({ method: 'GET', query: { handle: 'no3d-chrome-tools' }, headers: {} }, res);
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.title, 'No3D Chrome tools');
+    assert.equal(res.body.thumbnail, '/v3/assets/no3d-chrome-hero-static.webp');
+    assert.equal(res.body.productUrl, '/v3/collections/no3d-chrome-tools/');
     assert.equal(res.body.scope, 'no3dtools.membership.no3d-chrome');
     assert.equal(res.body.mode, 'one_time_purchase');
     assert.deepEqual(res.body.price, { amount: 6666, currency: 'usd', formatted: '$66.66' });

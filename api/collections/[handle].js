@@ -5,6 +5,8 @@ const definitions = {
   'no3d-chrome-tools': {
     scope: 'no3dtools.membership.no3d-chrome',
     title: 'No3D Chrome tools',
+    description: 'A curated Blender collection for procedural drawing, pixel, pattern, chrome-form, and printable visual tools.',
+    thumbnail: '/v3/assets/no3d-chrome-hero-static.webp',
   },
 };
 const declaredTitles = {
@@ -64,6 +66,9 @@ export default async function handler(req, res) {
       schemaVersion: 'no3d.collection-projection/v0.1',
       handle,
       title: definition.title,
+      description: definition.description,
+      thumbnail: definition.thumbnail,
+      productUrl: `/v3/collections/${encodeURIComponent(handle)}/`,
       scope: definition.scope,
       mode: 'one_time_purchase',
       price: { amount: 6666, currency: 'usd', formatted: '$66.66' },

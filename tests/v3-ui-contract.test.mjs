@@ -22,9 +22,9 @@ test('normalizes live catalog records without forking commerce identifiers', () 
   assert.equal(product.image, 'https://media.example/hero.gif');
 });
 
-test('keeps the approved Chain Generator presentation alias local to V3', () => {
+test('preserves the canonical Chrome Crayon product name in V3', () => {
   const product = normalizeProduct({ handle: 'chrome-crayon', title: 'Chrome Crayon' });
-  assert.equal(product.title, 'Chain Generator');
+  assert.equal(product.title, 'Chrome Crayon');
   assert.equal(product.handle, 'chrome-crayon');
 });
 
@@ -41,8 +41,20 @@ test('catalog priority raises reviewed products without reordering unranked prod
   );
 });
 
+test('catalog collections are distinct first-class cards with a folder marker', async () => {
+  const [home, collections, styles] = await Promise.all([
+    load('v3/js/home.js'),
+    load('v3/js/collections.js'),
+    load('v3/styles/v3.css'),
+  ]);
+  assert.match(home, /products = \[\.\.\.collections, \.\.\.sortCatalogProducts/);
+  assert.match(home, /product-card\$\{collection \? ' collection-card'/);
+  assert.match(collections, /no3d-chrome-tools/);
+  assert.match(styles, /\.collection-card-marker\{/);
+});
+
 test('home fingerprints the single-page directory composition', async () => {
-  assert.match(await load('v3/index.html'), /home\.js\?v=home-directory-composition-20260824/);
+  assert.match(await load('v3/index.html'), /home\.js\?v=collections-first-20260827/);
 });
 
 test('resolves hosted media shapes and ships a canonical paid-product fallback', () => {
@@ -105,6 +117,7 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   const home = await load('v3/index.html');
   const workbench = await load('v3/workbench/index.html');
   const client = await load('v3/js/workbench.js');
+  const homeJs = await load('v3/js/home.js');
   const styles = await load('v3/styles/v3.css');
   const api = await load('v3/js/api.js');
   const catalog = await load('api/products.js');
@@ -137,6 +150,13 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(styles, /\.mobile-home \.product-card h3\{position:relative;z-index:2;margin:-7px 0 10px;transform:none;background:transparent\}/);
   assert.match(styles, /\.mobile-home \.product-grid\{[^}]*scrollbar-width:none/);
   assert.match(styles, /\.mobile-home \.product-grid::\-webkit-scrollbar\{display:none\}/);
+  assert.match(styles, /\.product-grid-controls\{[^}]*grid-template-columns:1fr 1fr/);
+  assert.match(styles, /\.product-grid-control svg\{[^}]*shape-rendering:crispEdges/);
+  assert.match(home, /data-grid-previous aria-label="Previous products"/);
+  assert.match(home, /data-grid-next aria-label="Next products"/);
+  assert.match(homeJs, /grid\.addEventListener\('wheel'/);
+  assert.match(homeJs, /if \(!canMove\) return;/);
+  assert.match(homeJs, /event\.preventDefault\(\);/);
   assert.match(styles, /\.mobile-home \.home-shared-folder\{padding:34px 18px 100px 0;border-top:0\}/);
   assert.match(styles, /\.workbench-page \.catalog-rail,\.workbench-page \.shared-folder\{display:none\}/);
   assert.match(styles, /\.mobile-featured-tools\{display:grid;grid-template-rows:repeat\(2,250px\);grid-auto-flow:column;/);

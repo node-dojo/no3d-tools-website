@@ -1,5 +1,6 @@
 import { getAccountState, getCatalog, selectWorkbenchInventory, sortCatalogProducts } from './api.js?v=catalog-order-20260824';
 import { WORKBENCH_SAMPLE } from '../data/workbench-sample.js?v=workbench-20260822';
+import { getCatalogCollections } from './collections.js?v=collections-20260827';
 import './shell.js?v=workbench-20260822';
 
 const folderIcon = '/v3/assets/shared-source-folder-black.png';
@@ -13,6 +14,7 @@ let account = { session: { authenticated: false }, membership: null };
 const customerCategories = ['All', 'Hardware', 'Generators', 'Primitives', 'Utilities', 'Brushes', 'Ready Mades', 'Assemblies', 'Lessons'];
 let mobileCategory = 'All';
 let mobileLoopWidth = 0;
+let collections = [];
 
 const foldersNode = document.querySelector('[data-folder-list]');
 const filesNode = document.querySelector('[data-active-files]');
@@ -174,9 +176,10 @@ function matchesCategory(product, category) {
 
 function mobileProductCard(product, index) {
   const link = document.createElement('a');
-  link.className = 'mobile-featured-card';
-  link.href = `/v3/product/?handle=${encodeURIComponent(product.handle)}`;
-  link.innerHTML = `${product.thumbnail ? `<img src="${escapeHtml(product.thumbnail)}" alt="" loading="${index < 2 ? 'eager' : 'lazy'}">` : ''}<h3>${escapeHtml(product.title)}</h3><div><span>${String(index + 1).padStart(2, '0')}</span><span>${escapeHtml(product.accessPolicy === 'free' ? 'FREE' : product.releaseVersion || product.releaseStatus)}</span></div>`;
+  const collection = product.kind === 'collection';
+  link.className = `mobile-featured-card${collection ? ' collection-card' : ''}`;
+  link.href = collection ? product.catalogUrl : `/v3/product/?handle=${encodeURIComponent(product.handle)}`;
+  link.innerHTML = `${product.thumbnail ? `<img src="${escapeHtml(product.thumbnail)}" alt="" loading="${index < 2 ? 'eager' : 'lazy'}">` : ''}<h3>${escapeHtml(product.title)}</h3><div><span>${String(index + 1).padStart(2, '0')}</span><span>${escapeHtml(collection ? `${product.productCount} tools` : product.accessPolicy === 'free' ? 'FREE' : product.releaseVersion || product.releaseStatus)}</span></div>${collection ? `<img class="collection-card-marker" src="${folderIcon}" alt="Collection" width="512" height="512">` : ''}`;
   link.querySelector('img')?.addEventListener('error', event => event.currentTarget.remove(), { once: true });
   return link;
 }
@@ -230,7 +233,8 @@ function renderMobileCategoryLoop() {
 function renderMobileDirectory() {
   const term = search?.value.trim().toLowerCase() || '';
   const catalogProducts = sortCatalogProducts((catalog.products || []).filter(product => product.releaseStatus !== 'archived'));
-  const featured = catalogProducts.filter(product => product.presentationMode !== 'workbench' && matchesCategory(product, mobileCategory) && (!term || `${product.title} ${product.description} ${product.tags.join(' ')}`.toLowerCase().includes(term)));
+  const collectionProducts = collections.filter(product => matchesCategory(product, mobileCategory) && (!term || `${product.title} ${product.description} ${product.tags.join(' ')}`.toLowerCase().includes(term)));
+  const featured = [...collectionProducts, ...catalogProducts.filter(product => product.presentationMode !== 'workbench' && matchesCategory(product, mobileCategory) && (!term || `${product.title} ${product.description} ${product.tags.join(' ')}`.toLowerCase().includes(term)))];
   const working = entries.filter(entry => matchesCategory(entry, mobileCategory) && (!term || `${entry.workbench.filename} ${entry.workbench.kind} ${entry.workbench.summary}`.toLowerCase().includes(term)));
   document.querySelector('[data-mobile-featured-tools]')?.replaceChildren(...featured.map(mobileProductCard));
   document.querySelector('[data-mobile-working-files]')?.replaceChildren(...working.map(mobileWorkingLink));
@@ -278,7 +282,8 @@ search?.addEventListener('input', () => {
   renderMobileDirectory();
 });
 
-const [catalog, accountResult] = await Promise.all([getCatalog(), getAccountState().catch(() => account)]);
+const [catalog, collectionResult, accountResult] = await Promise.all([getCatalog(), getCatalogCollections(), getAccountState().catch(() => account)]);
+collections = collectionResult;
 account = accountResult || account;
 restoreMyFile();
 const inventory = selectWorkbenchInventory(catalog, WORKBENCH_SAMPLE);
