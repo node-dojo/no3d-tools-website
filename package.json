@@ -8,7 +8,7 @@
     "build": "node scripts/update-commit-hash.js",
     "start": "doppler run -- npx vercel dev --listen 3001 --yes",
     "test:auth": "node --test tests/auth-session.test.mjs tests/effective-manifest.test.mjs tests/purchase-flow.test.mjs",
-    "test:v3": "node --test tests/v3-ui-contract.test.mjs tests/v3-access.test.mjs tests/account-directory.test.mjs tests/analytics-privacy.test.mjs",
+    "test:v3": "node --test tests/v3-ui-contract.test.mjs tests/v3-access.test.mjs tests/account-directory.test.mjs tests/analytics-privacy.test.mjs tests/collection-parity.test.mjs",
     "acceptance:v3": "node scripts/v3-acceptance.mjs",
     "acceptance:v3:commerce": "node scripts/v3-commerce-acceptance.mjs",
     "acceptance:v3:device": "node scripts/v3-device-acceptance.mjs",

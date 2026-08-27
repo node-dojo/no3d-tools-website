@@ -219,3 +219,5 @@
 /* Hidden page title: keeps a real document heading on Home while the banner slot is empty. Uses the display face so heading audits read the approved font. */
 .v3-page-title{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;white-space:nowrap;clip-path:inset(50%);font:700 1px/1 var(--display)}
 .home-banner:not([hidden]){display:block;border-bottom:1px solid var(--rule)}
+/* Collection acquisition reuses the approved membership action geometry. */
+.collection-acquire{display:flex;min-height:124px;align-items:flex-start;justify-content:space-between;border:1px solid var(--ink);background:var(--yellow);padding:18px;color:var(--ink);font:600 10px var(--ui);text-decoration:none;text-transform:uppercase}
