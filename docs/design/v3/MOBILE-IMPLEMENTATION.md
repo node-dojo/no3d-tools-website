@@ -15,7 +15,7 @@ These rules are implementation requirements, not optional responsive polish.
 - Gizmo-enabled values use `[^]`; the old crosshair is prohibited.
 - Product description headings use the shared compact section-heading class, not an oversized display class.
 - Paid products show price, Add to Library, and Get Full Catalog. The language presents acquisition as entry into the NO3D Tools library rather than an isolated file download. Products without an individual price omit the price block and let the two actions fill the row.
-- Chain Generator is a presentation alias for the existing `chrome-crayon` catalog handle; it does not rename the backend identity.
+- Product surfaces preserve the canonical **Chrome Crayon** name for the existing `chrome-crayon` catalog handle. The retired **Chain Generator** presentation alias must not be reintroduced.
 
 ## Account and onboarding
 

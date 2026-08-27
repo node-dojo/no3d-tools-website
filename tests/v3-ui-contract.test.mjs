@@ -31,9 +31,9 @@ test('uses the published preview ahead of a legacy low-resolution icon', () => {
   assert.equal(product.thumbnail, 'https://media.example/selected-1280.png');
 });
 
-test('keeps the approved Chain Generator presentation alias local to V3', () => {
+test('preserves the canonical Chrome Crayon product name in V3', () => {
   const product = normalizeProduct({ handle: 'chrome-crayon', title: 'Chrome Crayon' });
-  assert.equal(product.title, 'Chain Generator');
+  assert.equal(product.title, 'Chrome Crayon');
   assert.equal(product.handle, 'chrome-crayon');
 });
 

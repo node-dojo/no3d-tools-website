@@ -67,7 +67,7 @@ const FALLBACK_PRODUCTS = [
   {
     id: 'fallback-chrome-crayon',
     handle: 'chrome-crayon',
-    title: 'Chain Generator',
+    title: 'Chrome Crayon',
     description: 'A linked-form generator for fast procedural chain studies and production-ready paths.',
     price: '',
     product_type: 'Geometry Nodes',
@@ -101,7 +101,7 @@ function normalizedNodeDiagram(product) {
 export function normalizeProduct(product = {}) {
   const sourceTitle = product.title || product.name || product.handle || 'Untitled NO3D Tool';
   const handle = product.handle || String(sourceTitle).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const title = handle === 'chrome-crayon' ? 'Chain Generator' : sourceTitle;
+  const title = sourceTitle;
   const carousel = Array.isArray(product.carousel_media) ? product.carousel_media : [];
   const image = hosted(product, product.main_image)
     || resolveMedia(product.main_image)
