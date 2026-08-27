@@ -1,4 +1,5 @@
 import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery, requestSignIn } from './api.js?v=perf-20260820';
+import { track } from './analytics.js?v=privacy-funnel-20260827';
 
 const params = new URLSearchParams(location.search);
 const requestedNext = params.get('next');
@@ -6,6 +7,7 @@ const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
   ? requestedNext
   : '/v3/';
 const purchaseOrderId = next.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1] || '';
+const destination = purchaseOrderId ? 'order' : next.startsWith('/v3/account/') ? 'account' : 'catalog';
 
 const form = document.querySelector('[data-account-entry-form]');
 if (form) {
@@ -28,9 +30,11 @@ if (form) {
 	    message.textContent = 'Sending a fresh sign-in link for this browser…';
 	    try {
 	      await requestSignIn(email, next);
+	      track('sign_in_link_requested', { source: 'expired_link', destination });
 	      message.textContent = 'Check your email and open the newest link in this browser. Older links remain expired.';
 	      signInRecovery.hidden = true;
 	    } catch (error) {
+	      track('sign_in_link_failed', { source: 'expired_link', destination });
 	      message.textContent = error instanceof Error && error.message === 'try_again_later'
 	        ? 'A sign-in link was requested recently. Wait ten minutes, then request one fresh link.'
 	        : 'The fresh sign-in link could not be sent. Try again shortly.';
@@ -44,9 +48,11 @@ if (form) {
 	    message.textContent = 'Sending a one-time sign-in link…';
 	    try {
 	      await requestRecovery(purchaseOrderId);
+	      track('sign_in_link_requested', { source: 'purchase_recovery', destination: 'order' });
 	      message.textContent = 'Check the checkout email for your one-time sign-in link. Your purchase remains attached.';
 	      recovery.hidden = true;
 	    } catch (error) {
+	      track('sign_in_link_failed', { source: 'purchase_recovery', destination: 'order' });
 	      message.textContent = error instanceof Error && error.message === 'try_again_later'
 	        ? 'A sign-in link was requested recently. Wait a minute, then try once more.'
 	        : 'The sign-in link could not be sent. Your purchase remains safe; try again shortly.';
@@ -97,6 +103,7 @@ if (form) {
     const button = form.querySelector('button[type="submit"]');
     button.disabled = true;
     message.textContent = mode === 'signup' ? 'Creating your account…' : 'Signing in…';
+    track('account_submit', { mode, destination });
     try {
       const result = await authenticateWithPassword({
         email: form.elements.email.value.trim(),
@@ -105,11 +112,14 @@ if (form) {
         next,
       });
       if (result.authenticated) {
+        track('account_authenticated', { mode, destination });
         location.assign(result.next || next);
         return;
       }
+      track('account_confirmation_requested', { destination });
       message.textContent = 'Check your email to confirm your account. This setup will continue when you return.';
     } catch (error) {
+      track('account_submit_failed', { mode, destination });
       if (error instanceof Error && error.message === 'account_claim_failed') {
         message.textContent = 'Your sign-in worked, but the purchasing library could not be attached. Sign in again to retry before continuing.';
       } else if (error instanceof Error && error.message === 'try_again_later') {

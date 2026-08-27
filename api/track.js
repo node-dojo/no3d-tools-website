@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { sanitizeAnalyticsPage, sanitizeAnalyticsProperties, sanitizeAnalyticsReferrer } from './lib/analytics.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -17,11 +18,11 @@ export default async function handler(req, res) {
   }
 
   const { error } = await supabase.from('site_events').insert({
-    event,
-    properties: properties || {},
-    page: page || null,
-    referrer: referrer || null,
-    session_id: session_id || null,
+    event: event.slice(0, 80),
+    properties: sanitizeAnalyticsProperties(properties),
+    page: sanitizeAnalyticsPage(page),
+    referrer: sanitizeAnalyticsReferrer(referrer, process.env.NO3D_SITE_URL),
+    session_id: typeof session_id === 'string' ? session_id.slice(0, 80) : null,
   });
 
   if (error) {

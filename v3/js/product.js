@@ -1,4 +1,5 @@
 import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=perf-20260820';
+import { track } from './analytics.js?v=privacy-funnel-20260827';
 import { setProductPreview } from './product-preview.js?v=preview-20260823';
 import './shell.js?v=perf-20260820';
 
@@ -101,12 +102,20 @@ if (!product) {
   download.addEventListener('click', async () => {
     if (download.disabled) return;
     if (free) {
+      track('account_start', { source: 'free_product', handle: product.handle });
       location.href = `/v3/onboarding/create-account/?next=${encodeURIComponent('/v3/account/?state=install')}`;
       return;
     }
     setButtonState(download, true, 'Download');
-    try { location.href = await beginProductCheckout(product.handle); }
-    catch { setButtonState(download, false, 'Try again'); }
+    track('product_checkout_start', { handle: product.handle });
+    try {
+      const checkoutUrl = await beginProductCheckout(product.handle);
+      track('product_checkout_redirect', { handle: product.handle });
+      location.href = checkoutUrl;
+    } catch {
+      track('product_checkout_failed', { handle: product.handle });
+      setButtonState(download, false, 'Try again');
+    }
   });
   const catalogButton = $('[data-catalog-checkout]');
   catalogButton.disabled = true;
@@ -114,8 +123,15 @@ if (!product) {
   catalogButton.addEventListener('click', async () => {
     if (catalogButton.disabled) return;
     setButtonState(catalogButton, true, 'Entire catalog');
-    try { location.href = await beginMembershipCheckout(); }
-    catch { setButtonState(catalogButton, false, 'Try again'); }
+    track('membership_checkout_start', { source: 'product' });
+    try {
+      const checkoutUrl = await beginMembershipCheckout();
+      track('membership_checkout_redirect', { source: 'product' });
+      location.href = checkoutUrl;
+    } catch {
+      track('membership_checkout_failed', { source: 'product' });
+      setButtonState(catalogButton, false, 'Try again');
+    }
   });
   commercePromise.then(commerce => {
     if (free) {

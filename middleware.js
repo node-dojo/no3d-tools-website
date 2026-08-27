@@ -1,9 +1,10 @@
-import { next } from '@vercel/functions';
+import { next, waitUntil } from '@vercel/functions';
 import {
   v3OwnerAllowed,
   v3OwnerGateEnabled,
   v3ProductionLaunchEnabled,
 } from './api/auth/lib/v3-access.js';
+import { sanitizeAnalyticsPage, sanitizeAnalyticsReferrer } from './api/lib/analytics.js';
 
 const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Discordbot|Slackbot|WhatsApp|Telegram|iMessageBot|Applebot|Google-InspectionTool|Googlebot|bingbot|yandex|Pinterestbot|Embedly|Quora Link Preview|Showyoubot|outbrain|vkShare|W3C_Validator|redditbot|Mediapartners|AhrefsBot|SemrushBot|MJ12bot/i;
 
@@ -13,6 +14,45 @@ const PUBLIC_V3_PREFIXES = [
   '/v3/js/',
   '/v3/styles/',
 ];
+
+const LEGACY_DOCUMENTS = new Set([
+  '/account.html', '/blog.html', '/guide.html', '/index.html', '/library.html',
+  '/subscribe', '/subscribe.html', '/success.html',
+]);
+
+function routeKind(pathname) {
+  if (pathname === '/' || pathname === '/v3' || pathname.startsWith('/v3/')) return 'v3';
+  if (pathname === '/blog' || pathname.startsWith('/blog/')) return 'blog';
+  if (LEGACY_DOCUMENTS.has(pathname) || pathname.endsWith('.html')) return 'legacy';
+  return 'unknown';
+}
+
+async function recordInfrastructureRequest(request) {
+  if (!['GET', 'HEAD'].includes(request.method)) return;
+  const destination = request.headers.get('sec-fetch-dest');
+  const accept = request.headers.get('accept') || '';
+  if (destination !== 'document' && !accept.includes('text/html')) return;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return;
+  const url = new URL(request.url);
+  await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/site_events`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({
+      event: 'document_request',
+      page: sanitizeAnalyticsPage(url.href),
+      referrer: sanitizeAnalyticsReferrer(request.headers.get('referer')),
+      properties: { source: 'middleware', route_kind: routeKind(url.pathname) },
+      session_id: null,
+    }),
+  });
+}
 
 function isPublicV3Path(pathname) {
   return PUBLIC_V3_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(prefix));
@@ -114,6 +154,7 @@ async function blogPreviewMiddleware(request) {
 
 export default async function middleware(request) {
   const { pathname } = new URL(request.url);
+  waitUntil(recordInfrastructureRequest(request).catch(() => {}));
   if (pathname === '/' && (v3ProductionLaunchEnabled() || v3OwnerGateEnabled())) {
     return Response.redirect(new URL('/v3/', request.url), 307);
   }
@@ -130,5 +171,5 @@ function escapeHtml(value) {
 }
 
 export const config = {
-  matcher: ['/', '/v3', '/v3/:path*', '/blog/:slug*'],
+  matcher: ['/((?!api(?:/|$)|assets(?:/|$)|extensions(?:/|$)|v3/(?:assets|js|styles)(?:/|$)|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$).*)'],
 };

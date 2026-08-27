@@ -1,6 +1,7 @@
 import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=perf-20260820';
 import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, readableHandle } from './account-library.js?v=account-library-20260822b';
 import { preloadProductPreviews, PRODUCT_PREVIEW_FALLBACK, setProductPreview } from './product-preview.js?v=preview-20260823';
+import { trackOnce } from './analytics.js?v=privacy-funnel-20260827';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -296,6 +297,7 @@ async function monitorOrder() {
       const order = await getOrder(orderId);
       const outcome = renderOrder(order);
       if (outcome === 'fulfilled') {
+        trackOnce('product_fulfillment_completed', { source: 'account_order' });
         if (!localStorage.getItem(`no3d_v3_recovery_${orderId}`)) {
           await requestRecovery(orderId).catch(() => null);
           localStorage.setItem(`no3d_v3_recovery_${orderId}`, '1');
@@ -338,11 +340,13 @@ function showMembershipNotice({ active = false, mismatch = false } = {}) {
 
 async function monitorMembershipCheckout(email) {
   if (params.get('membership') === 'active') {
+    trackOnce('membership_fulfillment_completed', { source: 'account' });
     showMembershipNotice({ active: true });
     return;
   }
   const sessionId = params.get('session_id');
   if (params.get('membership_checkout') !== 'success' || !sessionId) return;
+  trackOnce('membership_checkout_returned', { source: 'stripe' });
   showMembershipNotice();
   for (let attempt = 0; attempt < 12; attempt += 1) {
     try {
@@ -393,6 +397,8 @@ if (!state.authenticated) {
   const next = `${location.pathname}${location.search}`;
   location.replace(`/v3/onboarding/create-account/?next=${encodeURIComponent(next)}`);
 } else {
+  if (params.get('auth') === 'signed-in') trackOnce('account_confirmation_completed', { destination: 'account' });
+  if (params.get('purchase') === 'ready') trackOnce('product_fulfillment_completed', { source: 'account' });
   state.catalog = catalog;
   const effectiveCandidates = [...(summary?.products || [])];
   state.membership = membership;

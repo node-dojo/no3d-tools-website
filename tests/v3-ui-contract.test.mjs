@@ -70,8 +70,35 @@ test('every V3 route records the page-view event that drives visit notifications
   assert.match(api, /import ['"]\.\/analytics\.js/);
   assert.match(analytics, /track\('page_view'/);
   assert.match(analytics, /fetch\('\/api\/track'/);
-  assert.match(analytics, /page: window\.location\.pathname \+ window\.location\.search/);
-  assert.match(analytics, /referrer: document\.referrer/);
+  assert.match(analytics, /page: safePage\(window\.location\.href\)/);
+  assert.match(analytics, /referrer: safeReferrer\(document\.referrer\)/);
+  assert.match(await load('api/track.js'), /sanitizeAnalyticsPage\(page\)/);
+  assert.match(await load('api/track.js'), /sanitizeAnalyticsReferrer\(referrer/);
+});
+
+test('infrastructure document requests and conversion milestones close traffic blind spots', async () => {
+  const middleware = await load('middleware.js');
+  const product = await load('v3/js/product.js');
+  const membership = await load('v3/js/membership.js');
+  const onboarding = await load('v3/js/onboarding.js');
+  const account = await load('v3/js/account.js');
+  assert.match(middleware, /event: 'document_request'/);
+  assert.match(middleware, /route_kind: routeKind/);
+  assert.match(middleware, /waitUntil\(recordInfrastructureRequest/);
+  assert.match(middleware, /\(\?!api/);
+  for (const event of ['product_checkout_start', 'product_checkout_redirect', 'product_checkout_failed']) {
+    assert.match(product, new RegExp(event));
+  }
+  for (const event of ['membership_checkout_start', 'membership_checkout_redirect', 'membership_checkout_failed']) {
+    assert.match(`${product}\n${membership}`, new RegExp(event));
+  }
+  for (const event of ['account_submit', 'account_confirmation_requested', 'account_authenticated']) {
+    assert.match(onboarding, new RegExp(event));
+  }
+  for (const event of ['account_confirmation_completed', 'product_fulfillment_completed', 'membership_fulfillment_completed']) {
+    assert.match(account, new RegExp(event));
+  }
+  assert.doesNotMatch(`${product}\n${membership}\n${onboarding}\n${account}`, /track(?:Once)?\([^\n]*session_id/);
 });
 
 test('Shared Source Folder is additive, filename-led, and reuses the existing product catalog', async () => {
