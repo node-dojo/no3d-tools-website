@@ -436,7 +436,7 @@ test('product descriptions render one designed heading and use real prose for su
   const html = await load('v3/product/index.html');
   const product = await load('v3/js/product.js');
   assert.equal((html.match(/<h2>Description<\/h2>/g) || []).length, 1);
-  assert.match(html, /product\.js\?v=description-sections-20260824/);
+  assert.match(html, /product\.js\?v=media-priority-20260827/);
   assert.match(product, /function descriptionContent\(text\)/);
   assert.match(product, /\^#\{1,6\}\\s\+description/);
   assert.match(product, /const summary = descriptionSummary\(product\.description\)/);
