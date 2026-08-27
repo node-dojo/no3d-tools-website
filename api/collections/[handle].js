@@ -7,6 +7,16 @@ const definitions = {
     title: 'No3D Chrome tools',
     description: 'A curated Blender collection for procedural drawing, pixel, pattern, chrome-form, and printable visual tools.',
     thumbnail: '/v3/assets/no3d-chrome-hero-static.webp',
+    members: [
+      'chrome-crayon',
+      'dojo-spiro-curve',
+      'flat-stickie-pack',
+      'image-pixel-stippler',
+      'no3d-pixel-markers',
+      'periodic-brush',
+      'spikey-chain-and-mace',
+      'type-pixel-brush',
+    ],
   },
 };
 const declaredTitles = {
@@ -48,6 +58,9 @@ export default async function handler(req, res) {
     ]);
     const members = source?.collections?.[definition.scope];
     if (!Array.isArray(members)) throw new Error('SOLVET collection scope is unavailable');
+    if (JSON.stringify(members) !== JSON.stringify(definition.members)) {
+      throw new Error('Published collection membership differs from the reviewed site contract');
+    }
     const catalog = Array.isArray(catalogPayload) ? catalogPayload : catalogPayload.products || [];
     const byHandle = new Map(catalog.map(product => [product.handle, product]));
     const products = members.map(productHandle => {

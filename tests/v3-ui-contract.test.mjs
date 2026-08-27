@@ -22,9 +22,9 @@ test('normalizes live catalog records without forking commerce identifiers', () 
   assert.equal(product.image, 'https://media.example/hero.gif');
 });
 
-test('preserves the canonical Chrome Crayon product name in V3', () => {
+test('keeps the approved Chain Generator presentation alias local to V3', () => {
   const product = normalizeProduct({ handle: 'chrome-crayon', title: 'Chrome Crayon' });
-  assert.equal(product.title, 'Chrome Crayon');
+  assert.equal(product.title, 'Chain Generator');
   assert.equal(product.handle, 'chrome-crayon');
 });
 

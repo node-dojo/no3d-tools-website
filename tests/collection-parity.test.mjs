@@ -58,6 +58,20 @@ test('No3D Chrome site projection preserves SOLVET collection order and scope', 
   }
 });
 
+test('No3D Chrome fails closed when published membership drifts from the committed eight-product contract', async () => {
+  const originalManifest = process.env.NO3D_MANIFEST_JSON;
+  process.env.NO3D_MANIFEST_JSON = JSON.stringify({ collections: { 'no3dtools.membership.no3d-chrome': expected.slice(0, 7) } });
+  try {
+    const res = responseRecorder();
+    await handler({ method: 'GET', query: { handle: 'no3d-chrome-tools' }, headers: {} }, res);
+    assert.equal(res.statusCode, 502);
+    assert.deepEqual(res.body, { error: 'collection_source_unavailable' });
+  } finally {
+    if (originalManifest === undefined) delete process.env.NO3D_MANIFEST_JSON;
+    else process.env.NO3D_MANIFEST_JSON = originalManifest;
+  }
+});
+
 test('collection page presents a one-time purchase and does not expose checkout prematurely', () => {
   const html = readFileSync(fileURLToPath(new URL('../v3/collections/no3d-chrome-tools/index.html', import.meta.url)), 'utf8');
   assert.match(html, /No3D Chrome tools/);
