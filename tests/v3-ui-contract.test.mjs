@@ -22,6 +22,15 @@ test('normalizes live catalog records without forking commerce identifiers', () 
   assert.equal(product.image, 'https://media.example/hero.gif');
 });
 
+test('uses the published preview ahead of a legacy low-resolution icon', () => {
+  const product = normalizeProduct({
+    image: 'https://media.example/legacy-256.png',
+    preview: 'https://media.example/selected-1280.png',
+  });
+  assert.equal(product.image, 'https://media.example/selected-1280.png');
+  assert.equal(product.thumbnail, 'https://media.example/selected-1280.png');
+});
+
 test('keeps the approved Chain Generator presentation alias local to V3', () => {
   const product = normalizeProduct({ handle: 'chrome-crayon', title: 'Chrome Crayon' });
   assert.equal(product.title, 'Chain Generator');

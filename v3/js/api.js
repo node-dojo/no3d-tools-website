@@ -103,14 +103,16 @@ export function normalizeProduct(product = {}) {
   const handle = product.handle || String(sourceTitle).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const title = handle === 'chrome-crayon' ? 'Chain Generator' : sourceTitle;
   const carousel = Array.isArray(product.carousel_media) ? product.carousel_media : [];
-  const image = resolveMedia(product.image)
-    || hosted(product, product.main_image)
+  const image = hosted(product, product.main_image)
+    || resolveMedia(product.main_image)
+    || resolveMedia(product.preview)
+    || resolveMedia(product.image)
     || hosted(product, product.animated_thumbnail)
     || hosted(product, carousel[0])
-    || resolveMedia(product.preview)
     || '';
   const thumbnail = hosted(product, product.thumbnail_image)
     || resolveMedia(product.thumbnail_image)
+    || resolveMedia(product.preview)
     || hosted(product, product.animated_thumbnail)
     || image;
   const presentation = product.presentation || product.metadata?.presentation || {};
