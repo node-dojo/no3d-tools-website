@@ -1,199 +1,181 @@
 #!/usr/bin/env node
 
-/**
- * Update Obsidian Dashboard Files
- *
- * Queries Supabase for subscriber counts and site analytics,
- * writes clean markdown files to the Obsidian vault for
- * at-a-glance reference (phone home screen widget).
- *
- * Usage:
- *   doppler run -- node scripts/update-obsidian-dashboard.mjs
- *
- * Designed to run on a schedule (cron/launchd) every few hours.
- */
-
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { createClient } from '@supabase/supabase-js';
+import Stripe from 'stripe';
+import { WINDOWS, buildAttentionQueue, buildDailySnapshot, buildDashboard, containsPrivateIdentity, detectAttention, summarizeEvents, summarizeSubscriptions, upsertDailyJsonl } from './lib/business-dashboard.mjs';
 
-const VAULT_PATH = path.resolve(
-  process.env.HOME,
-  'Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault_001'
-);
+const execFileAsync = promisify(execFile);
+const args = new Set(process.argv.slice(2));
+const dryRun = args.has('--dry-run');
+const notificationsDisabled = args.has('--no-notify');
+const now = new Date();
+const repoRoot = path.resolve(import.meta.dirname, '..');
+const vaultPath = path.resolve(process.env.HOME, 'Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault_001');
+const operationsPath = path.join(vaultPath, 'PROJECTS', 'NO3D SITE', 'Operations');
+const paths = {
+  dashboard: path.join(vaultPath, 'Business Dashboard.md'),
+  legacyPointer: path.join(vaultPath, 'NO3D Dashboard.md'),
+  attention: path.join(operationsPath, 'Business Dashboard — Attention Queue.md'),
+  snapshots: path.join(operationsPath, 'snapshots', 'business-dashboard-daily.jsonl'),
+  alertState: path.join(operationsPath, '.business-dashboard-alert-state.json'),
+};
 
-const DASHBOARD_FILE = path.join(VAULT_PATH, 'NO3D Dashboard.md');
-const LOG_FILE = path.join(VAULT_PATH, 'DIGITAL PRODUCT', 'no3d-metrics-log.md');
+function health(name, status, detail) { return { name, status, detail, checkedAt: now.toISOString() }; }
+function safeError(error) {
+  const code = error?.code || error?.name || 'request_failed';
+  return String(code).replace(/[^a-zA-Z0-9_.-]/g, '').slice(0, 80) || 'request_failed';
+}
+function atomicWrite(filename, content) {
+  fs.mkdirSync(path.dirname(filename), { recursive: true });
+  const temporary = `${filename}.tmp-${process.pid}`;
+  fs.writeFileSync(temporary, content, { mode: 0o600 });
+  fs.renameSync(temporary, filename);
+}
 
-const PRICE_MONTHLY = 17.00; // Target price after migration
-const PRICE_CURRENT = 11.11; // Current Gumroad migration price
-const GOAL_MONTHLY = 10000;
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-async function getMetrics() {
-  // Subscriber counts
-  const { data: subs } = await supabase
-    .from('subscriptions')
-    .select('status, tier, created_at, source')
-    .order('created_at', { ascending: false });
-
-  const active = (subs || []).filter(s => s.status === 'active');
-  const paying = active.filter(s => s.tier === 'subscriber');
-  const free = active.filter(s => s.tier === 'free');
-
-  // Site events from last 24h and 7d
-  const now = new Date();
-  const day_ago = new Date(now - 24 * 60 * 60 * 1000).toISOString();
-  const week_ago = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
-
-  const { data: events24h } = await supabase
-    .from('site_events')
-    .select('event')
-    .gte('created_at', day_ago);
-
-  const { data: events7d } = await supabase
-    .from('site_events')
-    .select('event')
-    .gte('created_at', week_ago);
-
-  const countEvents = (events, name) => (events || []).filter(e => e.event === name).length;
-
-  // Product view counts (last 7d)
-  const { data: productViews7d } = await supabase
-    .from('site_events')
-    .select('properties')
-    .eq('event', 'product_view')
-    .gte('created_at', week_ago);
-
-  const productCounts = {};
-  for (const ev of (productViews7d || [])) {
-    const handle = ev.properties?.product_handle;
-    if (handle) productCounts[handle] = (productCounts[handle] || 0) + 1;
+async function fetchSiteData() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) throw Object.assign(new Error('Supabase is not configured'), { code: 'not_configured' });
+  const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  const cutoff = new Date(now.getTime() - WINDOWS.at(-1).milliseconds).toISOString();
+  const { data: subscriptions, error: subscriptionError } = await client.from('subscriptions').select('status,tier,created_at,source').order('created_at', { ascending: false });
+  if (subscriptionError) throw subscriptionError;
+  const events = [];
+  for (let offset = 0; ; offset += 1000) {
+    const { data, error } = await client.from('site_events').select('id,event,properties,page,session_id,created_at').gte('created_at', cutoff).order('created_at', { ascending: true }).range(offset, offset + 999);
+    if (error) throw error;
+    events.push(...(data || []));
+    if (!data || data.length < 1000) break;
   }
-  const topProducts = Object.entries(productCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  return { subscriptions: subscriptions || [], events };
+}
 
+function aggregateStripeRows(rows, windowMs) {
+  const revenueCategories = new Set(['charge', 'refund', 'dispute', 'dispute_reversal']);
+  const selected = rows.filter((row) => row.created >= Math.floor((now.getTime() - windowMs) / 1000) && revenueCategories.has(row.reporting_category));
   return {
-    paying: paying.length,
-    free: free.length,
-    total: active.length,
-    allTime: (subs || []).length,
-    latestSub: paying.length > 0 ? paying[0].created_at : null,
-    mrr_current: paying.length * PRICE_CURRENT,
-    mrr_target: paying.length * PRICE_MONTHLY,
-    goal_pct_current: ((paying.length * PRICE_CURRENT) / GOAL_MONTHLY * 100).toFixed(1),
-    goal_pct_target: ((paying.length * PRICE_MONTHLY) / GOAL_MONTHLY * 100).toFixed(1),
-    subs_needed_current: Math.ceil((GOAL_MONTHLY - paying.length * PRICE_CURRENT) / PRICE_CURRENT),
-    subs_needed_target: Math.ceil((GOAL_MONTHLY - paying.length * PRICE_MONTHLY) / PRICE_MONTHLY),
-    events_24h: {
-      page_views: countEvents(events24h, 'page_view'),
-      product_views: countEvents(events24h, 'product_view'),
-      checkout_starts: countEvents(events24h, 'checkout_start'),
-      downloads: countEvents(events24h, 'download_modal_open'),
-      signups: countEvents(events24h, 'free_account_created'),
-      searches: countEvents(events24h, 'search'),
-    },
-    events_7d: {
-      page_views: countEvents(events7d, 'page_view'),
-      product_views: countEvents(events7d, 'product_view'),
-      checkout_starts: countEvents(events7d, 'checkout_start'),
-      downloads: countEvents(events7d, 'download_modal_open'),
-      signups: countEvents(events7d, 'free_account_created'),
-      searches: countEvents(events7d, 'search'),
-    },
-    topProducts,
+    grossCents: selected.filter((row) => row.reporting_category === 'charge').reduce((sum, row) => sum + Math.max(0, row.amount), 0),
+    refundedCents: Math.abs(selected.filter((row) => row.reporting_category === 'refund').reduce((sum, row) => sum + row.amount, 0)),
+    netCents: selected.reduce((sum, row) => sum + row.net, 0),
+    units: selected.filter((row) => row.reporting_category === 'charge').length,
   };
 }
 
-function buildDashboard(m) {
-  const updated = new Date().toLocaleString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true,
-  });
-
-  // This is the phone home screen doc — big numbers, minimal noise
-  return `# ${m.paying}
-
-## paying subscribers
-
-**$${m.mrr_current.toFixed(0)}**/mo → **$${m.mrr_target.toFixed(0)}**/mo at $17
-
-${m.goal_pct_current}% to $10k goal
-
-${m.subs_needed_target} more subs needed at $17/mo
-
----
-
-${m.free} free tier · ${m.total} total active
-
----
-
-Last 24h: ${m.events_24h.page_views} visits · ${m.events_24h.product_views} product views · ${m.events_24h.checkout_starts} checkout starts
-
-Last 7d: ${m.events_7d.page_views} visits · ${m.events_7d.product_views} product views · ${m.events_7d.checkout_starts} checkout starts
-
----
-
-*Updated ${updated}*
-`;
-}
-
-function buildLogEntry(m) {
-  const date = new Date().toISOString().split('T')[0];
-  const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-
-  return `| ${date} | ${time} | ${m.paying} | ${m.free} | $${m.mrr_current.toFixed(0)} | ${m.events_7d.page_views} | ${m.events_7d.product_views} | ${m.events_7d.checkout_starts} | ${m.events_7d.signups} |`;
-}
-
-function appendLog(m) {
-  const header = `# NO3D Metrics Log
-
-| Date | Time | Paying | Free | MRR | Visits (7d) | Product Views (7d) | Checkouts (7d) | Signups (7d) |
-|------|------|--------|------|-----|-------------|-------------------|----------------|-------------|
-`;
-
-  const entry = buildLogEntry(m);
-
-  if (!fs.existsSync(LOG_FILE)) {
-    fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
-    fs.writeFileSync(LOG_FILE, header + entry + '\n');
-    console.log(`[created] ${LOG_FILE}`);
-    return;
+async function fetchStripeRevenue() {
+  if (!process.env.STRIPE_SECRET_KEY) return { status: 'not_configured' };
+  try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const rows = [];
+    for await (const transaction of stripe.balanceTransactions.list({ created: { gte: Math.floor((now.getTime() - WINDOWS.at(-1).milliseconds) / 1000) }, limit: 100 })) rows.push(transaction);
+    const currencies = [...new Set(rows.map((row) => row.currency).filter(Boolean))];
+    if (currencies.length > 1) throw Object.assign(new Error('Multiple Stripe currencies require separate reporting'), { code: 'multiple_currencies' });
+    return { status: 'current', currency: (currencies[0] || 'usd').toUpperCase(), windows: Object.fromEntries(WINDOWS.map((window) => [window.key, aggregateStripeRows(rows, window.milliseconds)])) };
+  } catch (error) {
+    return { status: 'unavailable', error: safeError(error) };
   }
+}
 
-  const existing = fs.readFileSync(LOG_FILE, 'utf-8');
-  // Append new row
-  fs.writeFileSync(LOG_FILE, existing.trimEnd() + '\n' + entry + '\n');
-  console.log(`[appended] ${LOG_FILE}`);
+async function gumroadSummary(window) {
+  const from = new Date(now.getTime() - window.milliseconds).toISOString().slice(0, 10);
+  const to = now.toISOString().slice(0, 10);
+  const gumroadCli = process.env.GUMROAD_CLI_PATH || path.join(process.env.HOME, '.local', 'bin', 'gumroad');
+  const { stdout } = await execFileAsync(gumroadCli, ['sales', 'summary', '--from', from, '--to', to, '--json', '--no-input', '--quiet'], { cwd: repoRoot, timeout: 30_000, maxBuffer: 1024 * 1024 });
+  const value = JSON.parse(stdout);
+  const data = value.data || value;
+  if (data.success === false) throw Object.assign(new Error('Gumroad summary failed'), { code: 'gumroad_unsuccessful' });
+  return { grossCents: Number(data.gross_cents), refundedCents: Number(data.refunded_cents || 0), netCents: Number(data.net_cents), units: Number(data.units || 0) };
+}
+
+async function fetchGumroadRevenue() {
+  try {
+    const values = await Promise.all(WINDOWS.map((window) => gumroadSummary(window)));
+    return { status: 'current', currency: 'USD', windows: Object.fromEntries(WINDOWS.map((window, index) => [window.key, values[index]])) };
+  } catch (error) {
+    return { status: error?.code === 'ENOENT' ? 'not_configured' : 'unavailable', error: safeError(error) };
+  }
+}
+
+async function checkHttpSource(name, url) {
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(12_000), redirect: 'follow' });
+    return health(name, response.ok ? 'current' : 'unavailable', `HTTP ${response.status}`);
+  } catch (error) {
+    return health(name, 'unavailable', safeError(error));
+  }
+}
+
+function loadAlertState() {
+  try {
+    const value = JSON.parse(fs.readFileSync(paths.alertState, 'utf8'));
+    return { initialized: true, notified: Array.isArray(value.notified) ? value.notified : [] };
+  } catch {
+    return { initialized: false, notified: [] };
+  }
+}
+
+async function sendNewAttentionAlerts(attention) {
+  const topic = process.env.BUSINESS_DASHBOARD_NTFY_TOPIC;
+  if (!topic) return { source: health('ntfy exceptions', 'not_configured', 'BUSINESS_DASHBOARD_NTFY_TOPIC is absent'), state: null, sent: 0 };
+  if (notificationsDisabled) return { source: health('ntfy exceptions', 'current', 'configured; delivery skipped by --no-notify'), state: null, sent: 0 };
+  const state = loadAlertState();
+  const actionable = attention.filter((issue) => issue.actionable);
+  const known = new Set(state.notified);
+  const next = actionable.filter((issue) => !known.has(issue.id));
+  const updated = [...new Set([...state.notified, ...actionable.map((issue) => issue.id)])].slice(-500);
+  if (!state.initialized) return { source: health('ntfy exceptions', 'current', `configured; baselined ${actionable.length} existing finding(s)`), state: { notified: updated }, sent: 0 };
+  if (!next.length) return { source: health('ntfy exceptions', 'current', 'configured; no new actionable findings'), state: { notified: updated }, sent: 0 };
+  try {
+    const headers = { 'content-type': 'application/json' };
+    if (process.env.BUSINESS_DASHBOARD_NTFY_TOKEN) headers.authorization = `Bearer ${process.env.BUSINESS_DASHBOARD_NTFY_TOKEN}`;
+    const response = await fetch(process.env.BUSINESS_DASHBOARD_NTFY_BASE_URL || 'https://ntfy.sh', {
+      method: 'POST', headers,
+      body: JSON.stringify({ topic, title: `Business Dashboard · ${next.length} new exception${next.length === 1 ? '' : 's'}`, message: next.slice(0, 4).map((issue) => issue.summary).join('\n'), tags: ['warning'], click: 'obsidian://open?vault=Vault_001&file=PROJECTS%2FNO3D%20SITE%2FOperations%2FBusiness%20Dashboard%20%E2%80%94%20Attention%20Queue' }),
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (!response.ok) throw Object.assign(new Error('ntfy rejected alert'), { code: `http_${response.status}` });
+    return { source: health('ntfy exceptions', 'current', `sent ${next.length} new finding(s)`), state: { notified: updated }, sent: next.length };
+  } catch (error) {
+    return { source: health('ntfy exceptions', 'unavailable', safeError(error)), state: null, sent: 0 };
+  }
 }
 
 async function main() {
-  console.log('Querying Supabase...');
-  const metrics = await getMetrics();
-
-  // Write phone dashboard
-  fs.writeFileSync(DASHBOARD_FILE, buildDashboard(metrics));
-  console.log(`[ok] Dashboard: ${DASHBOARD_FILE}`);
-  console.log(`     ${metrics.paying} paying · $${metrics.mrr_current.toFixed(0)}/mo · ${metrics.goal_pct_current}% to goal`);
-
-  // Append to metrics log
-  appendLog(metrics);
-
-  // Top products this week
-  if (metrics.topProducts.length > 0) {
-    console.log('     Top products (7d):');
-    for (const [handle, count] of metrics.topProducts) {
-      console.log(`       ${handle}: ${count} views`);
-    }
+  const sourceHealth = [];
+  let siteData = { subscriptions: [], events: [] };
+  try {
+    siteData = await fetchSiteData();
+    sourceHealth.push(health('website Supabase', 'current', `${siteData.events.length} events in the 30-day window`));
+  } catch (error) {
+    sourceHealth.push(health('website Supabase', error?.code === 'not_configured' ? 'not_configured' : 'unavailable', safeError(error)));
   }
+  const [stripe, gumroad, commerceHealth, siteHealth] = await Promise.all([fetchStripeRevenue(), fetchGumroadRevenue(), checkHttpSource('Commerce service', 'https://no3d-commerce.vercel.app/api/health'), checkHttpSource('public website', 'https://no3dtools.com/v3/')]);
+  sourceHealth.push(health('Stripe account', stripe.status, stripe.status === 'current' ? 'balance activity read successfully' : stripe.error || 'configuration absent'));
+  sourceHealth.push(health('Gumroad', gumroad.status, gumroad.status === 'current' ? 'sales summaries read successfully' : gumroad.error || 'configuration absent'));
+  sourceHealth.push(commerceHealth, siteHealth);
+  const eventSummary = summarizeEvents(siteData.events, now);
+  const subscriptionSummary = summarizeSubscriptions(siteData.subscriptions);
+  const attention = detectAttention(siteData.events, now);
+  const alertResult = await sendNewAttentionAlerts(attention);
+  sourceHealth.push(alertResult.source);
+  const model = { generatedAt: now.toISOString(), events: eventSummary, subscriptions: subscriptionSummary, stripe, gumroad, health: sourceHealth, attention };
+  const dashboard = buildDashboard(model);
+  const attentionQueue = buildAttentionQueue(model);
+  if (containsPrivateIdentity(dashboard) || containsPrivateIdentity(attentionQueue)) throw new Error('Generated Markdown failed the private-identity guard');
+  if (!dryRun) {
+    atomicWrite(paths.dashboard, dashboard);
+    atomicWrite(paths.legacyPointer, '# Moved\n\nThe operator dashboard is now [[Business Dashboard]].\n');
+    atomicWrite(paths.attention, attentionQueue);
+    const snapshot = buildDailySnapshot(model);
+    const existing = fs.existsSync(paths.snapshots) ? fs.readFileSync(paths.snapshots, 'utf8') : '';
+    atomicWrite(paths.snapshots, upsertDailyJsonl(existing, snapshot));
+    if (alertResult.state) atomicWrite(paths.alertState, `${JSON.stringify(alertResult.state, null, 2)}\n`);
+  }
+  console.log(JSON.stringify({ ok: true, dryRun, generatedAt: model.generatedAt, subscriptions: { paying: subscriptionSummary.paying, free: subscriptionSummary.free, active: subscriptionSummary.active }, attention: { total: attention.length, actionable: attention.filter((issue) => issue.actionable).length }, sources: Object.fromEntries(sourceHealth.map((source) => [source.name, source.status])), notificationsSent: alertResult.sent }, null, 2));
 }
 
-main().catch(err => {
-  console.error('Dashboard update failed:', err.message);
-  process.exit(1);
+main().catch((error) => {
+  console.error(`Business Dashboard update failed: ${safeError(error)}`);
+  process.exitCode = 1;
 });
