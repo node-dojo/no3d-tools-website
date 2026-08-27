@@ -4,6 +4,9 @@ const messageNode = document.querySelector('[data-collection-message]');
 const acquireNode = document.querySelector('[data-collection-acquire]');
 const priceNode = document.querySelector('.membership-price');
 const heroNode = document.querySelector('[data-collection-hero]');
+const sourceNode = document.querySelector('[data-collection-source]');
+const sourceProductsNode = document.querySelector('[data-collection-source-products]');
+const sourceCountNode = document.querySelector('[data-collection-source-count]');
 
 if (heroNode) {
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -40,6 +43,18 @@ function card(product) {
   return node;
 }
 
+function sourceRow(product) {
+  const node = document.createElement(product.productUrl ? 'a' : 'article');
+  node.className = 'collection-source-row';
+  if (product.productUrl) node.href = product.productUrl;
+  const title = document.createElement('span');
+  title.textContent = product.title;
+  const state = document.createElement('span');
+  state.textContent = product.productUrl ? 'Open →' : 'NO3D Tool';
+  node.append(title, state);
+  return node;
+}
+
 try {
   const response = await fetch('/api/collections/no3d-chrome-tools');
   if (!response.ok) throw new Error('collection_unavailable');
@@ -47,7 +62,13 @@ try {
   document.title = `${collection.title} — NO3D Tools`;
   countNode.textContent = `${collection.productCount} tools / Current collection`;
   if (collection.price?.formatted) priceNode.textContent = `${collection.price.formatted} / one time`;
-  productsNode.replaceChildren(...collection.products.map(card));
+  const illustrated = collection.products.filter(product => product.image);
+  const sourceProducts = collection.products.filter(product => !product.image);
+  productsNode.replaceChildren(...illustrated.map(card));
+  productsNode.hidden = illustrated.length === 0;
+  sourceProductsNode.replaceChildren(...sourceProducts.map(sourceRow));
+  sourceCountNode.textContent = `${String(sourceProducts.length).padStart(2, '0')} tools`;
+  sourceNode.hidden = sourceProducts.length === 0;
   if (collection.acquisition?.url) {
     acquireNode.href = collection.acquisition.url;
     acquireNode.removeAttribute('aria-disabled');
@@ -57,6 +78,8 @@ try {
   }
 } catch {
   productsNode.innerHTML = '<p class="empty-state">The current collection could not be loaded.</p>';
+  productsNode.hidden = false;
+  sourceNode.hidden = true;
   messageNode.textContent = 'Collection details are temporarily unavailable. No purchase has been started.';
   acquireNode.removeAttribute('href');
 }

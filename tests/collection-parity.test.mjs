@@ -65,6 +65,8 @@ test('collection page presents a one-time purchase and does not expose checkout 
   assert.match(html, /Purchase setup in progress/);
   assert.match(html, /no3d-chrome-hero-static\.webp/);
   assert.match(html, /no3d-chrome-hero-animated\.webp/);
+  assert.match(html, /shared-source-folder-black\.png/);
+  assert.match(html, /data-collection-source-products/);
   assert.doesNotMatch(html, /\$9\.99 \/ month|Join on Gumroad|curated Blender membership/);
   assert.doesNotMatch(html, /data-membership-checkout|data-catalog-checkout/);
 });
