@@ -193,11 +193,14 @@ test('Workbench live inventory replaces previews and excludes archived records',
 
 test('onboarding installs first and exposes connection only to a Blender-issued code', async () => {
   const createAccount = await load('v3/onboarding/create-account/index.html');
+  const onboardingScript = await load('v3/js/onboarding.js');
   const account = await load('v3/account/index.html');
   const accountScript = await load('v3/js/account.js');
   const desktopLink = await load('api/onboarding/desktop-link.js');
   assert.match(createAccount, /Create free account/i);
-  assert.match(await load('v3/js/onboarding.js'), /Too many account attempts from this connection/);
+  assert.match(onboardingScript, /Too many account attempts from this connection/);
+  assert.match(onboardingScript, /: '\/v3\/';/, 'direct catalog signup returns to browsing');
+  assert.match(onboardingScript, /location\.assign\(result\.next \|\| next\)/, 'successful signup follows its initiating context');
   assert.match(createAccount, /Continue with Google/i);
   assert.match(createAccount, /Continue with GitHub/i);
   assert.match(account, /Continue to My Folder/i);

@@ -4,7 +4,7 @@ const params = new URLSearchParams(location.search);
 const requestedNext = params.get('next');
 const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
   ? requestedNext
-  : '/v3/account/?state=install';
+  : '/v3/';
 const purchaseOrderId = next.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1] || '';
 
 const form = document.querySelector('[data-account-entry-form]');
