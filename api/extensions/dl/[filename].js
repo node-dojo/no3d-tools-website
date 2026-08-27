@@ -1,7 +1,7 @@
 import { isR2Configured, presignGetObject } from '../../lib/r2.js';
 
 const EXTENSION_PREFIX = 'no3d-tools-library/extensions/';
-const FILENAME = /^no3d_tools_membership-\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?\.zip$/;
+const FILENAME = /^no3d_tools-\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?\.zip$/;
 
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'HEAD') {

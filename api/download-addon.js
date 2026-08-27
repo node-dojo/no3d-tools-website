@@ -12,7 +12,7 @@ import { getObjectUtf8String, isR2Configured } from './lib/r2.js';
 import { createClient } from '@supabase/supabase-js';
 
 const EXTENSION_INDEX_KEY = 'no3d-tools-library/extensions/index.json';
-const EXTENSION_ID = 'no3d_tools_membership';
+const EXTENSION_ID = 'no3d_tools';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

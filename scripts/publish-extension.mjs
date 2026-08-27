@@ -6,11 +6,11 @@ import path from 'node:path';
 import { HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getR2Bucket, getR2Client } from '../api/lib/r2.js';
 
-const EXTENSION_ID = 'no3d_tools_membership';
+const EXTENSION_ID = 'no3d_tools';
 const EXTENSION_PREFIX = 'no3d-tools-library/extensions/';
 const INDEX_KEY = `${EXTENSION_PREFIX}index.json`;
 const PUBLIC_INDEX = 'https://no3dtools.com/extensions/index.json';
-const VERSIONED_ARCHIVE = /^no3d_tools_membership-(\d+\.\d+\.\d+)\.zip$/;
+const VERSIONED_ARCHIVE = /^no3d_tools-(\d+\.\d+\.\d+)\.zip$/;
 
 function fail(message) {
   console.error(message);
@@ -27,7 +27,7 @@ const archivePath = path.resolve(archiveArg);
 const filename = path.basename(archivePath);
 const match = filename.match(VERSIONED_ARCHIVE);
 if (!match) {
-  fail(`Archive must be named no3d_tools_membership-X.Y.Z.zip; got ${filename}`);
+  fail(`Archive must be named no3d_tools-X.Y.Z.zip; got ${filename}`);
 }
 
 const version = match[1];
@@ -43,13 +43,16 @@ if (!indexResponse.ok) {
   fail(`Could not read current extension index (${indexResponse.status})`);
 }
 const currentIndex = await indexResponse.json();
-const previous = currentIndex.data?.find((entry) => entry.id === EXTENSION_ID);
+const entries = Array.isArray(currentIndex.data) ? currentIndex.data : [];
+const previous = entries.find((entry) => entry.id === EXTENSION_ID)
+  || (entries.length === 1 ? entries[0] : null);
 if (!previous) {
-  fail(`Current extension index has no ${EXTENSION_ID} entry`);
+  fail(`Current extension index has no unambiguous source entry for ${EXTENSION_ID}`);
 }
 
 const nextEntry = {
   ...previous,
+  id: EXTENSION_ID,
   version,
   archive_url: archiveUrl,
   archive_size: archive.byteLength,
