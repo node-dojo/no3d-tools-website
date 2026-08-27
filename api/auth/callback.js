@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     });
     clearAuthCookies(res);
     if (intendedNext.startsWith('/v3/')) {
-      return res.redirect(303, `/v3/onboarding/create-account/?auth=invalid&next=${encodeURIComponent(intendedNext)}`);
+      return res.redirect(303, `/v3/onboarding/create-account/?auth=expired&next=${encodeURIComponent(intendedNext)}`);
     }
     return res.redirect(303, '/account?auth=invalid');
   }

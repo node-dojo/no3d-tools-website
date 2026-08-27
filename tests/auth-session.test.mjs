@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import test from 'node:test';
 
-import { exchangeAuthCode, identityAssertion, oauthAuthorizationUrl, readAuthNext, safeAuthNext } from '../api/auth/lib/session.js';
+import { exchangeAuthCode, identityAssertion, oauthAuthorizationUrl, readAuthNext, requestSignInLink, safeAuthNext } from '../api/auth/lib/session.js';
 
 test('identityAssertion signs a short-lived verified Supabase identity', () => {
   process.env.COMMERCE_IDENTITY_ASSERTION_KID = 'sandbox-v1';
@@ -120,6 +120,65 @@ test('encrypted PKCE state completes a sign-in after the email opens in another 
     );
     assert.equal(result.user.id, 'site-user-123');
     assert.match(String(callbackHeaders.get('Set-Cookie')), /no3d_auth_access=/);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('email sign-in carries encrypted PKCE state into a different browser', async () => {
+  process.env.SUPABASE_URL = 'https://project.supabase.co';
+  process.env.SUPABASE_ANON_KEY = 'sandbox-anon-key';
+  process.env.NO3D_SITE_URL = 'https://no3dtools.com';
+  process.env.NO3D_AUTH_STATE_SECRET = 'sandbox-auth-state-secret-at-least-32-characters';
+  const requestHeaders = new Map();
+  const requestResponse = {
+    getHeader: name => requestHeaders.get(name),
+    setHeader: (name, value) => requestHeaders.set(name, value),
+  };
+  let emailRequestUrl;
+  const originalFetch = global.fetch;
+  global.fetch = async (url, options) => {
+    emailRequestUrl = new URL(url);
+    assert.equal(JSON.parse(options.body).email, 'buyer@example.com');
+    return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  try {
+    await requestSignInLink(
+      { headers: {} },
+      requestResponse,
+      'buyer@example.com',
+      { next: '/v3/account/?state=install' },
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+  const callbackUrl = new URL(emailRequestUrl.searchParams.get('redirect_to'));
+  const authState = callbackUrl.searchParams.get('auth_state');
+  assert.ok(authState);
+  assert.equal(callbackUrl.searchParams.get('next'), '/v3/account/?state=install');
+
+  const callbackHeaders = new Map();
+  const callbackResponse = {
+    getHeader: name => callbackHeaders.get(name),
+    setHeader: (name, value) => callbackHeaders.set(name, value),
+  };
+  global.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    assert.equal(body.auth_code, 'email-one-time-code');
+    assert.match(body.code_verifier, /^[A-Za-z0-9_-]{43,128}$/);
+    return new Response(JSON.stringify({
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      user: { id: 'site-user-123', email: 'buyer@example.com' },
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  try {
+    const result = await exchangeAuthCode(
+      { headers: {}, query: { auth_state: authState } },
+      callbackResponse,
+      'email-one-time-code',
+    );
+    assert.equal(result.user.email, 'buyer@example.com');
   } finally {
     global.fetch = originalFetch;
   }

@@ -1,4 +1,4 @@
-import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery } from './api.js?v=perf-20260820';
+import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery, requestSignIn } from './api.js?v=perf-20260820';
 
 const params = new URLSearchParams(location.search);
 const requestedNext = params.get('next');
@@ -14,7 +14,29 @@ if (form) {
   const submitLabel = document.querySelector('[data-auth-submit]');
 	  const password = form.elements.password;
 	  const message = document.querySelector('[data-auth-message]');
+	  const signInRecovery = document.querySelector('[data-signin-recovery]');
 	  const recovery = document.querySelector('[data-purchase-recovery]');
+
+	  signInRecovery?.addEventListener('click', async () => {
+	    const email = form.elements.email.value.trim();
+	    if (!email || !form.elements.email.checkValidity()) {
+	      message.textContent = 'Enter the email address for this account, then request a fresh link.';
+	      form.elements.email.focus();
+	      return;
+	    }
+	    signInRecovery.disabled = true;
+	    message.textContent = 'Sending a fresh sign-in link for this browser…';
+	    try {
+	      await requestSignIn(email, next);
+	      message.textContent = 'Check your email and open the newest link in this browser. Older links remain expired.';
+	      signInRecovery.hidden = true;
+	    } catch (error) {
+	      message.textContent = error instanceof Error && error.message === 'try_again_later'
+	        ? 'A sign-in link was requested recently. Wait ten minutes, then request one fresh link.'
+	        : 'The fresh sign-in link could not be sent. Try again shortly.';
+	      signInRecovery.disabled = false;
+	    }
+	  });
 
 	  if (purchaseOrderId) recovery.hidden = false;
 	  recovery?.addEventListener('click', async () => {
@@ -61,6 +83,10 @@ if (form) {
     setMode('signin');
   } else if (params.get('auth') === 'unavailable') {
     message.textContent = 'That sign-in method is not available. Use email or try another provider.';
+  } else if (params.get('auth') === 'expired') {
+    message.textContent = 'That one-time link expired or was already used. Enter your email and request a fresh link for this browser.';
+    signInRecovery.hidden = false;
+    setMode('signin');
   } else if (params.get('auth') === 'invalid') {
     message.textContent = 'That sign-in link could not be completed. Try again or use another method.';
   }

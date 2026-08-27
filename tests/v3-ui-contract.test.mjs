@@ -396,7 +396,7 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
     assert.ok(`${api}\n${account}`.includes(endpoint), endpoint);
   }
   assert.match(account, /\/api\/commerce\/download\//);
-  assert.match(callback, /\/v3\/onboarding\/create-account\/\?auth=invalid/);
+  assert.match(callback, /\/v3\/onboarding\/create-account\/\?auth=expired/);
   assert.match(recoveryLink, /next: `\/v3\/account\/orders\/\$\{orderId\}`/);
   assert.match(await load('api/auth/lib/session.js'), /auth_state/);
   assert.match(password, /claimPurchasingGuest/);
@@ -406,6 +406,8 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   assert.match(password, /account_password_mismatch/);
   assert.match(await load('api/auth/lib/session.js'), /user\.identities\.length === 0/);
   const onboarding = await load('v3/js/onboarding.js');
+  assert.match(onboarding, /That one-time link expired or was already used/);
+  assert.match(onboarding, /request a fresh link for this browser/);
   assert.match(onboarding, /there is no need to switch forms/);
 });
 
@@ -425,6 +427,7 @@ test('Vercel keeps V3 adjacent behind explicit routes', async () => {
   const rewrites = new Map(config.rewrites.map(rule => [rule.source, rule.destination]));
   assert.deepEqual(redirects.get('/subscribe'), { source: '/subscribe', destination: '/v3/membership/', permanent: true });
   assert.deepEqual(redirects.get('/subscribe.html'), { source: '/subscribe.html', destination: '/v3/membership/', permanent: true });
+  assert.deepEqual(redirects.get('/index.html'), { source: '/index.html', destination: '/v3/', permanent: true });
   assert.equal(rewrites.get('/v3'), '/v3/index.html');
   assert.equal(rewrites.get('/v3/access'), '/v3/access/index.html');
   assert.equal(rewrites.get('/v3/product'), '/v3/product/index.html');
