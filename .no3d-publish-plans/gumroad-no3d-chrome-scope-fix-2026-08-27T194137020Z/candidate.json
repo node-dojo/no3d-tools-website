@@ -1,0 +1,90 @@
+[
+  {
+    "id": "6qxWyIDwCi08reRmQzCl8A==",
+    "page_id": "6qxWyIDwCi08reRmQzCl8A==",
+    "title": null,
+    "variant_id": "m7oNK-Y4sQOZw5TJLZPoxg==",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "fileEmbedGroup",
+          "attrs": {
+            "uid": "ed167110-31cf-564f-aaed-c002f4510de9",
+            "name": "CURRENT NO3D CHROME COLLECTION"
+          },
+          "content": [
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "FZPQNFUXbZ3r1CWSgg2BJg==",
+                "uid": "d998aab0-5914-598e-a75e-23d25c1ff9ce",
+                "collapsed": false
+              }
+            },
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "d44uB_Z_XWWtHfNdAghOXA==",
+                "uid": "a0721492-751b-5276-a3b0-c778f240258d",
+                "collapsed": false
+              }
+            },
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "uWF4CBg7CZpaFomwFqNIKw==",
+                "uid": "8da0004a-9f71-5ca7-99eb-d060c3c1bd39",
+                "collapsed": false
+              }
+            },
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "wrlGAVRF6jgtljAG5h6seA==",
+                "uid": "c76d18e8-96b4-55e7-9820-89ce07177f77",
+                "collapsed": false
+              }
+            },
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "qVK2uKnsVjwdQF0ctVKO0Q==",
+                "uid": "0d9a45e3-d584-5978-b3fa-d06d9d2e3e6a",
+                "collapsed": false
+              }
+            },
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "y8BYALsmIKXfjHCXHi928g==",
+                "uid": "99864d84-240a-5284-8bc1-def7b2b7a613",
+                "collapsed": false
+              }
+            },
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "Yp92LmEE7Z9UXo_PGdvb5Q==",
+                "uid": "6e8f9f9d-99da-5eb5-b2a7-2fa7c55fbed5",
+                "collapsed": false
+              }
+            },
+            {
+              "type": "fileEmbed",
+              "attrs": {
+                "id": "Sn-_icQWujItdulituFyqQ==",
+                "uid": "193fbcf7-0100-59df-90cb-6d3a127a4302",
+                "collapsed": false
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph"
+        }
+      ]
+    },
+    "updated_at": "2026-08-26T01:48:16Z"
+  }
+]
