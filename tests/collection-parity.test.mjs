@@ -63,6 +63,8 @@ test('collection page presents a one-time purchase and does not expose checkout 
   assert.match(html, /Chrome collection \/ One-time purchase/);
   assert.match(html, /\$66\.66 \/ one time/);
   assert.match(html, /Purchase setup in progress/);
+  assert.match(html, /no3d-chrome-hero-static\.webp/);
+  assert.match(html, /no3d-chrome-hero-animated\.webp/);
   assert.doesNotMatch(html, /\$9\.99 \/ month|Join on Gumroad|curated Blender membership/);
   assert.doesNotMatch(html, /data-membership-checkout|data-catalog-checkout/);
 });

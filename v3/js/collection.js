@@ -3,6 +3,17 @@ const countNode = document.querySelector('[data-collection-count]');
 const messageNode = document.querySelector('[data-collection-message]');
 const acquireNode = document.querySelector('[data-collection-acquire]');
 const priceNode = document.querySelector('.membership-price');
+const heroNode = document.querySelector('[data-collection-hero]');
+
+if (heroNode) {
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const syncHeroMotion = () => {
+    const source = motion.matches ? heroNode.dataset.staticSrc : heroNode.dataset.animatedSrc;
+    if (source && heroNode.getAttribute('src') !== source) heroNode.src = source;
+  };
+  syncHeroMotion();
+  motion.addEventListener?.('change', syncHeroMotion);
+}
 
 function card(product) {
   const node = document.createElement(product.productUrl ? 'a' : 'article');
