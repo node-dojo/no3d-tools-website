@@ -549,6 +549,7 @@ test('404 recovery stays inside the V3 customer journey', async () => {
   assert.match(recovery, /name="robots" content="noindex,nofollow"/);
   assert.match(recovery, /href="\/v3\/" class="nav-link primary"/);
   assert.match(recovery, /<a href="\/v3\/"[^>]*><img/);
+  assert.match(recovery, /\.logo img \{[\s\S]*max-width: 100%/);
   assert.match(recovery, /href="\/v3\/account\/\?state=install"/);
   assert.doesNotMatch(recovery, /href="\/guide\.html"/);
 });
