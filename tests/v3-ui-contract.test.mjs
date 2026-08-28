@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import { FALLBACK_PRODUCTS, normalizeProduct, resolveMedia, selectWorkbenchInventory, sortCatalogProducts } from '../v3/js/api.js';
+import { buildSitemap } from '../api/lib/sitemap.js';
+import { legacyDestination } from '../api/lib/legacy-routes.js';
 
 const root = new URL('../', import.meta.url);
 const load = path => readFile(new URL(path, root), 'utf8');
@@ -285,6 +287,15 @@ test('a paid-order return can request one recovery link without losing the order
   assert.match(client, /Your purchase remains attached/);
 });
 
+test('staging email confirmation returns through the query-bearing PKCE callback', async () => {
+  const staging = await load('docs/design/v3/STAGING-ROLLOUT.md');
+  assert.match(staging, /confirmation link must return through the\s+server-managed `\/api\/auth\/callback`/i);
+  assert.match(staging, /https:\/\/v3\.no3dtools\.com\/api\/auth\/callback\?\*\*/);
+  assert.match(staging, /https:\/\/no3dtoolssite-git-feat-v3-adjacent-node-dojos-projects\.vercel\.app\/api\/auth\/callback\?\*\*/);
+  assert.match(staging, /without a\s+second credential prompt/i);
+  assert.doesNotMatch(staging, /https:\/\/v3\.no3dtools\.com\/\*\*/);
+});
+
 test('Home keeps a document heading and transparent square catalog media', async () => {
   const html = await load('v3/index.html');
   const css = await load('v3/styles/v3.css');
@@ -480,13 +491,10 @@ test('V3 catalog prefers live metadata and keeps unpriced studies out of Checkou
   assert.match(product, /This design study is not yet published for individual checkout/);
 });
 
-test('Vercel keeps V3 adjacent behind explicit routes', async () => {
+test('Vercel migrates every registered legacy customer route into V3', async () => {
   const config = JSON.parse(await load('vercel.json'));
-  const redirects = new Map(config.redirects.map(rule => [rule.source, rule]));
+  const registry = JSON.parse(await load('docs/deployment/legacy-url-migrations.json'));
   const rewrites = new Map(config.rewrites.map(rule => [rule.source, rule.destination]));
-  assert.deepEqual(redirects.get('/subscribe'), { source: '/subscribe', destination: '/v3/membership/', permanent: true });
-  assert.deepEqual(redirects.get('/subscribe.html'), { source: '/subscribe.html', destination: '/v3/membership/', permanent: true });
-  assert.deepEqual(redirects.get('/index.html'), { source: '/index.html', destination: '/v3/', permanent: true });
   assert.equal(rewrites.get('/v3'), '/v3/index.html');
   assert.equal(rewrites.get('/v3/access'), '/v3/access/index.html');
   assert.equal(rewrites.get('/v3/product'), '/v3/product/index.html');
@@ -496,7 +504,51 @@ test('Vercel keeps V3 adjacent behind explicit routes', async () => {
   assert.equal(rewrites.get('/v3/onboarding/install'), '/v3/account/index.html?state=install');
   assert.equal(rewrites.get('/v3/onboarding/connect'), '/v3/account/index.html?state=connect');
   assert.equal(rewrites.get('/v3/type'), '/v3/type/index.html');
-  assert.ok(config.rewrites.some(rule => rule.source === '/account'));
+  assert.equal(rewrites.get('/sitemap.xml'), '/api/sitemap');
+  for (const migration of registry.migrations) {
+    const source = migration.source.replace(':orderId', '11111111-1111-4111-8111-111111111111');
+    const expected = migration.destination.replace(':orderId', '11111111-1111-4111-8111-111111111111');
+    const destination = legacyDestination(`https://no3dtools.com${source}`);
+    assert.ok(destination, migration.source);
+    assert.equal(`${destination.pathname}${destination.search}`, expected, migration.source);
+  }
+  assert.ok(!config.redirects.some(rule => registry.migrations.some(migration => migration.source === rule.source)));
+  assert.ok(!config.rewrites.some(rule => registry.migrations.some(migration => migration.source === rule.source)));
+});
+
+test('canonical public routes are indexable and recovery surfaces are not', async () => {
+  const robots = await load('robots.txt');
+  const sitemap = buildSitemap({
+    products: [{ handle: 'sample-tool', updated_at: '2026-08-28T12:00:00Z' }, { handle: '../unsafe' }],
+    articles: [{ slug: 'sample-article', published_at: '2026-08-27T12:00:00Z' }],
+  });
+  assert.match(robots, /Sitemap: https:\/\/no3dtools\.com\/sitemap\.xml/);
+  assert.match(robots, /Disallow: \/v3\/account\//);
+  assert.match(robots, /Disallow: \/v3\/onboarding\//);
+  for (const route of [
+    'https://no3dtools.com/v3/',
+    'https://no3dtools.com/v3/membership/',
+    'https://no3dtools.com/v3/collections/no3d-chrome-tools/',
+    'https://no3dtools.com/v3/collections/full-library/',
+  ]) assert.match(sitemap, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(sitemap, /https:\/\/no3dtools\.com\/v3\/product\/\?handle=sample-tool/);
+  assert.match(sitemap, /https:\/\/no3dtools\.com\/blog\/sample-article/);
+  assert.doesNotMatch(sitemap, /unsafe/);
+  assert.doesNotMatch(sitemap, /\/v3\/account|\/v3\/onboarding|\/purchase\.html|\/success\.html/);
+  assert.match(await load('v3/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/"/);
+  assert.match(await load('v3/membership/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/membership\/"/);
+  assert.match(await load('v3/product/index.html'), /data-product-structured-data/);
+  assert.match(await load('v3/js/product.js'), /document\.querySelector\('link\[rel="canonical"\]'\)\.href = canonicalUrl/);
+  assert.match(await load('v3/account/index.html'), /name="robots" content="noindex,nofollow"/);
+  assert.match(await load('v3/onboarding/create-account/index.html'), /name="robots" content="noindex,nofollow"/);
+});
+
+test('404 recovery stays inside the V3 customer journey', async () => {
+  const recovery = await load('404.html');
+  assert.match(recovery, /name="robots" content="noindex,nofollow"/);
+  assert.match(recovery, /href="\/v3\/" class="nav-link primary"/);
+  assert.match(recovery, /href="\/v3\/account\/\?state=install"/);
+  assert.doesNotMatch(recovery, /href="\/guide\.html"/);
 });
 
 test('staging rollout expires and keeps the teaser outside the deployable repository', async () => {

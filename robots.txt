@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /v3/access/
+Disallow: /v3/account/
+Disallow: /v3/onboarding/
+
+Sitemap: https://no3dtools.com/sitemap.xml

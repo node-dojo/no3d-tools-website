@@ -75,7 +75,7 @@ export default async function handler(req, res) {
 
     const successUrl = v3Return
       ? `${siteUrl.replace(/\/$/, '')}/v3/account/?membership_checkout=success&session_id={CHECKOUT_SESSION_ID}`
-      : STRIPE_SUCCESS_URL?.trim() || `${siteUrl}/success.html?checkout_success=true&session_id={CHECKOUT_SESSION_ID}`;
+      : STRIPE_SUCCESS_URL?.trim() || `${siteUrl}/v3/account/?membership_checkout=success&session_id={CHECKOUT_SESSION_ID}`;
 
     const cancelUrl = v3Return
       ? `${siteUrl.replace(/\/$/, '')}/v3/membership/?checkout=cancelled`

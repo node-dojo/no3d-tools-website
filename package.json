@@ -12,6 +12,7 @@
     "dashboard:business": "node scripts/update-obsidian-dashboard.mjs",
     "dashboard:business:dry": "node scripts/update-obsidian-dashboard.mjs --dry-run --no-notify",
     "dashboard:business:test": "node --test tests/business-dashboard.test.mjs",
+    "report:url-migration": "node scripts/url-migration-report.mjs",
     "acceptance:v3": "node scripts/v3-acceptance.mjs",
     "acceptance:v3:commerce": "node scripts/v3-commerce-acceptance.mjs",
     "acceptance:v3:device": "node scripts/v3-device-acceptance.mjs",

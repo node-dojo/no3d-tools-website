@@ -5,15 +5,13 @@
   "framework": null,
   "outputDirectory": ".",
   "redirects": [
-    { "source": "/subscribe", "destination": "/v3/membership/", "permanent": true },
-    { "source": "/subscribe.html", "destination": "/v3/membership/", "permanent": true },
-    { "source": "/index.html", "destination": "/v3/", "permanent": true },
     { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true },
     { "source": "/go/naming", "destination": "/blog/quick-print-naming-problem", "permanent": true },
     { "source": "/go/supports", "destination": "/blog/easy-engineered-supports", "permanent": true },
     { "source": "/go/asset-lib", "destination": "/blog/blenders-asset-library-sucks", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/v3", "destination": "/v3/index.html" },
     { "source": "/v3/access", "destination": "/v3/access/index.html" },
     { "source": "/v3/product", "destination": "/v3/product/index.html" },
@@ -26,8 +24,6 @@
     { "source": "/v3/type", "destination": "/v3/type/index.html" },
     { "source": "/extensions/index.json", "destination": "/api/extensions/index" },
     { "source": "/extensions/dl/:filename", "destination": "/api/extensions/dl/:filename" },
-    { "source": "/account/orders/:orderId", "destination": "/library.html?commerce_order=:orderId" },
-    { "source": "/account", "destination": "/library.html" },
     { "source": "/join", "destination": "/join.html" },
     { "source": "/blog", "destination": "/blog.html" },
     { "source": "/blog/:slug", "destination": "/blog.html" }

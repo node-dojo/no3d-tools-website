@@ -6,10 +6,10 @@
 
 ## Docs
 
-- [Getting Started](https://no3dtools.com/guide.html): Install the addon, enter your license key, sync your library
+- [Getting Started](https://no3dtools.com/v3/account/?state=install): Install the addon, enter your license key, sync your library
 - [Membership](https://no3dtools.com/v3/membership/): Get full-catalog NO3D Tools membership
-- [Account & License](https://no3dtools.com/account.html): Manage subscription, recover license key
-- [AI Help](https://no3dtools.com/ai-help.html): How to give AI assistants No3d Tools context
+- [Account & License](https://no3dtools.com/v3/account/): Manage subscription, recover license key
+- [AI Help](https://no3dtools.com/v3/account/?state=install): How to give AI assistants No3d Tools context
 - [Full Reference](https://no3dtools.com/llms-full.txt): Complete product documentation for AI assistants
 
 ## Product Catalog
@@ -101,7 +101,7 @@ Common issues:
 - "Invalid license key" → Include the NO3D- prefix, check for spaces
 - "Sync failed" → Check internet, click Validate first, then Sync Now
 - Assets not showing → Select "NO3D Tools" in Asset Browser dropdown, click Refresh Library
-- Lost license key → Check email or visit no3dtools.com/account.html
+- Lost license key → Check email or visit no3dtools.com/v3/account/
 
 ## Optional
 

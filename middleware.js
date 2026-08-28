@@ -5,8 +5,12 @@ import {
   v3ProductionLaunchEnabled,
 } from './api/auth/lib/v3-access.js';
 import { sanitizeAnalyticsPage, sanitizeAnalyticsReferrer } from './api/lib/analytics.js';
+import { legacyDestination } from './api/lib/legacy-routes.js';
 
 const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Discordbot|Slackbot|WhatsApp|Telegram|iMessageBot|Applebot|Google-InspectionTool|Googlebot|bingbot|yandex|Pinterestbot|Embedly|Quora Link Preview|Showyoubot|outbrain|vkShare|W3C_Validator|redditbot|Mediapartners|AhrefsBot|SemrushBot|MJ12bot/i;
+const PRODUCT_HANDLE_ALIASES = new Map([
+  ['chain-generator', 'chrome-crayon'],
+]);
 
 const PUBLIC_V3_PREFIXES = [
   '/v3/access',
@@ -153,8 +157,19 @@ async function blogPreviewMiddleware(request) {
 }
 
 export default async function middleware(request) {
-  const { pathname } = new URL(request.url);
+  const requested = new URL(request.url);
+  const { pathname } = requested;
   waitUntil(recordInfrastructureRequest(request).catch(() => {}));
+  const migrated = legacyDestination(requested);
+  if (migrated) return Response.redirect(migrated, 308);
+  if (pathname === '/' && requested.searchParams.has('product')) {
+    const suppliedHandle = requested.searchParams.get('product')?.trim().toLowerCase() || '';
+    if (/^[a-z0-9][a-z0-9-]{0,99}$/.test(suppliedHandle)) {
+      const product = new URL('/v3/product/', requested);
+      product.searchParams.set('handle', PRODUCT_HANDLE_ALIASES.get(suppliedHandle) || suppliedHandle);
+      return Response.redirect(product, 308);
+    }
+  }
   if (pathname === '/' && (v3ProductionLaunchEnabled() || v3OwnerGateEnabled())) {
     return Response.redirect(new URL('/v3/', request.url), 307);
   }

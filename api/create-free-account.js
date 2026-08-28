@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       // Already registered — re-send the key via email, don't expose it in the response
       const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';
       try {
-        await sendLicenseKeyEmail(email, existing.license_key, `${siteUrl}/guide.html#install-extension`);
+        await sendLicenseKeyEmail(email, existing.license_key, `${siteUrl}/v3/account/?state=install`);
       } catch (emailErr) {
         console.error('Failed to re-send license key email:', emailErr?.message || emailErr);
       }
@@ -106,7 +106,7 @@ export default async function handler(req, res) {
     const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';
     try {
       if (process.env.LICENSE_EMAIL_DRY_RUN !== 'true') {
-        await sendLicenseKeyEmail(email, licenseKey, `${siteUrl}/guide.html#install-extension`);
+        await sendLicenseKeyEmail(email, licenseKey, `${siteUrl}/v3/account/?state=install`);
       }
     } catch (emailErr) {
       console.error('License email failed (non-fatal):', emailErr.message);
@@ -125,7 +125,7 @@ export default async function handler(req, res) {
       email,
       tier: 'free',
       existing: false,
-      install_url: '/guide.html#install-extension'
+      install_url: '/v3/account/?state=install'
     });
   } catch (err) {
     console.error('create-free-account error:', err.message);

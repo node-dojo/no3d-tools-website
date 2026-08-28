@@ -336,7 +336,7 @@ export function getOrderConfirmationEmail(customerName, orderDetails) {
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${SITE_URL}/account" class="button">Access Your Account</a>
+      <a href="${SITE_URL}/v3/account/" class="button">Access Your Account</a>
     </div>
 
     <p style="margin-top: 30px; font-size: 14px;">
@@ -366,7 +366,7 @@ ${productNames.map(name => `- ${name}`).join('\n')}
 
 Total: ${totalAmount}
 
-Access your account: ${SITE_URL}/account
+Access your account: ${SITE_URL}/v3/account/
 
 You can download your products anytime from your account page.
 
@@ -489,7 +489,7 @@ export function getSubscriptionCanceledEmail(customerName, subscriptionDetails) 
     </ul>
 
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${SITE_URL}/account" class="button">View Account</a>
+      <a href="${SITE_URL}/v3/account/" class="button">View Account</a>
     </div>
 
     <p style="margin-top: 30px; font-size: 14px;">
@@ -523,7 +523,7 @@ What happens next?
 - You won't be charged again
 - You can resubscribe anytime
 
-View your account: ${SITE_URL}/account
+View your account: ${SITE_URL}/v3/account/
 
 We're sorry to see you go! If you change your mind, you can resubscribe anytime from your account page.
 
@@ -652,7 +652,7 @@ export function getSubscriptionRenewalEmail(customerName, renewalDetails) {
     <p>Your payment method will be automatically charged on the renewal date.</p>
 
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${SITE_URL}/account" class="button">Manage Subscription</a>
+      <a href="${SITE_URL}/v3/account/" class="button">Manage Subscription</a>
     </div>
 
     <p style="margin-top: 30px; font-size: 14px;">
@@ -688,7 +688,7 @@ What you'll continue to enjoy:
 
 Your payment method will be automatically charged on the renewal date.
 
-Manage your subscription: ${SITE_URL}/account
+Manage your subscription: ${SITE_URL}/v3/account/
 
 If you'd like to cancel or update your subscription, you can do so anytime from your account page.
 
@@ -828,7 +828,7 @@ export async function sendWelcomeEmail(email, name, token) {
  * @param {string} addonInstallUrl
  */
 export function getLicenseKeyEmail(licenseKey, addonInstallUrl) {
-  const url = addonInstallUrl || `${SITE_URL}/guide.html#install-extension`;
+  const url = addonInstallUrl || `${SITE_URL}/v3/account/?state=install`;
 
   return `
 <!DOCTYPE html>
@@ -933,7 +933,7 @@ export function getLicenseKeyEmail(licenseKey, addonInstallUrl) {
  * @param {string} addonInstallUrl
  */
 export function getLicenseKeyEmailText(licenseKey, addonInstallUrl) {
-  const url = addonInstallUrl || `${SITE_URL}/guide.html#install-extension`;
+  const url = addonInstallUrl || `${SITE_URL}/v3/account/?state=install`;
 
   return `
 NO3D TOOLS
@@ -955,7 +955,7 @@ If you did not make this purchase, you can safely ignore this email.
  * @param {string=} addonInstallUrl
  */
 export async function sendLicenseKeyEmail(email, licenseKey, addonInstallUrl) {
-  const addonUrl = addonInstallUrl || `${SITE_URL}/guide.html#install-extension`;
+  const addonUrl = addonInstallUrl || `${SITE_URL}/v3/account/?state=install`;
 
   return sendEmail({
     to: email,
@@ -980,13 +980,13 @@ export async function sendPaymentFailedEmail(email, graceUntil) {
       <p>Your No3d Tools subscription payment could not be processed.</p>
       <p>You have until <strong>${graceDate}</strong> to update your payment method before access is revoked.</p>
       <div style="margin: 20px 0;">
-        <a href="https://no3dtools.com/account.html" style="background: #f0ff00; color: #222; padding: 10px 24px; text-decoration: none; font-family: monospace; text-transform: uppercase; font-weight: bold;">UPDATE PAYMENT METHOD</a>
+        <a href="https://no3dtools.com/v3/account/" style="background: #f0ff00; color: #222; padding: 10px 24px; text-decoration: none; font-family: monospace; text-transform: uppercase; font-weight: bold;">UPDATE PAYMENT METHOD</a>
       </div>
       <p style="color: #666; font-size: 12px;">If you believe this is an error, please contact support.</p>
     </div>
   `;
 
-  const text = `Payment Failed\n\nYour No3d Tools subscription payment could not be processed.\nYou have until ${graceDate} to update your payment method.\n\nUpdate payment: https://no3dtools.com/account.html`;
+  const text = `Payment Failed\n\nYour No3d Tools subscription payment could not be processed.\nYou have until ${graceDate} to update your payment method.\n\nUpdate payment: https://no3dtools.com/v3/account/`;
 
   return sendEmail({
     to: email,

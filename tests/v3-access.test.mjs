@@ -70,6 +70,31 @@ test('production root remains legacy by default and switches only with the launc
   assert.equal(new URL(ownerGateOnly.headers.get('location')).pathname, '/v3/');
 });
 
+test('legacy product query links preserve product intention and canonicalize known aliases', async () => {
+  delete process.env.V3_ACCESS_MODE;
+  delete process.env.V3_PRODUCTION_LAUNCH;
+  const direct = await middleware(new Request('https://no3dtools.com/?product=dojo-calipers'));
+  assert.equal(direct.status, 308);
+  assert.equal(direct.headers.get('location'), 'https://no3dtools.com/v3/product/?handle=dojo-calipers');
+  const alias = await middleware(new Request('https://no3dtools.com/?product=chain-generator'));
+  assert.equal(alias.headers.get('location'), 'https://no3dtools.com/v3/product/?handle=chrome-crayon');
+  const unsafe = await middleware(new Request('https://no3dtools.com/?product=../../api'));
+  assert.equal(unsafe.headers.get('x-middleware-next'), '1');
+});
+
+test('legacy lifecycle routes preserve only validated customer state', async () => {
+  const orderId = '11111111-1111-4111-8111-111111111111';
+  const purchase = await middleware(new Request(`https://no3dtools.com/purchase.html?commerce_order=${orderId}`));
+  assert.equal(purchase.status, 308);
+  assert.equal(purchase.headers.get('location'), `https://no3dtools.com/v3/account/orders/${orderId}`);
+  const checkout = await middleware(new Request('https://no3dtools.com/success.html?session_id=cs_test_safeprobe123&token=drop-me'));
+  assert.equal(checkout.headers.get('location'), 'https://no3dtools.com/v3/account/?membership_checkout=success&session_id=cs_test_safeprobe123');
+  const device = await middleware(new Request('https://no3dtools.com/connect-purchases.html?code=safe_device_code&token=drop-me'));
+  assert.equal(device.headers.get('location'), 'https://no3dtools.com/v3/account/?state=connect&code=safe_device_code');
+  const invalid = await middleware(new Request('https://no3dtools.com/connect-purchases.html?code=../../unsafe'));
+  assert.equal(invalid.headers.get('location'), 'https://no3dtools.com/v3/account/?state=connect');
+});
+
 test('middleware permits gate assets and redirects an unauthenticated V3 request', async () => {
   process.env.V3_ACCESS_MODE = 'owner';
   process.env.V3_OWNER_EMAILS = 'owner@example.com';

@@ -58,7 +58,19 @@ if (!product) {
   $('[data-product-lede]').textContent = 'The catalog did not return a product record.';
 } else {
   const summary = descriptionSummary(product.description) || 'Current NO3D Tool.';
+  const canonicalUrl = `https://no3dtools.com/v3/product/?handle=${encodeURIComponent(product.handle)}`;
   document.title = `${product.title} — NO3D Tools V3`;
+  document.querySelector('link[rel="canonical"]').href = canonicalUrl;
+  $('[data-product-structured-data]').textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: summary,
+    image: product.preview || product.image || undefined,
+    sku: product.sku || product.handle,
+    url: canonicalUrl,
+    brand: { '@type': 'Brand', name: 'NO3D Tools' },
+  });
   $('[data-product-title]').textContent = product.title;
   $('[data-product-lede]').textContent = summary;
   $('[data-product-code]').textContent = `NO3D–${product.handle.toUpperCase().replace(/[^A-Z0-9]+/g, '–')}`;

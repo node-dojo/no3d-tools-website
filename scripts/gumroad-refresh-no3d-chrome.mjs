@@ -95,7 +95,7 @@ const description = [
   '<h3>Downloads and updates</h3>',
   '<p>Each tool is supplied as a separate file so you can download only what you need. The file list above is generated from the membership’s current Gumroad delivery contents. Active members receive access to later file revisions and additions through their Gumroad library.</p>',
   '<h3>NO3D Tools documentation</h3>',
-  '<p>Browse the <a href="https://no3dtools.com/v3/">NO3D Tools catalog</a> for individual tool documentation and diagrams. For NO3D Tools installation and Blender library setup, use the <a href="https://no3dtools.com/guide.html">setup guide</a>.</p>',
+  '<p>Browse the <a href="https://no3dtools.com/v3/">NO3D Tools catalog</a> for individual tool documentation and diagrams. For NO3D Tools installation and Blender library setup, use the <a href="https://no3dtools.com/v3/account/?state=install">setup guide</a>.</p>',
   previewFigures ? `<h3>Previews</h3>${previewFigures}` : '',
 ].join('');
 const args = finalize

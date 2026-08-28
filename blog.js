@@ -253,8 +253,19 @@ function escapeText(str) {
 }
 
 // --- Meta tags ---
+function setCanonical(pathname = '/blog') {
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    document.head.append(canonical);
+  }
+  canonical.href = `https://no3dtools.com${pathname}`;
+}
+
 function updateMetaTags(article) {
   document.title = article.title + ' - NO3D Tools Blog';
+  setCanonical(`/blog/${encodeURIComponent(article.slug)}`);
 
   const setMeta = (property, content) => {
     let el = document.querySelector('meta[property="' + property + '"]');
@@ -299,6 +310,7 @@ function showListing() {
   document.getElementById('blog-listing').style.display = 'block';
   document.getElementById('blog-article').style.display = 'none';
   document.title = 'Blog - NO3D Tools';
+  setCanonical('/blog');
 }
 
 // --- Init ---

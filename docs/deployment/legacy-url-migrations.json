@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "updated": "2026-08-28",
+  "migrations": [
+    { "source": "/index.html", "destination": "/v3/", "permanent": true, "parameterPolicy": "discard", "intent": "catalog" },
+    { "source": "/subscribe", "destination": "/v3/membership/", "permanent": true, "parameterPolicy": "discard", "intent": "membership" },
+    { "source": "/subscribe.html", "destination": "/v3/membership/", "permanent": true, "parameterPolicy": "discard", "intent": "membership" },
+    { "source": "/account", "destination": "/v3/account/", "permanent": true, "parameterPolicy": "map auth and blender state", "intent": "account" },
+    { "source": "/account.html", "destination": "/v3/account/", "permanent": true, "parameterPolicy": "map auth and blender state", "intent": "account" },
+    { "source": "/library.html", "destination": "/v3/account/", "permanent": true, "parameterPolicy": "map commerce_order and blender state", "intent": "account" },
+    { "source": "/account/orders/:orderId", "destination": "/v3/account/orders/:orderId", "permanent": true, "parameterPolicy": "validate order UUID", "intent": "order_return" },
+    { "source": "/purchase.html", "destination": "/v3/account/", "permanent": true, "parameterPolicy": "validate commerce_order UUID and convert to path", "intent": "order_return" },
+    { "source": "/success.html", "destination": "/v3/account/?membership_checkout=success", "permanent": true, "parameterPolicy": "preserve session_id", "intent": "membership_return" },
+    { "source": "/connect-purchases.html", "destination": "/v3/account/?state=connect", "permanent": true, "parameterPolicy": "preserve code", "intent": "blender_connect" },
+    { "source": "/guide.html", "destination": "/v3/account/?state=install", "permanent": true, "parameterPolicy": "discard fragment", "intent": "install_setup" },
+    { "source": "/ai-help.html", "destination": "/v3/account/?state=install", "permanent": true, "parameterPolicy": "discard", "intent": "setup_help" }
+  ],
+  "queryMigrations": [
+    { "source": "/?product={handle}", "destination": "/v3/product/?handle={canonicalHandle}", "aliases": { "chain-generator": "chrome-crayon" }, "intent": "product" }
+  ],
+  "gone": [],
+  "unmappedUnknownPolicy": "404"
+}

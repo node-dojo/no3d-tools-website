@@ -129,7 +129,7 @@ export default async function handler(req, res) {
     try {
       if (process.env.LICENSE_EMAIL_DRY_RUN !== 'true') {
         const siteUrl = process.env.SITE_URL || 'https://no3dtools.com';
-        await sendLicenseKeyEmail(email, licenseKey, `${siteUrl}/guide.html#install-extension`);
+        await sendLicenseKeyEmail(email, licenseKey, `${siteUrl}/v3/account/?state=install`);
       }
     } catch (emailErr) {
       console.error('License email send failed:', emailErr?.message || emailErr);

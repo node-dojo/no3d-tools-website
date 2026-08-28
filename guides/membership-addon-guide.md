@@ -18,7 +18,7 @@ The No3D Tools extension syncs your entitled No3D Tools asset library directly i
 
 ### Step 1: Add the No3D Tools Repository
 
-On the computer where Blender is installed, open the [No3D Tools setup page](https://no3dtools.com/guide.html#install-extension) and click **Open in Blender**. This adds the official No3D Tools repository to Blender's native Extensions system.
+On the computer where Blender is installed, open the [No3D Tools setup page](https://no3dtools.com/v3/account/?state=install) and click **Open in Blender**. This adds the official No3D Tools repository to Blender's native Extensions system.
 
 ### Step 2: Install in Blender
 
@@ -50,7 +50,7 @@ Manual ZIP installation remains available from the setup page as a fallback. Nat
 
 If you don't have your license key:
 - Check your email for "No3d Tools — Your License Key"
-- Visit [no3dtools.com/account.html](https://no3dtools.com/account.html) to look it up
+- Visit [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) to look it up
 
 ### Set Your Library Path
 
@@ -118,7 +118,7 @@ In the addon preferences, the **Status** line shows:
 
 ### Update Payment / Cancel
 
-Visit [no3dtools.com/account.html](https://no3dtools.com/account.html) to:
+Visit [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) to:
 - View your subscription status
 - Update your payment method
 - Cancel your subscription
@@ -135,7 +135,7 @@ If your subscription expired, visit [the NO3D Tools membership page](https://no3
 ### "Invalid license key"
 - Make sure you copied the full key including the `NO3D-` prefix
 - Check for extra spaces before or after the key
-- Verify your subscription is active at [no3dtools.com/account.html](https://no3dtools.com/account.html)
+- Verify your subscription is active at [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/)
 
 ### "Sync failed"
 - Check your internet connection
@@ -155,7 +155,7 @@ If your subscription expired, visit [the NO3D Tools membership page](https://no3
 
 ### Lost your license key
 - Check your email for "No3d Tools — Your License Key"
-- Visit [no3dtools.com/account.html](https://no3dtools.com/account.html) and enter your email
+- Visit [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) and enter your email
 - Contact support if you can't find it
 
 ---
@@ -170,5 +170,5 @@ If your subscription expired, visit [the NO3D Tools membership page](https://no3
 | Auto-sync | Addon preferences → check "Sync on startup" |
 | Browse assets | Asset Browser → select "NO3D Tools" library |
 | Use a tool | Drag from Asset Browser onto a mesh object |
-| Manage subscription | [no3dtools.com/account.html](https://no3dtools.com/account.html) |
+| Manage subscription | [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) |
 | Get support | [no3dtools.com](https://no3dtools.com) |

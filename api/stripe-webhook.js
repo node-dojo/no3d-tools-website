@@ -115,7 +115,7 @@ async function handleInvoicePaid({ supabase, invoice, stripeCustomerId, stripeSu
 
   // Send the email only when we create a new license.
   if (!existingRow?.license_key) {
-    const addonInstallUrl = `${process.env.SITE_URL || 'https://no3dtools.com'}/guide.html#install-extension`;
+    const addonInstallUrl = `${process.env.SITE_URL || 'https://no3dtools.com'}/v3/account/?state=install`;
     if (process.env.LICENSE_EMAIL_DRY_RUN === 'true') {
       console.log('LICENSE_EMAIL_DRY_RUN=true - skipping Resend email send');
     } else {
