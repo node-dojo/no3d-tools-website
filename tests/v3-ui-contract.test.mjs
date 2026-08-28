@@ -536,6 +536,7 @@ test('canonical public routes are indexable and recovery surfaces are not', asyn
   assert.doesNotMatch(sitemap, /unsafe/);
   assert.doesNotMatch(sitemap, /\/v3\/account|\/v3\/onboarding|\/purchase\.html|\/success\.html/);
   assert.match(await load('v3/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/"/);
+  assert.match(await load('v3/index.html'), /name="google-site-verification" content="[A-Za-z0-9_-]+"/);
   assert.match(await load('v3/membership/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/membership\/"/);
   assert.match(await load('v3/product/index.html'), /data-product-structured-data/);
   assert.match(await load('v3/product/index.html'), /product\.js\?v=url-migration-20260828/);
