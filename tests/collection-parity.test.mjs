@@ -42,15 +42,16 @@ test('No3D Chrome site projection preserves SOLVET collection order and scope', 
     assert.equal(res.body.thumbnail, '/v3/assets/no3d-chrome-hero-static.webp');
     assert.equal(res.body.productUrl, '/v3/collections/no3d-chrome-tools/');
     assert.equal(res.body.scope, 'no3dtools.membership.no3d-chrome');
-    assert.equal(res.body.mode, 'one_time_purchase');
-    assert.deepEqual(res.body.price, { amount: 6666, currency: 'usd', formatted: '$66.66' });
+    assert.equal(res.body.mode, 'expanding_lifetime_collection');
+    assert.deepEqual(res.body.pricing.payNow, { amount: 6666, currency: 'usd', formatted: '$66.66', schedule: 'pay_now' });
+    assert.deepEqual(res.body.pricing.payOverTime, { amount: 1111, currency: 'usd', formatted: '$11.11', installments: 6, schedule: 'pay_over_time' });
     assert.equal(res.body.productCount, 8);
     assert.deepEqual(res.body.products.map(product => product.handle), expected);
     assert.equal(res.body.products[0].catalogAvailable, true);
     assert.equal(res.body.products[1].catalogAvailable, false);
     assert.equal(res.body.acquisition.channel, 'no3d_commerce');
     assert.equal(res.body.acquisition.status, 'offer_pending');
-    assert.equal(res.body.acquisition.url, null);
+    assert.equal(res.body.acquisition.enabled, false);
   } finally {
     globalThis.fetch = originalFetch;
     if (originalManifest === undefined) delete process.env.NO3D_MANIFEST_JSON;
@@ -72,17 +73,41 @@ test('No3D Chrome fails closed when published membership drifts from the committ
   }
 });
 
-test('collection page presents a one-time purchase and does not expose checkout prematurely', () => {
+test('collection page presents equal-benefit lifetime payment choices without enabling checkout prematurely', () => {
   const html = readFileSync(fileURLToPath(new URL('../v3/collections/no3d-chrome-tools/index.html', import.meta.url)), 'utf8');
   assert.match(html, /No3D Chrome tools/);
   assert.match(html, /data-collection-products/);
-  assert.match(html, /Chrome collection \/ One-time purchase/);
-  assert.match(html, /\$66\.66 \/ one time/);
-  assert.match(html, /Purchase setup in progress/);
+  assert.match(html, /Chrome collection \/ Lifetime ownership/);
+  assert.match(html, /\$66\.66 lifetime/);
+  assert.match(html, /6 × \$11\.11/);
+  assert.match(html, /data-schedule="pay_now"/);
+  assert.match(html, /data-schedule="pay_over_time"/);
   assert.match(html, /no3d-chrome-hero-static\.webp/);
   assert.match(html, /no3d-chrome-hero-animated\.webp/);
   assert.match(html, /shared-source-folder-black\.png/);
   assert.match(html, /data-collection-source-products/);
   assert.doesNotMatch(html, /\$9\.99 \/ month|Join on Gumroad|curated Blender membership/);
   assert.doesNotMatch(html, /data-membership-checkout|data-catalog-checkout/);
+});
+
+test('full-library projection preserves the new canonical scope and approved prices', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalManifest = process.env.NO3D_MANIFEST_JSON;
+  const members = Array.from({ length: 54 }, (_, index) => `tool-${index + 1}`);
+  process.env.NO3D_MANIFEST_JSON = JSON.stringify({ collections: { 'no3dtools.membership.full-library': members } });
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ products: [] }) });
+  try {
+    const res = responseRecorder();
+    await handler({ method: 'GET', query: { handle: 'full-library' }, headers: {} }, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.scope, 'no3dtools.membership.full-library');
+    assert.equal(res.body.productCount, 54);
+    assert.equal(res.body.pricing.payNow.amount, 17777);
+    assert.equal(res.body.pricing.payOverTime.amount, 1555);
+    assert.equal(res.body.pricing.payOverTime.installments, 12);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalManifest === undefined) delete process.env.NO3D_MANIFEST_JSON;
+    else process.env.NO3D_MANIFEST_JSON = originalManifest;
+  }
 });

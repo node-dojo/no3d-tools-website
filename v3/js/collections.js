@@ -1,4 +1,4 @@
-const collectionHandles = ['no3d-chrome-tools'];
+const collectionHandles = ['full-library', 'no3d-chrome-tools'];
 
 export async function getCatalogCollections() {
   const results = await Promise.all(collectionHandles.map(async handle => {

@@ -37,6 +37,21 @@ export function offerKeyForHandle(handle) {
   return `no3dtools.product.${handle}`;
 }
 
+const COLLECTION_OFFERS = {
+  'full-library': {
+    pay_now: 'no3dtools.collection.full-library.pay-now',
+    pay_over_time: 'no3dtools.collection.full-library.pay-over-time',
+  },
+  'no3d-chrome-tools': {
+    pay_now: 'no3dtools.collection.no3d-chrome.pay-now',
+    pay_over_time: 'no3dtools.collection.no3d-chrome.pay-over-time',
+  },
+};
+
+export function collectionOfferKey(handle, schedule) {
+  return COLLECTION_OFFERS[handle]?.[schedule] || null;
+}
+
 export async function commerceIdentityHeaders(req, res) {
   // A verified identity assertion may only be added here by trusted server-side
   // session middleware. Browser request headers are deliberately ignored.

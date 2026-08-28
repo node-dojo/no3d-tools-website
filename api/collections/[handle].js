@@ -3,6 +3,7 @@ import { setCorsHeaders } from '../lib/cors.js';
 const CATALOG_URL = 'https://no3dtools.com/api/products?limit=100';
 const definitions = {
   'no3d-chrome-tools': {
+    collectionId: 'no3d-chrome',
     scope: 'no3dtools.membership.no3d-chrome',
     title: 'No3D Chrome tools',
     description: 'A curated Blender collection for procedural drawing, pixel, pattern, chrome-form, and printable visual tools.',
@@ -17,6 +18,22 @@ const definitions = {
       'spikey-chain-and-mace',
       'type-pixel-brush',
     ],
+    pricing: {
+      payNow: { amount: 6666, formatted: '$66.66' },
+      payOverTime: { amount: 1111, formatted: '$11.11', installments: 6 },
+    },
+  },
+  'full-library': {
+    collectionId: 'full-library',
+    scope: 'no3dtools.membership.full-library',
+    title: 'Full NO3D Tools Library',
+    description: 'The complete expanding NO3D Tools collection with managed Blender delivery, maintenance, revisions, and future additions.',
+    thumbnail: '/v3/assets/shared-source-folder-black.png',
+    memberCount: 54,
+    pricing: {
+      payNow: { amount: 17777, formatted: '$177.77' },
+      payOverTime: { amount: 1555, formatted: '$15.55', installments: 12 },
+    },
   },
 };
 const declaredTitles = {
@@ -58,8 +75,11 @@ export default async function handler(req, res) {
     ]);
     const members = source?.collections?.[definition.scope];
     if (!Array.isArray(members)) throw new Error('SOLVET collection scope is unavailable');
-    if (JSON.stringify(members) !== JSON.stringify(definition.members)) {
+    if (definition.members && JSON.stringify(members) !== JSON.stringify(definition.members)) {
       throw new Error('Published collection membership differs from the reviewed site contract');
+    }
+    if (definition.memberCount && members.length !== definition.memberCount) {
+      throw new Error('Published collection membership count differs from the reviewed site contract');
     }
     const catalog = Array.isArray(catalogPayload) ? catalogPayload : catalogPayload.products || [];
     const byHandle = new Map(catalog.map(product => [product.handle, product]));
@@ -83,12 +103,19 @@ export default async function handler(req, res) {
       thumbnail: definition.thumbnail,
       productUrl: `/v3/collections/${encodeURIComponent(handle)}/`,
       scope: definition.scope,
-      mode: 'one_time_purchase',
-      price: { amount: 6666, currency: 'usd', formatted: '$66.66' },
+      mode: 'expanding_lifetime_collection',
+      pricing: {
+        payNow: { ...definition.pricing.payNow, currency: 'usd', schedule: 'pay_now' },
+        payOverTime: { ...definition.pricing.payOverTime, currency: 'usd', schedule: 'pay_over_time' },
+      },
       source: 'published_customer_manifest',
       productCount: products.length,
       products,
-      acquisition: { channel: 'no3d_commerce', status: 'offer_pending', url: null },
+      acquisition: {
+        channel: 'no3d_commerce',
+        enabled: process.env.COMMERCE_COLLECTIONS_ENABLED === 'true',
+        status: process.env.COMMERCE_COLLECTIONS_ENABLED === 'true' ? 'available' : 'offer_pending',
+      },
     });
   } catch (error) {
     console.error('Collection projection failed', { handle, error: error instanceof Error ? error.message : 'unknown_error' });
