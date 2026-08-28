@@ -447,7 +447,7 @@ test('product descriptions render one designed heading and use real prose for su
   const html = await load('v3/product/index.html');
   const product = await load('v3/js/product.js');
   assert.equal((html.match(/<h2>Description<\/h2>/g) || []).length, 1);
-  assert.match(html, /product\.js\?v=media-priority-20260827/);
+  assert.match(html, /product\.js\?v=url-migration-20260828/);
   assert.match(product, /function descriptionContent\(text\)/);
   assert.match(product, /\^#\{1,6\}\\s\+description/);
   assert.match(product, /const summary = descriptionSummary\(product\.description\)/);
@@ -538,6 +538,7 @@ test('canonical public routes are indexable and recovery surfaces are not', asyn
   assert.match(await load('v3/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/"/);
   assert.match(await load('v3/membership/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/membership\/"/);
   assert.match(await load('v3/product/index.html'), /data-product-structured-data/);
+  assert.match(await load('v3/product/index.html'), /product\.js\?v=url-migration-20260828/);
   assert.match(await load('v3/js/product.js'), /document\.querySelector\('link\[rel="canonical"\]'\)\.href = canonicalUrl/);
   assert.match(await load('v3/account/index.html'), /name="robots" content="noindex,nofollow"/);
   assert.match(await load('v3/onboarding/create-account/index.html'), /name="robots" content="noindex,nofollow"/);
@@ -547,6 +548,7 @@ test('404 recovery stays inside the V3 customer journey', async () => {
   const recovery = await load('404.html');
   assert.match(recovery, /name="robots" content="noindex,nofollow"/);
   assert.match(recovery, /href="\/v3\/" class="nav-link primary"/);
+  assert.match(recovery, /<a href="\/v3\/"[^>]*><img/);
   assert.match(recovery, /href="\/v3\/account\/\?state=install"/);
   assert.doesNotMatch(recovery, /href="\/guide\.html"/);
 });
