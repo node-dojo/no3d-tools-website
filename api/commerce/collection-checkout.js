@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { setCorsHeaders } from '../../lib/cors.js';
+import { setCorsHeaders } from '../lib/cors.js';
 import { collectionOfferKey, commerceError, commerceFetch } from './lib/client.js';
 
 export default async function handler(req, res) {
