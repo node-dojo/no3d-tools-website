@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary } from '../v3/js/account-library.js';
+import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, projectScopedMembershipCatalog } from '../v3/js/account-library.js';
 import { PRODUCT_PREVIEW_FALLBACK, resolveProductPreview } from '../v3/js/product-preview.js';
 
 const catalog = {
@@ -48,6 +48,22 @@ test('My Folder view is derived only from an effective account-library item and 
   assert.match(file.action.href, /^\/api\/commerce\/download\//);
   assert.equal('selected' in file, false);
   assert.equal('inFile' in file, false);
+});
+
+test('scoped membership projects the authored collection instead of every catalog row', () => {
+  const catalog = new Map([
+    ['existing', { handle: 'existing', title: 'Existing', releaseStatus: 'active' }],
+    ['unrelated', { handle: 'unrelated', title: 'Unrelated', releaseStatus: 'active' }],
+  ]);
+  const result = projectScopedMembershipCatalog(catalog, [{ products: [
+    { handle: 'existing', title: 'Existing' },
+    { handle: 'manifest-only', title: 'Manifest Only', image: '/manifest-only.png' },
+  ] }]);
+
+  assert.deepEqual(result.records.map(item => item.handle), ['existing', 'manifest-only']);
+  assert.equal(result.records.some(item => item.handle === 'unrelated'), false);
+  assert.equal(result.catalog.get('manifest-only').workbench.filename, 'manifest_only.no3d');
+  assert.equal(result.catalog.get('manifest-only').thumbnail, '/manifest-only.png');
 });
 
 test('membership, free, and purchased assets remain one grouped effective library', () => {

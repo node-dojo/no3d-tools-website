@@ -1,5 +1,5 @@
 import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=perf-20260820';
-import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, readableHandle } from './account-library.js?v=account-library-20260822b';
+import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, projectScopedMembershipCatalog, readableHandle } from './account-library.js?v=scoped-membership-20260828';
 import { preloadProductPreviews, PRODUCT_PREVIEW_FALLBACK, setProductPreview } from './product-preview.js?v=preview-20260823';
 import { trackOnce } from './analytics.js?v=privacy-funnel-20260827';
 
@@ -398,7 +398,7 @@ const localPreviewState = localPreview === 'directory'
       membership: null
     }
   : null;
-const { session, catalog, summary, membership } = localPreviewState || await getAccountState();
+const { session, catalog, summary, membership, membershipCollections = [] } = localPreviewState || await getAccountState();
 state.authenticated = session.authenticated === true;
 if (!state.authenticated) {
   const next = `${location.pathname}${location.search}`;
@@ -419,9 +419,15 @@ if (!state.authenticated) {
     effectiveCandidates.push({ handle: product.handle, free: true, owned: true, permanent: false });
   }
   if (member) {
-    for (const product of state.catalog.values()) {
-      if (product.releaseStatus === 'archived') continue;
-      effectiveCandidates.push({ handle: product.handle, membership: true, owned: true, permanent: false });
+    if (membershipCollections.length) {
+      const scoped = projectScopedMembershipCatalog(state.catalog, membershipCollections);
+      state.catalog = scoped.catalog;
+      effectiveCandidates.push(...scoped.records);
+    } else {
+      for (const product of state.catalog.values()) {
+        if (product.releaseStatus === 'archived') continue;
+        effectiveCandidates.push({ handle: product.handle, membership: true, owned: true, permanent: false });
+      }
     }
   }
   state.products = mergeEffectiveAccountLibrary(effectiveCandidates);

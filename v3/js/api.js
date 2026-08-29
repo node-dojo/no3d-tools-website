@@ -316,7 +316,25 @@ export async function getAccountState() {
     request('/api/membership/account').catch(() => null),
   ]);
   const products = (catalog.products || []).map(normalizeProduct);
-  return { session, catalog: new Map(products.map(product => [product.handle, product])), summary, membership };
+  const collectionHandlesByScope = new Map([
+    ['no3dtools.membership.full-library', 'full-library'],
+    ['no3dtools.membership.no3d-chrome', 'no3d-chrome-tools'],
+  ]);
+  const activeScopes = [...new Set((summary?.entitlements || [])
+    .filter(entitlement => entitlement.status === 'active' && entitlement.scopeType === 'solvet_collection')
+    .map(entitlement => entitlement.scopeId || entitlement.key)
+    .filter(scope => collectionHandlesByScope.has(scope)))];
+  const membershipCollections = (await Promise.all(activeScopes.map(async scope => {
+    const handle = collectionHandlesByScope.get(scope);
+    return request(`/api/collections/${encodeURIComponent(handle)}`).catch(() => null);
+  }))).filter(Boolean);
+  return {
+    session,
+    catalog: new Map(products.map(product => [product.handle, product])),
+    summary,
+    membership,
+    membershipCollections,
+  };
 }
 
 export async function requestSignIn(email, next = '/v3/account/') {

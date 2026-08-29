@@ -10,6 +10,35 @@ export function readableHandle(handle = '') {
   return titleFromHandle(handle);
 }
 
+export function projectScopedMembershipCatalog(catalog = new Map(), collections = []) {
+  const projectedCatalog = new Map(catalog);
+  const records = [];
+  for (const collection of collections) {
+    for (const product of collection?.products || []) {
+      const handle = String(product?.handle || '').trim();
+      if (!handle) continue;
+      if (!projectedCatalog.has(handle)) {
+        projectedCatalog.set(handle, {
+          handle,
+          title: product.title || titleFromHandle(handle),
+          thumbnail: product.image || '',
+          image: product.image || '',
+          releaseStatus: 'active',
+          accessPolicy: 'paid',
+          workbench: {
+            filename: filenameFromHandle(handle),
+            folder: 'Blender',
+            kind: 'NO3D asset',
+            summary: `${product.title || titleFromHandle(handle)} is available through this collection.`,
+          },
+        });
+      }
+      records.push({ handle, membership: true, owned: true, permanent: false });
+    }
+  }
+  return { catalog: projectedCatalog, records };
+}
+
 const isRevokedRecord = (item = {}) => ['refunded', 'disputed'].includes(item.paymentStatus) ||
   item.entitlementStatus === 'revoked' || item.owned === false;
 
