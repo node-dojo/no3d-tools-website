@@ -1,4 +1,4 @@
-import { requestSignInLink } from './lib/session.js';
+import { isAuthEmailDeliveryError, isAuthRateLimitError, requestSignInLink } from './lib/session.js';
 import { allowSignInRequest } from './lib/rate-limit.js';
 import { v3OwnerAllowed } from './lib/v3-access.js';
 
@@ -25,6 +25,12 @@ export default async function handler(req, res) {
     console.error('Passwordless sign-in request failed', {
       error: error instanceof Error ? error.message : 'unknown_error',
     });
+    if (isAuthRateLimitError(error)) {
+      return res.status(429).json({ error: 'try_again_later' });
+    }
+    if (isAuthEmailDeliveryError(error)) {
+      return res.status(503).json({ error: 'email_unavailable' });
+    }
   }
   return res.status(202).json({ sent: true });
 }

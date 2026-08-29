@@ -464,6 +464,7 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   const account = await load('v3/js/account.js');
   const callback = await load('api/auth/callback.js');
   const recoveryLink = await load('api/auth/recovery-link.js');
+  const requestLink = await load('api/auth/request-link.js');
   const password = await load('api/auth/password.js');
   for (const endpoint of ['/api/get-all-products', '/api/products', '/api/commerce/config', '/api/commerce/checkout', '/api/commerce/portal', '/api/create-checkout', '/api/auth/session', '/api/auth/providers', '/api/commerce/account', '/api/membership/account', '/api/membership/portal', '/api/auth/password', '/api/auth/oauth', '/api/auth/recovery-link', '/api/addon/connect/approve', '/api/onboarding/desktop-link']) {
     assert.ok(`${api}\n${account}`.includes(endpoint), endpoint);
@@ -471,6 +472,9 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   assert.match(account, /\/api\/commerce\/download\//);
   assert.match(callback, /\/v3\/onboarding\/create-account\/\?auth=expired/);
   assert.match(recoveryLink, /next: `\/v3\/account\/orders\/\$\{orderId\}`/);
+  assert.match(recoveryLink, /isAuthRateLimitError/);
+  assert.match(requestLink, /isAuthRateLimitError/);
+  assert.match(requestLink, /status\(429\)\.json\(\{ error: 'try_again_later' \}\)/);
   assert.match(await load('api/auth/lib/session.js'), /auth_state/);
   assert.match(password, /claimPurchasingGuest/);
   assert.match(password, /issuePurchaseRecovery/);
@@ -481,8 +485,16 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   assert.match(password, /account_unverified/);
   assert.match(password, /account_password_mismatch/);
   const authSession = await load('api/auth/lib/session.js');
-  assert.match(authSession, /user\.identities\.length === 0/);
   assert.match(authSession, /callbackUrl\(req, recoveryToken, next, verifier\)/);
+  assert.match(authSession, /admin\/generate_link/);
+  assert.match(authSession, /openAuthEmailGrant/);
+  assert.match(authSession, /verifyAuthEmailGrant/);
+  const completeLink = await load('api/auth/complete-link.js');
+  assert.match(completeLink, /redeemPurchaseRecovery/);
+  assert.match(completeLink, /verifyAuthEmailGrant/);
+  const authContinue = await load('v3/js/auth-continue.js');
+  assert.match(authContinue, /\/api\/auth\/complete-link/);
+  assert.match(authContinue, /location\.replace\(payload\.next\)/);
   const onboarding = await load('v3/js/onboarding.js');
   assert.match(onboarding, /That one-time link expired or was already used/);
   assert.match(onboarding, /request a fresh link for this browser/);

@@ -1,5 +1,7 @@
 import crypto from 'crypto';
 
+import { sendAuthEmail } from './auth-email.js';
+
 const ACCESS_COOKIE = 'no3d_auth_access';
 const REFRESH_COOKIE = 'no3d_auth_refresh';
 const VERIFIER_COOKIE = 'no3d_auth_pkce';
@@ -62,6 +64,18 @@ async function authFetch(path, { accessToken, body, method = 'POST' } = {}) {
   return payload;
 }
 
+export function isAuthRateLimitError(error) {
+  const message = error instanceof Error ? error.message.toLowerCase() : '';
+  return message.includes('rate limit')
+    || message.includes('too many requests')
+    || message.includes('only request this after')
+    || message.includes('security purposes');
+}
+
+export function isAuthEmailDeliveryError(error) {
+  return error instanceof Error && error.message === 'auth_email_delivery_failed';
+}
+
 function storeSession(res, session) {
   const accessMaxAge = Math.max(60, Math.min(Number(session.expires_in) || 60 * 60, 60 * 60));
   setCookie(res, ACCESS_COOKIE, session.access_token, accessMaxAge);
@@ -85,6 +99,31 @@ function sealVerifier(verifier) {
   return `${iv.toString('base64url')}.${tag.toString('base64url')}.${encrypted.toString('base64url')}`;
 }
 
+function sealPayload(payload) {
+  const key = crypto.createHash('sha256').update(requiredEnv('NO3D_AUTH_STATE_SECRET')).digest();
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(JSON.stringify(payload), 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `${iv.toString('base64url')}.${tag.toString('base64url')}.${encrypted.toString('base64url')}`;
+}
+
+function openPayload(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)) return null;
+  try {
+    const [ivValue, tagValue, encryptedValue] = value.split('.');
+    const key = crypto.createHash('sha256').update(requiredEnv('NO3D_AUTH_STATE_SECRET')).digest();
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(ivValue, 'base64url'));
+    decipher.setAuthTag(Buffer.from(tagValue, 'base64url'));
+    return JSON.parse(Buffer.concat([
+      decipher.update(Buffer.from(encryptedValue, 'base64url')),
+      decipher.final(),
+    ]).toString('utf8'));
+  } catch {
+    return null;
+  }
+}
+
 function openVerifier(value) {
   if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)) return null;
   try {
@@ -103,6 +142,88 @@ function openVerifier(value) {
   } catch {
     return null;
   }
+}
+
+async function generateAuthLink({ email, password, type }) {
+  const serviceKey = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const response = await fetch(`${requiredEnv('SUPABASE_URL').replace(/\/$/, '')}/auth/v1/admin/generate_link`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      type,
+      email,
+      ...(password ? { password } : {}),
+      data: {},
+    }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.msg || payload.message || payload.error_description || payload.error || `Supabase Auth ${response.status}`);
+  if (!payload.hashed_token || !payload.verification_type) throw new Error('Supabase Auth link missing verification proof');
+  return {
+    tokenHash: payload.hashed_token,
+    verificationType: payload.verification_type,
+    user: payload,
+  };
+}
+
+function authContinueUrl(grant) {
+  return `${requiredEnv('NO3D_SITE_URL').replace(/\/$/, '')}/v3/auth/continue/?grant=${encodeURIComponent(grant)}`;
+}
+
+async function sendGeneratedAuthLink({ email, password, type, recoveryToken, next }) {
+  const generated = await generateAuthLink({ email, password, type });
+  const grant = sealPayload({
+    exp: Date.now() + (15 * 60 * 1000),
+    kind: type === 'signup' ? 'signup' : 'signin',
+    next: safeAuthNext(next) || '/v3/account/?state=install',
+    recoveryToken: recoveryToken || '',
+    tokenHash: generated.tokenHash,
+    verificationType: generated.verificationType,
+  });
+  try {
+    await sendAuthEmail({
+      email,
+      continueUrl: authContinueUrl(grant),
+      kind: type === 'signup' ? 'signup' : 'signin',
+    });
+  } catch (error) {
+    if (type === 'signup' && generated.user?.id) {
+      const serviceKey = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+      await fetch(`${requiredEnv('SUPABASE_URL').replace(/\/$/, '')}/auth/v1/admin/users/${generated.user.id}`, {
+        method: 'DELETE',
+        headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+      }).catch(() => {});
+    }
+    throw error;
+  }
+  return generated.user;
+}
+
+export function openAuthEmailGrant(value) {
+  const payload = openPayload(value);
+  if (!payload || Number(payload.exp) <= Date.now()) return null;
+  if (!['signup', 'signin'].includes(payload.kind)) return null;
+  if (!safeAuthNext(payload.next)) return null;
+  if (typeof payload.tokenHash !== 'string' || !/^[A-Za-z0-9_-]{32,256}$/.test(payload.tokenHash)) return null;
+  if (!['signup', 'magiclink', 'email'].includes(payload.verificationType)) return null;
+  if (payload.recoveryToken && !/^[A-Za-z0-9_-]{43}$/.test(payload.recoveryToken)) return null;
+  return payload;
+}
+
+export async function verifyAuthEmailGrant(res, grant) {
+  const payload = await authFetch('/verify', {
+    body: { token_hash: grant.tokenHash, type: grant.verificationType },
+  });
+  const session = sessionPayload(payload);
+  if (!session) throw new Error('Email verification returned no session');
+  storeSession(res, session);
+  clearCookie(res, VERIFIER_COOKIE);
+  clearCookie(res, NEXT_COOKIE);
+  return { session, user: payload.user || session.user || null };
 }
 
 function sessionPayload(payload) {
@@ -166,43 +287,28 @@ function callbackUrl(req, recoveryToken, next, verifier) {
 }
 
 export async function requestSignInLink(req, res, email, { recoveryToken, next } = {}) {
-  const { challenge, verifier } = pkceChallenge(res);
   const safeNext = safeAuthNext(next);
   if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
-  const redirectTo = encodeURIComponent(callbackUrl(req, recoveryToken, next, verifier));
-  await authFetch(`/otp?redirect_to=${redirectTo}`, {
-    body: {
-      code_challenge: challenge,
-      code_challenge_method: 's256',
-      create_user: true,
-      email,
-    },
-  });
+  await sendGeneratedAuthLink({ email, type: 'magiclink', recoveryToken, next });
 }
 
 export async function passwordSignUp(req, res, email, password, { next, recoveryToken } = {}) {
-  const { challenge, verifier } = pkceChallenge(res);
   const safeNext = safeAuthNext(next);
   if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
-  // A post-purchase confirmation may be opened without the browser cookie that
-  // created Checkout. Carry the short-lived, order-bound proof in the callback
-  // so confirmation can claim that exact purchase without an email-only merge.
-  const redirectTo = encodeURIComponent(callbackUrl(req, recoveryToken, next, verifier));
-  const payload = await authFetch(`/signup?redirect_to=${redirectTo}`, {
-    body: { email, password, code_challenge: challenge, code_challenge_method: 's256', data: {} },
-  });
-  const session = sessionPayload(payload);
-  if (session) {
-    storeSession(res, session);
-    clearCookie(res, VERIFIER_COOKIE);
-    clearCookie(res, NEXT_COOKIE);
+  let user;
+  try {
+    user = await sendGeneratedAuthLink({ email, password, type: 'signup', recoveryToken, next });
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : '';
+    if (message.includes('already registered') || message.includes('already exists')) {
+      return { authenticated: false, verificationRequired: false, accountExists: true, user: null };
+    }
+    throw error;
   }
-  const user = payload.user || session?.user || null;
-  const accountExists = Boolean(user && Array.isArray(user.identities) && user.identities.length === 0);
   return {
-    authenticated: Boolean(session),
-    verificationRequired: !session && !accountExists,
-    accountExists,
+    authenticated: false,
+    verificationRequired: true,
+    accountExists: false,
     user,
   };
 }

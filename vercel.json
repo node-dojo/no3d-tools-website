@@ -19,6 +19,7 @@
     { "source": "/v3/account", "destination": "/v3/account/index.html" },
     { "source": "/v3/account/orders/:orderId", "destination": "/v3/account/index.html?commerce_order=:orderId" },
     { "source": "/v3/onboarding/create-account", "destination": "/v3/onboarding/create-account/index.html" },
+    { "source": "/v3/auth/continue", "destination": "/v3/auth/continue/index.html" },
     { "source": "/v3/onboarding/install", "destination": "/v3/account/index.html?state=install" },
     { "source": "/v3/onboarding/connect", "destination": "/v3/account/index.html?state=connect" },
     { "source": "/v3/type", "destination": "/v3/type/index.html" },

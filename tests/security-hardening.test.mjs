@@ -60,7 +60,7 @@ test('global browser security headers are configured', async () => {
 });
 
 test('high-abuse public endpoints use distributed rate limiting', async () => {
-  for (const path of ['api/track.js', 'api/create-checkout.js', 'api/create-free-account.js', 'api/create-portal-session.js']) {
+  for (const path of ['api/track.js', 'api/create-checkout.js', 'api/create-free-account.js', 'api/create-portal-session.js', 'api/auth/complete-link.js']) {
     assert.match(await load(path), /allowRequest/);
   }
 });

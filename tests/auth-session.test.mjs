@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import test from 'node:test';
 
-import { exchangeAuthCode, identityAssertion, oauthAuthorizationUrl, passwordSignUp, readAuthNext, requestSignInLink, safeAuthNext } from '../api/auth/lib/session.js';
+import { exchangeAuthCode, identityAssertion, isAuthEmailDeliveryError, isAuthRateLimitError, oauthAuthorizationUrl, openAuthEmailGrant, passwordSignUp, readAuthNext, requestSignInLink, safeAuthNext, verifyAuthEmailGrant } from '../api/auth/lib/session.js';
 import { purchaseOrderIdFromNext } from '../api/auth/password.js';
 
 test('identityAssertion signs a short-lived verified Supabase identity', () => {
@@ -46,6 +46,17 @@ test('safeAuthNext permits local post-purchase routes and rejects redirects', ()
   assert.equal(safeAuthNext('https://attacker.example'), undefined);
 });
 
+test('isAuthRateLimitError recognizes Supabase resend cooldowns without classifying ordinary auth failures', () => {
+  assert.equal(isAuthRateLimitError(new Error('For security purposes, you can only request this after 26 seconds.')), true);
+  assert.equal(isAuthRateLimitError(new Error('Email rate limit exceeded')), true);
+  assert.equal(isAuthRateLimitError(new Error('Invalid login credentials')), false);
+});
+
+test('auth email delivery failures stay distinguishable from identity lookup failures', () => {
+  assert.equal(isAuthEmailDeliveryError(new Error('auth_email_delivery_failed')), true);
+  assert.equal(isAuthEmailDeliveryError(new Error('User not found')), false);
+});
+
 test('post-purchase signup recognizes only the canonical exact order route', () => {
   const orderId = '22222222-2222-4222-8222-222222222222';
   assert.equal(purchaseOrderIdFromNext(`/v3/account/orders/${orderId}`), orderId);
@@ -57,6 +68,8 @@ test('post-purchase signup recognizes only the canonical exact order route', () 
 test('post-purchase email confirmation carries order-bound proof independent of browser cookies', async () => {
   process.env.SUPABASE_URL = 'https://project.supabase.co';
   process.env.SUPABASE_ANON_KEY = 'sandbox-anon-key';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'sandbox-service-role-key';
+  process.env.RESEND_API_KEY = 'sandbox-resend-key';
   process.env.NO3D_SITE_URL = 'https://no3dtools.com';
   process.env.NO3D_AUTH_STATE_SECRET = 'sandbox-auth-state-secret-at-least-32-characters';
   const headers = new Map();
@@ -64,14 +77,25 @@ test('post-purchase email confirmation carries order-bound proof independent of 
     getHeader: name => headers.get(name),
     setHeader: (name, value) => headers.set(name, value),
   };
-  let signupUrl;
+  let continueUrl;
   const originalFetch = global.fetch;
-  global.fetch = async (url) => {
-    signupUrl = new URL(url);
-    return new Response(JSON.stringify({ user: { id: 'pending-user', identities: [{}] } }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  global.fetch = async (url, options) => {
+    if (String(url).endsWith('/auth/v1/admin/generate_link')) {
+      const body = JSON.parse(options.body);
+      assert.equal(body.type, 'signup');
+      assert.equal(body.email, 'buyer@example.com');
+      assert.equal(body.password, 'a-long-test-password');
+      return new Response(JSON.stringify({
+        id: 'pending-user',
+        email: 'buyer@example.com',
+        hashed_token: 'H'.repeat(64),
+        verification_type: 'signup',
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    assert.equal(url, 'https://api.resend.com/emails');
+    const email = JSON.parse(options.body);
+    continueUrl = email.text.trim().split('\n').at(-1);
+    return new Response(JSON.stringify({ id: 'email-1' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   };
   try {
     await passwordSignUp(
@@ -87,10 +111,13 @@ test('post-purchase email confirmation carries order-bound proof independent of 
   } finally {
     global.fetch = originalFetch;
   }
-  const callback = new URL(signupUrl.searchParams.get('redirect_to'));
-  assert.equal(callback.searchParams.get('recovery_token'), 'R'.repeat(43));
-  assert.equal(callback.searchParams.get('next'), '/v3/account/orders/22222222-2222-4222-8222-222222222222');
-  assert.ok(callback.searchParams.get('auth_state'));
+  const bridge = new URL(continueUrl);
+  assert.equal(bridge.pathname, '/v3/auth/continue/');
+  const grant = openAuthEmailGrant(bridge.searchParams.get('grant'));
+  assert.equal(grant.recoveryToken, 'R'.repeat(43));
+  assert.equal(grant.next, '/v3/account/orders/22222222-2222-4222-8222-222222222222');
+  assert.equal(grant.kind, 'signup');
+  assert.equal(grant.tokenHash, 'H'.repeat(64));
 });
 
 test('email confirmation preserves a safe intended destination in an HttpOnly cookie', () => {
@@ -173,9 +200,11 @@ test('encrypted PKCE state completes a sign-in after the email opens in another 
   }
 });
 
-test('email sign-in carries encrypted PKCE state into a different browser', async () => {
+test('email sign-in uses a scanner-safe encrypted bridge and completes a browser session', async () => {
   process.env.SUPABASE_URL = 'https://project.supabase.co';
   process.env.SUPABASE_ANON_KEY = 'sandbox-anon-key';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'sandbox-service-role-key';
+  process.env.RESEND_API_KEY = 'sandbox-resend-key';
   process.env.NO3D_SITE_URL = 'https://no3dtools.com';
   process.env.NO3D_AUTH_STATE_SECRET = 'sandbox-auth-state-secret-at-least-32-characters';
   const requestHeaders = new Map();
@@ -183,12 +212,23 @@ test('email sign-in carries encrypted PKCE state into a different browser', asyn
     getHeader: name => requestHeaders.get(name),
     setHeader: (name, value) => requestHeaders.set(name, value),
   };
-  let emailRequestUrl;
+  let continueUrl;
   const originalFetch = global.fetch;
   global.fetch = async (url, options) => {
-    emailRequestUrl = new URL(url);
-    assert.equal(JSON.parse(options.body).email, 'buyer@example.com');
-    return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+    if (String(url).endsWith('/auth/v1/admin/generate_link')) {
+      const body = JSON.parse(options.body);
+      assert.equal(body.type, 'magiclink');
+      assert.equal(body.email, 'buyer@example.com');
+      return new Response(JSON.stringify({
+        id: 'site-user-123',
+        email: 'buyer@example.com',
+        hashed_token: 'M'.repeat(64),
+        verification_type: 'magiclink',
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    const email = JSON.parse(options.body);
+    continueUrl = email.text.trim().split('\n').at(-1);
+    return new Response(JSON.stringify({ id: 'email-2' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   };
   try {
     await requestSignInLink(
@@ -200,10 +240,9 @@ test('email sign-in carries encrypted PKCE state into a different browser', asyn
   } finally {
     global.fetch = originalFetch;
   }
-  const callbackUrl = new URL(emailRequestUrl.searchParams.get('redirect_to'));
-  const authState = callbackUrl.searchParams.get('auth_state');
-  assert.ok(authState);
-  assert.equal(callbackUrl.searchParams.get('next'), '/v3/account/?state=install');
+  const grant = openAuthEmailGrant(new URL(continueUrl).searchParams.get('grant'));
+  assert.equal(grant.kind, 'signin');
+  assert.equal(grant.next, '/v3/account/?state=install');
 
   const callbackHeaders = new Map();
   const callbackResponse = {
@@ -212,8 +251,8 @@ test('email sign-in carries encrypted PKCE state into a different browser', asyn
   };
   global.fetch = async (_url, options) => {
     const body = JSON.parse(options.body);
-    assert.equal(body.auth_code, 'email-one-time-code');
-    assert.match(body.code_verifier, /^[A-Za-z0-9_-]{43,128}$/);
+    assert.equal(body.token_hash, 'M'.repeat(64));
+    assert.equal(body.type, 'magiclink');
     return new Response(JSON.stringify({
       access_token: 'access-token',
       refresh_token: 'refresh-token',
@@ -221,11 +260,7 @@ test('email sign-in carries encrypted PKCE state into a different browser', asyn
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   };
   try {
-    const result = await exchangeAuthCode(
-      { headers: {}, query: { auth_state: authState } },
-      callbackResponse,
-      'email-one-time-code',
-    );
+    const result = await verifyAuthEmailGrant(callbackResponse, grant);
     assert.equal(result.user.email, 'buyer@example.com');
   } finally {
     global.fetch = originalFetch;
