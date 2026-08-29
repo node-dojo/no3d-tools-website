@@ -418,16 +418,14 @@ if (!state.authenticated) {
     if (product.releaseStatus === 'archived' || product.accessPolicy !== 'free') continue;
     effectiveCandidates.push({ handle: product.handle, free: true, owned: true, permanent: false });
   }
-  if (member) {
-    if (membershipCollections.length) {
-      const scoped = projectScopedMembershipCatalog(state.catalog, membershipCollections);
-      state.catalog = scoped.catalog;
-      effectiveCandidates.push(...scoped.records);
-    } else {
-      for (const product of state.catalog.values()) {
-        if (product.releaseStatus === 'archived') continue;
-        effectiveCandidates.push({ handle: product.handle, membership: true, owned: true, permanent: false });
-      }
+  if (membershipCollections.length) {
+    const scoped = projectScopedMembershipCatalog(state.catalog, membershipCollections);
+    state.catalog = scoped.catalog;
+    effectiveCandidates.push(...scoped.records);
+  } else if (member) {
+    for (const product of state.catalog.values()) {
+      if (product.releaseStatus === 'archived') continue;
+      effectiveCandidates.push({ handle: product.handle, membership: true, owned: true, permanent: false });
     }
   }
   state.products = mergeEffectiveAccountLibrary(effectiveCandidates);

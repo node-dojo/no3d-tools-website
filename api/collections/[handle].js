@@ -8,16 +8,6 @@ const definitions = {
     title: 'No3D Chrome tools',
     description: 'A curated Blender collection for procedural drawing, pixel, pattern, chrome-form, and printable visual tools.',
     thumbnail: '/v3/assets/no3d-chrome-hero-static.webp',
-    members: [
-      'chrome-crayon',
-      'dojo-spiro-curve',
-      'flat-stickie-pack',
-      'image-pixel-stippler',
-      'no3d-pixel-markers',
-      'periodic-brush',
-      'spikey-chain-and-mace',
-      'type-pixel-brush',
-    ],
     pricing: {
       payNow: { amount: 6666, formatted: '$66.66' },
       payOverTime: { amount: 1111, formatted: '$11.11', installments: 6 },
@@ -29,7 +19,6 @@ const definitions = {
     title: 'Full NO3D Tools Library',
     description: 'The complete expanding NO3D Tools collection with managed Blender delivery, maintenance, revisions, and future additions.',
     thumbnail: '/v3/assets/shared-source-folder-black.png',
-    memberCount: 54,
     pricing: {
       payNow: { amount: 17777, formatted: '$177.77' },
       payOverTime: { amount: 1555, formatted: '$15.55', installments: 12 },
@@ -75,12 +64,6 @@ export default async function handler(req, res) {
     ]);
     const members = source?.collections?.[definition.scope];
     if (!Array.isArray(members)) throw new Error('SOLVET collection scope is unavailable');
-    if (definition.members && JSON.stringify(members) !== JSON.stringify(definition.members)) {
-      throw new Error('Published collection membership differs from the reviewed site contract');
-    }
-    if (definition.memberCount && members.length !== definition.memberCount) {
-      throw new Error('Published collection membership count differs from the reviewed site contract');
-    }
     const catalog = Array.isArray(catalogPayload) ? catalogPayload : catalogPayload.products || [];
     const byHandle = new Map(catalog.map(product => [product.handle, product]));
     const products = members.map(productHandle => {

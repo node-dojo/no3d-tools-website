@@ -59,15 +59,20 @@ test('No3D Chrome site projection preserves SOLVET collection order and scope', 
   }
 });
 
-test('No3D Chrome fails closed when published membership drifts from the committed eight-product contract', async () => {
+test('No3D Chrome accepts later SOLVET-authored additions to the expanding collection', async () => {
+  const originalFetch = globalThis.fetch;
   const originalManifest = process.env.NO3D_MANIFEST_JSON;
-  process.env.NO3D_MANIFEST_JSON = JSON.stringify({ collections: { 'no3dtools.membership.no3d-chrome': expected.slice(0, 7) } });
+  const expanded = [...expected, 'later-addition'];
+  process.env.NO3D_MANIFEST_JSON = JSON.stringify({ collections: { 'no3dtools.membership.no3d-chrome': expanded } });
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ products: [] }) });
   try {
     const res = responseRecorder();
     await handler({ method: 'GET', query: { handle: 'no3d-chrome-tools' }, headers: {} }, res);
-    assert.equal(res.statusCode, 502);
-    assert.deepEqual(res.body, { error: 'collection_source_unavailable' });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.productCount, 9);
+    assert.deepEqual(res.body.products.map(product => product.handle), expanded);
   } finally {
+    globalThis.fetch = originalFetch;
     if (originalManifest === undefined) delete process.env.NO3D_MANIFEST_JSON;
     else process.env.NO3D_MANIFEST_JSON = originalManifest;
   }
@@ -105,6 +110,25 @@ test('full-library projection preserves the new canonical scope and approved pri
     assert.equal(res.body.pricing.payNow.amount, 17777);
     assert.equal(res.body.pricing.payOverTime.amount, 1555);
     assert.equal(res.body.pricing.payOverTime.installments, 12);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalManifest === undefined) delete process.env.NO3D_MANIFEST_JSON;
+    else process.env.NO3D_MANIFEST_JSON = originalManifest;
+  }
+});
+
+test('full-library projection remains available after future tools are added', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalManifest = process.env.NO3D_MANIFEST_JSON;
+  const members = Array.from({ length: 55 }, (_, index) => `tool-${index + 1}`);
+  process.env.NO3D_MANIFEST_JSON = JSON.stringify({ collections: { 'no3dtools.membership.full-library': members } });
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ products: [] }) });
+  try {
+    const res = responseRecorder();
+    await handler({ method: 'GET', query: { handle: 'full-library' }, headers: {} }, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.productCount, 55);
+    assert.equal(res.body.products.at(-1).handle, 'tool-55');
   } finally {
     globalThis.fetch = originalFetch;
     if (originalManifest === undefined) delete process.env.NO3D_MANIFEST_JSON;

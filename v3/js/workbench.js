@@ -1,4 +1,4 @@
-import { getAccountState, getCatalog, selectWorkbenchInventory, sortCatalogProducts } from './api.js?v=catalog-order-20260824';
+import { getAccountState, getCatalog, selectWorkbenchInventory, sortCatalogProducts } from './api.js?v=presentation-default-20260829';
 import { WORKBENCH_SAMPLE } from '../data/workbench-sample.js?v=workbench-20260822';
 import { getCatalogCollections } from './collections.js?v=collections-20260827';
 import './shell.js?v=workbench-20260822';

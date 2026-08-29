@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, projectScopedMembershipCatalog } from '../v3/js/account-library.js';
@@ -64,6 +65,16 @@ test('scoped membership projects the authored collection instead of every catalo
   assert.equal(result.records.some(item => item.handle === 'unrelated'), false);
   assert.equal(result.catalog.get('manifest-only').workbench.filename, 'manifest_only.no3d');
   assert.equal(result.catalog.get('manifest-only').thumbnail, '/manifest-only.png');
+});
+
+test('account applies scoped collection entitlements independently of recurring membership', () => {
+  const accountSource = readFileSync(new URL('../v3/js/account.js', import.meta.url), 'utf8');
+  const scopedBranch = accountSource.indexOf('if (membershipCollections.length)');
+  const recurringFallback = accountSource.indexOf('else if (member)', scopedBranch);
+
+  assert.notEqual(scopedBranch, -1);
+  assert.ok(recurringFallback > scopedBranch);
+  assert.doesNotMatch(accountSource.slice(Math.max(0, scopedBranch - 40), scopedBranch), /if \(member\)/);
 });
 
 test('membership, free, and purchased assets remain one grouped effective library', () => {

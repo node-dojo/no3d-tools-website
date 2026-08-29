@@ -24,6 +24,15 @@ test('normalizes live catalog records without forking commerce identifiers', () 
   assert.equal(product.image, 'https://media.example/hero.gif');
 });
 
+test('catalog presentation defaults to Workbench and requires explicit Flagship promotion', () => {
+  assert.equal(normalizeProduct({ handle: 'unclassified-tool' }).presentationMode, 'workbench');
+  assert.equal(normalizeProduct({
+    handle: 'promoted-tool',
+    presentation: { mode: 'flagship' },
+  }).presentationMode, 'flagship');
+  assert.ok(FALLBACK_PRODUCTS.map(normalizeProduct).every(product => product.presentationMode === 'flagship'));
+});
+
 test('uses the published preview ahead of a legacy low-resolution icon', () => {
   const product = normalizeProduct({
     image: 'https://media.example/legacy-256.png',
@@ -177,7 +186,7 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(client, /getCatalog\(\)/);
   assert.match(client, /selectWorkbenchInventory/);
   assert.match(client, /no3d_my_file_handles/);
-  assert.match(api, /presentationMode: presentation\.mode \|\| 'flagship'/);
+  assert.match(api, /presentationMode: presentation\.mode \|\| 'workbench'/);
   assert.match(api, /presentationMode === 'workbench'/);
   assert.match(catalog, /presentation: p\.metadata\?\.presentation/);
   assert.match(catalog, /workbench: p\.metadata\?\.workbench/);
