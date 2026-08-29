@@ -202,7 +202,10 @@ test('account My Folder reuses Directory.001 without creating a second collectio
   assert.match(client, /action\.onclick = event =>/);
   assert.doesNotMatch(client, /action\.addEventListener\('click', event => void downloadAccountFile/);
   assert.match(client, /if \(outcome === 'fulfilled'\)/);
-  assert.match(client, /location\.replace\('\/v3\/account\/\?purchase=ready'\)/);
+  assert.match(client, /Purchase complete \/ Library active/);
+  assert.match(client, /Your purchase is ready/);
+  assert.match(client, /action\.href = '#library'/);
+  assert.doesNotMatch(client, /location\.replace\('\/v3\/account\/\?purchase=ready'\)/);
   assert.match(client, /if \(outcome === 'terminal'\)/);
   assert.match(client, /state\.products\.map\(item =>/);
   assert.match(client, /summary\?\.products \|\| \[\]/);

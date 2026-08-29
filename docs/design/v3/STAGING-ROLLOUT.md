@@ -105,6 +105,28 @@ The gate uses the real NO3D Supabase session and an exact, normalized email allo
 - Account-creation and passwordless endpoints refuse to send or create for non-allowlisted addresses while staging mode is enabled.
 - Failure to inspect a session fails closed.
 
+## Auth callback redirect contract
+
+Email confirmation is also the sign-in completion step. The customer enters
+their email and password once; the confirmation link must return through the
+server-managed `/api/auth/callback`, establish the secure session cookies,
+claim any purchasing guest, and resume the initiating `next` route without a
+second credential prompt.
+
+The callback carries sealed PKCE state and the safe local `next` destination in
+its query string. The staging Auth branch redirect allowlist therefore retains
+the exact callback entries and their query-bearing variants:
+
+- `https://v3.no3dtools.com/api/auth/callback`
+- `https://v3.no3dtools.com/api/auth/callback?**`
+- `https://no3dtoolssite-git-feat-v3-adjacent-node-dojos-projects.vercel.app/api/auth/callback`
+- `https://no3dtoolssite-git-feat-v3-adjacent-node-dojos-projects.vercel.app/api/auth/callback?**`
+
+Do not replace these with a host-wide wildcard. If Supabase rejects the
+query-bearing callback, it falls back to `site_url`; that verifies the email
+but bypasses session establishment and wrongly asks the customer to sign in
+again.
+
 ## Payment security gate
 
 Resolved on **2026-08-20**. `public.order_recovery_grants` uses the following server-only posture in both the Commerce source migrations and isolated staging branch:

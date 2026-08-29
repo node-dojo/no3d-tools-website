@@ -268,7 +268,18 @@ async function completeConnection(deviceCode) {
 
 function renderOrder(order) {
   const ready = order.paymentStatus === 'paid' && order.fulfillmentStatus === 'fulfilled' && order.recovery;
-  if (ready) return 'fulfilled';
+  if (ready) {
+    const panel = $('[data-account-notice]');
+    panel.hidden = false;
+    $('[data-order-state]').textContent = 'Purchase complete / Library active';
+    $('[data-order-title]').textContent = 'Your purchase is ready';
+    $('[data-order-detail]').textContent = 'This order is attached to your account and its tools are available in My Folder.';
+    const action = $('[data-order-action]');
+    action.hidden = false;
+    action.href = '#library';
+    action.textContent = 'View purchased tools →';
+    return 'fulfilled';
+  }
   if (['refunded', 'disputed'].includes(order.paymentStatus)) {
     const panel = $('[data-account-notice]');
     panel.hidden = false;
@@ -302,10 +313,6 @@ async function monitorOrder() {
           await requestRecovery(orderId).catch(() => null);
           localStorage.setItem(`no3d_v3_recovery_${orderId}`, '1');
         }
-        // The initial account summary may predate durable fulfillment. Reload
-        // without the order route so My Folder is rebuilt from fresh Commerce
-        // entitlements and the monitor cannot enter a refresh loop.
-        location.replace('/v3/account/?purchase=ready');
         return;
       }
       if (outcome === 'terminal') {
