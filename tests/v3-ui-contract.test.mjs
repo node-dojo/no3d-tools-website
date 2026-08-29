@@ -261,7 +261,7 @@ test('onboarding installs first and exposes connection only to a Blender-issued 
   assert.match(createAccount, /Create free account/i);
   assert.match(onboardingScript, /Too many account attempts from this connection/);
   assert.match(onboardingScript, /: '\/v3\/';/, 'direct catalog signup returns to browsing');
-  assert.match(onboardingScript, /location\.assign\(result\.next \|\| next\)/, 'successful signup follows its initiating context');
+  assert.match(onboardingScript, /location\.assign\(result\.next \|\| context\.next\)/, 'successful signup follows its current initiating context');
   assert.match(createAccount, /Continue with Google/i);
   assert.match(createAccount, /Continue with GitHub/i);
   assert.match(account, /Continue to My Folder/i);
@@ -286,7 +286,8 @@ test('a paid-order return can request one recovery link without losing the order
   const client = await load('v3/js/onboarding.js');
   assert.match(html, /data-purchase-recovery hidden/);
   assert.match(client, /const purchaseOrderId = next\.match/);
-  assert.match(client, /await requestRecovery\(purchaseOrderId\)/);
+  assert.match(client, /new URLSearchParams\(location\.search\)\.get\('next'\)/, 'browser-history restoration re-reads the current order route');
+  assert.match(client, /await requestRecovery\(context\.orderId\)/);
   assert.match(client, /Your purchase remains attached/);
 });
 

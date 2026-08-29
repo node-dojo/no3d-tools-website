@@ -9,6 +9,17 @@ const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
 const purchaseOrderId = next.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1] || '';
 const destination = purchaseOrderId ? 'order' : next.startsWith('/v3/account/') ? 'account' : 'catalog';
 
+function currentAuthContext() {
+  const value = new URLSearchParams(location.search).get('next');
+  const currentNext = value?.startsWith('/') && !value.startsWith('//') ? value : next;
+  const currentOrderId = currentNext.match(/^\/v3\/account\/orders\/([0-9a-f-]{36})\/?$/i)?.[1] || '';
+  return {
+    next: currentNext,
+    orderId: currentOrderId,
+    destination: currentOrderId ? 'order' : currentNext.startsWith('/v3/account/') ? 'account' : 'catalog',
+  };
+}
+
 const form = document.querySelector('[data-account-entry-form]');
 if (form) {
   let mode = 'signup';
@@ -20,6 +31,7 @@ if (form) {
 	  const recovery = document.querySelector('[data-purchase-recovery]');
 
 	  signInRecovery?.addEventListener('click', async () => {
+	    const context = currentAuthContext();
 	    const email = form.elements.email.value.trim();
 	    if (!email || !form.elements.email.checkValidity()) {
 	      message.textContent = 'Enter the email address for this account, then request a fresh link.';
@@ -29,12 +41,12 @@ if (form) {
 	    signInRecovery.disabled = true;
 	    message.textContent = 'Sending a fresh sign-in link for this browser…';
 	    try {
-	      await requestSignIn(email, next);
-	      track('sign_in_link_requested', { source: 'expired_link', destination });
+	      await requestSignIn(email, context.next);
+	      track('sign_in_link_requested', { source: 'expired_link', destination: context.destination });
 	      message.textContent = 'Check your email and open the newest link in this browser. Older links remain expired.';
 	      signInRecovery.hidden = true;
 	    } catch (error) {
-	      track('sign_in_link_failed', { source: 'expired_link', destination });
+	      track('sign_in_link_failed', { source: 'expired_link', destination: context.destination });
 	      message.textContent = error instanceof Error && error.message === 'try_again_later'
 	        ? 'A sign-in link was requested recently. Wait ten minutes, then request one fresh link.'
 	        : 'The fresh sign-in link could not be sent. Try again shortly.';
@@ -44,10 +56,12 @@ if (form) {
 
 	  if (purchaseOrderId) recovery.hidden = false;
 	  recovery?.addEventListener('click', async () => {
+	    const context = currentAuthContext();
 	    recovery.disabled = true;
 	    message.textContent = 'Sending a one-time sign-in link…';
 	    try {
-	      await requestRecovery(purchaseOrderId);
+	      if (!context.orderId) throw new Error('purchase_order_unavailable');
+	      await requestRecovery(context.orderId);
 	      track('sign_in_link_requested', { source: 'purchase_recovery', destination: 'order' });
 	      message.textContent = 'Check the checkout email for your one-time sign-in link. Your purchase remains attached.';
 	      recovery.hidden = true;
@@ -101,25 +115,26 @@ if (form) {
     event.preventDefault();
     if (!form.reportValidity()) return;
     const button = form.querySelector('button[type="submit"]');
+    const context = currentAuthContext();
     button.disabled = true;
     message.textContent = mode === 'signup' ? 'Creating your account…' : 'Signing in…';
-    track('account_submit', { mode, destination });
+    track('account_submit', { mode, destination: context.destination });
     try {
       const result = await authenticateWithPassword({
         email: form.elements.email.value.trim(),
         password: form.elements.password.value,
         mode,
-        next,
+        next: context.next,
       });
       if (result.authenticated) {
-        track('account_authenticated', { mode, destination });
-        location.assign(result.next || next);
+        track('account_authenticated', { mode, destination: context.destination });
+        location.assign(result.next || context.next);
         return;
       }
-      track('account_confirmation_requested', { destination });
+      track('account_confirmation_requested', { destination: context.destination });
       message.textContent = 'Check your email to confirm your account. This setup will continue when you return.';
     } catch (error) {
-      track('account_submit_failed', { mode, destination });
+      track('account_submit_failed', { mode, destination: context.destination });
       if (error instanceof Error && error.message === 'account_claim_failed') {
         message.textContent = 'Your sign-in worked, but the purchasing library could not be attached. Sign in again to retry before continuing.';
       } else if (error instanceof Error && error.message === 'try_again_later') {
