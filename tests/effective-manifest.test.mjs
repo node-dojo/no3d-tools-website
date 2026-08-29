@@ -66,6 +66,30 @@ test('scoped membership resolves only its SOLVET-authored collection', () => {
   assert.equal(result.assets.membership.access_source, 'membership');
 });
 
+test('an existing lifetime collection entitlement receives later authored additions', () => {
+  const expandedManifest = JSON.parse(manifest);
+  expandedManifest.collections['no3dtools.membership.no3d-chrome'].push('later-addition');
+  expandedManifest.assets['later-addition'] = { checksum: 'later' };
+
+  const before = JSON.parse(filterEffectiveManifest(
+    manifest,
+    false,
+    new Set(),
+    true,
+    ['no3dtools.membership.no3d-chrome'],
+  ));
+  const after = JSON.parse(filterEffectiveManifest(
+    JSON.stringify(expandedManifest),
+    false,
+    new Set(),
+    true,
+    ['no3dtools.membership.no3d-chrome'],
+  ));
+
+  assert.equal(before.assets['later-addition'], undefined);
+  assert.equal(after.assets['later-addition'].access_source, 'membership');
+});
+
 test('unknown membership scopes fail closed', () => {
   const result = JSON.parse(filterEffectiveManifest(manifest, false, new Set(), true, ['unknown']));
   assert.deepEqual(Object.keys(result.assets), ['free']);
