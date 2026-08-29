@@ -1,17 +1,39 @@
-# V3 adjacent preview and release runbook
+# V3 release runbook
 
-## Current boundary
+## Current boundary — 2026-08-29
 
-V3 remains isolated under `/v3` on branch `feat/v3-adjacent`, and existing production entry routes remain unchanged. Home 02D and paid Product Detail 04D were the first visual gate; the active gate is now the end-to-end customer core documented in [`V3-END-TO-END-RELEASE.md`](./V3-END-TO-END-RELEASE.md).
+`feat/v3-adjacent` began as an integration branch that placed V3 beside the
+legacy site under `/v3/`. It is now the de facto V3 release branch: production
+deployments have been promoted directly from it, the legacy customer URLs have
+been migrated into V3, and `main` has not absorbed its V3 history. The branch
+name is historical and does not restrict verified commits to Preview.
+
+Until the Git branches are deliberately normalized, deploy V3 changes from
+`feat/v3-adjacent`. Preview remains the first deployment gate; a user-approved
+live deployment proceeds to the existing `no3dtoolssite` Production target
+after the checks below pass. Do not silently merge, rebase, or replace `main`
+as part of an ordinary release.
 
 ## Preview sequence
 
 1. Run `npm test`, `npm run acceptance:v3`, and `npm audit` locally.
-2. Deploy this branch as a Vercel preview, never as a production deployment.
+2. Deploy this branch as a Vercel Preview and verify the candidate there.
 3. Verify `/v3/` and `/v3/product/?handle=dojo-bolt-gen-v05-obj` on the preview domain.
 4. Exercise catalog loading, populated, empty, and failure states with representative records.
 5. Exercise checkout only in the configured test environment. Confirm the return target stays on the preview domain and that no live charge can be created.
 6. Review 390px mobile, a larger phone, tablet, and desktop widths before approval.
+
+## Production sequence
+
+1. Confirm the exact reviewed commit is pushed to `origin/feat/v3-adjacent`.
+2. Deploy that clean commit to the existing `no3dtoolssite` Production target;
+   never deploy unrelated working-tree changes.
+3. Verify the Production deployment is Ready and that `no3dtools.com` resolves
+   to it.
+4. Read back the changed static modules or API contracts from the live domain
+   and compare them with the committed bytes.
+5. Verify the affected rendered customer surface. Keep any authentication-gated
+   or transaction-dependent acceptance explicitly separate from public read-back.
 
 ## Promotion gate
 

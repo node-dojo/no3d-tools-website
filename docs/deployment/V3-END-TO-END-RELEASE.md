@@ -8,11 +8,16 @@ Promote the approved V3 surfaces from a visual adjacent tranche into one staged 
 
 The release is complete only when both an individual purchaser and a member can leave, return, authenticate, and recover the same effective library.
 
-## Current handoff state — 2026-08-23
+## Current handoff state — 2026-08-29
 
-- V3 Home, Product, managed account entry, Account/My File, install guidance,
-  individual checkout return, and the Directory.001 account library are present
-  on `feat/v3-adjacent` through commit `b0f9ae8`.
+- V3 Home, Product, managed account entry, Account/My Folder, install guidance,
+  individual checkout return, Directory.001, expanding lifetime collections,
+  and scoped collection entitlements are present on `feat/v3-adjacent` through
+  commit `04048f8`.
+- `feat/v3-adjacent` is the de facto V3 release branch. Production snapshots
+  have already been deployed directly from it; the older preview-only boundary
+  in the adjacent runbook has been retired. `main` remains historical until a
+  separate branch-normalization decision is applied.
 - Account creation/sign-in retry handling, product-thumbnail selection, and the
   per-purchase account delivery surface have been repaired in the current
   candidate.
