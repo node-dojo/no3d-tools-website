@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const recoveryToken = typeof req.query?.recovery_token === 'string' ? req.query.recovery_token : '';
     const claim = recoveryToken
       ? await redeemPurchaseRecovery(user, recoveryToken)
-      : await claimPurchasingGuest(req, user);
+      : await claimPurchasingGuest(req, user, { next: intendedNext });
     const suffix = claim.status === 'identity_collision'
       ? 'claim=review'
       : claim.status === 'invalid_recovery'

@@ -17,7 +17,29 @@ function headers(guestToken, assertion) {
   };
 }
 
-export async function claimPurchasingGuest(req, user) {
+function orderIdFromNext(next) {
+  return typeof next === 'string'
+    ? (next.match(/^\/v3\/account\/orders\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/?$/i)?.[1] || null)
+    : null;
+}
+
+async function verifiedIdentityOwnsOrder(user, next) {
+  const orderId = orderIdFromNext(next);
+  if (!orderId) return false;
+  const response = await fetch(`${requiredEnv('COMMERCE_API_URL').replace(/\/$/, '')}/api/orders/${orderId}`, {
+    headers: {
+      Authorization: `Bearer ${requiredEnv('COMMERCE_SITE_BACKEND_SECRET')}`,
+      'X-NO3D-Identity': identityAssertion(user),
+      'X-NO3D-Site': commerceSiteKey(),
+    },
+  });
+  if (response.ok) return true;
+  if (response.status === 404) return false;
+  throw new Error(`Could not verify authenticated order ownership: ${response.status}`);
+}
+
+export async function claimPurchasingGuest(req, user, { next } = {}) {
+  if (await verifiedIdentityOwnsOrder(user, next)) return { status: 'already_claimed' };
   const guestToken = readCookie(req, 'no3d_commerce_guest');
   if (!guestToken || !/^[A-Za-z0-9_-]{32,200}$/.test(guestToken)) return { status: 'no_guest' };
 

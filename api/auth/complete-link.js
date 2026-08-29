@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     }
     const claim = grant.recoveryToken
       ? await redeemPurchaseRecovery(user, grant.recoveryToken)
-      : await claimPurchasingGuest(req, user);
+      : await claimPurchasingGuest(req, user, { next: grant.next });
     const suffix = claim.status === 'identity_collision'
       ? 'claim=review'
       : claim.status === 'invalid_recovery'

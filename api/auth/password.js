@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     let claim = { status: 'verification_pending' };
     if (result.authenticated && result.user) {
       try {
-        claim = await claimPurchasingGuest(req, result.user);
+        claim = await claimPurchasingGuest(req, result.user, { next });
       } catch (error) {
         console.error('Password account claim failed', { error: error instanceof Error ? error.message : 'unknown_error' });
         clearAuthCookies(res);

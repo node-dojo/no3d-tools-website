@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import test from 'node:test';
 
 import { exchangeAuthCode, identityAssertion, isAuthEmailDeliveryError, isAuthRateLimitError, oauthAuthorizationUrl, openAuthEmailGrant, passwordSignUp, readAuthNext, requestSignInLink, safeAuthNext, verifyAuthEmailGrant } from '../api/auth/lib/session.js';
+import { claimPurchasingGuest } from '../api/auth/lib/claim.js';
 import { purchaseOrderIdFromNext } from '../api/auth/password.js';
 
 test('identityAssertion signs a short-lived verified Supabase identity', () => {
@@ -55,6 +56,38 @@ test('isAuthRateLimitError recognizes Supabase resend cooldowns without classify
 test('auth email delivery failures stay distinguishable from identity lookup failures', () => {
   assert.equal(isAuthEmailDeliveryError(new Error('auth_email_delivery_failed')), true);
   assert.equal(isAuthEmailDeliveryError(new Error('User not found')), false);
+});
+
+test('an authenticated owner of the requested order ignores an unrelated stale guest cookie', async () => {
+  process.env.COMMERCE_API_URL = 'https://commerce.example';
+  process.env.COMMERCE_SITE_BACKEND_SECRET = 'backend-secret';
+  process.env.COMMERCE_SITE_KEY = 'no3dtools-v3-staging';
+  process.env.COMMERCE_IDENTITY_ASSERTION_KID = 'sandbox-v1';
+  process.env.COMMERCE_IDENTITY_ASSERTION_SECRET = 'sandbox-identity-secret-at-least-32-characters';
+  process.env.NO3D_AUTH_ISSUER = 'https://v3.no3dtools.com';
+  const orderId = '22222222-2222-4222-8222-222222222222';
+  const originalFetch = global.fetch;
+  let calls = 0;
+  global.fetch = async (url, options) => {
+    calls += 1;
+    assert.equal(url, `https://commerce.example/api/orders/${orderId}`);
+    assert.match(options.headers['X-NO3D-Identity'], /^ey/);
+    return new Response(JSON.stringify({ id: orderId }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  try {
+    const result = await claimPurchasingGuest(
+      { headers: { cookie: `no3d_commerce_guest=${'G'.repeat(43)}` } },
+      { id: 'site-user-123', email: 'buyer@example.com', email_confirmed_at: '2026-08-28T20:00:00.000Z' },
+      { next: `/v3/account/orders/${orderId}` },
+    );
+    assert.equal(result.status, 'already_claimed');
+    assert.equal(calls, 1);
+  } finally {
+    global.fetch = originalFetch;
+  }
 });
 
 test('post-purchase signup recognizes only the canonical exact order route', () => {
