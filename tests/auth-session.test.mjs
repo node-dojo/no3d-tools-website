@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import test from 'node:test';
 
-import { exchangeAuthCode, identityAssertion, oauthAuthorizationUrl, readAuthNext, requestSignInLink, safeAuthNext } from '../api/auth/lib/session.js';
+import { exchangeAuthCode, identityAssertion, oauthAuthorizationUrl, passwordSignUp, readAuthNext, requestSignInLink, safeAuthNext } from '../api/auth/lib/session.js';
+import { purchaseOrderIdFromNext } from '../api/auth/password.js';
 
 test('identityAssertion signs a short-lived verified Supabase identity', () => {
   process.env.COMMERCE_IDENTITY_ASSERTION_KID = 'sandbox-v1';
@@ -43,6 +44,53 @@ test('safeAuthNext permits local post-purchase routes and rejects redirects', ()
   );
   assert.equal(safeAuthNext('//attacker.example'), undefined);
   assert.equal(safeAuthNext('https://attacker.example'), undefined);
+});
+
+test('post-purchase signup recognizes only the canonical exact order route', () => {
+  const orderId = '22222222-2222-4222-8222-222222222222';
+  assert.equal(purchaseOrderIdFromNext(`/v3/account/orders/${orderId}`), orderId);
+  assert.equal(purchaseOrderIdFromNext(`/v3/account/orders/${orderId}/`), orderId);
+  assert.equal(purchaseOrderIdFromNext(`/v3/account/orders/${orderId}?claim=review`), null);
+  assert.equal(purchaseOrderIdFromNext('/v3/account/'), null);
+});
+
+test('post-purchase email confirmation carries order-bound proof independent of browser cookies', async () => {
+  process.env.SUPABASE_URL = 'https://project.supabase.co';
+  process.env.SUPABASE_ANON_KEY = 'sandbox-anon-key';
+  process.env.NO3D_SITE_URL = 'https://no3dtools.com';
+  process.env.NO3D_AUTH_STATE_SECRET = 'sandbox-auth-state-secret-at-least-32-characters';
+  const headers = new Map();
+  const response = {
+    getHeader: name => headers.get(name),
+    setHeader: (name, value) => headers.set(name, value),
+  };
+  let signupUrl;
+  const originalFetch = global.fetch;
+  global.fetch = async (url) => {
+    signupUrl = new URL(url);
+    return new Response(JSON.stringify({ user: { id: 'pending-user', identities: [{}] } }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  try {
+    await passwordSignUp(
+      { headers: {} },
+      response,
+      'buyer@example.com',
+      'a-long-test-password',
+      {
+        next: '/v3/account/orders/22222222-2222-4222-8222-222222222222',
+        recoveryToken: 'R'.repeat(43),
+      },
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+  const callback = new URL(signupUrl.searchParams.get('redirect_to'));
+  assert.equal(callback.searchParams.get('recovery_token'), 'R'.repeat(43));
+  assert.equal(callback.searchParams.get('next'), '/v3/account/orders/22222222-2222-4222-8222-222222222222');
+  assert.ok(callback.searchParams.get('auth_state'));
 });
 
 test('email confirmation preserves a safe intended destination in an HttpOnly cookie', () => {

@@ -473,11 +473,16 @@ test('V3 reuses existing catalog, commerce, auth, account, recovery, and downloa
   assert.match(recoveryLink, /next: `\/v3\/account\/orders\/\$\{orderId\}`/);
   assert.match(await load('api/auth/lib/session.js'), /auth_state/);
   assert.match(password, /claimPurchasingGuest/);
+  assert.match(password, /issuePurchaseRecovery/);
+  assert.match(password, /purchaseOrderIdFromNext/);
+  assert.match(password, /passwordSignUp\(req, res, email, password, \{ next, recoveryToken \}\)/);
   assert.match(password, /account_claim_failed/);
   assert.match(password, /result\.accountExists/);
   assert.match(password, /account_unverified/);
   assert.match(password, /account_password_mismatch/);
-  assert.match(await load('api/auth/lib/session.js'), /user\.identities\.length === 0/);
+  const authSession = await load('api/auth/lib/session.js');
+  assert.match(authSession, /user\.identities\.length === 0/);
+  assert.match(authSession, /callbackUrl\(req, recoveryToken, next, verifier\)/);
   const onboarding = await load('v3/js/onboarding.js');
   assert.match(onboarding, /That one-time link expired or was already used/);
   assert.match(onboarding, /request a fresh link for this browser/);

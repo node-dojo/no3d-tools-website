@@ -1,9 +1,31 @@
 import { allowSignInRequest } from './lib/rate-limit.js';
 import { claimPurchasingGuest } from './lib/claim.js';
+import { issuePurchaseRecovery } from './lib/recovery.js';
 import { clearAuthCookies, passwordSignIn, passwordSignUp, safeAuthNext } from './lib/session.js';
 import { v3OwnerAllowed } from './lib/v3-access.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PURCHASE_ORDER_NEXT = /^\/v3\/account\/orders\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/?$/i;
+
+export function purchaseOrderIdFromNext(next) {
+  return typeof next === 'string' ? (next.match(PURCHASE_ORDER_NEXT)?.[1] || null) : null;
+}
+
+async function confirmationRecoveryToken(req, next) {
+  const orderId = purchaseOrderIdFromNext(next);
+  if (!orderId) return undefined;
+  try {
+    return (await issuePurchaseRecovery(req, orderId)).token;
+  } catch (error) {
+    // Checkout fulfillment can still be settling. The same-browser guest-cookie
+    // claim remains valid; the order-bound proof is a resilience path.
+    console.warn('Purchase confirmation proof unavailable', {
+      error: error instanceof Error ? error.message : 'unknown_error',
+      orderId,
+    });
+    return undefined;
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
@@ -23,9 +45,12 @@ export default async function handler(req, res) {
   }
   if (!v3OwnerAllowed(email)) return res.status(403).json({ error: 'staging_access_denied' });
   try {
+    const recoveryToken = mode === 'signup'
+      ? await confirmationRecoveryToken(req, next)
+      : undefined;
     let result = mode === 'signin'
       ? await passwordSignIn(res, email, password)
-      : await passwordSignUp(req, res, email, password, { next });
+      : await passwordSignUp(req, res, email, password, { next, recoveryToken });
     if (mode === 'signup' && result.accountExists) {
       try {
         result = await passwordSignIn(res, email, password);

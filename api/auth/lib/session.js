@@ -180,11 +180,14 @@ export async function requestSignInLink(req, res, email, { recoveryToken, next }
   });
 }
 
-export async function passwordSignUp(req, res, email, password, { next } = {}) {
+export async function passwordSignUp(req, res, email, password, { next, recoveryToken } = {}) {
   const { challenge, verifier } = pkceChallenge(res);
   const safeNext = safeAuthNext(next);
   if (safeNext) setCookie(res, NEXT_COOKIE, safeNext, 60 * 60);
-  const redirectTo = encodeURIComponent(callbackUrl(req, undefined, next, verifier));
+  // A post-purchase confirmation may be opened without the browser cookie that
+  // created Checkout. Carry the short-lived, order-bound proof in the callback
+  // so confirmation can claim that exact purchase without an email-only merge.
+  const redirectTo = encodeURIComponent(callbackUrl(req, recoveryToken, next, verifier));
   const payload = await authFetch(`/signup?redirect_to=${redirectTo}`, {
     body: { email, password, code_challenge: challenge, code_challenge_method: 's256', data: {} },
   });
