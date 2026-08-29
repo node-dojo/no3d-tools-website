@@ -33,6 +33,16 @@ test('catalog presentation defaults to Workbench and requires explicit Flagship 
   assert.ok(FALLBACK_PRODUCTS.map(normalizeProduct).every(product => product.presentationMode === 'flagship'));
 });
 
+test('catalog entrypoints invalidate the presentation-classification module graph', async () => {
+  const [home, workbench] = await Promise.all([
+    load('v3/index.html'),
+    load('v3/workbench/index.html'),
+  ]);
+  assert.match(home, /home\.js\?v=presentation-default-20260829/);
+  assert.match(home, /workbench\.js\?v=presentation-default-20260829/);
+  assert.match(workbench, /workbench\.js\?v=presentation-default-20260829/);
+});
+
 test('uses the published preview ahead of a legacy low-resolution icon', () => {
   const product = normalizeProduct({
     image: 'https://media.example/legacy-256.png',
@@ -74,7 +84,7 @@ test('catalog collections are distinct first-class cards with a folder marker', 
 });
 
 test('home fingerprints the single-page directory composition', async () => {
-  assert.match(await load('v3/index.html'), /home\.js\?v=collections-first-20260827/);
+  assert.match(await load('v3/index.html'), /home\.js\?v=presentation-default-20260829/);
 });
 
 test('resolves hosted media shapes and ships a canonical paid-product fallback', () => {
