@@ -4,6 +4,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import handler from '../api/collections/[handle].js';
+import { collectionDefinitions } from '../lib/collection-definitions.js';
+import { renderCollectionPage } from '../scripts/render-v3-collection-pages.mjs';
 
 const expected = [
   'chrome-crayon',
@@ -104,11 +106,14 @@ test('collection page presents equal-benefit lifetime payment choices without en
 
 test('every collection page uses the shared immediate-access purchase format', () => {
   const collectionsRoot = fileURLToPath(new URL('../v3/collections/', import.meta.url));
-  const pages = readdirSync(collectionsRoot, { withFileTypes: true })
+  const handles = readdirSync(collectionsRoot, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
-    .map(entry => readFileSync(`${collectionsRoot}/${entry.name}/index.html`, 'utf8'));
-  assert.ok(pages.length > 0);
-  for (const html of pages) {
+    .map(entry => entry.name)
+    .sort();
+  assert.deepEqual(handles, Object.keys(collectionDefinitions).sort());
+  for (const handle of handles) {
+    const html = readFileSync(`${collectionsRoot}/${handle}/index.html`, 'utf8');
+    assert.equal(html, renderCollectionPage(handle, collectionDefinitions[handle]));
     assert.match(html, /membership-purchase collection-purchase-simplified/);
     assert.match(html, /Full collection available to you immediately/);
     assert.match(html, /href="\/v3\/onboarding\/install\/">NO3D Tools app/);

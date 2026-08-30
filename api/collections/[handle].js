@@ -1,30 +1,7 @@
 import { setCorsHeaders } from '../lib/cors.js';
+import { collectionDefinitions } from '../../lib/collection-definitions.js';
 
 const CATALOG_URL = 'https://no3dtools.com/api/products?limit=100';
-const definitions = {
-  'no3d-chrome-tools': {
-    collectionId: 'no3d-chrome',
-    scope: 'no3dtools.membership.no3d-chrome',
-    title: 'No3D Chrome tools',
-    description: 'A curated Blender collection for procedural drawing, pixel, pattern, chrome-form, and printable visual tools.',
-    thumbnail: '/v3/assets/no3d-chrome-hero-static.webp',
-    pricing: {
-      payNow: { amount: 6666, formatted: '$66.66' },
-      payOverTime: { amount: 1111, formatted: '$11.11', installments: 6 },
-    },
-  },
-  'full-library': {
-    collectionId: 'full-library',
-    scope: 'no3dtools.membership.full-library',
-    title: 'Full NO3D Tools Library',
-    description: 'The complete expanding NO3D Tools collection with managed Blender delivery, maintenance, revisions, and future additions.',
-    thumbnail: '/v3/assets/shared-source-folder-black.png',
-    pricing: {
-      payNow: { amount: 17777, formatted: '$177.77' },
-      payOverTime: { amount: 1555, formatted: '$15.55', installments: 12 },
-    },
-  },
-};
 const declaredTitles = {
   'chrome-crayon': 'Chrome Crayon',
   'no3d-pixel-markers': 'NO3D Pixel Markers',
@@ -54,7 +31,7 @@ export default async function handler(req, res) {
   if (setCorsHeaders(req, res, { methods: 'GET, OPTIONS' })) return;
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
   const handle = Array.isArray(req.query.handle) ? req.query.handle[0] : req.query.handle;
-  const definition = definitions[handle];
+  const definition = collectionDefinitions[handle];
   if (!definition) return res.status(404).json({ error: 'collection_not_found' });
 
   try {
