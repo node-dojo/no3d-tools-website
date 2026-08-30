@@ -61,11 +61,15 @@ try {
   const collection = await response.json();
   document.title = `${collection.title} — NO3D Tools`;
   countNode.textContent = `${collection.productCount} tools / Current collection`;
-  if (collection.pricing?.payNow?.formatted) priceNode.textContent = `${collection.pricing.payNow.formatted} lifetime`;
+  if (priceNode && collection.pricing?.payNow?.formatted) priceNode.textContent = `${collection.pricing.payNow.formatted} lifetime`;
   const payNowLabel = document.querySelector('[data-pay-now-price]');
   const payOverTimeLabel = document.querySelector('[data-pay-over-time-price]');
   if (payNowLabel) payNowLabel.textContent = `${collection.pricing.payNow.formatted} once`;
-  if (payOverTimeLabel) payOverTimeLabel.textContent = `${collection.pricing.payOverTime.installments} × ${collection.pricing.payOverTime.formatted}`;
+  if (payOverTimeLabel) {
+    payOverTimeLabel.textContent = payOverTimeLabel.dataset.priceFormat === 'monthly-duration'
+      ? `${collection.pricing.payOverTime.formatted} / month for ${collection.pricing.payOverTime.installments} months`
+      : `${collection.pricing.payOverTime.installments} × ${collection.pricing.payOverTime.formatted}`;
+  }
   const illustrated = collection.products.filter(product => product.image);
   const sourceProducts = collection.products.filter(product => !product.image);
   productsNode.replaceChildren(...illustrated.map(card));

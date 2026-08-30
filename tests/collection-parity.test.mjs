@@ -83,8 +83,14 @@ test('collection page presents equal-benefit lifetime payment choices without en
   assert.match(html, /No3D Chrome tools/);
   assert.match(html, /data-collection-products/);
   assert.match(html, /Chrome collection \/ Lifetime ownership/);
-  assert.match(html, /\$66\.66 lifetime/);
-  assert.match(html, /6 × \$11\.11/);
+  assert.match(html, /Full collection available to you immediately/);
+  assert.match(html, /href="\/v3\/onboarding\/install\/">NO3D Tools app/);
+  assert.match(html, /\$66\.66 once/);
+  assert.match(html, /\$11\.11 \/ month for 6 months/);
+  assert.match(html, /<details class="collection-purchase-details">/);
+  assert.match(html, /You’ll receive an email when your payments are complete/);
+  assert.match(html, /Continuing is optional, and your access to the tools you’ve paid for will not be affected/);
+  assert.match(html, /class="collection-status" data-collection-message aria-live="polite"><\/p>/);
   assert.match(html, /data-schedule="pay_now"/);
   assert.match(html, /data-schedule="pay_over_time"/);
   assert.match(html, /no3d-chrome-hero-static\.webp/);
@@ -92,6 +98,7 @@ test('collection page presents equal-benefit lifetime payment choices without en
   assert.match(html, /shared-source-folder-black\.png/);
   assert.match(html, /data-collection-source-products/);
   assert.doesNotMatch(html, /\$9\.99 \/ month|Join on Gumroad|curated Blender membership/);
+  assert.doesNotMatch(html, /Same collection \/ Two ways to pay|\$66\.66 lifetime|6 × \$11\.11/);
   assert.doesNotMatch(html, /data-membership-checkout|data-catalog-checkout/);
 });
 
