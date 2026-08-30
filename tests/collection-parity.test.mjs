@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import handler from '../api/collections/[handle].js';
@@ -100,6 +100,25 @@ test('collection page presents equal-benefit lifetime payment choices without en
   assert.doesNotMatch(html, /\$9\.99 \/ month|Join on Gumroad|curated Blender membership/);
   assert.doesNotMatch(html, /Same collection \/ Two ways to pay|\$66\.66 lifetime|6 × \$11\.11/);
   assert.doesNotMatch(html, /data-membership-checkout|data-catalog-checkout/);
+});
+
+test('every collection page uses the shared immediate-access purchase format', () => {
+  const collectionsRoot = fileURLToPath(new URL('../v3/collections/', import.meta.url));
+  const pages = readdirSync(collectionsRoot, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => readFileSync(`${collectionsRoot}/${entry.name}/index.html`, 'utf8'));
+  assert.ok(pages.length > 0);
+  for (const html of pages) {
+    assert.match(html, /membership-purchase collection-purchase-simplified/);
+    assert.match(html, /Full collection available to you immediately/);
+    assert.match(html, /href="\/v3\/onboarding\/install\/">NO3D Tools app/);
+    assert.match(html, /data-pay-over-time-price data-price-format="monthly-duration"/);
+    assert.match(html, /<details class="collection-purchase-details">/);
+    assert.match(html, /You’ll receive an email when your payments are complete/);
+    assert.match(html, /Continuing is optional, and your access to the tools you’ve paid for will not be affected/);
+    assert.match(html, /class="collection-status" data-collection-message aria-live="polite"><\/p>/);
+    assert.doesNotMatch(html, /Same (?:collection|library) \/ Two ways to pay/);
+  }
 });
 
 test('full-library projection preserves the new canonical scope and approved prices', async () => {
