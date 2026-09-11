@@ -1,5 +1,5 @@
-import { beginMembershipCheckout, getCommerceConfig } from './api.js?v=perf-20260820';
-import { track, trackOnce } from './analytics.js?v=privacy-funnel-20260827';
+import { beginMembershipCheckout, getCommerceConfig } from './api.js?v=analytics-20260911';
+import { track, trackOnce } from './analytics.js?v=analytics-20260911';
 
 const config = await getCommerceConfig();
 document.querySelector('[data-membership-price]').textContent = config.membershipPrice

@@ -38,9 +38,9 @@ test('catalog entrypoints invalidate the presentation-classification module grap
     load('v3/index.html'),
     load('v3/workbench/index.html'),
   ]);
-  assert.match(home, /home\.js\?v=presentation-default-20260829/);
-  assert.match(home, /workbench\.js\?v=presentation-default-20260829/);
-  assert.match(workbench, /workbench\.js\?v=presentation-default-20260829/);
+  assert.match(home, /home\.js\?v=analytics-20260911/);
+  assert.match(home, /workbench\.js\?v=analytics-20260911/);
+  assert.match(workbench, /workbench\.js\?v=analytics-20260911/);
 });
 
 test('uses the published preview ahead of a legacy low-resolution icon', () => {
@@ -84,7 +84,7 @@ test('catalog collections are distinct first-class cards with a folder marker', 
 });
 
 test('home fingerprints the single-page directory composition', async () => {
-  assert.match(await load('v3/index.html'), /home\.js\?v=presentation-default-20260829/);
+  assert.match(await load('v3/index.html'), /home\.js\?v=analytics-20260911/);
 });
 
 test('resolves hosted media shapes and ships a canonical paid-product fallback', () => {
@@ -103,19 +103,12 @@ test('all rendered adjacent route documents use the shared V3 stylesheet', async
   }
 });
 
-test('every V3 route records the page-view event that drives visit notifications', async () => {
-  const api = await load('v3/js/api.js');
-  const analytics = await load('v3/js/analytics.js');
-  for (const client of ['home', 'product', 'account', 'membership', 'onboarding', 'workbench']) {
-    assert.match(await load(`v3/js/${client}.js`), /from ['"]\.\/api\.js/);
+test('V3 documents bootstrap analytics independently of catalog code', async () => {
+  for (const route of ['index.html','product/index.html','account/index.html','membership/index.html','onboarding/install/index.html','onboarding/create-account/index.html','collections/no3d-chrome-tools/index.html','collections/full-library/index.html']) {
+    const html = await load(`v3/${route}`);
+    assert.equal(html.split('/v3/js/analytics-init.js').length - 1, 1, route);
   }
-  assert.match(api, /import ['"]\.\/analytics\.js/);
-  assert.match(analytics, /track\('page_view'/);
-  assert.match(analytics, /fetch\('\/api\/track'/);
-  assert.match(analytics, /page: safePage\(window\.location\.href\)/);
-  assert.match(analytics, /referrer: safeReferrer\(document\.referrer\)/);
-  assert.match(await load('api/track.js'), /sanitizeAnalyticsPage\(page\)/);
-  assert.match(await load('api/track.js'), /sanitizeAnalyticsReferrer\(referrer/);
+  assert.doesNotMatch(await load('v3/js/api.js'), /import ['"]\.\/analytics/);
 });
 
 test('infrastructure document requests and conversion milestones close traffic blind spots', async () => {
@@ -470,7 +463,7 @@ test('product descriptions render one designed heading and use real prose for su
   const html = await load('v3/product/index.html');
   const product = await load('v3/js/product.js');
   assert.equal((html.match(/<h2>Description<\/h2>/g) || []).length, 1);
-  assert.match(html, /product\.js\?v=url-migration-20260828/);
+  assert.match(html, /product\.js\?v=analytics-20260911/);
   assert.match(product, /function descriptionContent\(text\)/);
   assert.match(product, /\^#\{1,6\}\\s\+description/);
   assert.match(product, /const summary = descriptionSummary\(product\.description\)/);
@@ -579,7 +572,7 @@ test('canonical public routes are indexable and recovery surfaces are not', asyn
   assert.match(await load('v3/index.html'), /name="google-site-verification" content="[A-Za-z0-9_-]+"/);
   assert.match(await load('v3/membership/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/membership\/"/);
   assert.match(await load('v3/product/index.html'), /data-product-structured-data/);
-  assert.match(await load('v3/product/index.html'), /product\.js\?v=url-migration-20260828/);
+  assert.match(await load('v3/product/index.html'), /product\.js\?v=analytics-20260911/);
   assert.match(await load('v3/js/product.js'), /document\.querySelector\('link\[rel="canonical"\]'\)\.href = canonicalUrl/);
   assert.match(await load('v3/account/index.html'), /name="robots" content="noindex,nofollow"/);
   assert.match(await load('v3/onboarding/create-account/index.html'), /name="robots" content="noindex,nofollow"/);

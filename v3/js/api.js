@@ -1,4 +1,3 @@
-import './analytics.js?v=visits-20260824';
 
 const FALLBACK_PRODUCTS = [
   {

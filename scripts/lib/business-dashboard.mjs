@@ -1,3 +1,4 @@
+import { isProductionObservation } from './analytics-health.mjs';
 import { createHash } from 'node:crypto';
 
 export const WINDOWS = [
@@ -11,15 +12,15 @@ const EVENT_ALIASES = {
   accountStarts: new Set(['account_start', 'account_submit']),
   confirmationsRequested: new Set(['account_confirmation_requested']),
   accountsCompleted: new Set(['account_authenticated', 'account_confirmation_completed']),
-  checkoutStarts: new Set(['product_checkout_start', 'membership_checkout_start', 'checkout_start']),
-  checkoutRedirects: new Set(['product_checkout_redirect', 'membership_checkout_redirect']),
+  checkoutStarts: new Set(['product_checkout_start', 'membership_checkout_start', 'collection_checkout_start']),
+  checkoutRedirects: new Set(['product_checkout_redirect', 'membership_checkout_redirect', 'collection_checkout_redirect']),
   checkoutFailures: new Set(['product_checkout_failed', 'membership_checkout_failed']),
-  fulfillments: new Set(['product_fulfillment_completed', 'membership_fulfillment_completed', 'checkout_complete']),
+  fulfillments: new Set(['product_fulfillment_observed', 'membership_fulfillment_observed']),
   downloads: new Set(['addon_downloaded']),
 };
 
-const FAILURE_EVENTS = new Set(['account_submit_failed', 'sign_in_link_failed', 'product_checkout_failed', 'membership_checkout_failed']);
-const MODERN_CHECKOUT_START_EVENTS = new Set(['product_checkout_start', 'membership_checkout_start']);
+const FAILURE_EVENTS = new Set(['account_submit_failed', 'sign_in_link_failed', 'product_checkout_failed', 'membership_checkout_failed', 'collection_checkout_failed']);
+const MODERN_CHECKOUT_START_EVENTS = new Set(['product_checkout_start', 'membership_checkout_start', 'collection_checkout_start']);
 
 function at(event) { return new Date(event.created_at).getTime(); }
 function inWindow(event, nowMs, milliseconds) {
@@ -38,11 +39,11 @@ export function summarizeEvents(events, now = new Date()) {
   const nowMs = now.getTime();
   const result = {};
   for (const window of WINDOWS) {
-    const rows = events.filter((event) => inWindow(event, nowMs, window.milliseconds));
+    const rows = events.filter((event) => inWindow(event, nowMs, window.milliseconds) && isProductionObservation(event));
     result[window.key] = {
       visits: count(rows, EVENT_ALIASES.visits),
-      visitors: new Set(rows.map((event) => event.session_id).filter(Boolean)).size,
-      productViews: rows.filter((event) => event.event === 'product_view' || (event.event === 'page_view' && pageIsProduct(event.page))).length,
+      visitors: new Set(rows.filter(event => event.event === 'page_view').map((event) => event.session_id).filter(Boolean)).size,
+      productViews: rows.filter((event) => event.event === 'product_view').length,
       accountStarts: count(rows, EVENT_ALIASES.accountStarts),
       confirmationsRequested: count(rows, EVENT_ALIASES.confirmationsRequested),
       accountsCompleted: count(rows, EVENT_ALIASES.accountsCompleted),
@@ -54,8 +55,8 @@ export function summarizeEvents(events, now = new Date()) {
     };
   }
   const productCounts = new Map();
-  for (const event of events.filter((row) => inWindow(row, nowMs, WINDOWS[1].milliseconds))) {
-    if (event.event !== 'product_view' && !(event.event === 'page_view' && pageIsProduct(event.page))) continue;
+  for (const event of events.filter((row) => inWindow(row, nowMs, WINDOWS[1].milliseconds) && isProductionObservation(row))) {
+    if (event.event !== 'product_view') continue;
     const handle = productHandle(event);
     if (handle) productCounts.set(handle, (productCounts.get(handle) || 0) + 1);
   }
@@ -77,7 +78,7 @@ function ignoredUnknownRoute(page = '') {
 
 export function detectAttention(events, now = new Date()) {
   const nowMs = now.getTime();
-  const recent = events.filter((event) => inWindow(event, nowMs, 7 * 24 * 60 * 60 * 1000));
+  const recent = events.filter((event) => inWindow(event, nowMs, 7 * 24 * 60 * 60 * 1000) && (isProductionObservation(event) || event.event === 'document_request'));
   const bySession = new Map();
   for (const event of recent) {
     if (!event.session_id) continue;
@@ -127,7 +128,7 @@ function healthIcon(status) { return ({ current: 'OK', stale: 'STALE', unavailab
 function ratio(numerator, denominator) { return denominator ? `${((numerator / denominator) * 100).toFixed(1)}%` : '—'; }
 function revenueCell(source, key, field = 'netCents') { return source?.status === 'current' ? formatMoney(source.windows?.[key]?.[field], source.currency || 'USD') : 'unavailable'; }
 
-export function buildDashboard({ generatedAt, events, subscriptions, stripe, gumroad, health, attention }) {
+export function buildDashboard({ generatedAt, events, subscriptions, stripe, gumroad, health, attention, vercel }) {
   const generated = new Date(generatedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   const actionable = attention.filter((issue) => issue.actionable);
   const observations = attention.filter((issue) => !issue.actionable);
@@ -140,18 +141,19 @@ export function buildDashboard({ generatedAt, events, subscriptions, stripe, gum
     `- Gumroad net: **${revenueCell(gumroad, '30d')} / 30d** · ${revenueCell(gumroad, '7d')} / 7d · ${revenueCell(gumroad, '24h')} / 24h`,
     '', '> Revenue sources remain separate. Stripe is account-level balance activity; Gumroad is platform-level sales activity. Neither is silently attributed to a specific site or product.',
     '', '## Customer journey', '',
-    '| Window | Visits | Visitors | Product views | Account starts | Accounts completed | Checkout starts | Redirected | Fulfilled | Downloads issued |',
-    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
+    '| Window | Browser page views | Tab sessions | Product views | Account actions | Auth observations | Checkout starts | Redirected | Fulfillment observed |',
+    '|---|---:|---:|---:|---:|---:|---:|---:|---:|',
   ];
   for (const window of WINDOWS) {
     const row = events[window.key];
-    lines.push(`| ${window.label} | ${row.visits} | ${row.visitors} | ${row.productViews} | ${row.accountStarts} | ${row.accountsCompleted} | ${row.checkoutStarts} | ${row.checkoutRedirects} | ${row.fulfillments} | ${row.downloadsIssued} |`);
+    lines.push(`| ${window.label} | ${row.visits} | ${row.visitors} | ${row.productViews} | ${row.accountStarts} | ${row.accountsCompleted} | ${row.checkoutStarts} | ${row.checkoutRedirects} | ${row.fulfillments} |`);
   }
-  lines.push('', '## Conversion signals', '');
+  lines.push('', '> These are accepted v2 production browser observations, not complete audience totals. Synthetic, preview and unversioned history are excluded. Tab sessions are not unique visitors. Browser fulfillment observations do not verify sales. Historical coverage remains incomplete.', '', '## Vercel audience observations', '', '| Window | Page views | Estimated visitors |', '|---|---:|---:|');
   for (const window of WINDOWS) {
-    const row = events[window.key];
-    lines.push(`- ${window.label}: visit → checkout ${ratio(row.checkoutStarts, row.visits)} · checkout → observed fulfillment ${ratio(row.fulfillments, row.checkoutStarts)} · confirmation requested → completed ${ratio(row.accountsCompleted, row.confirmationsRequested)}`);
+    const row = vercel?.windows?.[window.key];
+    lines.push(`| ${window.label} | ${row ? row.pageviews : 'unavailable'} | ${row ? row.visitors : 'unavailable'} |`);
   }
+  lines.push('', '> Vercel uses its own visitor definition. These numbers are never added to first-party counts. Pre-repair V3 coverage is incomplete. Conversion rates are withheld until attribution and server-outcome joins are validated.', '');
   if (events.topProducts.length) {
     lines.push('', '## Most viewed products · 7 days', '');
     for (const [handle, views] of events.topProducts) lines.push(`- ${handle}: ${views}`);
@@ -174,12 +176,13 @@ export function buildAttentionQueue({ generatedAt, attention }) {
   return lines.join('\n');
 }
 
-export function buildDailySnapshot({ generatedAt, events, subscriptions, stripe, gumroad, health, attention }) {
+export function buildDailySnapshot({ generatedAt, events, subscriptions, stripe, gumroad, health, attention, vercel }) {
   return {
     date: new Date(generatedAt).toISOString().slice(0, 10), generated_at: new Date(generatedAt).toISOString(), subscriptions,
     journey: Object.fromEntries(WINDOWS.map((window) => [window.key, events[window.key]])),
     revenue: { stripe: stripe.status === 'current' ? { currency: stripe.currency, windows: stripe.windows } : { status: stripe.status }, gumroad: gumroad.status === 'current' ? { currency: gumroad.currency, windows: gumroad.windows } : { status: gumroad.status } },
     attention: { actionable: attention.filter((issue) => issue.actionable).length, outcome_unobserved: attention.filter((issue) => !issue.actionable).length, by_kind: Object.fromEntries(Object.entries(attention.reduce((acc, issue) => { acc[issue.kind] = (acc[issue.kind] || 0) + 1; return acc; }, {})).sort()) },
+    vercel: vercel || null,
     source_health: Object.fromEntries(health.map((source) => [source.name, source.status])),
   };
 }

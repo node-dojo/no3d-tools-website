@@ -4,10 +4,10 @@ import { buildAttentionQueue, buildDashboard, containsPrivateIdentity, detectAtt
 
 const NOW = new Date('2026-08-27T18:00:00.000Z');
 let sequence = 0;
-const event = (overrides = {}) => ({ id: overrides.id || `event-${sequence++}`, event: 'page_view', properties: {}, page: '/v3/', session_id: 'raw-session-secret', created_at: '2026-08-27T17:00:00.000Z', ...overrides });
+const event = (overrides = {}) => ({ id: overrides.id || `event-${sequence++}`, event: 'page_view', properties: {schema_version:2,source_kind:'browser',environment:'production',synthetic:false}, page: '/v3/', session_id: 'raw-session-secret', created_at: '2026-08-27T17:00:00.000Z', ...overrides });
 
 test('current V3 event vocabulary produces rolling funnel summaries', () => {
-  const events = [event(), event({ event: 'page_view', page: '/v3/product?handle=dojo-calipers' }), event({ event: 'account_submit' }), event({ event: 'account_confirmation_requested' }), event({ event: 'account_confirmation_completed' }), event({ event: 'product_checkout_start' }), event({ event: 'product_checkout_redirect' }), event({ event: 'product_fulfillment_completed' }), event({ event: 'addon_downloaded' })];
+  const events = [event(), event({ event: 'page_view', page: '/v3/product?handle=dojo-calipers' }), event({ event: 'product_view', page: '/v3/product?handle=dojo-calipers' }), event({ event: 'account_submit' }), event({ event: 'account_confirmation_requested' }), event({ event: 'account_confirmation_completed' }), event({ event: 'product_checkout_start' }), event({ event: 'product_checkout_redirect' }), event({ event: 'product_fulfillment_observed' }), event({ event: 'addon_downloaded' })];
   const summary = summarizeEvents(events, NOW);
   assert.deepEqual({ visits: summary['24h'].visits, products: summary['24h'].productViews, starts: summary['24h'].checkoutStarts, fulfilled: summary['24h'].fulfillments, downloads: summary['24h'].downloadsIssued }, { visits: 2, products: 1, starts: 1, fulfilled: 1, downloads: 1 });
   assert.deepEqual(summary.topProducts, [['dojo-calipers', 1]]);
@@ -39,4 +39,9 @@ test('generated Markdown excludes raw identities and reports unavailable sources
 test('daily JSONL replaces the current date instead of appending duplicates', () => {
   const updated = upsertDailyJsonl('{"date":"2026-08-26","value":1}\n{"date":"2026-08-27","value":2}\n', { date: '2026-08-27', value: 3 });
   assert.deepEqual(updated.trim().split('\n').map(JSON.parse), [{ date: '2026-08-26', value: 1 }, { date: '2026-08-27', value: 3 }]);
+});
+
+test('only classified production browser observations enter current counts', () => {
+  const summary=summarizeEvents([event(),event({properties:{}}),event({properties:{schema_version:2,source_kind:'browser',environment:'production',synthetic:true}})],NOW);
+  assert.equal(summary['24h'].visits,1);
 });

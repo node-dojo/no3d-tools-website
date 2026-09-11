@@ -1,7 +1,7 @@
-import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=scoped-membership-20260828b';
+import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=analytics-20260911';
 import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, projectScopedMembershipCatalog, readableHandle } from './account-library.js?v=scoped-membership-20260828b';
 import { preloadProductPreviews, PRODUCT_PREVIEW_FALLBACK, setProductPreview } from './product-preview.js?v=preview-20260823';
-import { trackOnce } from './analytics.js?v=privacy-funnel-20260827';
+import { trackOnce } from './analytics.js?v=analytics-20260911';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];

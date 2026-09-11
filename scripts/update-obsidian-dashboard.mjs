@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { collectionHealth, probeCollector, fetchVercelAnalytics, localVercelToken } from './lib/analytics-health.mjs';
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -44,7 +45,7 @@ async function fetchSiteData() {
   if (subscriptionError) throw subscriptionError;
   const events = [];
   for (let offset = 0; ; offset += 1000) {
-    const { data, error } = await client.from('site_events').select('id,event,properties,page,session_id,created_at').gte('created_at', cutoff).order('created_at', { ascending: true }).range(offset, offset + 999);
+    const { data, error } = await client.from('site_events').select('id,event,properties,page,referrer,session_id,created_at').gte('created_at', cutoff).order('created_at', { ascending: true }).range(offset, offset + 999);
     if (error) throw error;
     events.push(...(data || []));
     if (!data || data.length < 1000) break;
@@ -154,12 +155,19 @@ async function main() {
   sourceHealth.push(health('Stripe account', stripe.status, stripe.status === 'current' ? 'balance activity read successfully' : stripe.error || 'configuration absent'));
   sourceHealth.push(health('Gumroad', gumroad.status, gumroad.status === 'current' ? 'sales summaries read successfully' : gumroad.error || 'configuration absent'));
   sourceHealth.push(commerceHealth, siteHealth);
+  sourceHealth.push(collectionHealth(siteData.events, now));
+  const probeClient = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY) : null;
+  sourceHealth.push(await probeCollector(probeClient));
+  let project = {};
+  try { project = JSON.parse(fs.readFileSync(path.join(repoRoot, '.vercel/project.json'), 'utf8')); } catch {}
+  const vercel = await fetchVercelAnalytics({ token: localVercelToken(), projectId: project.projectId, teamId: project.orgId, windows: WINDOWS, now });
+  sourceHealth.push(health('Vercel Web Analytics API', vercel.status, vercel.detail));
   const eventSummary = summarizeEvents(siteData.events, now);
   const subscriptionSummary = summarizeSubscriptions(siteData.subscriptions);
   const attention = detectAttention(siteData.events, now);
   const alertResult = await sendNewAttentionAlerts(attention);
   sourceHealth.push(alertResult.source);
-  const model = { generatedAt: now.toISOString(), events: eventSummary, subscriptions: subscriptionSummary, stripe, gumroad, health: sourceHealth, attention };
+  const model = { vercel, generatedAt: now.toISOString(), events: eventSummary, subscriptions: subscriptionSummary, stripe, gumroad, health: sourceHealth, attention };
   const dashboard = buildDashboard(model);
   const attentionQueue = buildAttentionQueue(model);
   if (containsPrivateIdentity(dashboard) || containsPrivateIdentity(attentionQueue)) throw new Error('Generated Markdown failed the private-identity guard');

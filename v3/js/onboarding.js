@@ -1,5 +1,5 @@
-import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery, requestSignIn } from './api.js?v=perf-20260820';
-import { track } from './analytics.js?v=privacy-funnel-20260827';
+import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery, requestSignIn } from './api.js?v=analytics-20260911';
+import { track } from './analytics.js?v=analytics-20260911';
 
 const params = new URLSearchParams(location.search);
 const requestedNext = params.get('next');

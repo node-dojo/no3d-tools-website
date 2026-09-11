@@ -1,5 +1,5 @@
-import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=media-priority-20260827';
-import { track } from './analytics.js?v=privacy-funnel-20260827';
+import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=analytics-20260911';
+import { track } from './analytics.js?v=analytics-20260911';
 import { setProductPreview } from './product-preview.js?v=preview-20260823';
 import './shell.js?v=perf-20260820';
 
@@ -57,6 +57,7 @@ if (!product) {
   $('[data-product-title]').textContent = 'NO3D Tool unavailable';
   $('[data-product-lede]').textContent = 'The catalog did not return a product record.';
 } else {
+  void track('product_view', { handle: product.handle });
   const summary = descriptionSummary(product.description) || 'Current NO3D Tool.';
   const canonicalUrl = `https://no3dtools.com/v3/product/?handle=${encodeURIComponent(product.handle)}`;
   document.title = `${product.title} — NO3D Tools V3`;

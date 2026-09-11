@@ -1,3 +1,4 @@
+import { track } from './analytics.js?v=analytics-20260911';
 const productsNode = document.querySelector('[data-collection-products]');
 const countNode = document.querySelector('[data-collection-count]');
 const messageNode = document.querySelector('[data-collection-message]');
@@ -59,6 +60,7 @@ try {
   const response = await fetch(`/api/collections/${encodeURIComponent(collectionHandle)}`);
   if (!response.ok) throw new Error('collection_unavailable');
   const collection = await response.json();
+  void track('collection_view', { handle: collectionHandle });
   document.title = `${collection.title} — NO3D Tools`;
   countNode.textContent = `${collection.productCount} tools / Current collection`;
   if (priceNode && collection.pricing?.payNow?.formatted) priceNode.textContent = `${collection.pricing.payNow.formatted} lifetime`;
@@ -84,6 +86,7 @@ try {
       if (!collection.acquisition?.enabled || node.dataset.busy === 'true') return;
       node.dataset.busy = 'true';
       messageNode.textContent = 'Opening secure checkout…';
+      void track('collection_checkout_start', { handle: collectionHandle, schedule: node.dataset.schedule });
       try {
         const checkout = await fetch('/api/commerce/collection-checkout', {
           method: 'POST',
@@ -92,8 +95,10 @@ try {
         });
         const payload = await checkout.json();
         if (!checkout.ok || !payload.checkoutUrl) throw new Error('checkout_unavailable');
+        void track('collection_checkout_redirect', { handle: collectionHandle, schedule: node.dataset.schedule });
         window.location.assign(payload.checkoutUrl);
       } catch {
+        void track('collection_checkout_failed', { handle: collectionHandle, schedule: node.dataset.schedule });
         messageNode.textContent = 'Checkout is temporarily unavailable. No payment has been started.';
         node.dataset.busy = 'false';
       }
