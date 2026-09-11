@@ -37,8 +37,9 @@ try {
   await page.evaluateOnNewDocument(()=>sessionStorage.setItem('no3d_analytics_synthetic','1'));
   for (const route of ['/v3/','/v3/product/?handle=chrome-crayon','/v3/collections/no3d-chrome-tools/','/v3/onboarding/create-account/']) {
     const before=requests.length;
-    await page.goto(origin+route,{waitUntil:'networkidle0'});
+    await page.goto(origin+route,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>window.__no3dAnalytics?.lastAcceptedAt,{timeout:15000});
+    await page.waitForNetworkIdle({idleTime:500,timeout:5000}).catch(()=>{});
     const rows=requests.slice(before);
     assert.equal(rows.filter(r=>r.event==='page_view').length,1,`${route}: ${JSON.stringify(rows.map(r=>({event:r.event,page:r.page})))}`);
     assert.ok(rows.every(r=>r.synthetic===true));
