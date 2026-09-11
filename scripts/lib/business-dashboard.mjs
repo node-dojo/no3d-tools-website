@@ -153,7 +153,7 @@ export function buildDashboard({ generatedAt, events, subscriptions, stripe, gum
     const row = vercel?.windows?.[window.key];
     lines.push(`| ${window.label} | ${row ? row.pageviews : 'unavailable'} | ${row ? row.visitors : 'unavailable'} |`);
   }
-  lines.push('', '> Vercel uses its own visitor definition. These numbers are never added to first-party counts. Pre-repair V3 coverage is incomplete. Conversion rates are withheld until attribution and server-outcome joins are validated.', '');
+  lines.push('', '> Vercel uses its own visitor definition. These numbers are never added to first-party counts. Pre-repair V3 coverage is incomplete. The September 11 rollout check contributed 2 Vercel page views and 1 product event; provider totals containing that date include those checks. Conversion rates are withheld until attribution and server-outcome joins are validated.', '');
   if (events.topProducts.length) {
     lines.push('', '## Most viewed products · 7 days', '');
     for (const [handle, views] of events.topProducts) lines.push(`- ${handle}: ${views}`);
