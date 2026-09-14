@@ -67,3 +67,14 @@ select cron.schedule('no3d-analytics-watchdog','* * * * *',
 ```
 
 Verify new completion and cron receipts after resuming; a resumed configuration is not proof that execution succeeded.
+
+
+## Sales notification boundary
+
+Sales follow Commerce provider fulfillment → `COMMERCE_NOTIFICATION_URL` → `no3d-pageview-pings/api/sale` → ntfy. They are separate from page visits and source-health alerts. The relay accepts only bounded product handles or the four registered collection offer keys; collection links resolve to their canonical V3 pages.
+
+Production authentication remains `COMMERCE_NOTIFICATION_SECRET`. Dedicated staging Commerce uses a separate relay-side `COMMERCE_ACCEPTANCE_NOTIFICATION_SECRET`; the matched credential forces TEST labeling. Do not place a live credential in a sandbox or trust caller-supplied test flags. Keep all credential values and private topic URLs out of receipts.
+
+The relay requires a provider receipt before reporting successful delivery. September 14 sandbox acceptance: Dojo Knob order `7af191d9-e89e-449c-90df-69e078640b51`, ntfy receipt `zNWZjA5Og60k`, refunded/revoked cleanup with the independent purchase preserved. This confirms provider acknowledgment, not independent phone display.
+
+Relay deployed artifact: `dpl_BngwbhYX4hWDsJyittLHEPVyHSta`; rollback artifact: `dpl_74ri2BujvDJJNN94TFK9NqCFuHYZ`. The relay checkout is not Git-backed; its pre-change source backup is `/tmp/no3d-final-sales-relay-baseline/`. Original visit Unicode serialization and provider-failure behavior are covered by `tests/sale.test.mjs` in that checkout.
