@@ -3,16 +3,19 @@ import { mkdir } from 'node:fs/promises';
 import puppeteer from 'puppeteer';
 import Stripe from 'stripe';
 import { acceptanceBaseUrl } from './lib/v3-acceptance-target.mjs';
+import { collectionDefinitions } from '../lib/collection-definitions.js';
 
 const baseUrl = acceptanceBaseUrl();
 const email = process.env.NO3D_E2E_EMAIL;
 const password = process.env.NO3D_E2E_PASSWORD;
 const control = process.env.NO3D_E2E_HANDLE || 'dojo-bolt-gen-v05';
-const collectionHandle = 'no3d-chrome-tools';
-const scope = 'no3dtools.membership.no3d-chrome';
+const collectionHandle = process.env.NO3D_COLLECTION_HANDLE || 'no3d-chrome-tools';
+const definition = collectionDefinitions[collectionHandle];
+if (!definition) throw Error('Unknown collection acceptance handle');
+const scope = definition.scope;
 const selectedSchedule = process.env.NO3D_COLLECTION_SCHEDULE;
 if (selectedSchedule && !['pay_now', 'pay_over_time'].includes(selectedSchedule)) throw Error('Invalid collection acceptance schedule');
-if (!process.argv.includes('--apply')) throw Error('This buys and refunds both Chrome collection schedules in Stripe test mode; use --apply.');
+if (!process.argv.includes('--apply')) throw Error('This buys and refunds the selected collection schedules in Stripe test mode; use --apply.');
 if (!process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')) throw Error('Stripe test credentials required');
 if (!email || !password) throw Error('Isolated non-member acceptance identity required');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -115,11 +118,13 @@ try {
       const projection = await pageFetch(page, `/api/collections/${collectionHandle}`);
       assert.equal(projection.status, 200);
       assert.equal(projection.payload.acquisition.enabled, true);
-      assert.equal(projection.payload.pricing.payNow.amount, 6666);
-      assert.equal(projection.payload.pricing.payOverTime.amount, 1111);
-      assert.equal(projection.payload.pricing.payOverTime.installments, 6);
+      assert.equal(projection.payload.pricing.payNow.amount, definition.pricing.payNow.amount);
+      assert.equal(projection.payload.pricing.payOverTime.amount, definition.pricing.payOverTime.amount);
+      assert.equal(projection.payload.pricing.payOverTime.installments, definition.pricing.payOverTime.installments);
       const handles = projection.payload.products.map(product => product.handle);
-      assert.equal(handles.length, 8);
+      assert.ok(handles.length > 1);
+      assert.equal(new Set(handles).size, handles.length);
+      assert.equal(projection.payload.scope, scope);
       const protectedHandle = handles.find(handle => !baseline.assets?.[handle]);
       assert.ok(protectedHandle, 'Collection must add a protected asset beyond baseline');
       await page.waitForSelector(`[data-collection-acquire][data-schedule="${schedule}"]:not([aria-disabled="true"])`);
@@ -136,7 +141,7 @@ try {
       checkoutId = initial.id;
       assert.match(checkoutId, /^cs_test_/);
       assert.equal(initial.livemode, false);
-      assert.equal(initial.amount_total, schedule === 'pay_now' ? 6666 : 1111);
+      assert.equal(initial.amount_total, schedule === 'pay_now' ? definition.pricing.payNow.amount : definition.pricing.payOverTime.amount);
       assert.equal(initial.mode, schedule === 'pay_now' ? 'payment' : 'subscription');
       if (new URL(page.url()).hostname !== 'checkout.stripe.com') await page.waitForFunction(() => location.hostname === 'checkout.stripe.com');
       await page.waitForSelector('button[aria-label="Pay with card"]');
@@ -163,10 +168,10 @@ try {
         finiteScheduleId = objectId(subscription.schedule);
         const finite = await stripe.subscriptionSchedules.retrieve(finiteScheduleId);
         assert.equal(finite.end_behavior, 'cancel');
-        assert.equal(finite.metadata.no3d_installment_count, '6');
+        assert.equal(finite.metadata.no3d_installment_count, String(definition.pricing.payOverTime.installments));
         assert.equal(finite.phases.length, 1);
         const expectedEnd = new Date(finite.phases[0].start_date * 1000);
-        expectedEnd.setUTCMonth(expectedEnd.getUTCMonth() + 6);
+        expectedEnd.setUTCMonth(expectedEnd.getUTCMonth() + definition.pricing.payOverTime.installments);
         assert.equal(finite.phases[0].end_date, expectedEnd.getTime() / 1000);
       }
       const account = await pageFetch(page, '/api/commerce/account');
@@ -196,7 +201,7 @@ try {
       await mkdir('/tmp/no3d-v3-collection-acceptance', { recursive: true });
       for (const [name, width, height] of [['desktop', 1440, 1000], ['mobile', 390, 844]]) {
         await page.setViewport({ width, height, deviceScaleFactor: 1 });
-        await page.screenshot({ path: `/tmp/no3d-v3-collection-acceptance/${schedule}-${name}.png`, fullPage: true });
+        await page.screenshot({ path: `/tmp/no3d-v3-collection-acceptance/${collectionHandle}-${schedule}-${name}.png`, fullPage: true });
       }
       const refund = await stripe.refunds.create({ payment_intent: paymentIntent });
       refundId = refund.id;
