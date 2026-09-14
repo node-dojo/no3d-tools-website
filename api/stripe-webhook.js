@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { legacyMembershipEvent } from './lib/legacy-membership-event.js';
 import {
   sendLicenseKeyEmail,
   sendPaymentFailedEmail,
@@ -266,6 +267,8 @@ async function handleSubscriptionUpdated({ supabase, subscription, stripeCustome
 }
 
 async function processStripeEvent({ supabase, event }) {
+  const ownership = await legacyMembershipEvent(event, { stripe, supabase, priceId: process.env.STRIPE_PRICE_ID });
+  if (!ownership.owned) return;
   const stripeCustomerId =
     typeof event.data?.object?.customer === 'string'
       ? event.data.object.customer
@@ -284,7 +287,7 @@ async function processStripeEvent({ supabase, event }) {
           ? invoice.customer
           : invoice.customer?.id;
       if (!customerId) throw new Error('invoice.paid missing customer id');
-      const subId = invoice.subscription || null;
+      const subId = ownership.subscriptionId;
       await handleInvoicePaid({ supabase, invoice, stripeCustomerId: customerId, stripeSubId: subId });
       return;
     }
@@ -295,7 +298,7 @@ async function processStripeEvent({ supabase, event }) {
           ? invoice.customer
           : invoice.customer?.id;
       if (!customerId) throw new Error('invoice.payment_failed missing customer id');
-      const subId = invoice.subscription || null;
+      const subId = ownership.subscriptionId;
       await handleInvoicePaymentFailed({ supabase, invoice, stripeCustomerId: customerId, stripeSubId: subId });
       return;
     }
