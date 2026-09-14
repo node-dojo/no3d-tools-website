@@ -70,23 +70,8 @@ try {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, mode: 'signin', next: '/v3/account/', password }),
   });
-  if (signIn.status === 429) {
-    const response = await fetch(`${process.env.SUPABASE_URL.replace(/\/$/, '')}/auth/v1/token?grant_type=password`, {
-      method: 'POST',
-      headers: { apikey: process.env.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const session = await response.json();
-    assert.equal(response.status, 200, session.error || 'Direct staging acceptance sign-in failed');
-    const domain = new URL(baseUrl).hostname;
-    await page.setCookie(
-      { name: 'no3d_auth_access', value: session.access_token, domain, path: '/', httpOnly: true, secure: true, sameSite: 'Lax' },
-      { name: 'no3d_auth_refresh', value: session.refresh_token, domain, path: '/', httpOnly: true, secure: true, sameSite: 'Lax' },
-    );
-  } else {
-    assert.equal(signIn.status, 200, signIn.payload.error || 'Acceptance account sign-in failed');
-    assert.equal(signIn.payload.authenticated, true);
-  }
+  assert.equal(signIn.status, 200, signIn.payload.error || 'Acceptance account sign-in failed');
+  assert.equal(signIn.payload.authenticated, true);
 
   const baselineAccount = await pageFetch(page, '/api/commerce/account');
   assert.equal(baselineAccount.status, 200, baselineAccount.payload.error || 'Commerce account lookup failed');
@@ -138,9 +123,9 @@ try {
   assert.match(subscriptionId, /^sub_/);
 
   await waitFor(async () => {
-    const response = await fetch(`${baseUrl}/api/get-license-by-session?session_id=${encodeURIComponent(checkout.payload.id)}`);
-    const payload = await response.json();
-    return response.ok && ['active', 'grace'].includes(payload.status) ? payload : null;
+    const response = await pageFetch(page, `/api/get-license-by-session?session_id=${encodeURIComponent(checkout.payload.id)}`);
+    assert.notEqual(response.status, 403, 'Purchasing browser lost Checkout ownership proof');
+    return response.status === 200 && ['active', 'grace'].includes(response.payload.status) ? response.payload : null;
   }, 'Membership fulfillment did not complete');
 
   const activeMembership = await waitFor(async () => {
@@ -149,19 +134,28 @@ try {
   }, 'Membership did not become active');
   assert.equal(activeMembership.status, 'active');
 
-  const catalog = await pageFetch(page, '/api/products');
+  const catalog = await pageFetch(page, '/api/products?limit=100');
   assert.equal(catalog.status, 200, catalog.payload.error || 'Catalog lookup failed');
   const eligibleCatalogCount = (catalog.payload.products || []).filter((product) => product.releaseStatus !== 'archived').length;
   assert.ok(eligibleCatalogCount > 1, 'Staging catalog must contain multiple membership products');
 
   const activeAccount = await pageFetch(page, '/api/commerce/account');
   assert.equal(activeAccount.status, 200, activeAccount.payload.error || 'Active account lookup failed');
-  const effectiveLibraryCount = (activeAccount.payload.products || []).filter((product) => product.owned).length;
-  assert.ok(effectiveLibraryCount > 1, 'Active membership did not expand the account library');
+  assert.ok(activeAccount.payload.products?.some((product) => product.handle === permanentHandle && product.owned && product.permanent), 'Membership activation removed the permanent purchase');
+  // Legacy membership is projected by the V3 renderer alongside Commerce purchases.
+  // The Commerce account endpoint alone does not enumerate that effective library.
+  const effectiveLibraryCount = eligibleCatalogCount;
 
   await page.goto(`${baseUrl}/v3/account/?membership=active`, { waitUntil: 'networkidle2' });
-  await page.waitForFunction((expected) => document.querySelectorAll('.library-card').length >= expected, { timeout: 20_000 }, effectiveLibraryCount);
-  const renderedLibraryCount = await page.$$eval('.library-card', (cards) => cards.length);
+  await page.waitForSelector('[data-account-folders] button', { timeout: 20_000 });
+  // My Folder renders one folder at a time; inspect every folder through its UI.
+  const renderedHandles = new Set();
+  const folderCount = await page.$$eval('[data-account-folders] button', (buttons) => buttons.length);
+  for (let index = 0; index < folderCount; index += 1) {
+    await page.$$eval('[data-account-folders] button', (buttons, selected) => buttons[selected].click(), index);
+    for (const handle of await page.$$eval('[data-account-file]', (rows) => rows.map(row => row.dataset.accountFile))) renderedHandles.add(handle);
+  }
+  const renderedLibraryCount = renderedHandles.size;
   assert.ok(renderedLibraryCount >= effectiveLibraryCount, 'Account page did not render the effective membership library');
   if (exactArtifactHandle) {
     const folderSelected = await page.$$eval('[data-account-folders] button', (buttons) => {
@@ -195,7 +189,7 @@ try {
     assert.equal(activeManifest.assets?.[exactArtifactHandle]?.access_source, 'membership');
     if (exactArtifactChecksum) assert.equal(activeManifest.assets[exactArtifactHandle].checksum, exactArtifactChecksum);
   }
-  const membershipOnlyHandle = Object.keys(activeManifest.assets || {}).find((handle) => handle !== permanentHandle);
+  const membershipOnlyHandle = Object.keys(activeManifest.assets || {}).find((handle) => handle !== permanentHandle && activeManifest.assets[handle].access_policy !== 'free' && activeManifest.assets[handle].access_source === 'membership');
   assert.ok(membershipOnlyHandle, 'Active membership did not add any Blender-library assets');
   const memberDownload = await fetch(`${baseUrl}/api/download/${encodeURIComponent(membershipOnlyHandle)}`, {
     headers: { 'X-NO3D-Device-Token': deviceToken },
@@ -255,7 +249,7 @@ try {
 
   process.stdout.write(`${JSON.stringify({
     status: 'passed',
-    membership: { checkout: 'cs_test', activated: true, portal: true, canceled: true, expired: true },
+    membership: { subscriptionId, checkout: 'cs_test', activated: true, portal: true, canceled: true, expired: true },
     account: { expandedCatalog: renderedLibraryCount, permanentPurchaseSurvived: permanentHandle, visualCaptures: 2 },
     blender: { activeCatalog: activeManifest.asset_count, fallbackCatalog: canceledManifest.asset_count, membershipDownloadRemoved: true },
     exactArtifact: exactArtifactDownload,

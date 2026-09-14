@@ -176,8 +176,8 @@ try {
   process.stdout.write(`${JSON.stringify({
     status: 'passed',
     product: handle,
-    purchase: { paymentStatus: 'paid', fulfillmentStatus: 'fulfilled', deviceAccess: 'purchase' },
-    refund: { stripe: 'succeeded', paymentStatus: 'refunded', fulfillmentStatus: 'revoked', downloadRemoved: true },
+    purchase: { orderId: checkout.payload.orderId, paymentStatus: 'paid', fulfillmentStatus: 'fulfilled', deviceAccess: 'purchase' },
+    refund: { refundId: refund.id, stripe: 'succeeded', paymentStatus: 'refunded', fulfillmentStatus: 'revoked', downloadRemoved: true },
     repeatPurchaseAfterRefund: priorRefund,
     control: { permanentPurchaseSurvived: permanentHandle },
   })}\n`);
