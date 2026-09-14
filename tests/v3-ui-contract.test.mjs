@@ -38,9 +38,9 @@ test('catalog entrypoints invalidate the presentation-classification module grap
     load('v3/index.html'),
     load('v3/workbench/index.html'),
   ]);
-  assert.match(home, /home\.js\?v=analytics-20260911/);
-  assert.match(home, /workbench\.js\?v=analytics-20260911/);
-  assert.match(workbench, /workbench\.js\?v=analytics-20260911/);
+  assert.match(home, /home\.js\?v=shell-20260914/);
+  assert.match(home, /workbench\.js\?v=shell-20260914/);
+  assert.match(workbench, /workbench\.js\?v=shell-20260914/);
 });
 
 test('uses the published preview ahead of a legacy low-resolution icon', () => {
@@ -84,7 +84,7 @@ test('catalog collections are distinct first-class cards with a folder marker', 
 });
 
 test('home fingerprints the single-page directory composition', async () => {
-  assert.match(await load('v3/index.html'), /home\.js\?v=analytics-20260911/);
+  assert.match(await load('v3/index.html'), /home\.js\?v=shell-20260914/);
 });
 
 test('resolves hosted media shapes and ships a canonical paid-product fallback', () => {
@@ -463,7 +463,7 @@ test('product descriptions render one designed heading and use real prose for su
   const html = await load('v3/product/index.html');
   const product = await load('v3/js/product.js');
   assert.equal((html.match(/<h2>Description<\/h2>/g) || []).length, 1);
-  assert.match(html, /product\.js\?v=analytics-20260911/);
+  assert.match(html, /product\.js\?v=shell-20260914/);
   assert.match(product, /function descriptionContent\(text\)/);
   assert.match(product, /\^#\{1,6\}\\s\+description/);
   assert.match(product, /const summary = descriptionSummary\(product\.description\)/);
@@ -572,7 +572,7 @@ test('canonical public routes are indexable and recovery surfaces are not', asyn
   assert.match(await load('v3/index.html'), /name="google-site-verification" content="[A-Za-z0-9_-]+"/);
   assert.match(await load('v3/membership/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/membership\/"/);
   assert.match(await load('v3/product/index.html'), /data-product-structured-data/);
-  assert.match(await load('v3/product/index.html'), /product\.js\?v=analytics-20260911/);
+  assert.match(await load('v3/product/index.html'), /product\.js\?v=shell-20260914/);
   assert.match(await load('v3/js/product.js'), /document\.querySelector\('link\[rel="canonical"\]'\)\.href = canonicalUrl/);
   assert.match(await load('v3/account/index.html'), /name="robots" content="noindex,nofollow"/);
   assert.match(await load('v3/onboarding/create-account/index.html'), /name="robots" content="noindex,nofollow"/);

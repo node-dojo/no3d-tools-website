@@ -2,7 +2,8 @@ const catalogButton = document.querySelector('[data-catalog-toggle]');
 const catalogPanel = document.querySelector('[data-catalog-panel]');
 
 export function initShell() {
-  if (catalogButton && catalogPanel) {
+  if (catalogButton && catalogPanel && catalogButton.dataset.shellBound !== 'true') {
+    catalogButton.dataset.shellBound = 'true';
     const setOpen = open => {
       catalogPanel.classList.toggle('is-open', open);
       catalogButton.setAttribute('aria-expanded', String(open));
@@ -15,7 +16,8 @@ export function initShell() {
 
   const searchButton = document.querySelector('[data-search-toggle]');
   const searchRegion = document.querySelector('[data-search-region]');
-  if (searchButton && searchRegion) {
+  if (searchButton && searchRegion && searchButton.dataset.shellBound !== 'true') {
+    searchButton.dataset.shellBound = 'true';
     searchButton.addEventListener('click', () => {
       const opening = searchRegion.hidden;
       searchRegion.hidden = !opening;

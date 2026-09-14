@@ -1,7 +1,7 @@
 import { getAccountState, getCatalog, selectWorkbenchInventory, sortCatalogProducts } from './api.js?v=analytics-20260911';
 import { WORKBENCH_SAMPLE } from '../data/workbench-sample.js?v=workbench-20260822';
 import { getCatalogCollections } from './collections.js?v=collections-20260827';
-import './shell.js?v=workbench-20260822';
+import './shell.js?v=shell-20260914';
 
 const folderIcon = '/v3/assets/shared-source-folder-black.png';
 const guestStorageKey = 'no3d_my_file_handles';

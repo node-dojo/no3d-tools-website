@@ -1,7 +1,7 @@
 import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=analytics-20260911';
 import { track } from './analytics.js?v=analytics-20260911';
 import { setProductPreview } from './product-preview.js?v=preview-20260823';
-import './shell.js?v=perf-20260820';
+import './shell.js?v=shell-20260914';
 
 const $ = selector => document.querySelector(selector);
 const handle = new URLSearchParams(location.search).get('handle') || 'chrome-crayon';
