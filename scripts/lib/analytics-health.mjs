@@ -1,4 +1,6 @@
 import crypto from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import fs from 'node:fs';
 import path from 'node:path';
 export function isProductionObservation(row) {
@@ -27,10 +29,25 @@ export async function probeCollector(client, origin = 'https://no3dtools.com', f
     return { ...health, status: 'unavailable', detail: /^http_\d+$/.test(error.message) ? error.message : 'ingestion_or_read_back_failed' };
   }
 }
-export function localVercelToken() {
-  if (process.env.VERCEL_TOKEN) return process.env.VERCEL_TOKEN;
-  // Operator script only. Reuse existing CLI login; never send this token to the site.
-  try { return JSON.parse(fs.readFileSync(path.join(process.env.HOME, 'Library/Application Support/com.vercel.cli/auth.json'), 'utf8')).token; } catch { return null; }
+function readLocalVercelAuth() {
+  try { return JSON.parse(fs.readFileSync(path.join(process.env.HOME, 'Library/Application Support/com.vercel.cli/auth.json'), 'utf8')); } catch { return {}; }
+}
+export async function localVercelToken({ env = process.env, readAuth = readLocalVercelAuth,
+  refresh = async () => {
+    const executable = fs.existsSync('/opt/homebrew/bin/vercel') ? '/opt/homebrew/bin/vercel' : 'vercel';
+    // Let the owning CLI refresh and persist rotating OAuth credentials. Never implement
+    // a second refresh-token writer, print credentials, or prompt during a scheduled job.
+    await promisify(execFile)(executable, ['whoami'], { timeout: 15000, env: { ...process.env, CI: '1' }, maxBuffer: 65536 });
+  }, now = Date.now() } = {}) {
+  if (env.VERCEL_ANALYTICS_TOKEN || env.VERCEL_TOKEN) return env.VERCEL_ANALYTICS_TOKEN || env.VERCEL_TOKEN;
+  let auth = readAuth();
+  if (!auth.token) return null;
+  if (Number.isFinite(auth.expiresAt) && auth.expiresAt * 1000 <= now) {
+    if (!auth.refreshToken) return null;
+    try { await refresh(); auth = readAuth(); } catch { return null; }
+    if (!auth.token || (Number.isFinite(auth.expiresAt) && auth.expiresAt * 1000 <= Date.now())) return null;
+  }
+  return auth.token;
 }
 export async function fetchVercelAnalytics({ token, projectId, teamId, windows, now = new Date(), fetcher = fetch }) {
   if (!token || !projectId) return { status: 'not_configured', windows: {}, detail: 'Vercel reporting credentials/project absent' };

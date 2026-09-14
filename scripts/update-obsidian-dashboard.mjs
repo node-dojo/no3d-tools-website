@@ -160,7 +160,7 @@ async function main() {
   sourceHealth.push(await probeCollector(probeClient));
   let project = {};
   try { project = JSON.parse(fs.readFileSync(path.join(repoRoot, '.vercel/project.json'), 'utf8')); } catch {}
-  const vercel = await fetchVercelAnalytics({ token: localVercelToken(), projectId: project.projectId, teamId: project.orgId, windows: WINDOWS, now });
+  const vercel = await fetchVercelAnalytics({ token: await localVercelToken(), projectId: project.projectId, teamId: project.orgId, windows: WINDOWS, now });
   sourceHealth.push(health('Vercel Web Analytics API', vercel.status, vercel.detail));
   const eventSummary = summarizeEvents(siteData.events, now);
   const subscriptionSummary = summarizeSubscriptions(siteData.subscriptions);

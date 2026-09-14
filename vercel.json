@@ -30,12 +30,14 @@
     { "source": "/blog/:slug", "destination": "/blog.html" }
   ],
   "crons": [
+    { "path": "/api/cron/analytics-monitor", "schedule": "*/5 * * * *" },
     {
       "path": "/api/newsletter/generate-draft",
       "schedule": "0 16 1,15 * *"
     }
   ],
   "functions": {
+    "api/cron/analytics-monitor.js": { "maxDuration": 60 },
     "api/**/*.js": {
       "maxDuration": 10
     }

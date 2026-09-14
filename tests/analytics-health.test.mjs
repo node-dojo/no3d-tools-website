@@ -22,3 +22,18 @@ test('Vercel report preserves query bounds, production filter, and provider uniq
 test('provider errors never become zero audience',async()=>{
   const result=await fetchVercelAnalytics({token:'test',projectId:'p',windows:[{key:'7d',milliseconds:604800000}],fetcher:async()=>({ok:false,status:403})});assert.equal(result.status,'unavailable');assert.deepEqual(result.windows,{});
 });
+
+
+test('expired CLI OAuth credentials are refreshed before scheduled reporting', async () => {
+  const { localVercelToken } = await import('../scripts/lib/analytics-health.mjs');
+  let auth = { token: 'expired', expiresAt: 1, refreshToken: 'refresh' }; let refreshes = 0;
+  const token = await localVercelToken({ env: {}, readAuth: () => auth, refresh: async () => {
+    refreshes++; auth = { token: 'renewed', expiresAt: Math.floor(Date.now()/1000)+3600 };
+  }});
+  assert.equal(token, 'renewed'); assert.equal(refreshes, 1);
+});
+test('explicit reporting token wins and refresh failure fails closed', async () => {
+  const { localVercelToken } = await import('../scripts/lib/analytics-health.mjs');
+  assert.equal(await localVercelToken({ env: { VERCEL_ANALYTICS_TOKEN: 'scoped' }, readAuth: () => { throw Error('unused'); }}), 'scoped');
+  assert.equal(await localVercelToken({ env: {}, readAuth: () => ({ token:'old', expiresAt:1, refreshToken:'r' }), refresh: async () => { throw Error('offline'); }}), null);
+});

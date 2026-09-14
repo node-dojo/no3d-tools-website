@@ -6,7 +6,7 @@ import { publicPage, publicProperties } from '../v3/js/analytics-contract.js';
 const input = () => ({ event: 'page_view', event_id: randomUUID(), session_id: randomUUID(), page: '/v3/' });
 async function call(body, { limit = true, limitError = null, insertError = null, environment = 'production', host = 'no3dtools.com' } = {}) {
   let inserted, rpc;
-  const client = { rpc: async (name,args) => { rpc={name,args}; return {data:limit,error:limitError}; }, from: () => ({ insert: async row => { inserted=row; return {error:insertError}; } }) };
+  const client = { rpc: async (name,args) => { if(name==='no3d_record_browser_event'){inserted=args.p_event;return {data:insertError?.code!=='23505',error:insertError?.code==='23505'?null:insertError};} rpc={name,args}; return {data:limit,error:limitError}; } };
   const res = { code:200, headers:{}, setHeader(k,v){this.headers[k]=v;}, status(c){this.code=c;return this;}, json(b){this.body=b;return this;}, end(){return this;} };
   await createAnalyticsHandler({ client, environment, logger:{error(){} } })({ method:'POST', headers:{host}, body }, res);
   return {res,inserted,rpc};

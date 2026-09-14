@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
+import { notificationForVisit } from './visit-notifications.js';
 import { CLIENT_EVENTS, publicPage, publicProperties, publicReferrer } from '../../v3/js/analytics-contract.js';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-export function createAnalyticsHandler({ client, environment = 'development', secret = '', logger = console }) {
+export function createAnalyticsHandler({ client, environment = 'development', secret = '', logger = console, notificationEnv = process.env, afterAccepted = () => {} }) {
   return async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -23,12 +24,17 @@ export function createAnalyticsHandler({ client, environment = 'development', se
       const { data: allowed, error: limitError } = await client.rpc('no3d_consume_analytics_rate_limit', { p_bucket_key: bucket });
       if (limitError) throw limitError;
       if (!allowed) { res.setHeader('Retry-After', '60'); return res.status(429).json({ error: 'Too many requests' }); }
-      const { error } = await client.from('site_events').insert({ event: input.event,
+      const row = { event: input.event,
         page: publicPage(input.page), referrer: publicReferrer(input.referrer), session_id: input.session_id,
         properties: { ...publicProperties(input.properties), schema_version: 2, source_kind: 'browser', environment,
-          synthetic: input.synthetic === true, event_id: input.event_id } });
-      if (error && error.code !== '23505') throw error;
-      return res.status(200).json({ ok: true, duplicate: error?.code === '23505' });
+          synthetic: input.synthetic === true, event_id: input.event_id } };
+      const notification = notificationForVisit(req, row, { env: notificationEnv });
+      const { data: inserted, error } = await client.rpc('no3d_record_browser_event', { p_event: row, p_notification: notification });
+      if (error) throw error;
+      if (inserted && notification) {
+        try { afterAccepted(input.event_id); } catch { logger.error('analytics_notification_dispatch_failed'); }
+      }
+      return res.status(200).json({ ok: true, duplicate: !inserted });
     } catch (error) {
       logger.error('analytics_ingestion_failed', { code: String(error?.code || 'unavailable').slice(0, 20) });
       return res.status(503).json({ error: 'Analytics unavailable' });
