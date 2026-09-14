@@ -51,7 +51,12 @@ async function waitFor(check, message, { attempts = 60, interval = 1_000 } = {})
 async function pageFetch(page, path, init) {
   return page.evaluate(async ({ requestPath, requestInit }) => {
     const response = await fetch(requestPath, requestInit);
-    return { status: response.status, payload: await response.json() };
+    const raw = await response.text();
+    let payload;
+    try { payload = JSON.parse(raw); } catch {
+      throw new Error(`Non-JSON response for ${requestPath.split('?')[0]}: HTTP ${response.status}; type ${response.headers.get('content-type')}; deployment error ${response.headers.get('x-vercel-error') || 'unspecified'}`);
+    }
+    return { status: response.status, payload };
   }, { requestPath: path, requestInit: init });
 }
 
@@ -126,6 +131,16 @@ try {
   }, 'Guest order did not fulfill');
   assert.equal(fulfilled.resourceId, handle);
 
+  // Capture the completed test payment before recovery/UI assertions so failure cleanup can refund it.
+  const sessions = await stripe.checkout.sessions.list({ limit: 100 });
+  const checkoutSession = sessions.data.find((session) => session.client_reference_id === checkout.payload.orderId);
+  assert.ok(checkoutSession, 'Recovery Checkout session was not found');
+  paymentIntent = typeof checkoutSession.payment_intent === 'string'
+    ? checkoutSession.payment_intent
+    : checkoutSession.payment_intent?.id;
+  assert.match(paymentIntent, /^pi_/);
+  assert.equal(checkoutSession.livemode, false, 'Recovery cleanup must target a test payment');
+
   const guestCookie = (await page.cookies(baseUrl)).find((cookie) => cookie.name === 'no3d_commerce_guest');
   assert.ok(guestCookie?.value, 'Guest purchase proof cookie is missing');
   const issued = await commerceFetch('/api/recovery/issue', {
@@ -173,20 +188,21 @@ try {
   assert.equal(signIn.payload.authenticated, true);
   await page.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
   await page.goto(`${baseUrl}/v3/account/?purchase=recovered`, { waitUntil: 'networkidle2' });
-  await page.waitForFunction(() => document.querySelectorAll('.library-card').length > 0, { timeout: 20_000 });
+  await page.waitForSelector('[data-account-folders] button', { timeout: 20_000 });
+  let recoveredRowFound = false;
+  const folderCount = await page.$$eval('[data-account-folders] button', buttons => buttons.length);
+  for (let index = 0; index < folderCount; index += 1) {
+    await page.$$eval('[data-account-folders] button', (buttons, selected) => buttons[selected].click(), index);
+    recoveredRowFound = await page.$$eval('[data-account-file]', (rows, expected) => rows.some(row => row.dataset.accountFile === expected), handle);
+    if (recoveredRowFound) break;
+  }
+  assert.equal(recoveredRowFound, true, 'Recovered purchase is missing from My Folder');
   await mkdir(captureDir, { recursive: true });
   await page.screenshot({ path: `${captureDir}/recovered-purchase-desktop.png`, fullPage: true });
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
   await page.reload({ waitUntil: 'networkidle2' });
   await page.screenshot({ path: `${captureDir}/recovered-purchase-mobile.png`, fullPage: true });
 
-  const sessions = await stripe.checkout.sessions.list({ limit: 100 });
-  const checkoutSession = sessions.data.find((session) => session.client_reference_id === checkout.payload.orderId);
-  assert.ok(checkoutSession, 'Recovery Checkout session was not found');
-  paymentIntent = typeof checkoutSession.payment_intent === 'string'
-    ? checkoutSession.payment_intent
-    : checkoutSession.payment_intent?.id;
-  assert.match(paymentIntent, /^pi_/);
   await stripe.refunds.create({ payment_intent: paymentIntent });
   refunded = true;
 
@@ -206,7 +222,7 @@ try {
 
   process.stdout.write(`${JSON.stringify({
     status: 'passed',
-    purchase: { guest: true, paymentStatus: 'paid', fulfillmentStatus: 'fulfilled' },
+    purchase: { orderId: checkout.payload.orderId, guest: true, paymentStatus: 'paid', fulfillmentStatus: 'fulfilled' },
     recovery: { issued: true, verifiedIdentity: true, claimed: true, replayRejected: true, visualCaptures: 2 },
     cleanup: { paymentStatus: 'refunded', fulfillmentStatus: 'revoked', authUserDeleted, existingAcceptanceAccount: useExistingAcceptanceAccount },
   })}\n`);
