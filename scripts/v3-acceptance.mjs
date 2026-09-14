@@ -4,6 +4,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { collectionDefinitions } from '../lib/collection-definitions.js';
 
 const projectRoot = normalize(join(dirname(fileURLToPath(import.meta.url)), '..'));
 const outputDir = process.env.NO3D_V3_ACCEPTANCE_OUTPUT || '/tmp/no3d-v3-acceptance';
@@ -66,6 +67,14 @@ async function installMocks(page, { authenticated = false, membershipActive = fa
       const handle = url.pathname.split('/').pop();
       payload = { product: products.find(product => product.handle === handle) };
     }
+    else if (url.pathname.startsWith('/api/collections/')) {
+      const handle = url.pathname.split('/').pop();
+      const definition = collectionDefinitions[handle];
+      payload = definition ? { ...definition, handle, productCount: 5,
+        products: products.map(product => ({ ...product, productUrl: `/v3/product/?handle=${product.handle}` })),
+        productUrl: `/v3/collections/${handle}/`,
+      } : { error: 'collection_not_found' };
+    }
     else if (url.pathname === '/api/commerce/offer') {
       const handle = url.searchParams.get('handle');
       payload = { offer: { currency: 'usd', offerKey: `no3dtools.product.${handle}`, resourceId: handle, unitAmount: handle === 'chrome-crayon' ? 2222 : 777 } };
@@ -105,6 +114,25 @@ async function structuralAudit(page, label) {
   else assert.match(result.headingFont, /(?:DrukV3|SilkaV3)/);
 }
 
+async function homeContentAudit(page, label) {
+  const text = await page.$eval('body', node => node.textContent);
+  assert.doesNotMatch(text, /undefined tools|NaN tools/, `${label}: invalid collection count`);
+  for (const definition of Object.values(collectionDefinitions)) {
+    assert.ok(text.includes(definition.title), `${label}: missing collection ${definition.title}`);
+  }
+  const nav = await page.$('nav[aria-label="More from NO3D Tools"]');
+  assert.ok(nav, `${label}: missing footer navigation`);
+  await nav.evaluate(node => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  const links = await nav.evaluate(node => [...node.querySelectorAll('a')].map(link => {
+    const bounds = link.getBoundingClientRect();
+    return { href: link.getAttribute('href'), visible: bounds.width > 0 && bounds.height > 0 && bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0 && bounds.bottom <= innerHeight };
+  }));
+  assert.deepEqual(links.map(link => link.href), ['/blog', '/join']);
+  assert.ok(links.every(link => link.visible), `${label}: footer links outside viewport`);
+  await page.screenshot({ path: join(outputDir, `${label}-footer.png`) });
+  await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+}
+
 async function mobileMastAudit(page, label) {
   const result = await page.evaluate(() => {
     const wordmark = document.querySelector('.v3-wordmark').getBoundingClientRect();
@@ -139,6 +167,9 @@ try {
   await page.click('[data-mobile-category-menu]');
   assert.equal(await page.$eval('[data-mobile-category-overview]', node => node.hidden), false);
   await page.screenshot({ path: join(outputDir, 'home-mobile-open.png') });
+  await page.click('[data-mobile-category-menu]');
+  assert.equal(await page.$eval('[data-mobile-category-overview]', node => node.hidden), true);
+  await homeContentAudit(page, 'home-mobile');
   await page.screenshot({ path: join(outputDir, 'home-mobile.png') });
 
   await page.goto(`${origin}/v3/product/?handle=dojo-bolt-gen-v05-obj`, { waitUntil: 'networkidle0' });
@@ -258,6 +289,7 @@ try {
       assert.equal(await page.$eval('[data-wizard-slide="mobile-handoff"]', node => node.hidden), true);
     }
     if (name === 'home-desktop') {
+      await homeContentAudit(page, name);
       const responsiveDirectory = await page.evaluate(() => {
         const shelf = document.querySelector('[data-product-grid]');
         const cards = [...shelf.querySelectorAll('.product-card')];
