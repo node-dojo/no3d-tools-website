@@ -40,7 +40,11 @@ export default async function handler(req, res) {
       readJson(CATALOG_URL).catch(() => ({ products: [] })),
     ]);
     const members = source?.collections?.[definition.scope];
-    if (!Array.isArray(members)) throw new Error('SOLVET collection scope is unavailable');
+    if (!Array.isArray(members) || members.length === 0 ||
+        members.some(member => typeof member !== 'string' || !/^[a-z0-9][a-z0-9-]{1,100}$/.test(member)) ||
+        new Set(members).size !== members.length) {
+      throw new Error('SOLVET collection scope is unavailable or invalid');
+    }
     const catalog = Array.isArray(catalogPayload) ? catalogPayload : catalogPayload.products || [];
     const byHandle = new Map(catalog.map(product => [product.handle, product]));
     const products = members.map(productHandle => {

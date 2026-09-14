@@ -166,3 +166,28 @@ test('full-library projection remains available after future tools are added', a
     else process.env.NO3D_MANIFEST_JSON = originalManifest;
   }
 });
+
+
+test('invalid published membership cannot advertise an available collection checkout', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalManifest = process.env.NO3D_MANIFEST_JSON;
+  const originalEnabled = process.env.COMMERCE_COLLECTIONS_ENABLED;
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ products: [] }) });
+  process.env.COMMERCE_COLLECTIONS_ENABLED = 'true';
+  try {
+    for (const members of [null, [], ['chrome-crayon', null], ['chrome-crayon', 'chrome-crayon'], ['../private'], [{}]]) {
+      process.env.NO3D_MANIFEST_JSON = JSON.stringify({ collections: { 'no3dtools.membership.no3d-chrome': members } });
+      const res = responseRecorder();
+      await handler({ method: 'GET', query: { handle: 'no3d-chrome-tools' }, headers: {} }, res);
+      assert.equal(res.statusCode, 502);
+      assert.deepEqual(res.body, { error: 'collection_source_unavailable' });
+      assert.equal(res.headers['Cache-Control'], undefined);
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalManifest === undefined) delete process.env.NO3D_MANIFEST_JSON;
+    else process.env.NO3D_MANIFEST_JSON = originalManifest;
+    if (originalEnabled === undefined) delete process.env.COMMERCE_COLLECTIONS_ENABLED;
+    else process.env.COMMERCE_COLLECTIONS_ENABLED = originalEnabled;
+  }
+});
