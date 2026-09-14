@@ -31,6 +31,7 @@ assert.equal(publicOffer.offer?.unitAmount, expectedUnitAmount);
 assert.equal(publicOffer.offer?.currency, 'usd');
 assert.equal('priceId' in publicOffer.offer, false, 'Public offer must not expose a Stripe Price ID');
 
+process.stdout.write('PREFLIGHT_TEST_MODE_OK\n');
 const browser = await puppeteer.launch({ headless: true });
 
 try {
@@ -53,6 +54,7 @@ try {
   assert.equal(signIn.status, 200, signIn.payload.error || 'Acceptance account sign-in failed');
   assert.equal(signIn.payload.authenticated, true);
   assert.equal(signIn.payload.claimStatus, 'no_guest');
+  process.stdout.write('BROWSER_SIGN_IN_OK\n');
 
   const checkout = await page.evaluate(async (productHandle) => {
     const response = await fetch('/api/commerce/checkout', {
@@ -67,6 +69,7 @@ try {
   assert.match(checkout.payload.orderId, /^[0-9a-f-]{36}$/i);
   assert.equal(new URL(checkout.payload.checkoutUrl).hostname, 'checkout.stripe.com');
 
+  process.stdout.write(`TEST_CHECKOUT_CREATED ${checkout.payload.orderId}\n`);
   await page.goto(checkout.payload.checkoutUrl, { waitUntil: 'networkidle2' });
   const checkoutEmail = await page.$('input[name=email]');
   if (checkoutEmail) await checkoutEmail.type(email, { delay: 20 });
@@ -93,6 +96,7 @@ try {
     new URL(baseUrl).hostname,
   );
 
+  process.stdout.write('BROWSER_RETURN_OK\n');
   let order;
   for (let attempt = 0; attempt < 30; attempt += 1) {
     order = await page.evaluate(async (orderId) => {
@@ -106,6 +110,7 @@ try {
   assert.equal(order?.status, 200);
   assert.equal(order.payload.paymentStatus, 'paid');
   assert.equal(order.payload.fulfillmentStatus, 'fulfilled');
+  process.stdout.write('SERVER_PAYMENT_AND_FULFILLMENT_OK\n');
   assert.equal(order.payload.resourceId, handle);
   assert.equal(order.payload.recovery?.kind, 'no3dtools_product_download');
 
@@ -149,6 +154,7 @@ try {
     environment: price.environment,
     product: {
       handle,
+      orderId: checkout.payload.orderId,
       unitAmount: publicOffer.offer.unitAmount,
       paymentStatus: order.payload.paymentStatus,
       fulfillmentStatus: order.payload.fulfillmentStatus,
