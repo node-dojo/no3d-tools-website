@@ -6,6 +6,7 @@ import {
 } from './api/auth/lib/v3-access.js';
 import { sanitizeAnalyticsPage, sanitizeAnalyticsReferrer } from './api/lib/analytics.js';
 import { legacyDestination } from './api/lib/legacy-routes.js';
+import { productPreviewResponse } from './api/lib/product-preview.js';
 
 const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Discordbot|Slackbot|WhatsApp|Telegram|iMessageBot|Applebot|Google-InspectionTool|Googlebot|bingbot|yandex|Pinterestbot|Embedly|Quora Link Preview|Showyoubot|outbrain|vkShare|W3C_Validator|redditbot|Mediapartners|AhrefsBot|SemrushBot|MJ12bot/i;
 const PRODUCT_HANDLE_ALIASES = new Map([
@@ -70,8 +71,13 @@ function accessRedirect(request, reason) {
   return Response.redirect(access, 307);
 }
 
+async function productPreviewMiddleware(request) {
+  if (!BOT_UA.test(request.headers.get('user-agent') || '')) return next();
+  return await productPreviewResponse(request) || next();
+}
+
 async function v3AccessMiddleware(request) {
-  if (!v3OwnerGateEnabled()) return next();
+  if (!v3OwnerGateEnabled()) return productPreviewMiddleware(request);
   const url = new URL(request.url);
   if (isPublicV3Path(url.pathname)) return next();
 
@@ -81,7 +87,7 @@ async function v3AccessMiddleware(request) {
       headers: { cookie: request.headers.get('cookie') || '' },
     });
     const session = await sessionResponse.json();
-    if (session.authenticated && v3OwnerAllowed(session.email)) return next();
+    if (session.authenticated && v3OwnerAllowed(session.email)) return productPreviewMiddleware(request);
     return accessRedirect(request, session.authenticated ? 'denied' : 'required');
   } catch {
     return accessRedirect(request, 'required');
