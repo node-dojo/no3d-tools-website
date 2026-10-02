@@ -79,8 +79,8 @@ async function installMocks(page, { authenticated = false, membershipActive = fa
       const handle = url.searchParams.get('handle');
       payload = { offer: { currency: 'usd', offerKey: `no3dtools.product.${handle}`, resourceId: handle, unitAmount: handle === 'chrome-crayon' ? 2222 : 777 } };
     }
-    else if (url.pathname === '/api/commerce/config') payload = { individualProductsEnabled: true };
-    else if (url.pathname === '/api/get-subscription-price') payload = { formatted: '$22.22' };
+    else if (url.pathname === '/api/commerce/config') payload = { individualProductsEnabled: true, membershipExpectedEnvironment: 'test' };
+    else if (url.pathname === '/api/get-subscription-price') payload = { formatted: '$22.22', environment: 'test' };
     else if (url.pathname === '/api/auth/session') payload = account.session;
     else if (url.pathname === '/api/commerce/account') payload = account.summary || { error: 'not_authenticated' };
     else if (url.pathname === '/api/membership/account') payload = membershipActive

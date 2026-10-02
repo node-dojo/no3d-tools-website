@@ -1,4 +1,4 @@
-import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=analytics-20260911';
+import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=commerce-20261002';
 import { track } from './analytics.js?v=analytics-20260911';
 import { setProductPreview } from './product-preview.js?v=preview-20260823';
 import './shell.js?v=shell-20260914';
@@ -158,10 +158,9 @@ if (!product) {
       : download.disabled ? 'Individual checkout is not currently enabled' : '';
     }
     $('[data-membership-price]').textContent = commerce.membershipPrice ? `${commerce.membershipPrice} / month →` : '→';
-    const requiresTestPrice = location.hostname === 'v3.no3dtools.com';
-    const membershipCheckoutIsSafe = !requiresTestPrice || commerce.membershipEnvironment === 'test';
+    const membershipCheckoutIsSafe = commerce.membershipCheckoutEnabled === true;
     catalogButton.disabled = !membershipCheckoutIsSafe;
-    catalogButton.title = membershipCheckoutIsSafe ? '' : 'Membership checkout is paused while the staging payment connection is verified';
+    catalogButton.title = membershipCheckoutIsSafe ? '' : 'Membership checkout is temporarily unavailable. Please try again later.';
   });
 }
 

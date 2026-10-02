@@ -1,4 +1,4 @@
-import { beginMembershipCheckout, getCommerceConfig } from './api.js?v=analytics-20260911';
+import { beginMembershipCheckout, getCommerceConfig } from './api.js?v=commerce-20261002';
 import { track, trackOnce } from './analytics.js?v=analytics-20260911';
 
 const config = await getCommerceConfig();
@@ -13,10 +13,9 @@ if (cancelled) {
   trackOnce('membership_checkout_cancelled', { source: 'membership' });
 }
 
-const stagingRequiresTestPrice = location.hostname === 'v3.no3dtools.com';
-const checkoutIsSafe = !stagingRequiresTestPrice || config.membershipEnvironment === 'test';
+const checkoutIsSafe = config.membershipCheckoutEnabled === true;
 if (!checkoutIsSafe) {
-  message.textContent = 'Membership checkout is paused while the staging payment connection is verified.';
+  message.textContent = 'Membership checkout is temporarily unavailable. Please try again later.';
   document.querySelectorAll('[data-membership-checkout]').forEach(button => { button.disabled = true; });
 }
 

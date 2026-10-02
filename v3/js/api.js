@@ -279,6 +279,8 @@ export async function getCommerceConfig() {
     individualProductsEnabled: config.individualProductsEnabled === true,
     membershipPrice: membership.formatted || membership.price || membership.display || '',
     membershipEnvironment: membership.environment || 'unknown',
+    membershipCheckoutEnabled: ['live', 'test'].includes(config.membershipExpectedEnvironment)
+      && membership.environment === config.membershipExpectedEnvironment,
   };
 }
 
