@@ -14,7 +14,7 @@ const EVENT_ALIASES = {
   accountsCompleted: new Set(['account_authenticated', 'account_confirmation_completed']),
   checkoutStarts: new Set(['product_checkout_start', 'membership_checkout_start', 'collection_checkout_start']),
   checkoutRedirects: new Set(['product_checkout_redirect', 'membership_checkout_redirect', 'collection_checkout_redirect']),
-  checkoutFailures: new Set(['product_checkout_failed', 'membership_checkout_failed']),
+  checkoutFailures: new Set(['product_checkout_failed', 'membership_checkout_failed', 'collection_checkout_failed']),
   fulfillments: new Set(['product_fulfillment_observed', 'membership_fulfillment_observed']),
   downloads: new Set(['addon_downloaded']),
 };
@@ -73,7 +73,20 @@ function issueId(kind, event) {
 }
 function hasAfter(rows, eventNames, timestamp) { return rows.some((row) => eventNames.has(row.event) && at(row) >= timestamp); }
 function ignoredUnknownRoute(page = '') {
-  return /^\/(?:wp-admin|wp-login|\.env|\.git|xmlrpc\.php|_analytics-route-verification-)/i.test(page);
+  return /^\/(?:wp-admin|wp-login|wp-json|xmlrpc\.php|\.env|\.git|_profiler|_analytics-route-verification-|open(?:\/|$)|auth(?:\/|$)|v1(?:\/|$)|cart\.js(?:\?|$))/i.test(page);
+}
+function intentionalSitePath(page = '') {
+  // /join is an intentional Vercel rewrite to join.html, not a missing route.
+  if (/^\/join(?:\.html)?\/?(?:\?|$)/i.test(page)) return true;
+  return /^\/(?:account(?:\.html)?|subscribe(?:\.html)?|purchase\.html|library\.html|guide\.html|ai-help\.html|connect-purchases\.html|success\.html|ads\.txt|llms(?:-full)?\.txt|robots\.txt|sitemap\.xml|(?:assets|data|fonts|images|scripts|styles|extensions)\/)/i.test(page);
+}
+function hasFirstPartyReferrer(event) {
+  try {
+    const hostname = new URL(event.referrer || '').hostname.toLowerCase();
+    return hostname === 'no3dtools.com' || hostname.endsWith('.no3dtools.com');
+  } catch {
+    return false;
+  }
 }
 
 export function detectAttention(events, now = new Date()) {
@@ -90,7 +103,18 @@ export function detectAttention(events, now = new Date()) {
   const issues = [];
   for (const event of recent) {
     if (FAILURE_EVENTS.has(event.event)) issues.push({ id: issueId(event.event, event), severity: 'warning', kind: event.event, occurredAt: event.created_at, journey: journeyLabel(event.session_id), summary: event.event.replaceAll('_', ' '), actionable: true });
-    if (event.event === 'document_request' && event.properties?.route_kind === 'unknown' && !ignoredUnknownRoute(event.page)) issues.push({ id: issueId('unknown_route', event), severity: 'warning', kind: 'unknown_route', occurredAt: event.created_at, journey: journeyLabel(event.session_id), summary: `unknown route requested: ${event.page || '(path unavailable)'}`, actionable: true });
+    if (event.event === 'document_request' && event.properties?.route_kind === 'unknown' && !ignoredUnknownRoute(event.page) && !intentionalSitePath(event.page)) {
+      const actionable = hasFirstPartyReferrer(event);
+      issues.push({
+        id: issueId('unknown_route', event),
+        severity: actionable ? 'warning' : 'info',
+        kind: 'unknown_route',
+        occurredAt: event.created_at,
+        journey: journeyLabel(event.session_id),
+        summary: actionable ? `broken first-party route requested: ${event.page || '(path unavailable)'}` : `unrecognized external route observed: ${event.page || '(path unavailable)'}`,
+        actionable,
+      });
+    }
   }
   for (const [sessionId, rows] of bySession) {
     for (const event of rows) {
@@ -102,7 +126,7 @@ export function detectAttention(events, now = new Date()) {
         issues.push({ id: issueId('checkout_outcome_unobserved', event), severity: 'info', kind: 'checkout_outcome_unobserved', occurredAt: event.created_at, journey: journeyLabel(sessionId), summary: 'checkout redirected, but this journey has no observed fulfillment return', actionable: false });
       }
       if (event.event === 'account_confirmation_requested' && nowMs - eventTime >= 60 * 60 * 1000 && !hasAfter(rows, EVENT_ALIASES.accountsCompleted, eventTime)) {
-        issues.push({ id: issueId('account_confirmation_stalled', event), severity: 'warning', kind: 'account_confirmation_stalled', occurredAt: event.created_at, journey: journeyLabel(sessionId), summary: 'confirmation requested, but no authenticated completion was observed within one hour', actionable: true });
+        issues.push({ id: issueId('account_confirmation_stalled', event), severity: 'info', kind: 'account_confirmation_stalled', occurredAt: event.created_at, journey: journeyLabel(sessionId), summary: 'confirmation requested, but no authenticated completion was observed within one hour', actionable: false });
       }
     }
   }

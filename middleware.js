@@ -21,14 +21,21 @@ const PUBLIC_V3_PREFIXES = [
 ];
 
 const LEGACY_DOCUMENTS = new Set([
-  '/account.html', '/blog.html', '/guide.html', '/index.html', '/library.html',
-  '/subscribe', '/subscribe.html', '/success.html',
+  '/account', '/account.html', '/blog.html', '/guide.html', '/index.html', '/library.html',
+  '/subscribe', '/subscribe.html', '/success.html', '/purchase.html', '/ai-help.html',
+  '/connect-purchases.html',
 ]);
 
-function routeKind(pathname) {
+const ROOT_DOCUMENTS = new Set(['/ads.txt', '/llms.txt', '/llms-full.txt', '/robots.txt', '/sitemap.xml']);
+const STATIC_PREFIXES = ['/assets/', '/data/', '/fonts/', '/images/', '/scripts/', '/styles/', '/extensions/'];
+
+export function routeKind(pathname) {
   if (pathname === '/' || pathname === '/v3' || pathname.startsWith('/v3/')) return 'v3';
   if (pathname === '/blog' || pathname.startsWith('/blog/')) return 'blog';
   if (LEGACY_DOCUMENTS.has(pathname) || pathname.endsWith('.html')) return 'legacy';
+  if (ROOT_DOCUMENTS.has(pathname)) return 'document';
+  if (STATIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return 'asset';
+  if (pathname === '/api' || pathname.startsWith('/api/')) return 'api';
   return 'unknown';
 }
 

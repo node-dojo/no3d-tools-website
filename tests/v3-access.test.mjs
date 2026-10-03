@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
 
-import middleware from '../middleware.js';
+import middleware, { routeKind } from '../middleware.js';
 import {
   v3OwnerAllowed,
   v3OwnerGateEnabled,
@@ -45,6 +45,16 @@ test('production launch is opt-in and accepts only explicit true-like values', (
   assert.equal(v3ProductionLaunchEnabled({}), false);
   assert.equal(v3ProductionLaunchEnabled({ V3_PRODUCTION_LAUNCH: 'false' }), false);
   assert.equal(v3ProductionLaunchEnabled({ V3_PRODUCTION_LAUNCH: ' enabled ' }), true);
+});
+
+test('infrastructure request classification recognizes intentional documents and assets', () => {
+  assert.equal(routeKind('/llms.txt'), 'document');
+  assert.equal(routeKind('/ads.txt'), 'document');
+  assert.equal(routeKind('/fonts/doto.woff2'), 'asset');
+  assert.equal(routeKind('/data/workbench-sample.js'), 'asset');
+  assert.equal(routeKind('/account'), 'legacy');
+  assert.equal(routeKind('/api/products'), 'api');
+  assert.equal(routeKind('/_profiler/open'), 'unknown');
 });
 
 test('middleware leaves the public production V3 unchanged when the gate is disabled', async () => {

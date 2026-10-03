@@ -13,18 +13,24 @@ test('current V3 event vocabulary produces rolling funnel summaries', () => {
   assert.deepEqual(summary.topProducts, [['dojo-calipers', 1]]);
 });
 
-test('attention detects failures and stalls but labels redirected outcomes as unobserved', () => {
+test('attention detects failures and stalls while filtering route noise', () => {
   const attention = detectAttention([
     event({ id: 'a', event: 'product_checkout_start', created_at: '2026-08-27T15:00:00.000Z', session_id: 'stalled' }),
     event({ id: 'b', event: 'membership_checkout_redirect', created_at: '2026-08-27T14:00:00.000Z', session_id: 'redirected' }),
     event({ id: 'c', event: 'account_confirmation_requested', created_at: '2026-08-27T16:00:00.000Z', session_id: 'confirmation' }),
     event({ id: 'd', event: 'sign_in_link_failed', session_id: 'failed' }),
-    event({ id: 'e', event: 'document_request', properties: { route_kind: 'unknown' }, page: '/subscribe.html', session_id: 'route' }),
+    event({ id: 'e', event: 'document_request', properties: { route_kind: 'unknown' }, page: '/missing-from-site', referrer: 'https://no3dtools.com/v3/', session_id: 'route' }),
     event({ id: 'f', event: 'document_request', properties: { route_kind: 'unknown' }, page: '/wp-admin/install.php', session_id: 'probe' }),
+    event({ id: 'g', event: 'document_request', properties: { route_kind: 'unknown' }, page: '/llms.txt', session_id: null }),
+    event({ id: 'h', event: 'document_request', properties: { route_kind: 'unknown' }, page: '/fonts/doto.woff2', session_id: null }),
+    event({ id: 'i', event: 'document_request', properties: { route_kind: 'unknown' }, page: '/random-external-guess', session_id: null }),
   ], NOW);
   for (const kind of ['checkout_stalled_before_redirect', 'checkout_outcome_unobserved', 'account_confirmation_stalled', 'sign_in_link_failed', 'unknown_route']) assert.ok(attention.some((issue) => issue.kind === kind));
   assert.equal(attention.find((issue) => issue.kind === 'checkout_outcome_unobserved').actionable, false);
   assert.equal(attention.some((issue) => issue.summary.includes('wp-admin')), false);
+  assert.equal(attention.some((issue) => issue.summary.includes('llms.txt') || issue.summary.includes('doto.woff2')), false);
+  assert.equal(attention.find((issue) => issue.summary.includes('random-external-guess')).actionable, false);
+  assert.equal(attention.find((issue) => issue.summary.includes('missing-from-site')).actionable, true);
   assert.ok(attention.every((issue) => !issue.journey.includes('stalled') && !issue.journey.includes('redirected')));
 });
 
@@ -44,4 +50,29 @@ test('daily JSONL replaces the current date instead of appending duplicates', ()
 test('only classified production browser observations enter current counts', () => {
   const summary=summarizeEvents([event(),event({properties:{}}),event({properties:{schema_version:2,source_kind:'browser',environment:'production',synthetic:true}})],NOW);
   assert.equal(summary['24h'].visits,1);
+});
+
+test('a collection failure terminates the observed attempt instead of also raising a missing-outcome warning', () => {
+  const rows = [
+    event({ event: 'collection_checkout_start', created_at: '2026-08-27T15:00:00Z' }),
+    event({ event: 'collection_checkout_failed', created_at: '2026-08-27T15:00:01Z' }),
+  ];
+  assert.deepEqual(detectAttention(rows, NOW).map(issue => issue.kind), ['collection_checkout_failed']);
+  assert.equal(summarizeEvents(rows, NOW)['24h'].checkoutFailures, 1);
+});
+
+test('the intentional join rewrite is not reported as broken, but an unknown first-party route remains actionable', () => {
+  const rows = ['/join', '/join.html', '/join?source=footer', '/joining-missing'].map(page => event({
+    event: 'document_request', page, properties: { route_kind: 'unknown' }, referrer: 'https://no3dtools.com/v3/',
+  }));
+  const issues = detectAttention(rows, NOW);
+  assert.equal(issues.length, 1);
+  assert.match(issues[0].summary, /joining-missing/);
+  assert.equal(issues[0].actionable, true);
+});
+
+test('missing same-browser confirmation completion is an observation, not proof of an authentication failure', () => {
+  const issues = detectAttention([event({ event: 'account_confirmation_requested', created_at: '2026-08-27T15:00:00Z' })], NOW);
+  assert.equal(issues[0].severity, 'info');
+  assert.equal(issues[0].actionable, false);
 });

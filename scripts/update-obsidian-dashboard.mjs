@@ -132,7 +132,7 @@ async function sendNewAttentionAlerts(attention) {
     if (process.env.BUSINESS_DASHBOARD_NTFY_TOKEN) headers.authorization = `Bearer ${process.env.BUSINESS_DASHBOARD_NTFY_TOKEN}`;
     const response = await fetch(process.env.BUSINESS_DASHBOARD_NTFY_BASE_URL || 'https://ntfy.sh', {
       method: 'POST', headers,
-      body: JSON.stringify({ topic, title: `Business Dashboard · ${next.length} new exception${next.length === 1 ? '' : 's'}`, message: next.slice(0, 4).map((issue) => issue.summary).join('\n'), tags: ['warning'], click: 'obsidian://open?vault=Vault_001&file=PROJECTS%2FNO3D%20SITE%2FOperations%2FBusiness%20Dashboard%20%E2%80%94%20Attention%20Queue' }),
+      body: JSON.stringify({ topic, title: `Business Dashboard · ${next.length} new attention item${next.length === 1 ? '' : 's'}`, message: next.slice(0, 4).map((issue) => issue.summary).join('\n'), tags: ['warning'], click: 'obsidian://open?vault=Vault_001&file=PROJECTS%2FNO3D%20SITE%2FOperations%2FBusiness%20Dashboard%20%E2%80%94%20Attention%20Queue' }),
       signal: AbortSignal.timeout(12_000),
     });
     if (!response.ok) throw Object.assign(new Error('ntfy rejected alert'), { code: `http_${response.status}` });
