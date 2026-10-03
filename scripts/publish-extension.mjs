@@ -54,6 +54,10 @@ const nextEntry = {
   ...previous,
   id: EXTENSION_ID,
   version,
+  permissions: {
+    ...previous.permissions,
+    network: 'Account connection and asset sync via no3dtools.com',
+  },
   archive_url: archiveUrl,
   archive_size: archive.byteLength,
   archive_hash: archiveHash,
