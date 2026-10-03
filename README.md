@@ -8,12 +8,12 @@ account session and catalog presentation.
 ## Working checkout
 
 Use `/Users/joebowers/Projects/no3d-tools-website-v3` for local integration.
-The consolidated branch is `codex/site-cleanup-20261002`. It includes the
+The consolidated branch is `main`. It includes the
 September finalization work, October payment-environment fix, account-document
 corrections, and preserved editor/dashboard changes.
 
 This is a local integration designation, not a production deployment claim.
-The remote default branch and Vercel settings have not been changed. See
+GitHub uses `main` as its default branch. Publishing remains a separate operation. See
 [repository workflow](docs/development/REPOSITORY-WORKFLOW.md) before switching
 branches or retiring worktrees.
 
@@ -99,3 +99,14 @@ npm run site-editor:publish
 
 That command uses Doppler and enables the publication adapter. A passing
 fixture test does not prove a remote publication or customer delivery.
+
+## Main and production deployment
+
+GitHub's default branch and Vercel's configured production branch are both
+`main`. `vercel.json` disables automatic Git deployments only for `main`, so
+integration pushes do not publish production. Feature-branch Preview builds
+remain enabled. Release a reviewed commit through the explicit Preview and
+production sequence; changing this setting is a separate deployment-policy
+change. This uses Vercel's documented
+[`git.deploymentEnabled`](https://vercel.com/docs/project-configuration/git-configuration#git.deploymentenabled)
+configuration. Database state is unaffected by branch normalization.

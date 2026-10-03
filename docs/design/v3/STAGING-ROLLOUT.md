@@ -40,7 +40,7 @@ Review the first complete billing period no later than **2026-09-18**, remove th
 
 | Concern | Website staging | Commerce staging |
 |---|---|---|
-| Vercel | Preview deployment for `feat/v3-adjacent` | Preview deployment from the Commerce source |
+| Vercel | Preview deployment for the explicitly selected candidate branch | Preview deployment from the Commerce source |
 | Persistent host | `v3.no3dtools.com` | `commerce-v3.no3dtools.com` |
 | Doppler | `no3dtools/stg` | `no3d-commerce/stg` |
 | Supabase | isolated branch of the website Auth project | isolated branch of the Commerce project |
@@ -50,7 +50,10 @@ Review the first complete billing period no later than **2026-09-18**, remove th
 The Vercel project already uses its one custom-environment slot for `mvp-site`, so this release candidate uses branch-specific Preview variables rather than deleting or repurposing that existing environment without a separate decision.
 
 Local CLI Preview deployments do not reliably inherit variables scoped to the
-`feat/v3-adjacent` Git branch. Deploy this staging branch through the connected
+selected Preview Git branch. Historical variables were scoped to
+`feat/v3-adjacent`; they are not automatically inherited by `main` or a new
+feature branch. Configure the actual candidate branch explicitly and deploy
+it through the connected
 Git integration, or explicitly inject the approved `no3dtools/stg` Doppler
 runtime set. Before moving the `v3.no3dtools.com` alias, verify both that
 `/api/commerce/offer?handle=apple-magsafe-charger` returns `777` cents without a
@@ -158,7 +161,7 @@ Verified on **2026-08-20**:
 
 Run these in order against staging:
 
-Before a CLI deployment, refresh branch-scoped Preview variables from Doppler with `doppler run --project no3dtools --config stg --silent -- npm run env:v3:staging -- --apply`. Deploy with `--meta githubDeployment=1 --meta githubCommitRef=feat/v3-adjacent`; Vercel CLI deployments without that Git metadata do not inherit branch-scoped variables.
+Before a CLI deployment, refresh branch-scoped Preview variables from Doppler with `doppler run --project no3dtools --config stg --silent -- npm run env:v3:staging -- --apply --branch <preview-branch>`. Deploy with `--meta githubDeployment=1 --meta githubCommitRef=<preview-branch>`; Vercel CLI deployments without that Git metadata do not inherit branch-scoped variables.
 
 1. Owner gate denies a signed-out browser and a non-owner account.
 2. Approved owner creates or signs into a staged account and completes email verification.

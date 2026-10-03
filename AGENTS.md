@@ -6,13 +6,15 @@ and the current branch before changing files.
 ## Checkout and Git
 
 - Canonical local integration checkout: `/Users/joebowers/Projects/no3d-tools-website-v3`.
-- Consolidated branch: `codex/site-cleanup-20261002`. See
+- Canonical branch: `main`. See
   `docs/development/REPOSITORY-WORKFLOW.md` for preserved snapshots and pending work.
 - Git history, local implementation, staged deployment, production deployment,
   and visual acceptance are separate claims. Verify the owning state.
 - Other worktrees are historical or scoped work. Preserve their unique changes
   before retiring them. Never overwrite another worktree to make status clean.
 - Keep source work in focused commits. Production publishing is a separate operation.
+  Automatic Git deployments from `main` are disabled in `vercel.json`; use the
+  release runbook for explicit deployment. Feature-branch previews remain enabled.
 
 ## Routes
 

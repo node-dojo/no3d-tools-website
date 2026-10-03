@@ -1,23 +1,25 @@
 # V3 release runbook
 
-## Current boundary — 2026-08-29
+## Canonical branch — 2026-10-02
 
-`feat/v3-adjacent` began as an integration branch that placed V3 beside the
-legacy site under `/v3/`. It is now the de facto V3 release branch: production
-deployments have been promoted directly from it, the legacy customer URLs have
-been migrated into V3, and `main` has not absorbed its V3 history. The branch
-name is historical and does not restrict verified commits to Preview.
+`main` is the canonical website integration branch. The consolidated V3
+history was advanced by fast-forward; no historical commits were rewritten.
+Use the checkout and recovery map in
+[repository workflow](../development/REPOSITORY-WORKFLOW.md).
 
-Until the Git branches are deliberately normalized, deploy V3 changes from
-`feat/v3-adjacent`. Preview remains the first deployment gate; a user-approved
-live deployment proceeds to the existing `no3dtoolssite` Production target
-after the checks below pass. Do not silently merge, rebase, or replace `main`
-as part of an ordinary release.
+The old `feat/v3-adjacent` branch originally held V3 beside the legacy site.
+Its branch name is now historical. A branch promotion is not a production
+release: Preview verification and explicit production promotion remain
+separate steps.
+
+For branch-scoped staging variables, provide the actual Preview branch to
+`npm run env:v3:staging -- --apply --branch <preview-branch>`. Do not assume
+variables configured for a historical branch apply to a new candidate.
 
 ## Preview sequence
 
 1. Run `npm test`, `npm run acceptance:v3`, and `npm audit` locally.
-2. Deploy this branch as a Vercel Preview and verify the candidate there.
+2. Deploy the candidate as a Vercel Preview and verify the candidate there.
 3. Verify `/v3/` and `/v3/product/?handle=dojo-bolt-gen-v05-obj` on the preview domain.
 4. Exercise catalog loading, populated, empty, and failure states with representative records.
 5. Exercise checkout only in the configured test environment. Confirm the return target stays on the preview domain and that no live charge can be created.
@@ -25,7 +27,7 @@ as part of an ordinary release.
 
 ## Production sequence
 
-1. Confirm the exact reviewed commit is pushed to `origin/feat/v3-adjacent`.
+1. Confirm the exact reviewed commit is present on `origin/main`.
 2. Deploy that clean commit to the existing `no3dtoolssite` Production target;
    never deploy unrelated working-tree changes.
 3. Verify the Production deployment is Ready and that `no3dtools.com` resolves
@@ -74,3 +76,14 @@ Rollback immediately for checkout failure, broken return targets, catalog failur
 ## Deferred tranche
 
 Account 01C, Product 04F / Chain Generator, the type specimen, order recovery, authenticated libraries, and owned downloads remain documented and preserved, but are not approval criteria for this first adjacent release.
+
+## Main and production deployment
+
+GitHub's default branch and Vercel's configured production branch are both
+`main`. `vercel.json` disables automatic Git deployments only for `main`, so
+integration pushes do not publish production. Feature-branch Preview builds
+remain enabled. Release a reviewed commit through the explicit Preview and
+production sequence; changing this setting is a separate deployment-policy
+change. This uses Vercel's documented
+[`git.deploymentEnabled`](https://vercel.com/docs/project-configuration/git-configuration#git.deploymentenabled)
+configuration. Database state is unaffected by branch normalization.

@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
+import { stagingBranch } from './lib/staging-branch.mjs';
 
 const apply = process.argv.includes('--apply');
 if (!apply) throw new Error('This updates branch-scoped Vercel Preview variables. Re-run with --apply.');
 
-const branch = 'feat/v3-adjacent';
+const branch = stagingBranch(process.argv.slice(2));
 const productionSupabaseRef = 'cjkcwtcqswxtbfmtdyjr';
 const stagingSupabaseRef = new URL(process.env.SUPABASE_URL || 'https://invalid.local').hostname.split('.')[0];
 assert.notEqual(stagingSupabaseRef, productionSupabaseRef, 'Refusing to bind V3 Preview to production Supabase');
@@ -54,7 +55,7 @@ for (const name of names) {
     encoding: 'utf8',
     input: value,
   });
-  if (result.status !== 0) throw new Error(`Failed to update ${name}: ${result.stderr.trim()}`);
+  if (result.status !== 0) throw new Error(`Failed to update ${name} (Vercel exit ${result.status})`);
   process.stdout.write(`updated ${name}\n`);
 }
 
@@ -63,5 +64,5 @@ const useSupabase = spawnSync('vercel', ['env', 'add', 'USE_SUPABASE', 'preview'
   encoding: 'utf8',
   input: 'true',
 });
-if (useSupabase.status !== 0) throw new Error(`Failed to update USE_SUPABASE: ${useSupabase.stderr.trim()}`);
+if (useSupabase.status !== 0) throw new Error(`Failed to update USE_SUPABASE (Vercel exit ${useSupabase.status})`);
 process.stdout.write(`updated USE_SUPABASE\n`);

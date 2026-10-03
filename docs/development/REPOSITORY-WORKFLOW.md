@@ -6,15 +6,15 @@ release receipt.
 ## One integration checkout
 
 Use `/Users/joebowers/Projects/no3d-tools-website-v3` on
-`codex/site-cleanup-20261002`. Its base includes `fix/commerce-rollout` at
+`main`. Its base includes `fix/commerce-rollout` at
 `c578592` and the 19 finalization commits through `9e72e70`.
 
 The old `feat/v3-adjacent` working state contained copies of 57 files already
 committed on finalization. Consolidation kept that history and separately
 preserved the 18 differing/new files, merging overlapping payment fixes.
 
-Remote branches and deployment settings are unchanged. Before proposing a
-release, compare the candidate against the actual deployed revision and run
+The consolidated history is promoted to `main` by fast-forward; the former
+cleanup branch remains a recovery reference. Before proposing a release, compare the candidate against the actual deployed revision and run
 the appropriate target-specific lifecycle gates. Do not assume local `main`
 represents production.
 
@@ -78,7 +78,7 @@ active consumers. Preserve provider-link metadata before removal and keep
 unique pending work. Preserve historical tips under annotated `codex/archive/20261002/<old-branch>`
 tags. Eight fully integrated, unused local branch names were retired this way;
 remote branches were left intact. The snapshot branches above remain directly
-addressable. Local `main` is retained as its historical remote-tracking branch.
+addressable. Local `main` tracks `origin/main` as the canonical integration branch.
 
 ## Historical stash
 
@@ -87,3 +87,14 @@ pre-V3 files, including Polar and old subscription/setup scripts. It remains
 unapplied and is additionally preserved by the annotated tag
 `codex/archive/20261002/pre-v3-stash`. Its title alone is not evidence that it
 belongs in the current V3 implementation.
+
+## Main and production deployment
+
+GitHub's default branch and Vercel's configured production branch are both
+`main`. `vercel.json` disables automatic Git deployments only for `main`, so
+integration pushes do not publish production. Feature-branch Preview builds
+remain enabled. Release a reviewed commit through the explicit Preview and
+production sequence; changing this setting is a separate deployment-policy
+change. This uses Vercel's documented
+[`git.deploymentEnabled`](https://vercel.com/docs/project-configuration/git-configuration#git.deploymentenabled)
+configuration. Database state is unaffected by branch normalization.
