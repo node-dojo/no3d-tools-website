@@ -167,3 +167,9 @@ if (!product) {
 document.body.dataset.catalogSource = source;
 document.body.dataset.pricingSource = pricingSource;
 document.body.dataset.purchaseAvailability = product?.accessPolicy === 'free' ? 'free' : purchasable ? 'available' : 'design-study';
+
+if (new URLSearchParams(location.search).get('edit') === '1' && product) {
+  import('./site-editor.js?v=site-editor-v0').then(({ startSiteEditor }) => startSiteEditor({ handle: product.handle })).catch(error => {
+    console.warn('Solvet Site Editor is unavailable:', error?.message || error);
+  });
+}

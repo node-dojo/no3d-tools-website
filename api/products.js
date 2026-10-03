@@ -125,6 +125,8 @@ export default async function handler(req, res) {
       metafields: p.metafields || [],
       hosted_media: p.metadata?.hosted_media || {},
       thumbnail_image: p.metadata?.thumbnail_image || null,
+      thumbnail_media_id: p.metadata?.thumbnail_media_id || null,
+      media: Array.isArray(p.metadata?.media) ? p.metadata.media : [],
       carousel_media: p.metadata?.carousel_media || [],
       excluded_carousel_media: p.metadata?.excluded_carousel_media || [],
       main_image: p.metadata?.main_image || null,

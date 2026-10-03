@@ -52,6 +52,17 @@ test('uses the published preview ahead of a legacy low-resolution icon', () => {
   assert.equal(product.thumbnail, 'https://media.example/selected-1280.png');
 });
 
+test('stable media identity selects the website thumbnail ahead of legacy filename selectors', () => {
+  const product = normalizeProduct({
+    handle: 'stable-media',
+    thumbnail_media_id: 'media_selected',
+    media: [{ id: 'media_selected', source: 'selected.webp' }],
+    hosted_media: { 'selected.webp': 'https://media.example/selected.webp', 'legacy.png': 'https://media.example/legacy.png' },
+    thumbnail_image: 'legacy.png',
+  });
+  assert.equal(product.thumbnail, 'https://media.example/selected.webp');
+});
+
 test('preserves the canonical Chrome Crayon product name in V3', () => {
   const product = normalizeProduct({ handle: 'chrome-crayon', title: 'Chrome Crayon' });
   assert.equal(product.title, 'Chrome Crayon');

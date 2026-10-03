@@ -92,6 +92,12 @@ function hosted(product, name) {
   return resolveMedia(product.hosted_media?.[name]);
 }
 
+function selectedMedia(product) {
+  if (!product.thumbnail_media_id || !Array.isArray(product.media)) return '';
+  const selected = product.media.find(item => item?.id === product.thumbnail_media_id);
+  return resolveMedia(selected?.url) || hosted(product, selected?.source);
+}
+
 /** The exposed-parameter diagram, or '' when this product has none.
  *  Reads only `node_diagram`: `node_diagram_status` is internal editorial
  *  state and must never reach a customer. A product with no diagram is a
@@ -114,7 +120,8 @@ export function normalizeProduct(product = {}) {
     || hosted(product, product.animated_thumbnail)
     || hosted(product, carousel[0])
     || '';
-  const thumbnail = hosted(product, product.thumbnail_image)
+  const thumbnail = selectedMedia(product)
+    || hosted(product, product.thumbnail_image)
     || resolveMedia(product.thumbnail_image)
     || resolveMedia(product.preview)
     || hosted(product, product.animated_thumbnail)

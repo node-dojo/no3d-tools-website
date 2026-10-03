@@ -2,6 +2,32 @@
 
 A modern, retro-futuristic website for the NO3D Tools library, built following the Figma design system specifications.
 
+## Solvet Site Editor utility
+
+The owner-only V0 content editor runs the real V3 product renderer against the
+canonical SOLVET library. It stays visually inert until content is selected;
+draft, apply, publish, conflict, and verification state live in a detached
+minimizable overlay.
+
+```bash
+npm run site-editor
+```
+
+Open the URL printed by the command. Inline source apply is available in normal
+mode. Remote publication is deliberately disabled unless the utility is started
+through the credential-managed boundary:
+
+```bash
+npm run site-editor:publish
+```
+
+V0 acceptance, including desktop and mobile editing, canonical source apply,
+stable thumbnail media identity, publication adapter execution, and read-back:
+
+```bash
+npm run acceptance:site-editor
+```
+
 ---
 
 ## 🛠️ MVP Standalone Mode

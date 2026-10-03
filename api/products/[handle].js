@@ -21,11 +21,19 @@ function resolveHostedUrl(entry) {
 function serializeProduct(product) {
   const hostedMedia = product.metadata?.hosted_media || {};
   const iconKey = Object.keys(hostedMedia).find(key => key.toLowerCase().startsWith('icon_'));
+  const selectedMedia = Array.isArray(product.metadata?.media)
+    ? product.metadata.media.find(item => item?.id === product.metadata?.thumbnail_media_id)
+    : null;
+  const selectedThumbnail = resolveHostedUrl(hostedMedia[selectedMedia?.source])
+    || resolveHostedUrl(hostedMedia[product.metadata?.thumbnail_image]);
   return {
     id: product.id, handle: product.handle, title: product.title,
     description: product.description, price: product.price,
     product_type: mapProductType(product.product_type),
     image: product.icon_url || resolveHostedUrl(hostedMedia[iconKey]),
+    thumbnail_image: selectedThumbnail || product.icon_url || resolveHostedUrl(hostedMedia[iconKey]),
+    thumbnail_media_id: product.metadata?.thumbnail_media_id || null,
+    media: Array.isArray(product.metadata?.media) ? product.metadata.media : [],
     preview: product.preview_image_url, video: product.video_url,
     tags: product.tags || [], sku: product.sku, vendor: product.vendor,
     metafields: product.metafields || [],
