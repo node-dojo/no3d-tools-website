@@ -8,7 +8,7 @@
  * existing customers with active subscriptions.
  * 
  * Usage:
- *   node scripts/delete-polar-duplicates.js [options]
+ *   node archive/polar/delete-polar-duplicates.js [options]
  * 
  * Options:
  *   --dry-run          Preview what would be archived (default)

@@ -34,7 +34,7 @@ const ALLOWED_NEGATIONS = [
   /there is no key to reissue/i,
 ];
 
-const appearsStale = (text, pattern) =>
+const appearsStale = (text) =>
   RETIRED_KEY_FLOW.some((rule) => rule.test(text)) &&
   !ALLOWED_NEGATIONS.some((allowed) => allowed.test(text));
 
@@ -43,7 +43,7 @@ test('AI-facing docs do not instruct visitors to use license keys', async () => 
     const text = await load(file);
     for (const line of text.split('\n')) {
       assert.ok(
-        !appearsStale(line, null),
+        !appearsStale(line),
         `${file} still describes the retired license key flow: ${line.trim()}`,
       );
     }

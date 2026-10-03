@@ -4,7 +4,7 @@
   "description": "NO3D Tools website",
   "type": "module",
   "scripts": {
-    "test": "npm run test:auth && npm run test:v3",
+    "test": "node --test tests/*.test.mjs",
     "build": "node scripts/render-v3-collection-pages.mjs && node scripts/update-commit-hash.js",
     "start": "doppler run -- npx vercel dev --listen 3001 --yes",
     "test:auth": "node --test tests/auth-session.test.mjs tests/effective-manifest.test.mjs tests/purchase-flow.test.mjs tests/security-hardening.test.mjs tests/legacy-membership-event.test.mjs tests/payment-environment.test.mjs",

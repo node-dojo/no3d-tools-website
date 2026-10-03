@@ -8,7 +8,11 @@ Promote the approved V3 surfaces from a visual adjacent tranche into one staged 
 
 The release is complete only when both an individual purchaser and a member can leave, return, authenticate, and recover the same effective library.
 
-## Current handoff state — 2026-08-29
+## Recorded handoff state — 2026-08-29
+
+This section is historical. For the current local checkout and consolidated
+branch, see [repository workflow](../development/REPOSITORY-WORKFLOW.md).
+Re-verify deployment and customer behavior before using this as release evidence.
 
 - V3 Home, Product, managed account entry, Account/My Folder, install guidance,
   individual checkout return, Directory.001, expanding lifetime collections,

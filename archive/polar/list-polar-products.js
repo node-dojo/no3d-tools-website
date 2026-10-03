@@ -2,7 +2,7 @@
 /**
  * Script to list all Polar products with their IDs and prices
  *
- * Usage: node scripts/list-polar-products.js
+ * Usage: node archive/polar/list-polar-products.js
  */
 
 import { Polar } from '@polar-sh/sdk';
