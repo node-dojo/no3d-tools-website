@@ -75,5 +75,15 @@ separate environments. The ordinary unit suite has no production credentials.
 
 Retire worktrees only after checking Git status, ignored configuration, and
 active consumers. Preserve provider-link metadata before removal and keep
-unique pending work. Keep old branches as provenance until remote/release
-normalization is explicitly undertaken.
+unique pending work. Preserve historical tips under annotated `codex/archive/20261002/<old-branch>`
+tags. Eight fully integrated, unused local branch names were retired this way;
+remote branches were left intact. The snapshot branches above remain directly
+addressable. Local `main` is retained as its historical remote-tracking branch.
+
+## Historical stash
+
+The December 23, 2025 stash `422fd2f` ("Chrome Crayon changes") contains nine
+pre-V3 files, including Polar and old subscription/setup scripts. It remains
+unapplied and is additionally preserved by the annotated tag
+`codex/archive/20261002/pre-v3-stash`. Its title alone is not evidence that it
+belongs in the current V3 implementation.
