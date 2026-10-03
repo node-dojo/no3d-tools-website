@@ -6,9 +6,9 @@
 
 ## Docs
 
-- [Getting Started](https://no3dtools.com/v3/account/?state=install): Install the addon, enter your license key, sync your library
+- [Getting Started](https://no3dtools.com/v3/account/?state=install): Install the addon, sign in with your account, sync your library
 - [Membership](https://no3dtools.com/v3/membership/): Get full-catalog NO3D Tools membership
-- [Account & License](https://no3dtools.com/v3/account/): Manage subscription, recover license key
+- [Account](https://no3dtools.com/v3/account/): Manage your subscription, downloads, and access
 - [AI Help](https://no3dtools.com/v3/account/?state=install): How to give AI assistants No3d Tools context
 - [Full Reference](https://no3dtools.com/llms-full.txt): Complete product documentation for AI assistants
 
@@ -95,13 +95,14 @@
 
 The No3d Tools Membership addon syncs your asset library into Blender.
 
-Setup: Install addon → Enter license key (NO3D-XXXX-XXXX-XXXX-XXXX) → Validate → Set library path → Sync Now
+Setup: Install addon → Sign in with your No3d Tools account → Set library path → Sync Now
+
+There are no license keys to enter. Access follows your account.
 
 Common issues:
-- "Invalid license key" → Include the NO3D- prefix, check for spaces
-- "Sync failed" → Check internet, click Validate first, then Sync Now
-- Assets not showing → Select "NO3D Tools" in Asset Browser dropdown, click Refresh Library
-- Lost license key → Check email or visit no3dtools.com/v3/account/
+- "Sync failed" → Check internet, then click Sync Now again
+- Assets not showing → Select "NO3D Tools" in the Asset Browser dropdown, click Refresh Library
+- Lost access or need to reconnect → Visit no3dtools.com/v3/account/ and sign in again
 
 ## Optional
 

@@ -3251,7 +3251,7 @@ The No3D Tools extension syncs your entitled No3D Tools asset library directly i
 
 - Blender 5.0 or newer
 - An active membership, one or more individually purchased products, or a free No3D Tools account
-- A membership license key or a purchase-connected account
+- A No3d Tools account — access follows your sign-in, not a license key
 
 ---
 
@@ -3280,18 +3280,16 @@ Manual ZIP installation remains available from the setup page as a fallback. Nat
 
 ## Setup
 
-### Enter Your License Key
+### Sign In With Your Account
 
-1. In the addon preferences (Edit → Preferences → Add-ons → No3d Tools Membership), find the **License** section
-2. Paste your license key into the **Key** field
-   - Format: `NO3D-XXXX-XXXX-XXXX-XXXX`
-   - Your key was emailed to you after subscribing
-3. Click **Validate**
-4. Status should show: **Active** ✓
+1. In the addon preferences (Edit → Preferences → Add-ons → No3d Tools Membership), find the **Account** section
+2. Click **Connect Account** and sign in with your No3d Tools email
+3. Approve the connection in your browser when prompted
+4. Status should show: **Connected** ✓
 
-If you don't have your license key:
-- Check your email for "No3d Tools — Your License Key"
-- Visit [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) to look it up
+There is no license key to enter or validate. Your entitlements — membership, individual purchases, and free tools — are granted to your account, and the extension requests them when you connect.
+
+If you have not used the site before, create an account first at [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/).
 
 ### Set Your Library Path
 
@@ -3307,7 +3305,7 @@ To change it:
 
 1. Click **Sync Now** in the addon preferences
 2. The addon will:
-   - Validate your license
+   - Confirm your account connection and fetch your entitlements
    - Download the asset manifest
    - Download all .blend files that are new or updated
    - Skip files that haven't changed (checksum-based)
@@ -3360,20 +3358,20 @@ Visit [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) to:
 
 ### Re-subscribe
 
-If your subscription expired, visit [the NO3D Tools membership page](https://no3dtools.com/v3/membership/) to re-subscribe. Your existing license key will be reactivated — you don't need a new one.
+If your subscription expired, visit [the NO3D Tools membership page](https://no3dtools.com/v3/membership/) to re-subscribe. Your existing account and purchases are unaffected — there is no key to reissue.
 
 ---
 
 ## Troubleshooting
 
-### "Invalid license key"
-- Make sure you copied the full key including the `NO3D-` prefix
-- Check for extra spaces before or after the key
-- Verify your subscription is active at [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/)
+### "Not connected" or account not recognized
+- Confirm you are signed in at [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/)
+- In the addon preferences, click **Connect Account** again and re-approve in the browser
+- An addon update may require reconnecting once
 
 ### "Sync failed"
 - Check your internet connection
-- Try clicking **Validate** first, then **Sync Now**
+- Confirm the account still shows **Connected**, then click **Sync Now**
 - If the error persists, the server may be temporarily down — try again in a few minutes
 
 ### Assets not showing in Asset Browser
@@ -3387,10 +3385,11 @@ If your subscription expired, visit [the NO3D Tools membership page](https://no3
 - Restart Blender after installation
 - Check that you're running Blender 5.0 or newer
 
-### Lost your license key
-- Check your email for "No3d Tools — Your License Key"
-- Visit [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) and enter your email
-- Contact support if you can't find it
+### Lost access to your library
+- Sign in at [no3dtools.com/v3/account/](https://no3dtools.com/v3/account/) and confirm your purchases and membership are listed
+- Reconnect the addon with **Connect Account**
+- Use the account page's connection-help panel if the library still will not load
+- Contact support if your paid products are missing from your account
 
 ---
 
@@ -3399,7 +3398,7 @@ If your subscription expired, visit [the NO3D Tools membership page](https://no3
 | Action | How |
 |--------|-----|
 | Install extension | Setup page → Open in Blender → Get Extensions → Install |
-| Enter license key | Addon preferences → License → Key field → Validate |
+| Connect your account | Addon preferences → Account → Connect Account |
 | Sync assets | Addon preferences → Sync Now |
 | Auto-sync | Addon preferences → check "Sync on startup" |
 | Browse assets | Asset Browser → select "NO3D Tools" library |

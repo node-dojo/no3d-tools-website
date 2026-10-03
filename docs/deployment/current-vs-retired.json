@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "updated": "2026-10-02",
+  "purpose": "Single authority for what is CURRENT (V3) versus RETIRED in no3d-tools-website. Documentation, AI-facing files, and support copy must not describe retired behaviour as current. Machine-readable so a check can enforce it.",
+
+  "current": {
+    "journey": "V3",
+    "entrypoint": "/v3/",
+    "identity": "account sign-in with a guest token upgraded to a verified account",
+    "addonDelivery": "device grant via the add-on; no license key entry",
+    "customerRoutes": [
+      "/v3/",
+      "/v3/product/",
+      "/v3/membership/",
+      "/v3/account/",
+      "/v3/access/",
+      "/v3/onboarding/create-account/",
+      "/v3/auth/continue/",
+      "/v3/type/"
+    ],
+    "commerceService": "no3d-commerce (Vercel project no3d-commerce)",
+    "pricingSourceOfTruth": "Stripe Price lookup keys (no3dtools.product.<handle>). Displayed price on V3 product pages is read from /api/commerce/offer, so Stripe is what a visitor is actually charged."
+  },
+
+  "retired": {
+    "licenseKeyEntry": {
+      "status": "retired",
+      "why": "License keys were an artifact of the previous add-on and site version. The current add-on signs the customer in through an account; the account page states 'No license keys or folder setup'.",
+      "mustNotAppearIn": [
+        "llms.txt",
+        "llms-full.txt",
+        "visitor-facing support copy",
+        "new setup guides"
+      ],
+      "staleReferences": [
+        { "file": "llms.txt", "lines": [9, 11, 98, 101, 104], "issue": "instructs visitors to enter and recover a license key" },
+        { "file": "llms-full.txt", "lines": [3254, 3283, 3286, 3287, 3292, 3293, 3363, 3369, 3390, 3391, 3402], "issue": "full add-on setup chapter instructing license key entry, plus troubleshooting entries" }
+      ],
+      "doNotConfuse": "llms-full.txt also contains ~28 '## License' headings that are COMMERCIAL USE TERMS and remain accurate. Only the key-flow sections are retired."
+    },
+    "legacyEndpoints": {
+      "status": "retired, still present in the repository",
+      "note": "Not linked from any V3 customer route. Retained only while older add-on builds may still call them. Safe to delete once the minimum supported add-on version is past them.",
+      "files": [
+        "api/validate.js",
+        "api/get-license-by-session.js",
+        "api/lib/licenseRequest.js",
+        "api/lib/subscriptionAccess.js"
+      ]
+    },
+    "legacyCheckout": {
+      "status": "superseded by /api/commerce/checkout",
+      "files": ["api/legacy/create-checkout.js"]
+    },
+    "polarIntegration": {
+      "status": "abandoned",
+      "why": "Superseded by Stripe, then by Gumroad parity for legacy members. No customer-facing route references Polar.",
+      "files": [
+        "scripts/list-polar-products.js",
+        "scripts/delete-polar-duplicates.js",
+        "scripts/check-supabase-duplicates.js"
+      ],
+      "note": "Still imports @polar-sh/sdk and queries polar_product_id. Dead weight and a source of duplicate-listing confusion; not customer-facing."
+    },
+    "legacyWebhook": {
+      "status": "legacy, react-only",
+      "file": "api/stripe-webhook.js",
+      "why": "Handles only invoice.paid, invoice.payment_failed, customer.subscription.deleted, customer.subscription.updated. No reconciliation, no one-time product purchase events. Unknown event types are silently ignored."
+    },
+    "supersededDocuments": [
+      { "file": "WEBSITE_UPDATE_PLAN.md", "status": "historical", "note": "Describes the pre-V3 vanilla single-page app." },
+      { "file": "no3d tools site summary.md", "status": "historical", "note": "Predates V3." }
+    ]
+  },
+
+  "evidenceVocabulary": [
+    "approved",
+    "implemented locally",
+    "committed",
+    "staged",
+    "deployed",
+    "visually verified"
+  ],
+  "evidenceNote": "A passing test never proves deployment."
+}
