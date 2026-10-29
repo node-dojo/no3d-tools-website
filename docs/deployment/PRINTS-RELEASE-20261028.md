@@ -24,3 +24,19 @@ Joe approved publishing the Prints iteration and directed NO3D Commerce checkout
 The feature checkout is `/Users/joebowers/Projects/no3d-tools-prints`, branch `codex/storefront-prints`, based on live `977dcaa9b97b566d698753bd1beb2b8bf01c8b18`. The canonical integration checkout contains separate unpublished price-projection work and dirty files; those are preserved and excluded from this release. Git-triggered deployments remain disabled for this release branch and main.
 
 Previous production deployment for rollback: `dpl_4mXZMGeanXK6gNiPJ28XPkP29UvP` (`https://no3dtoolssite-3l1ik2xrd-node-dojos-projects.vercel.app`). Production publication/readback is appended after promotion.
+
+## Production publication and readback
+
+Published on 2026-10-28 America/Denver (2026-10-29 UTC).
+
+- Live storefront: https://no3dtools.com/v3/prints/
+- Deployed source: `35a488aeb97ed62de538517ab672e97a48f779e1`, branch `codex/storefront-prints`.
+- Production deployment: `dpl_7GNyV6n35mkyBFRwJzt5HxxFagMu`, promoted to the canonical domain and Ready.
+- Four core live HTML/JS/CSS files matched the deployed source by SHA-256. Both public native offers returned $11.11 USD.
+- Both production native checkout requests created unpaid Stripe sessions with the correct price and native `/v3/account/orders/<orderId>` return. Those sessions were expired after verification. No live charge was made.
+- Anonymous download attempts for both products returned 403.
+- Live browser verification covered Tools-to-Prints selection, Planter selection, the image hotspot, the slide-up product details, gallery navigation, price and enabled Download action. The live storefront screenshot is `../design/v3/prints/review/live-prints.jpg`.
+- Independent Stripe and Commerce database readback confirmed both successful sandbox orders: $11.11 test payments, full refunds, and revoked fulfillment/entitlements.
+- Machine-readable evidence: `prints-live-check-20261028.json` and `prints-independent-readback-20261028.json`.
+
+This documentation commit records the deployed source above; it does not change the deployed application. The canonical integration checkout and its unrelated unpublished work remain unchanged.

@@ -1,0 +1,33 @@
+{
+  "target": "https://no3dtools.com",
+  "checkedAt": "2026-10-29T03:02:28.440Z",
+  "sourceCommit": "35a488aeb97ed62de538517ab672e97a48f779e1",
+  "sourceFiles": [
+    "v3/prints/index.html",
+    "v3/js/api.js",
+    "v3/js/print-product.js",
+    "v3/styles/prints.css"
+  ],
+  "products": [
+    {
+      "handle": "mace-and-chain",
+      "checkoutHost": "checkout.stripe.com",
+      "unitAmount": 1111,
+      "currency": "usd",
+      "orderId": "f7958f08-f0bf-4300-978e-30ced7c64cf9",
+      "successPath": "/v3/account/orders/f7958f08-f0bf-4300-978e-30ced7c64cf9",
+      "anonymousDownloadStatus": 403,
+      "paid": false
+    },
+    {
+      "handle": "spike-planter-01",
+      "checkoutHost": "checkout.stripe.com",
+      "unitAmount": 1111,
+      "currency": "usd",
+      "orderId": "d56dea6f-5e5b-4d4b-96e3-d0f5bdd9619c",
+      "successPath": "/v3/account/orders/d56dea6f-5e5b-4d4b-96e3-d0f5bdd9619c",
+      "anonymousDownloadStatus": 403,
+      "paid": false
+    }
+  ]
+}
