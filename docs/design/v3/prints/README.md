@@ -8,6 +8,8 @@ Joe's 2026-10-28 direction: use the existing NO3D design language and UX, replac
 
 The latest review moves all product information and actions out of the photograph into the product list. The active row expands to show file format, price, and Product details; other rows retain only their number and title. Clicking a row, using the carousel controls, swiping, keyboard navigation, search, and direct product URLs keep that expanded row synchronized with the visible photograph. The photo slides contain no title or purchase overlay. Desktop keeps this compact list in the left rail; on phones it sits near the bottom of the viewport above the footer, with the introductory subheading remaining near the masthead. Clicking a product in the photograph opens a full-screen slide-up product page. Its shared centered hitbox is 56% of viewport width and 64% of viewport height on both slides. The Product details button remains a keyboard-accessible alternative.
 
+Sidebar refinement on 2026-10-28: every sidebar font size is 80% of its previous size, including the price. The subheading now sits 9.6px below the masthead on desktop and 6.6px below it on mobile (a 70% gap reduction). The section label is Prints, with its divider removed; selected product titles have no underline. The footer W is 60% of its former width and height (26.4px desktop, 18px mobile).
+
 The masthead switches between the existing Tools and Prints wordmarks. The Prints subheading is Joe's exact first draft:
 
 > 3d printable downloads and build plans for next level projects
