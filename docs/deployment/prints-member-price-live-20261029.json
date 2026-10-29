@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-29T03:15:41.789Z",
+  "deployment": "dpl_6wQtYPj9WwaxWq8mHARC3nUW34Nc",
+  "source": [
+    {
+      "path": "v3/prints/index.html",
+      "status": 200,
+      "sha256": "746967eae8cfbaf74c49beed8a216b8ffa2991e02daec4770a6dda196d199155"
+    },
+    {
+      "path": "v3/js/prints.js",
+      "status": 200,
+      "sha256": "00d758ded34f08fcc4b997d54d01e306f7c44e98dc3551f20f46f4046fbd6339"
+    },
+    {
+      "path": "v3/js/print-product.js",
+      "status": 200,
+      "sha256": "fc6085d9126be9a5fe27caa4ac49df93878a5a8774a6169e1b475774b3279b66"
+    },
+    {
+      "path": "v3/js/print-price.js",
+      "status": 200,
+      "sha256": "3a8a80eef68fe9b28a5db3f82b5c794c5f45dc5ba70f12ee2a995a6602d917d8"
+    },
+    {
+      "path": "v3/styles/prints.css",
+      "status": 200,
+      "sha256": "65ad09b583398df8404aa8cfbe4336632705cdec769d66321b7e92e69c6efad0"
+    }
+  ],
+  "guest": [
+    {
+      "handle": "mace-and-chain",
+      "status": 200,
+      "mode": "purchase"
+    },
+    {
+      "handle": "spike-planter-01",
+      "status": 200,
+      "mode": "purchase"
+    }
+  ]
+}

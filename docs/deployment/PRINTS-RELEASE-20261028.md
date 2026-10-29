@@ -40,3 +40,11 @@ Published on 2026-10-28 America/Denver (2026-10-29 UTC).
 - Machine-readable evidence: `prints-live-check-20261028.json` and `prints-independent-readback-20261028.json`.
 
 This documentation commit records the deployed source above; it does not change the deployed application. The canonical integration checkout and its unrelated unpublished work remain unchanged.
+
+## Member price presentation follow-up
+
+- Deployed source `20b6c7d`; production `dpl_6wQtYPj9WwaxWq8mHARC3nUW34Nc`.
+- Verified members see the regular Commerce price crossed out, followed by the small text “free for members,” in both the catalog sidebar and product document. Guest pricing and existing-owner download behavior are preserved. No access or checkout policy changed.
+- 179 unit/contract checks, eight-route V3 browser acceptance, and Prints browser acceptance passed. Member sidebar placement was checked at 1440px and 390px; member and owned download handoffs still skip checkout. These member views use isolated server-side test identities, not a signed-in production customer.
+- All five affected deployed source files matched local SHA-256 values. Public access readback for both products remained purchase-only. See `prints-member-price-live-20261029.json`.
+- Desktop/mobile member reference images are in `../design/v3/prints/review/member-sidebar-desktop.png` and `member-sidebar-mobile.png`. Inherited dependency audit remains 9 advisories; no dependency upgrade.
