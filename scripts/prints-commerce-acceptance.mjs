@@ -98,7 +98,7 @@ try {
   report.memberDownloads = [];
   for (const product of products) {
     await memberPage.goto(`${base}/v3/prints/?product=${product.handle}&details=1`, {waitUntil:'networkidle2'});
-    await memberPage.waitForFunction(() => document.querySelector('[data-details-price]').textContent === 'Free');
+    await memberPage.waitForFunction(() => document.querySelector('[data-details-price] s')?.textContent === '$11.11' && document.querySelector('[data-details-price] .print-member-price-note')?.textContent === 'free for members');
     let checkouts = 0;
     const listener = r => { if (r.url().endsWith('/api/commerce/checkout')) checkouts++; };
     memberPage.on('request', listener);

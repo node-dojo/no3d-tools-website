@@ -27,6 +27,9 @@
 .print-item-actions button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;border:0;padding:8px 0;background:transparent;color:inherit;font:600 7.2px/1.5 var(--ui);text-align:left;text-transform:uppercase;text-decoration:none;cursor:pointer}
 .print-item-actions button:hover{text-decoration:underline;text-underline-offset:4px}
 .print-price{font:900 19.2px/1 var(--body);font-variation-settings:'wght' 900,'ROND' 100;white-space:nowrap}
+.print-price s,[data-details-price] s{text-decoration-thickness:1px}
+.print-member-price-note{display:block;margin-top:6px;font:600 8px/1.4 var(--ui);font-variation-settings:normal;text-transform:none;letter-spacing:0;white-space:nowrap}
+[data-details-price] .print-member-price-note{margin-top:10px;font-size:9px}
 .prints-footer{position:absolute;bottom:18px;left:var(--print-gutter);right:var(--print-gutter);height:44px;display:grid;grid-template-columns:var(--print-rail) 1fr auto;align-items:center;gap:34px}
 .prints-footer-links{display:flex;gap:24px;font:600 10px var(--ui);text-transform:uppercase}
 .prints-footer-links a{text-decoration:none}.prints-footer-links a[aria-current]{text-decoration:underline;text-underline-offset:6px}

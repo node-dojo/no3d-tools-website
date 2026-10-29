@@ -1,6 +1,7 @@
 import { printProducts } from '../data/prints/catalog.js?v=prints-20261028b';
-import { createPrintProductView } from './print-product.js?v=prints-20261028b';
+import { createPrintProductView } from './print-product.js?v=prints-member-price-20261029';
 import { getPrintOffer } from './api.js?v=prints-20261028b';
+import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
 const carousel = document.querySelector('[data-print-carousel]');
 const slides = [...carousel.querySelectorAll('[data-product]')];
@@ -8,8 +9,11 @@ const productItems = [...document.querySelectorAll('[data-print-item]')];
 for (const item of productItems) {
   const price = item.querySelector('.print-price');
   if (price) {
-    price.textContent = '—';
-    getPrintOffer(item.dataset.printItem).then(offer => { price.textContent = offer?.formatted || '—'; });
+    renderPrintPrice(price, '');
+    Promise.all([
+      getPrintOffer(item.dataset.printItem),
+      getPrintAccess(item.dataset.printItem).catch(() => null),
+    ]).then(([offer, access]) => renderPrintPrice(price, offer?.formatted, access?.entitlement === 'member'));
   }
 }
 const previous = document.querySelector('[data-print-previous]');

@@ -207,7 +207,31 @@ try {
     });
     try {
       await journey.goto(`${fixtureOrigin}/v3/prints/?product=spike-planter-01&details=1`, { waitUntil: 'networkidle0' });
-      assert.equal(await journey.$eval('[data-details-price]', el => el.textContent), scenario === 'guest' ? '$11.11' : 'Free');
+      assert.equal(await journey.$eval('[data-details-price] [data-price-value]', el => el.textContent), scenario === 'owned' ? 'Free' : '$11.11');
+      assert.equal(await journey.$eval('[data-details-price]', el => Boolean(el.querySelector('s'))), activeMember);
+      assert.equal(await journey.$eval('[data-details-price]', el => el.querySelector('.print-member-price-note')?.textContent || ''), activeMember ? 'free for members' : '');
+      for (const selector of ['[data-print-item="mace-and-chain"] .print-price', '[data-print-item="spike-planter-01"] .print-price']) {
+        assert.equal(await journey.$eval(selector, el => el.querySelector('[data-price-value]').textContent), '$11.11');
+        assert.equal(await journey.$eval(selector, el => Boolean(el.querySelector('s'))), activeMember);
+        assert.equal(await journey.$eval(selector, el => el.querySelector('.print-member-price-note')?.textContent || ''), activeMember ? 'free for members' : '');
+      }
+      if (scenario === 'member') {
+        for (const width of [1440, 390]) {
+          await journey.setViewport({ width, height: width === 390 ? 844 : 1100 });
+          await journey.screenshot({ path: `${output}/member-details-${width}.png` });
+          await journey.click('[data-details-close]');
+          await journey.waitForFunction(() => !document.querySelector('[data-print-details]').open);
+          const layout = await journey.$eval('[data-print-item="spike-planter-01"] .print-price', el => {
+            const price = el.querySelector('s').getBoundingClientRect();
+            const note = el.querySelector('.print-member-price-note').getBoundingClientRect();
+            return { below: note.top >= price.bottom, inside: note.left >= 0 && note.right <= innerWidth, overflow: document.documentElement.scrollWidth > innerWidth };
+          });
+          assert.deepEqual(layout, { below: true, inside: true, overflow: false });
+          await journey.screenshot({ path: `${output}/member-sidebar-${width}.png` });
+          await journey.click('.print-hotspot[data-details="spike-planter-01"]');
+          await journey.waitForFunction(() => Boolean(document.querySelector('[data-details-price] s')));
+        }
+      }
       if (scenario === 'unavailable') {
         assert.equal(await journey.$eval('[data-details-download]', el => el.disabled), true);
         assert.match(await journey.$eval('[data-download-status]', el => el.textContent), /not available yet/);

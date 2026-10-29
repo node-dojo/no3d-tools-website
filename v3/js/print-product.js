@@ -1,5 +1,6 @@
 import { printProducts } from '../data/prints/catalog.js?v=prints-20261028b';
 import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
+import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -110,15 +111,11 @@ export function createPrintProductView(dialog) {
     download.disabled = access.mode === 'unavailable' || (access.mode === 'purchase' && !price);
     download.dataset.unavailable = String(access.mode === 'unavailable');
     signin.hidden = access.authenticated === true;
-    dialog.querySelector('[data-details-price]').textContent = access.entitlement ? 'Free' : price || '—';
-    dialog.querySelector('[data-details-price-label]').textContent = access.entitlement === 'member' ? 'Included with membership' : access.entitlement === 'owned' ? 'Already owned' : '3D print files';
+    renderPrintPrice(dialog.querySelector('[data-details-price]'), access.entitlement === 'owned' ? 'Free' : price, access.entitlement === 'member');
+    dialog.querySelector('[data-details-price-label]').textContent = access.entitlement === 'owned' ? 'Already owned' : '3D print files';
+    const sidebarPrice = document.querySelector(`[data-print-item="${product.slug}"] .print-price`);
+    if (sidebarPrice) renderPrintPrice(sidebarPrice, price, access.entitlement === 'member');
     status.textContent = access.mode === 'unavailable' ? 'Your download is not available yet. Please try again later.' : access.mode === 'purchase' && !price ? 'Checkout is temporarily unavailable. Please try again later.' : '';
-  }
-
-  async function fetchAccess(signal) {
-    const response = await fetch(`/api/prints/access?handle=${encodeURIComponent(product.slug)}`, { credentials: 'same-origin', cache: 'no-store', signal });
-    if (!response.ok) throw new Error('access_unavailable');
-    return response.json();
   }
 
   async function inspectAccess() {
@@ -129,7 +126,7 @@ export function createPrintProductView(dialog) {
     download.dataset.unavailable = 'false';
     status.textContent = 'Checking download access…';
     try {
-      const [access, offer] = await Promise.all([fetchAccess(inspection.signal), getPrintOffer(product.slug)]);
+      const [access, offer] = await Promise.all([getPrintAccess(product.slug, inspection.signal), getPrintOffer(product.slug)]);
       if (inspection.signal.aborted || request !== inspection) return;
       price = offer?.formatted || '';
       showAccess(access);
@@ -148,7 +145,7 @@ export function createPrintProductView(dialog) {
     request = new AbortController();
     try {
       // Recheck at the action boundary; an earlier display state is not authority.
-      const access = await fetchAccess(request.signal);
+      const access = await getPrintAccess(product.slug, request.signal);
       showAccess(access);
       if (access.mode === 'purchase') {
         download.disabled = true;
@@ -187,7 +184,7 @@ export function createPrintProductView(dialog) {
     dialog.querySelector('#print-details-title').textContent = product.name;
     dialog.querySelector('[data-document-reference]').textContent = product.reference;
     dialog.querySelector('[data-document-index]').textContent = product.documentIndex;
-    dialog.querySelector('[data-details-price]').textContent = '—';
+    renderPrintPrice(dialog.querySelector('[data-details-price]'), '');
     dialog.querySelector('[data-details-price-label]').textContent = '3D print files';
     const url = new URL(location.href);
     url.searchParams.set('product', slug);
