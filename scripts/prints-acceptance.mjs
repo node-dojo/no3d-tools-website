@@ -22,20 +22,34 @@ async function settled() {
 async function audit(label) {
   const state = await page.evaluate(() => {
     const slide = document.querySelector('.print-slide:not([inert]):not([hidden])');
-    const title = slide?.querySelector('h1,h2').getBoundingClientRect();
+    const selected = document.querySelector('[data-go-product][aria-current="true"]');
+    const item = selected.closest('[data-print-item]');
+    const title = selected.getBoundingClientRect();
+    const panel = item.querySelector('.print-item-details');
+    const panelRect = panel.getBoundingClientRect();
     return {
       width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth,
       active: slide?.dataset.product,
       title: title && { left: title.left, right: title.right, top: title.top, bottom: title.bottom },
       images: [...document.querySelectorAll('.print-image img')].every(image => image.complete && image.naturalWidth > 0),
       position: document.querySelector('[data-print-position]').textContent,
-      titleStyle: (() => { const s = getComputedStyle(slide.querySelector('h1,h2')); return { opacity: s.opacity, blend: s.mixBlendMode, shadow: s.textShadow, filter: s.filter }; })(),
+      selected: item.dataset.printItem,
+      expanded: [...document.querySelectorAll('[data-go-product][aria-expanded="true"]')].map(el => el.dataset.goProduct),
+      openPanels: [...document.querySelectorAll('.print-item-details:not([hidden])')].map(el => el.closest('[data-print-item]').dataset.printItem),
+      panel: { left: panelRect.left, right: panelRect.right, top: panelRect.top, bottom: panelRect.bottom },
+      heroContentCount: document.querySelectorAll('.print-slide h1,.print-slide h2,.print-slide button,.print-slide a,.print-copy').length,
+      titleStyle: (() => { const s = getComputedStyle(selected); return { opacity: s.opacity, blend: s.mixBlendMode, shadow: s.textShadow, filter: s.filter }; })(),
       imageOverlay: getComputedStyle(slide.querySelector('.print-image'), '::after').content,
     };
   });
   assert.ok(state.scrollWidth <= state.width, `${label}: horizontal page overflow`);
   assert.ok(state.title.left >= 0 && state.title.right <= state.width + 1, `${label}: title overflow`);
-  assert.ok(state.title.top > 140 && state.title.bottom < state.height - 60, `${label}: title must fit between masthead and controls`);
+  assert.ok(state.title.top > 80 && state.panel.bottom < state.height - 60, `${label}: selected product must fit between masthead and footer`);
+  assert.ok(state.panel.left >= 0 && state.panel.right <= state.width, `${label}: selected product controls overflow`);
+  assert.equal(state.selected, state.active, `${label}: list and photograph must agree`);
+  assert.deepEqual(state.expanded, [state.active], `${label}: only the active list item expands`);
+  assert.deepEqual(state.openPanels, [state.active], `${label}: inactive product actions must be hidden`);
+  assert.equal(state.heroContentCount, 0, `${label}: photographs must have no large title or purchase overlay`);
   assert.ok(state.images, `${label}: images missing`);
   assert.deepEqual(state.titleStyle, { opacity: '1', blend: 'normal', shadow: 'none', filter: 'none' }, `${label}: titles must remain opaque without effects`);
   assert.equal(state.imageOverlay, 'none', `${label}: image composition supplies contrast, not an overlay`);
@@ -54,6 +68,12 @@ try {
     await settled();
     await audit(`${label}-planter`);
     assert.equal(await page.$eval('[data-print-next]', el => el.disabled), true);
+    await page.click('[data-go-product="mace-and-chain"]');
+    await page.waitForFunction(() => document.querySelector('.print-slide:not([inert])').dataset.product === 'mace-and-chain');
+    assert.equal(await page.$eval('#print-info-planter', el => el.hidden), true);
+    assert.equal(await page.$eval('#print-info-mace', el => el.hidden), false);
+    await page.click('[data-go-product="spike-planter-01"]');
+    await page.waitForFunction(() => document.querySelector('.print-slide:not([inert])').dataset.product === 'spike-planter-01');
     await page.reload({ waitUntil: 'networkidle0' });
     assert.equal(await page.$eval('.print-slide:not([inert])', el => el.dataset.product), 'spike-planter-01');
     await page.click('[data-details="spike-planter-01"]');
@@ -69,6 +89,7 @@ try {
     await page.click('[data-prints-search-toggle]');
     await page.type('#print-search', 'zznomatch');
     assert.equal(await page.$eval('[data-prints-empty]', el => el.hidden), false);
+    assert.equal(await page.$$eval('[data-print-item]:not([hidden]),.print-item-details:not([hidden])', els => els.length), 0);
     await page.$eval('#print-search', el => { el.value = 'mace'; el.dispatchEvent(new Event('input')); });
     assert.equal(await page.$$eval('.print-slide:not([hidden])', els => els.length), 1);
     assert.equal(await page.$eval('[data-print-position]', el => el.textContent), '01 / 01');

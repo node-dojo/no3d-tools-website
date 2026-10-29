@@ -6,6 +6,8 @@ This local candidate implements Tools ↔ Prints switching and a full-bleed Prin
 
 Joe's 2026-10-28 direction: use the existing NO3D design language and UX, replacing the dense tool shelf with viewport-filling product photography beneath overlaid text. The carousel supports previous/next controls, horizontal swipe/scroll, vertical mouse-wheel advancement, keyboard arrows, and a product index. There is no autoplay.
 
+The latest review moves all product information and actions out of the photograph into the product list. The active row expands to show file format, price, Product details, and View on Gumroad; other rows retain only their number and title. Clicking a row, using the carousel controls, swiping, keyboard navigation, search, and direct product URLs keep that expanded row synchronized with the visible photograph. The photo slides contain no title or purchase overlay. Desktop keeps this compact list in the left rail; on phones it sits near the bottom of the viewport above the footer, with the introductory subheading remaining near the masthead. The details dialog retains the full original product description and included files.
+
 The masthead switches between the existing Tools and Prints wordmarks. The Prints subheading is Joe's exact first draft:
 
 > 3d printable downloads and build plans for next level projects
@@ -61,7 +63,7 @@ npm run acceptance:prints
 npm audit
 ```
 
-Prints acceptance covers desktop/mobile fit, loaded images, opaque title styling, section selection, keyboard navigation, deep-link refresh, detail content/links, search/empty states, local-only asset requests, rejected checkout writes, protected filesystem paths, and navigation back to Tools. Screenshots and the results receipt are written to `/tmp/no3d-prints-acceptance`.
+Prints acceptance covers desktop/mobile fit, loaded images, opaque list typography, one expanded product at a time, list/carousel synchronization, no purchase overlay on the photo, section selection, keyboard navigation, deep-link refresh, detail content/links, search/empty states, local-only asset requests, rejected checkout writes, protected filesystem paths, and navigation back to Tools. Screenshots and the results receipt are written to `/tmp/no3d-prints-acceptance`.
 
 The inherited dependency audit reports nine advisories: four low, one moderate, and four high. The high findings are in the Puppeteer development dependency tree (`puppeteer`, `puppeteer-core`, `chromium-bidi`, `zod`). Dependencies and lockfile have not been changed for this visual candidate.
 

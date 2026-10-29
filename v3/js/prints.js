@@ -2,6 +2,7 @@ import { printProducts } from '../data/prints/catalog.js';
 
 const carousel = document.querySelector('[data-print-carousel]');
 const slides = [...carousel.querySelectorAll('[data-product]')];
+const productItems = [...document.querySelectorAll('[data-print-item]')];
 const previous = document.querySelector('[data-print-previous]');
 const next = document.querySelector('[data-print-next]');
 const search = document.querySelector('#print-search');
@@ -23,10 +24,18 @@ function updateActive(index, updateUrl = true) {
   next.disabled = active >= visible.length - 1;
   document.querySelector('[data-print-position]').textContent = `${number(current ? active + 1 : 0)} / ${number(visible.length)}`;
   document.querySelector('[data-result-count]').textContent = number(visible.length);
-  for (const button of document.querySelectorAll('[data-go-product]')) {
-    button.hidden = !visible.some(slide => slide.dataset.product === button.dataset.goProduct);
-    button.setAttribute('aria-current', String(button.dataset.goProduct === current?.dataset.product));
+  let restoreListFocus = false;
+  for (const item of productItems) {
+    const button = item.querySelector('[data-go-product]');
+    const panel = item.querySelector('.print-item-details');
+    const selected = item.dataset.printItem === current?.dataset.product;
+    if (!selected && panel.contains(document.activeElement)) restoreListFocus = true;
+    item.hidden = !visible.some(slide => slide.dataset.product === item.dataset.printItem);
+    button.setAttribute('aria-current', String(selected));
+    button.setAttribute('aria-expanded', String(selected));
+    panel.hidden = !selected;
   }
+  if (restoreListFocus) document.querySelector('[data-go-product][aria-current="true"]')?.focus();
   const product = printProducts.find(item => item.slug === current?.dataset.product);
   document.querySelector('[data-print-announcement]').textContent = product ? `${product.name}, ${active + 1} of ${visible.length}` : 'No prints match this search.';
   if (updateUrl && current) {

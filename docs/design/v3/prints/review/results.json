@@ -8,13 +8,27 @@
       "scrollWidth": 1440,
       "active": "mace-and-chain",
       "title": {
-        "left": 278,
-        "right": 1416,
-        "top": 794.25,
-        "bottom": 926
+        "left": 24,
+        "right": 244,
+        "top": 268.890625,
+        "bottom": 314.890625
       },
       "images": true,
       "position": "01 / 02",
+      "selected": "mace-and-chain",
+      "expanded": [
+        "mace-and-chain"
+      ],
+      "openPanels": [
+        "mace-and-chain"
+      ],
+      "panel": {
+        "left": 58,
+        "right": 244,
+        "top": 318.890625,
+        "bottom": 454.890625
+      },
+      "heroContentCount": 0,
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",
@@ -30,13 +44,27 @@
       "scrollWidth": 1440,
       "active": "spike-planter-01",
       "title": {
-        "left": 278,
-        "right": 1416,
-        "top": 860.125,
-        "bottom": 926
+        "left": 24,
+        "right": 244,
+        "top": 328.890625,
+        "bottom": 372.890625
       },
       "images": true,
       "position": "02 / 02",
+      "selected": "spike-planter-01",
+      "expanded": [
+        "spike-planter-01"
+      ],
+      "openPanels": [
+        "spike-planter-01"
+      ],
+      "panel": {
+        "left": 58,
+        "right": 244,
+        "top": 376.890625,
+        "bottom": 512.890625
+      },
+      "heroContentCount": 0,
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",
@@ -54,11 +82,25 @@
       "title": {
         "left": 12,
         "right": 378,
-        "top": 506.4375,
-        "bottom": 637
+        "top": 555,
+        "bottom": 601
       },
       "images": true,
       "position": "01 / 02",
+      "selected": "mace-and-chain",
+      "expanded": [
+        "mace-and-chain"
+      ],
+      "openPanels": [
+        "mace-and-chain"
+      ],
+      "panel": {
+        "left": 46,
+        "right": 378,
+        "top": 601,
+        "bottom": 712
+      },
+      "heroContentCount": 0,
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",
@@ -76,11 +118,25 @@
       "title": {
         "left": 12,
         "right": 378,
-        "top": 571.71875,
-        "bottom": 637
+        "top": 611,
+        "bottom": 655
       },
       "images": true,
       "position": "02 / 02",
+      "selected": "spike-planter-01",
+      "expanded": [
+        "spike-planter-01"
+      ],
+      "openPanels": [
+        "spike-planter-01"
+      ],
+      "panel": {
+        "left": 46,
+        "right": 378,
+        "top": 655,
+        "bottom": 766
+      },
+      "heroContentCount": 0,
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",

@@ -14,22 +14,13 @@
 <body class="prints-page" data-storefront="prints">
   <a class="prints-skip" href="#print-carousel">Skip to prints</a>
   <main class="prints-stage" aria-label="Printable downloads">
+    <h1 class="visually-hidden">NO3D Prints</h1>
     <div class="prints-carousel" id="print-carousel" data-print-carousel tabindex="0" role="region" aria-roledescription="carousel" aria-label="Print download products">
       <article class="print-slide" data-product="mace-and-chain" role="group" aria-roledescription="slide" aria-label="1 of 2: Mace and Chain Lighter Keeper">
         <picture class="print-image"><img src="/v3/assets/prints/mace-chain-expanded-2048.png" alt="White 3D printed Mace and Chain Lighter Keeper on a dark wood surface" fetchpriority="high" width="2048" height="2048"></picture>
-        <div class="print-copy">
-          <p class="print-type">3D printable · STL + 3MF</p>
-          <h1>Mace and Chain<br>Lighter Keeper</h1>
-          <div class="print-purchase"><button type="button" data-details="mace-and-chain">Product details <span>+</span></button><span class="print-price">$11.11</span><a href="https://nodedojo.gumroad.com/l/jvbin" target="_blank" rel="noopener noreferrer">View on Gumroad <span>↗</span></a></div>
-        </div>
       </article>
       <article class="print-slide" data-product="spike-planter-01" role="group" aria-roledescription="slide" aria-label="2 of 2: Spike Planter 01" inert>
         <picture class="print-image"><img src="/v3/assets/prints/spike-planter-expanded-2048.png" alt="3D printed Spike Planter 01 with raised spikes and a screw-in drip tray" width="2048" height="2048"></picture>
-        <div class="print-copy">
-          <p class="print-type">3D printable · STL + 3MF</p>
-          <h2>Spike Planter 01</h2>
-          <div class="print-purchase"><button type="button" data-details="spike-planter-01">Product details <span>+</span></button><span class="print-price">$11.11</span><a href="https://nodedojo.gumroad.com/l/spike-planter-01" target="_blank" rel="noopener noreferrer">View on Gumroad <span>↗</span></a></div>
-        </div>
       </article>
     </div>
     <p class="prints-empty" data-prints-empty hidden>No prints match this search.</p>
@@ -44,11 +35,22 @@
     <aside class="prints-index" aria-label="Print catalog">
       <p class="prints-subheading">3d printable downloads and build plans for next level projects</p>
       <div class="prints-index-heading"><span>All Prints</span><span data-result-count>02</span></div>
-      <nav class="prints-products" aria-label="Choose a print">
-        <button type="button" data-go-product="mace-and-chain" aria-current="true"><span>01</span><span>Mace and Chain<br>Lighter Keeper</span></button>
-        <button type="button" data-go-product="spike-planter-01"><span>02</span><span>Spike Planter 01</span></button>
-      </nav>
-      <p class="prints-delivery">Digital print files<br>STL + Bambu Studio 3MF</p>
+      <ol class="prints-products" aria-label="Choose a print">
+        <li class="print-item" data-print-item="mace-and-chain">
+          <h2><button type="button" class="print-item-toggle" data-go-product="mace-and-chain" id="print-name-mace" aria-current="true" aria-expanded="true" aria-controls="print-info-mace"><span>01</span><span>Mace and Chain<br>Lighter Keeper</span></button></h2>
+          <div class="print-item-details" id="print-info-mace" role="region" aria-labelledby="print-name-mace">
+            <p class="print-type">3D printable · STL + 3MF</p>
+            <div class="print-item-actions"><button type="button" data-details="mace-and-chain">Product details <span aria-hidden="true">+</span></button><span class="print-price">$11.11</span><a href="https://nodedojo.gumroad.com/l/jvbin" target="_blank" rel="noopener noreferrer">View on Gumroad <span aria-hidden="true">↗</span></a></div>
+          </div>
+        </li>
+        <li class="print-item" data-print-item="spike-planter-01">
+          <h2><button type="button" class="print-item-toggle" data-go-product="spike-planter-01" id="print-name-planter" aria-current="false" aria-expanded="false" aria-controls="print-info-planter"><span>02</span><span>Spike Planter 01</span></button></h2>
+          <div class="print-item-details" id="print-info-planter" role="region" aria-labelledby="print-name-planter" hidden>
+            <p class="print-type">3D printable · STL + 3MF</p>
+            <div class="print-item-actions"><button type="button" data-details="spike-planter-01">Product details <span aria-hidden="true">+</span></button><span class="print-price">$11.11</span><a href="https://nodedojo.gumroad.com/l/spike-planter-01" target="_blank" rel="noopener noreferrer">View on Gumroad <span aria-hidden="true">↗</span></a></div>
+          </div>
+        </li>
+      </ol>
     </aside>
     <footer class="prints-footer">
       <nav aria-label="NO3D storefronts" class="prints-footer-links"><a href="/v3/">Tools</a><a href="/v3/prints/" aria-current="page">Prints</a></nav>
