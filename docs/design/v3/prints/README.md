@@ -10,9 +10,9 @@ The masthead switches between the existing Tools and Prints wordmarks. The Print
 
 > 3d printable downloads and build plans for next level projects
 
-**Correction from Joe during review:** titles must be fully opaque, with no unusual overlay effects. Future thumbnail edits will make the subject much smaller in the frame, leaving a generous, low-contrast photographic background for the type. There are no title blend modes, shadows, outlines, transparency effects, or image-darkening layers. The supplied Gumroad photographs currently retain their original framing, so final image/text contrast awaits that artwork revision. Do not compensate by adding effects.
+**Correction from Joe during review:** titles must be fully opaque, with no unusual overlay effects. Use the expanded-background hero images to make the subject smaller in the frame, leaving more photographic background for the type. There are no title blend modes, shadows, outlines, transparency effects, or image-darkening layers. Joe supplied expanded-background images on 2026-10-28 and requested this preview use them. Do not compensate for image/text contrast by adding effects.
 
-The desktop and mobile photo sources/focal positions can be replaced independently. The current planter uses its published group photograph on desktop and its published portrait cover on mobile. The mace uses its published original cover. All images are original downloaded media; no generated imagery is used.
+Desktop and mobile now use the supplied 2048px expanded-background versions for both products. They were copied unchanged from each product’s `Background Expansions` folder. Their source records describe AI background outpainting with the original subject pixels restored; this turn only integrates those existing files. Joe explicitly authorized their use. The originals and full-resolution masters remain untouched. Exact source paths, SHA-256 hashes, and the supplied edit records are retained in `v3/data/prints/hero-image-provenance.json`.
 
 Caret correction during review (2026-10-28): the inherited chunky pixel carousel glyph is rejected. This candidate uses one clean stroked chevron for the Tools shelf, Prints carousel, and storefront dropdown, rotated for direction. This is a local review change; the live site and approved master files remain unchanged.
 
@@ -45,10 +45,10 @@ This backing repository is shallow at the production baseline. Fetch/deepen its 
 
 Read-only Gumroad snapshots were retrieved on 2026-10-28. `v3/data/prints/gumroad-*.json` retains the selected public product fields, original descriptions, pricing snapshot, and media URLs. `catalog.js` extracts the original text for the detail dialogs. Displayed prices are a design-review snapshot; the linked Gumroad product page remains the purchase authority.
 
-| Product | Gumroad destination | Local original media |
+| Product | Gumroad destination | Current hero media |
 | --- | --- | --- |
-| Printable Mace and Chain Lighter Keeper | https://nodedojo.gumroad.com/l/jvbin | `v3/assets/prints/mace-gumroad-cover.png` |
-| Spike Planter 01 | https://nodedojo.gumroad.com/l/spike-planter-01 | `v3/assets/prints/planter-gumroad-cover.png`, `planter-gumroad-wide.png` |
+| Printable Mace and Chain Lighter Keeper | https://nodedojo.gumroad.com/l/jvbin | `v3/assets/prints/mace-chain-expanded-2048.png` |
+| Spike Planter 01 | https://nodedojo.gumroad.com/l/spike-planter-01 | `v3/assets/prints/spike-planter-expanded-2048.png` |
 
 The separate physical Mace and Chain Lighter Holder listing is intentionally excluded from Prints. Joe authorized use of these existing product hero images in the request for this section.
 
