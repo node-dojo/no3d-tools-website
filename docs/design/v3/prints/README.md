@@ -1,6 +1,6 @@
 # NO3D Prints layout candidate
 
-This local candidate implements Tools ↔ Prints switching and a full-bleed Prints carousel. Its initial products are the published Gumroad **3D printable Mace and Chain Lighter Keeper** and **3D printable Spike Planter 01**. Parts is deferred.
+This storefront implements Tools ↔ Prints switching and a full-bleed Prints carousel. Its initial products are the published Gumroad **3D printable Mace and Chain Lighter Keeper** and **3D printable Spike Planter 01**. Parts is deferred.
 
 ## Current design direction
 
@@ -29,7 +29,7 @@ npm run preview:prints
 
 Open `http://127.0.0.1:4174/v3/prints/`. Direct slide links use `?product=mace-and-chain` or `?product=spike-planter-01`.
 
-The preview binds only to `127.0.0.1`, serves local assets and public catalog snapshots, rejects all mutation requests, and blocks external fetch/form/frame connections. It does not load production credentials or proxy production APIs. The Tools page uses a public catalog snapshot for comparison; it retains its existing layout. The Download action hands nonmembers to the existing Gumroad checkout only after an explicit click; it does not submit a purchase. Local pages and galleries load without external requests.
+The preview binds only to `127.0.0.1`, serves local assets and public catalog snapshots, rejects all mutation requests, and blocks external fetch/form/frame connections. It does not load production credentials or proxy production APIs. The Tools page uses a public catalog snapshot for comparison; it retains its existing layout. The layout preview supplies fixture prices and keeps checkout read-only. Automated acceptance can inject an isolated Commerce checkout fixture. Local pages and galleries load without external requests.
 
 ## Gumroad product-page match
 
@@ -41,29 +41,27 @@ The gallery contains four Mace items and five Planter items, including the origi
 
 ## Download and membership boundary
 
-The ordinary Download action uses the product’s existing Gumroad `?wanted=true` checkout. Gumroad remains price, purchase, receipt, and paid-delivery authority for those transactions. This implementation does not import or grant access based on Gumroad purchases in NO3D accounts.
+The Download action calls the existing `beginProductCheckout` helper and `/api/commerce/checkout`. NO3D Commerce resolves the Stripe offer, creates the order, handles hosted Checkout, and returns to the existing account/order recovery route. Prices are fetched from `/api/commerce/offer`, including the carousel list. Gumroad is a source reference only; no purchase action links there.
 
-New server endpoints `/api/prints/access` and `/api/prints/download` reuse the existing verified website session, paid legacy subscription policy, and Commerce account entitlements. Active full-library members and verified NO3D owners can bypass checkout; narrow collection memberships cannot. The download endpoint checks access again before signing the exact registered private catalog asset for 15 minutes. Missing/draft assets, revoked access, errors, and unknown handles cannot release a file. Browser-supplied membership, price, or file key is never authority.
+`/api/prints/access` and `/api/prints/download` reuse the verified website session, paid legacy membership policy, and Commerce account entitlements. Full-library members and permanent owners skip payment. Chrome-only access does not grant Prints. Every download rechecks current access before signing a private R2 object for 15 minutes; checkout also rejects already-entitled Prints customers.
 
-**Not activated:** neither printable product is present in the local NO3D catalog snapshot. Their exact handles must be registered and their private delivery files connected before member delivery can work in staging/production. A verified member with missing delivery gets an unavailable state, not a paid checkout. No production catalog, private storage, Stripe, Commerce, auth configuration, or entitlement rows were changed.
-
-The default preview is an anonymous guest without credentials. Member, owner, missing-file, and revocation scenarios are exercised through server-side fixture dependencies in acceptance tests, never through a public query/cookie switch. These checks verify local behavior, not actual customer payment, authentication, or private file delivery. Staged real lifecycle verification remains required before release.
+The two private ZIP deliveries are registered in `api/prints/lib/delivery.json`, separate from the Blender product catalog and device manifests. The shared order-download endpoint resolves these same files. Account includes a Prints folder with ZIP downloads for owners and members, without Blender installation instructions. Package provenance and SHA-256 values are in `docs/deployment/prints-packages-20261028.json`. Private R2 objects were independently read back and verified. Staging and production use the same storage bucket; these files occupy new content-addressed keys and do not overwrite existing assets. Production activation is recorded in the release receipt.
 
 ## Source and isolation
 
-- Production deployment verified: `dpl_4mXZMGeanXK6gNiPJ28XPkP29UvP`.
+- Original production baseline: `dpl_4mXZMGeanXK6gNiPJ28XPkP29UvP`.
 - Deployed commit used as the base: `977dcaa9b97b566d698753bd1beb2b8bf01c8b18`.
 - Development branch: `codex/storefront-prints`.
 - Worktree: `/Users/joebowers/Projects/no3d-tools-prints`.
 - Local Git backing store: `/Users/joebowers/Projects/.no3d-prints-source.git`, fetched from the existing GitHub repository at the deployed commit. The original Dropbox-backed Git store stalled during checkout; the incomplete worktree and its temporary branch were cleaned up before creating this independent local worktree.
-- No remote branch has been pushed. Automatic Vercel deployments are explicitly disabled for this branch in its local `vercel.json`.
-- The original `/Users/joebowers/Projects/no3d-tools-website-v3` checkout and the production deployment are unchanged by this work.
+- Automatic Vercel deployments are explicitly disabled for this branch in `vercel.json`; releases use the explicit deployment runbook.
+- The original `/Users/joebowers/Projects/no3d-tools-website-v3` checkout contains separate unpublished work and is preserved. Release status is recorded separately.
 
 This backing repository is shallow at the production baseline. Fetch/deepen its history before future integration if Git needs additional ancestry; do not transplant the old checkout's Git directory.
 
 ## Product and media provenance
 
-Read-only Gumroad snapshots were retrieved on 2026-10-28. `v3/data/prints/gumroad-*.json` retains the selected public product fields, original descriptions, pricing snapshot, and media URLs. `catalog.js` extracts the original text for the detail dialogs. Displayed prices are a design-review snapshot; the linked Gumroad product page remains the purchase authority.
+Read-only Gumroad snapshots were retrieved on 2026-10-28. `v3/data/prints/gumroad-*.json` retains the selected public product fields, original descriptions, pricing snapshot, and media URLs. `catalog.js` extracts the original text for the detail dialogs. Historical snapshot prices are retained as provenance only; Commerce supplies current displayed and checkout prices.
 
 | Product | Gumroad destination | Current hero media |
 | --- | --- | --- |
@@ -83,8 +81,8 @@ npm audit
 
 Prints acceptance covers desktop/mobile fit, loaded images, opaque list typography, one expanded product at a time, list/carousel synchronization, no purchase overlay on the photo, section selection, keyboard navigation, deep-link refresh, full-screen detail layout, equal image hitboxes, four/five-item galleries, no autoplay, detail deep-link reload/Back/Forward/focus return, guest checkout handoff and member/owner download bypass with intercepted external destinations, missing/revoked download denial, search/empty states, local-only asset requests, rejected checkout writes, protected filesystem paths, and navigation back to Tools. Screenshots and the results receipt are written to `/tmp/no3d-prints-acceptance`.
 
-The current local run passes 177 unit/contract tests, all eight V3 acceptance routes at two viewport sizes, and the Prints gallery plus five isolated download journeys. Review screenshots and the receipt are saved in `review/`.
+The current local run passes 179 unit/contract tests, all eight V3 acceptance routes at two viewport sizes, and the Prints gallery plus five isolated download journeys. Review screenshots and the receipt are saved in `review/`.
 
 The inherited dependency audit reports nine advisories: four low, one moderate, and four high. The high findings are in the Puppeteer development dependency tree (`puppeteer`, `puppeteer-core`, `chromium-bidi`, `zod`). Dependencies and lockfile have not been changed for this visual candidate.
 
-The implementation is a review candidate, not approved design canon or a production release. Next review should concentrate on subject scale and negative space in the revised images, title placement/size, and whether the carousel feels right at desktop and phone sizes.
+Joe approved publishing this iteration on 2026-10-28 and directed native NO3D Commerce checkout. Deployment and customer-flow evidence are recorded in `docs/deployment/PRINTS-RELEASE-20261028.md`. This implementation does not alter the design canon.

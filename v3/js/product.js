@@ -1,4 +1,4 @@
-import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=commerce-20261002';
+import { beginMembershipCheckout, beginProductCheckout, getCommerceConfig, getProduct } from './api.js?v=prints-20261028b';
 import { track } from './analytics.js?v=analytics-20260911';
 import { setProductPreview } from './product-preview.js?v=preview-20260823';
 import './shell.js?v=shell-20260914';

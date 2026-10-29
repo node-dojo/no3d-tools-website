@@ -15,6 +15,7 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/v3", "destination": "/v3/index.html" },
+    { "source": "/v3/prints", "destination": "/v3/prints/index.html" },
     { "source": "/v3/access", "destination": "/v3/access/index.html" },
     { "source": "/v3/product", "destination": "/v3/product/index.html" },
     { "source": "/v3/membership", "destination": "/v3/membership/index.html" },

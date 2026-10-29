@@ -1,0 +1,24 @@
+{
+  "offers": [
+    {
+      "offerKey": "no3dtools.product.mace-and-chain",
+      "handle": "mace-and-chain",
+      "resourceId": "mace-and-chain",
+      "resourceType": "no3dtools_product",
+      "fulfillment": "download",
+      "currency": "usd",
+      "unitAmount": 1111,
+      "title": "3D printable Mace and Chain Lighter Keeper"
+    },
+    {
+      "offerKey": "no3dtools.product.spike-planter-01",
+      "handle": "spike-planter-01",
+      "resourceId": "spike-planter-01",
+      "resourceType": "no3dtools_product",
+      "fulfillment": "download",
+      "currency": "usd",
+      "unitAmount": 1111,
+      "title": "3D printable Spike Planter 01"
+    }
+  ]
+}

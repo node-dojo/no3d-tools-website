@@ -1,0 +1,12 @@
+# Local review material and historical source snapshots are not public assets.
+docs/**
+tests/**
+AGENTS.md
+README.md
+.env*
+v3/data/prints/*.json
+v3/assets/prints/*-expanded-2048.png
+# Never place paid archives in this checkout; delivery is private R2 only.
+*.zip
+**/*.stl
+**/*.3mf

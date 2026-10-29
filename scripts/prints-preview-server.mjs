@@ -12,7 +12,7 @@ const collections = {
   'full-library': JSON.parse(await readFile(join(root, 'v3/data/prints/tools-full-library.json'))),
   'no3d-chrome-tools': JSON.parse(await readFile(join(root, 'v3/data/prints/tools-chrome-collection.json'))),
 };
-export function createPrintsPreviewServer({ printDependencies = {} } = {}) {
+export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixture = null } = {}) {
   // A local guest by default. Test-only dependencies are supplied by the test
   // process, never selected through HTTP input. No production credentials.
   const dependencies = { authenticate: async () => null, ...printDependencies };
@@ -23,6 +23,12 @@ export function createPrintsPreviewServer({ printDependencies = {} } = {}) {
     response.setHeader('Cache-Control', 'no-store');
     response.setHeader('Content-Security-Policy', "connect-src 'self'; form-action 'none'; frame-src 'none'; object-src 'none'");
     const json = (status, data) => { response.writeHead(status, { 'Content-Type': 'application/json' }); response.end(JSON.stringify(data)); };
+    const pathUrl = new URL(request.url, 'http://127.0.0.1');
+    if (request.method === 'POST' && pathUrl.pathname === '/api/commerce/checkout' && checkoutFixture) {
+      let body = '';
+      for await (const chunk of request) body += chunk;
+      return json(200, await checkoutFixture(JSON.parse(body)));
+    }
     if (!['GET', 'HEAD'].includes(request.method)) return json(405, { error: 'local_preview_read_only' });
     try {
       let path = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
@@ -43,6 +49,11 @@ export function createPrintsPreviewServer({ printDependencies = {} } = {}) {
         const value = collections[path.split('/').pop()]; return json(value ? 200 : 404, value || { error: 'not_found' });
       }
       if (path === '/api/auth/session') return json(200, { authenticated: false });
+      if (path === '/api/commerce/offer') {
+        const handle = pathUrl.searchParams.get('handle');
+        if (!['mace-and-chain', 'spike-planter-01'].includes(handle)) return json(404, { error: 'offer_unavailable' });
+        return json(200, { offer: { resourceId: handle, offerKey: `no3dtools.product.${handle}`, currency: 'usd', unitAmount: 1111 } });
+      }
       if (path === '/api/membership/account') return json(200, { active: false });
       if (path === '/api/commerce/config') return json(200, { individualProductsEnabled: false });
       if (path.startsWith('/api/')) return json(404, { error: 'unavailable_in_local_layout_preview' });

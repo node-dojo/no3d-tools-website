@@ -133,7 +133,14 @@ export function accessLabel(item = {}) {
   return item.permanent ? 'Permanent access' : 'Membership access';
 }
 
-export function accountFileAction(item = {}) {
+export function accountFileAction(item = {}, product = {}) {
+  if (product.productType === 'Prints') {
+    const details = `/v3/prints/?product=${encodeURIComponent(item.handle)}&details=1`;
+    if (isRevokedRecord(item)) return { href: details, label: 'Access status →' };
+    if (item.orderId && item.permanent) return { href: `/api/commerce/download/${encodeURIComponent(item.orderId)}`, label: 'Download →' };
+    if (item.membership) return { href: `/api/prints/download?handle=${encodeURIComponent(item.handle)}`, label: 'Download →' };
+    return { href: details, label: 'Details →' };
+  }
   if (isRevokedRecord(item)) {
     return {
       href: `/v3/product/?handle=${encodeURIComponent(item.handle || '')}`,
@@ -165,14 +172,14 @@ export function accountFileView(item = {}, product = {}) {
     folder: workbench.folder || product.productType || 'Unsorted',
     thumbnail: product.thumbnail || product.image || '',
     access: accessLabel(item),
-    sync: item.membership ? 'Automatic' : 'Manual',
+    sync: product.productType !== 'Prints' && item.membership ? 'Automatic' : 'Manual',
     downloadedAt: item.lastDownloadedAt || item.downloadedAt || '',
     installedAt: item.lastInstalledAt || '',
     addedAt: item.purchasedAt || '',
     modifiedAt: item.lastInstalledAt || item.purchasedAt || workbench.modifiedAt || '',
     kind: workbench.kind || product.productType || 'NO3D asset',
     summary: workbench.summary || product.description || 'Available through this account library.',
-    action: accountFileAction(item),
+    action: accountFileAction(item, product),
   };
 }
 

@@ -1,4 +1,4 @@
-import { beginMembershipCheckout, getCommerceConfig } from './api.js?v=commerce-20261002';
+import { beginMembershipCheckout, getCommerceConfig } from './api.js?v=prints-20261028b';
 import { track, trackOnce } from './analytics.js?v=analytics-20260911';
 
 const config = await getCommerceConfig();

@@ -1,4 +1,4 @@
-import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery, requestSignIn } from './api.js?v=analytics-20260911';
+import { authenticateWithPassword, getAuthProviders, oauthUrl, requestRecovery, requestSignIn } from './api.js?v=prints-20261028b';
 import { track } from './analytics.js?v=analytics-20260911';
 
 const params = new URLSearchParams(location.search);

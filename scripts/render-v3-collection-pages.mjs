@@ -30,7 +30,7 @@ export function renderCollectionPage(handle, definition) {
   const mediaSize = Number(definition.mediaSize) || 1024;
 
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f1f0eb"><title>${title} — NO3D Tools</title><link rel="canonical" href="https://no3dtools.com/v3/collections/${handle}/"><link rel="stylesheet" href="/v3/styles/v3.css?v=collection-purchase-20260830"><script type="module" src="/v3/js/analytics-init.js?v=analytics-20260911"></script></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f1f0eb"><title>${title} — NO3D Tools</title><link rel="canonical" href="https://no3dtools.com/v3/collections/${handle}/"><link rel="stylesheet" href="/v3/styles/v3.css?v=prints-20261028b"><script type="module" src="/v3/js/analytics-init.js?v=analytics-20260911"></script></head>
 <body data-collection-handle="${handle}"><div class="v3-page membership-v3">
   <header class="v3-mast"><a class="v3-wordmark" href="/v3/" aria-label="NO3D Tools home"><img src="/assets/light/no3d-tools.png" alt="NO3D Tools"></a><a class="v3-search" href="/v3/">Catalog</a><div class="v3-status"><a href="/v3/account/">Account ●</a></div></header>
   <main>

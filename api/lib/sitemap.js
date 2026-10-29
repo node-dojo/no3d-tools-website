@@ -14,6 +14,7 @@ function lastModified(value) {
 export function sitemapEntries({ products = [], articles = [] } = {}) {
   const entries = [
     { location: `${ORIGIN}/v3/` },
+    { location: `${ORIGIN}/v3/prints/` },
     { location: `${ORIGIN}/v3/membership/` },
     { location: `${ORIGIN}/v3/collections/no3d-chrome-tools/` },
     { location: `${ORIGIN}/v3/collections/full-library/` },

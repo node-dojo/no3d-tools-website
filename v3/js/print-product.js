@@ -1,4 +1,5 @@
-import { printProducts } from '../data/prints/catalog.js';
+import { printProducts } from '../data/prints/catalog.js?v=prints-20261028b';
+import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,6 +18,7 @@ export function createPrintProductView(dialog) {
   let scrollTimer;
   let closeTimer;
   let pointerStart;
+  let price = '';
 
   function syncGallery(index) {
     photo = Math.max(0, Math.min(index, product.media.length - 1));
@@ -105,12 +107,12 @@ export function createPrintProductView(dialog) {
   }
 
   function showAccess(access) {
-    download.disabled = access.mode === 'unavailable';
+    download.disabled = access.mode === 'unavailable' || (access.mode === 'purchase' && !price);
     download.dataset.unavailable = String(access.mode === 'unavailable');
     signin.hidden = access.authenticated === true;
-    dialog.querySelector('[data-details-price]').textContent = access.entitlement ? 'Free' : product.price;
+    dialog.querySelector('[data-details-price]').textContent = access.entitlement ? 'Free' : price || '—';
     dialog.querySelector('[data-details-price-label]').textContent = access.entitlement === 'member' ? 'Included with membership' : access.entitlement === 'owned' ? 'Already owned' : '3D print files';
-    status.textContent = access.mode === 'unavailable' ? 'Your download is not available yet. Please try again later.' : '';
+    status.textContent = access.mode === 'unavailable' ? 'Your download is not available yet. Please try again later.' : access.mode === 'purchase' && !price ? 'Checkout is temporarily unavailable. Please try again later.' : '';
   }
 
   async function fetchAccess(signal) {
@@ -122,10 +124,16 @@ export function createPrintProductView(dialog) {
   async function inspectAccess() {
     request?.abort();
     request = new AbortController();
+    const inspection = request;
     download.disabled = true;
     download.dataset.unavailable = 'false';
     status.textContent = 'Checking download access…';
-    try { showAccess(await fetchAccess(request.signal)); }
+    try {
+      const [access, offer] = await Promise.all([fetchAccess(inspection.signal), getPrintOffer(product.slug)]);
+      if (inspection.signal.aborted || request !== inspection) return;
+      price = offer?.formatted || '';
+      showAccess(access);
+    }
     catch (error) {
       if (error.name === 'AbortError') return;
       status.textContent = 'Download access could not be checked. Select Download to retry.';
@@ -143,9 +151,10 @@ export function createPrintProductView(dialog) {
       const access = await fetchAccess(request.signal);
       showAccess(access);
       if (access.mode === 'purchase') {
-        const url = new URL(access.checkoutUrl);
-        if (url.protocol !== 'https:' || url.hostname !== 'nodedojo.gumroad.com' || !url.pathname.startsWith('/l/')) throw new Error('invalid_checkout');
+        download.disabled = true;
         status.textContent = 'Opening checkout…';
+        const url = new URL(await beginProductCheckout(product.slug));
+        if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com') throw new Error('invalid_checkout');
         location.assign(url.href);
       } else if (access.mode === 'download') {
         download.disabled = true;
@@ -172,12 +181,13 @@ export function createPrintProductView(dialog) {
     clearTimeout(closeTimer);
     dialog.classList.remove('is-closing');
     product = selected;
+    price = '';
     dialog.dataset.product = product.slug;
     opener = trigger || document.querySelector(`.print-hotspot[data-details="${slug}"]`);
     dialog.querySelector('#print-details-title').textContent = product.name;
     dialog.querySelector('[data-document-reference]').textContent = product.reference;
     dialog.querySelector('[data-document-index]').textContent = product.documentIndex;
-    dialog.querySelector('[data-details-price]').textContent = product.price;
+    dialog.querySelector('[data-details-price]').textContent = '—';
     dialog.querySelector('[data-details-price-label]').textContent = '3D print files';
     const url = new URL(location.href);
     url.searchParams.set('product', slug);

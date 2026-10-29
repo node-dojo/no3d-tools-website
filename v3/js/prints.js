@@ -1,9 +1,17 @@
-import { printProducts } from '../data/prints/catalog.js';
-import { createPrintProductView } from './print-product.js';
+import { printProducts } from '../data/prints/catalog.js?v=prints-20261028b';
+import { createPrintProductView } from './print-product.js?v=prints-20261028b';
+import { getPrintOffer } from './api.js?v=prints-20261028b';
 
 const carousel = document.querySelector('[data-print-carousel]');
 const slides = [...carousel.querySelectorAll('[data-product]')];
 const productItems = [...document.querySelectorAll('[data-print-item]')];
+for (const item of productItems) {
+  const price = item.querySelector('.print-price');
+  if (price) {
+    price.textContent = '—';
+    getPrintOffer(item.dataset.printItem).then(offer => { price.textContent = offer?.formatted || '—'; });
+  }
+}
 const previous = document.querySelector('[data-print-previous]');
 const next = document.querySelector('[data-print-next]');
 const search = document.querySelector('#print-search');

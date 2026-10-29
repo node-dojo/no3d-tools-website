@@ -3,13 +3,10 @@ import { commerceFetch } from '../../commerce/lib/client.js';
 import { computeAccessState } from '../../lib/subscriptionAccess.js';
 import { getSupabaseServiceClient } from '../../lib/supabaseAdmin.js';
 import { isR2Configured, presignGetObject } from '../../lib/r2.js';
+import { getPrintDelivery } from './catalog.js';
 
 // These printable downloads are separate products from the similarly named
 // Blender tools. Only these exact catalog handles can be served by this route.
-export const PRINT_CHECKOUTS = Object.freeze({
-  'mace-and-chain': 'https://nodedojo.gumroad.com/l/jvbin?wanted=true',
-  'spike-planter-01': 'https://nodedojo.gumroad.com/l/spike-planter-01?wanted=true',
-});
 const FULL_LIBRARY = 'no3dtools.membership.full-library';
 
 const services = {
@@ -29,14 +26,7 @@ const services = {
     if (!response.ok || !Array.isArray(payload.entitlements) || !Array.isArray(payload.products)) throw new Error('access_unavailable');
     return payload;
   },
-  async product(handle) {
-    const client = getSupabaseServiceClient();
-    if (!client) throw new Error('delivery_unavailable');
-    const { data, error } = await client.from('products')
-      .select('handle, file_url, checksum, status').eq('handle', handle).maybeSingle();
-    if (error) throw new Error('delivery_unavailable');
-    return data;
-  },
+  product: async handle => getPrintDelivery(handle),
   deliveryReady: isR2Configured,
   sign: presignGetObject,
   now: () => new Date(),
@@ -48,13 +38,15 @@ function activeAt(entitlement, now) {
     && (!entitlement.endsAt || Date.parse(entitlement.endsAt) > now.getTime());
 }
 
-async function resolveAccess(req, res, handle, service) {
+export async function resolvePrintAccess(req, res, handle, dependencies = {}) {
+  const service = { ...services, ...dependencies };
   const auth = await service.authenticate(req, res);
   const authenticated = Boolean(auth?.user?.id && auth.user.email && auth.user.email_confirmed_at);
-  const purchase = { handle, authenticated, mode: 'purchase', checkoutUrl: PRINT_CHECKOUTS[handle] };
-  if (!authenticated) return { access: purchase };
+  const purchase = { handle, authenticated, mode: 'purchase' };
+  // The cookie is only a lookup hint. Commerce still verifies guest ownership.
+  if (!authenticated && !/(?:^|;\s*)no3d_commerce_guest=/.test(req.headers.cookie || '')) return { access: purchase };
 
-  const subscription = await service.subscription(auth.user.email.trim().toLowerCase());
+  const subscription = authenticated ? await service.subscription(auth.user.email.trim().toLowerCase()) : null;
   let entitlement = computeAccessState(subscription, service.now()).allowed ? 'member' : null;
   if (!entitlement) {
     // Scoped memberships such as Chrome do not grant the entire Prints catalog.
@@ -73,7 +65,7 @@ async function resolveAccess(req, res, handle, service) {
   const ready = product?.handle === handle && product.status === 'active'
     && typeof product.file_url === 'string' && product.file_url.trim() && service.deliveryReady();
   return {
-    access: { handle, authenticated: true, entitlement, mode: ready ? 'download' : 'unavailable' },
+    access: { handle, authenticated, entitlement, mode: ready ? 'download' : 'unavailable' },
     product: ready ? product : null,
   };
 }
@@ -86,9 +78,9 @@ export function createPrintHandler({ download = false, dependencies = {} } = {})
     res.setHeader('Cache-Control', 'private, no-store');
     if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
     const handle = req.query?.handle;
-    if (typeof handle !== 'string' || !Object.hasOwn(PRINT_CHECKOUTS, handle)) return res.status(404).json({ error: 'print_not_found' });
+    if (!getPrintDelivery(handle)) return res.status(404).json({ error: 'print_not_found' });
     try {
-      const { access, product } = await resolveAccess(req, res, handle, service);
+      const { access, product } = await resolvePrintAccess(req, res, handle, service);
       if (!download) return res.status(200).json(access);
       // Always resolve fresh server authority, even after an earlier access GET.
       if (access.mode !== 'download') return res.status(access.mode === 'unavailable' ? 503 : 403).json({ error: access.mode === 'unavailable' ? 'delivery_unavailable' : 'access_required' });

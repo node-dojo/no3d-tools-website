@@ -1,5 +1,5 @@
-import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=analytics-20260911';
-import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, projectScopedMembershipCatalog, readableHandle } from './account-library.js?v=scoped-membership-20260828b';
+import { approveBlenderConnection, createBillingPortal, createMembershipBillingPortal, getAccountState, getMembershipCheckout, getOrder, requestRecovery, sendDesktopSetupLink, signOut } from './api.js?v=prints-20261028b';
+import { accountFileFolders, accountFileView, filterAccountFiles, mergeEffectiveAccountLibrary, projectScopedMembershipCatalog, readableHandle } from './account-library.js?v=prints-20261028b';
 import { preloadProductPreviews, PRODUCT_PREVIEW_FALLBACK, setProductPreview } from './product-preview.js?v=preview-20260823';
 import { trackOnce } from './analytics.js?v=analytics-20260911';
 
@@ -22,7 +22,8 @@ const displayDate = (value, fallback = '—') => {
 const accountStorageKey = (kind, value = '') => `no3d_${kind}_${state.accountKey}_${value}`;
 
 function updateCount() {
-  const label = `${String(state.products.length).padStart(2, '0')} tool${state.products.length === 1 ? '' : 's'}`;
+  const noun = state.products.some(item => state.catalog.get(item.handle)?.productType === 'Prints') ? 'item' : 'tool';
+  const label = `${String(state.products.length).padStart(2, '0')} ${noun}${state.products.length === 1 ? '' : 's'}`;
   $$('[data-library-count]').forEach(node => { node.textContent = label; });
   $('[data-completion-count]').textContent = state.products.length
     ? `${label} in your collection`
@@ -77,7 +78,7 @@ function restoreInspector() {
 
 async function downloadAccountFile(event, file, action) {
   event.preventDefault();
-  if (!file.action.href.startsWith('/api/commerce/download/')) return location.assign(file.action.href);
+  if (!file.action.href.startsWith('/api/commerce/download/') && !file.action.href.startsWith('/api/prints/download?')) return location.assign(file.action.href);
   const original = action.textContent;
   action.setAttribute('aria-disabled', 'true');
   action.textContent = 'Preparing download…';
@@ -114,7 +115,7 @@ function bindDownloadAction(action, file) {
   // The inspector reuses one persistent anchor as the selected file changes.
   // Replace its handler so an old selection can never issue a second download.
   action.onclick = null;
-  if (!file.action.href.startsWith('/api/commerce/download/')) return;
+  if (!file.action.href.startsWith('/api/commerce/download/') && !file.action.href.startsWith('/api/prints/download?')) return;
   action.onclick = event => void downloadAccountFile(event, file, action);
 }
 
@@ -269,15 +270,16 @@ async function completeConnection(deviceCode) {
 function renderOrder(order) {
   const ready = order.paymentStatus === 'paid' && order.fulfillmentStatus === 'fulfilled' && order.recovery;
   if (ready) {
+    const isPrint = state.catalog.get(order.resourceId)?.productType === 'Prints';
     const panel = $('[data-account-notice]');
     panel.hidden = false;
     $('[data-order-state]').textContent = 'Purchase complete / Library active';
     $('[data-order-title]').textContent = 'Your purchase is ready';
-    $('[data-order-detail]').textContent = 'This order is attached to your account and its tools are available in My Folder.';
+    $('[data-order-detail]').textContent = isPrint ? 'This order is attached to your account and its print files are available in My Folder.' : 'This order is attached to your account and its tools are available in My Folder.';
     const action = $('[data-order-action]');
     action.hidden = false;
     action.href = '#library';
-    action.textContent = 'View purchased tools →';
+    action.textContent = isPrint ? 'View purchased files →' : 'View purchased tools →';
     return 'fulfilled';
   }
   if (['refunded', 'disputed'].includes(order.paymentStatus)) {
@@ -398,7 +400,7 @@ const localPreviewState = localPreview === 'directory'
       membership: null
     }
   : null;
-const { session, catalog, summary, membership, membershipCollections = [] } = localPreviewState || await getAccountState();
+const { session, catalog, summary, membership, membershipCollections = [], printAccess = [] } = localPreviewState || await getAccountState();
 state.authenticated = session.authenticated === true;
 if (!state.authenticated) {
   const next = `${location.pathname}${location.search}`;
@@ -407,7 +409,7 @@ if (!state.authenticated) {
   if (params.get('auth') === 'signed-in') trackOnce('account_confirmation_completed', { destination: 'account' });
   if (params.get('purchase') === 'ready') trackOnce('product_fulfillment_completed', { source: 'account' });
   state.catalog = catalog;
-  const effectiveCandidates = [...(summary?.products || [])];
+  const effectiveCandidates = [...(summary?.products || []), ...printAccess];
   state.membership = membership;
   const email = session.email || summary?.account?.contactEmail || 'Your NO3D account';
   state.accountKey = summary?.account?.id || String(email).trim().toLowerCase();
@@ -424,7 +426,7 @@ if (!state.authenticated) {
     effectiveCandidates.push(...scoped.records);
   } else if (member) {
     for (const product of state.catalog.values()) {
-      if (product.releaseStatus === 'archived') continue;
+      if (product.releaseStatus === 'archived' || product.productType === 'Prints') continue;
       effectiveCandidates.push({ handle: product.handle, membership: true, owned: true, permanent: false });
     }
   }

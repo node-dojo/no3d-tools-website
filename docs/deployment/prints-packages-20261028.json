@@ -1,0 +1,104 @@
+[
+  {
+    "handle": "mace-and-chain",
+    "filename": "mace-and-chain.zip",
+    "bytes": 27318797,
+    "checksum": "2f10f19e6e2a5f3fd90960efd4a9ac3deaa4aca36342621cdc1c9011498fec13",
+    "file_url": "no3d-prints/mace-and-chain/2f10f19e6e2a5f3f/mace-and-chain.zip",
+    "files": [
+      {
+        "name": "111mm Mace Ball_0919_39_1412_001.stl",
+        "bytes": 2513584,
+        "sha256": "4d290f103c6c1dcf00bd9a536d302d5989762ebdbec6a149ce61d7aa50e40626",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "125mm Mace Ball_0919_33_1412_001.stl",
+        "bytes": 2778984,
+        "sha256": "be464ebcd0075ef769e83c4ba3f27877ce4cd6a7499ab07ebf40b640523f9aef",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "85mm Mace Ball_0919_37_1412_001.stl",
+        "bytes": 2505584,
+        "sha256": "6ad94b4ad0a6bf9b98ff7ec1a71d007b2366ada5922bcce56c57c237a6e55d19",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "99 Soft Mace Ball_0919_35_1412_001.stl",
+        "bytes": 33882484,
+        "sha256": "40aa9d6cf655da7a2b6f34e15a463bdc45e129d4bc90980657fba0a8dc8451aa",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "Big Chain_0919_31_1412_001.stl",
+        "bytes": 2970684,
+        "sha256": "6f1cbb5bfe3294298e56b69b493682b52f3d0393b43b21f78f3c731e1ddcd3c1",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "Lighter Holding Haft handle_0919_58_1409_001.stl",
+        "bytes": 3436584,
+        "sha256": "23fb836f1c13372b20ac3a8092d053496020140ce06e75fe06f43dd1be4b8bd1",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "MACE AND CHAIN 18SEP2024.3mf",
+        "bytes": 2558246,
+        "sha256": "0005c6ff8906deeeaf4426748b1c53fa0bee8ef0e7b3def3e50492dd6f58050c",
+        "source": "Local source assembly: Mace and Chain Lighter Keeper/MACE AND CHAIN 18SEP2024.3mf"
+      },
+      {
+        "name": "Medium Chain_0919_29_1412_001.stl",
+        "bytes": 3749684,
+        "sha256": "278598df0ba37cd4b44d72a729a698ffaa54c8f158e2bad68cef0e709065c8f6",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "Optional Clip_Glue-able_0919_41_1412_001.stl",
+        "bytes": 48284,
+        "sha256": "97892a6f683093be6d935cdfcc2a505933b4b2b159bdc6d236cd5d6f568d130a",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "Small Chain_0919_27_1412_001.stl",
+        "bytes": 5012484,
+        "sha256": "756d58609460e10e67befb44209c49715843e91a32bb57705ced6d1c8add28c0",
+        "source": "Gumroad published download"
+      }
+    ]
+  },
+  {
+    "handle": "spike-planter-01",
+    "filename": "spike-planter-01.zip",
+    "bytes": 116500692,
+    "checksum": "32e91eefc863d0cc640b0caa03405fd905b710a6232197b2cfaebdf44ae4a0e7",
+    "file_url": "no3d-prints/spike-planter-01/32e91eefc863d0cc/spike-planter-01.zip",
+    "files": [
+      {
+        "name": "Spike Vase 01 - 142 mm - drip tray.stl",
+        "bytes": 65989784,
+        "sha256": "e2a4017b938f0976dd079096f20971d90e2d6672bbd72b3645298afa7dd8220a",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "Spike Vase 01 - 142 mm - main body.stl",
+        "bytes": 110065284,
+        "sha256": "4ec59f9f5fbdf571346d7236d0238f0ab5e4d61a4380d1a23afd67f640e1fdee",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "Spike Vase 01 - 142 mm - wall mount hanger.stl",
+        "bytes": 66284,
+        "sha256": "1189ab6392208e0fdbbbd9118656d11ca618cb68f8bba04a65ecfaf27fabc3b5",
+        "source": "Gumroad published download"
+      },
+      {
+        "name": "Spike Vase 01.3mf",
+        "bytes": 46809983,
+        "sha256": "37edbbc693373d4ea4ff94cfc2acef764489628dc12433ecd0d439f8f7c8bee0",
+        "source": "Gumroad published download"
+      }
+    ]
+  }
+]

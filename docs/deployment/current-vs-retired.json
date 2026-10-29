@@ -15,7 +15,8 @@
       "/v3/access/",
       "/v3/onboarding/create-account/",
       "/v3/auth/continue/",
-      "/v3/type/"
+      "/v3/type/",
+      "/v3/prints/"
     ],
     "commerceService": "no3d-commerce (Vercel project no3d-commerce)",
     "pricingSourceOfTruth": "Stripe Price lookup keys (no3dtools.product.<handle>). Displayed price on V3 product pages is read from /api/commerce/offer, so Stripe is what a visitor is actually charged."

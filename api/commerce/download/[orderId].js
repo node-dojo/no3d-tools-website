@@ -1,5 +1,6 @@
 import { getSupabaseServiceClient } from '../../lib/supabaseAdmin.js';
 import { isR2Configured, presignGetObject } from '../../lib/r2.js';
+import { getPrintDelivery } from '../../prints/lib/catalog.js';
 import {
   commerceError,
   commerceFetch,
@@ -10,6 +11,7 @@ const ORDER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0
 const PRESIGN_TTL_SECONDS = 900;
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'private, no-store');
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
   const orderId = Array.isArray(req.query.orderId) ? req.query.orderId[0] : req.query.orderId;
   if (typeof orderId !== 'string' || !ORDER_ID.test(orderId)) {
@@ -23,14 +25,19 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'product_not_ready' });
     }
 
-    const supabase = getSupabaseServiceClient();
-    if (!supabase || !isR2Configured()) return res.status(503).json({ error: 'delivery_unavailable' });
-    const { data: product, error } = await supabase
-      .from('products')
-      .select('handle, file_url, checksum, status')
-      .eq('handle', order.recovery.product_handle)
-      .maybeSingle();
-    if (error) throw new Error(`Product lookup failed: ${error.message}`);
+    if (!isR2Configured()) return res.status(503).json({ error: 'delivery_unavailable' });
+    let product = getPrintDelivery(order.recovery.product_handle);
+    if (!product) {
+      const supabase = getSupabaseServiceClient();
+      if (!supabase) return res.status(503).json({ error: 'delivery_unavailable' });
+      const result = await supabase
+        .from('products')
+        .select('handle, file_url, checksum, status')
+        .eq('handle', order.recovery.product_handle)
+        .maybeSingle();
+      if (result.error) throw new Error(`Product lookup failed: ${result.error.message}`);
+      product = result.data;
+    }
     if (!product || product.status !== 'active' || typeof product.file_url !== 'string' || !product.file_url.trim()) {
       return res.status(404).json({ error: 'asset_not_available' });
     }

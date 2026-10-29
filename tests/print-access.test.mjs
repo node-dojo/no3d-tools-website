@@ -26,10 +26,10 @@ async function invoke(dependencies, { download = false, slug = handle, method = 
   return res;
 }
 
-test('guests get the fixed product checkout and cannot download or forge membership', async () => {
+test('guests can request native checkout but cannot download or forge membership', async () => {
   const f = fixture({ authenticate: async () => null, product: async () => assert.fail('Guest must not inspect private assets') });
   const access = await invoke(f.dependencies, { query: { member: 'true', price: '0', file_url: 'private/other.zip' } });
-  assert.deepEqual(access.body, { handle, authenticated: false, mode: 'purchase', checkoutUrl: 'https://nodedojo.gumroad.com/l/spike-planter-01?wanted=true' });
+  assert.deepEqual(access.body, { handle, authenticated: false, mode: 'purchase' });
   assert.equal((await invoke(f.dependencies, { download: true })).code, 403);
   assert.deepEqual(f.signed, []);
 });

@@ -277,6 +277,14 @@ export async function getProduct(handle) {
   }
 }
 
+export async function getPrintOffer(handle) {
+  try {
+    const { offer } = await request(`/api/commerce/offer?handle=${encodeURIComponent(handle)}`);
+    if (offer?.resourceId !== handle || !Number.isInteger(offer.unitAmount) || offer.unitAmount < 0 || !/^[a-z]{3}$/i.test(offer.currency)) return null;
+    return { ...offer, formatted: new Intl.NumberFormat('en-US', { style: 'currency', currency: offer.currency }).format(offer.unitAmount / 100) };
+  } catch { return null; }
+}
+
 export async function getCommerceConfig() {
   const [config, membership] = await Promise.all([
     request('/api/commerce/config').catch(() => ({ individualProductsEnabled: false })),
@@ -322,6 +330,7 @@ export async function beginMembershipCheckout() {
 }
 
 export async function getAccountState() {
+  const { printProducts } = await import('../data/prints/catalog.js?v=prints-20261028b');
   const [session, catalog, summary, membership] = await Promise.all([
     request('/api/auth/session').catch(() => ({ authenticated: false })),
     request('/api/products?limit=100').catch(() => ({ products: [] })),
@@ -329,6 +338,18 @@ export async function getAccountState() {
     request('/api/membership/account').catch(() => null),
   ]);
   const products = (catalog.products || []).map(normalizeProduct);
+  // Prints are browser downloads, not Blender assets. Include their metadata
+  // only in Account; never put them in the Tools catalog or device manifest.
+  products.push(...printProducts.map(product => ({
+    handle: product.slug, title: product.name, thumbnail: product.media[0].src,
+    productType: 'Prints', releaseStatus: 'active', accessPolicy: 'paid',
+    workbench: { filename: `${product.slug}.zip`, folder: 'Prints', kind: '3D print files', summary: product.paragraphs[0] },
+  })));
+  const printAccess = session.authenticated ? (await Promise.all(printProducts.map(async product => {
+    const access = await request(`/api/prints/access?handle=${encodeURIComponent(product.slug)}`).catch(() => null);
+    return access?.mode === 'download' && access.entitlement === 'member'
+      ? { handle: product.slug, membership: true, owned: true, permanent: false } : null;
+  }))).filter(Boolean) : [];
   const collectionHandlesByScope = new Map([
     ['no3dtools.membership.full-library', 'full-library'],
     ['no3dtools.membership.no3d-chrome', 'no3d-chrome-tools'],
@@ -347,6 +368,7 @@ export async function getAccountState() {
     summary,
     membership,
     membershipCollections,
+    printAccess,
   };
 }
 

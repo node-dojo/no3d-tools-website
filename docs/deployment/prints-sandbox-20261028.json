@@ -1,0 +1,52 @@
+{
+  "target": "https://staging.no3dtools.com",
+  "startedAt": "2026-10-29T02:53:34.133Z",
+  "boundaries": [
+    "Uses the existing sandbox account. Public signup, inbox delivery and verification email are unchanged and are not tested.",
+    "Hosted Stripe test payments only; no live charge.",
+    "Staging is owner-gated. The existing sandbox owner signs in through the UI. Only this sandbox account membership rows are temporarily expired for purchaser tests and restored afterward; guest UI checkout is covered locally."
+  ],
+  "products": [
+    {
+      "handle": "mace-and-chain",
+      "orderId": "53fe4743-b16a-485c-be75-4a01e3da32a1",
+      "paymentAndFulfillment": true,
+      "paymentIntent": "pi_3UVjTWLRzYZv3Ehf1aOt81JK",
+      "downloadBytes": 27318797,
+      "accountLibrary": true,
+      "freshBrowserRecovery": true,
+      "ownerBypassesPayment": true,
+      "refundId": "re_3UVjTWLRzYZv3Ehf1BHABDrp",
+      "refundRevokedOrder": true,
+      "refundRevokedPrintDownload": true
+    },
+    {
+      "handle": "spike-planter-01",
+      "orderId": "ab750fd2-1620-48f1-94e8-f397a11ae4d4",
+      "paymentAndFulfillment": true,
+      "paymentIntent": "pi_3UVjU0LRzYZv3Ehf1COaJHBA",
+      "downloadBytes": 116500692,
+      "accountLibrary": true,
+      "freshBrowserRecovery": true,
+      "ownerBypassesPayment": true,
+      "refundId": "re_3UVjU0LRzYZv3Ehf1I2Zzo0i",
+      "refundRevokedOrder": true,
+      "refundRevokedPrintDownload": true
+    }
+  ],
+  "memberDownloads": [
+    {
+      "handle": "mace-and-chain",
+      "checkoutSkipped": true,
+      "directCheckoutBlocked": true
+    },
+    {
+      "handle": "spike-planter-01",
+      "checkoutSkipped": true,
+      "directCheckoutBlocked": true
+    }
+  ],
+  "status": "passed",
+  "membershipFixtureRestored": true,
+  "completedAt": "2026-10-29T02:54:58.663Z"
+}

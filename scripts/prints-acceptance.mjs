@@ -184,10 +184,18 @@ try {
       deliveryReady: () => true,
       sign: async () => { issued++; return 'https://downloads.example.test/fixture-planter.zip'; },
     };
-    const fixtureServer = createPrintsPreviewServer({ printDependencies });
+    let checkouts = 0;
+    const fixtureServer = createPrintsPreviewServer({ printDependencies, checkoutFixture: async body => {
+      assert.equal(body.handle, 'spike-planter-01');
+      assert.match(body.attemptToken, /^[a-z0-9-]{36}$/i);
+      assert.deepEqual(Object.keys(body).sort(), ['attemptToken', 'handle']);
+      checkouts++;
+      return { orderId: '00000000-0000-4000-8000-000000000001', checkoutUrl: 'https://checkout.stripe.com/c/pay/fixture' };
+    } });
     await new Promise(resolve => fixtureServer.listen(0, '127.0.0.1', resolve));
     const fixtureOrigin = `http://127.0.0.1:${fixtureServer.address().port}`;
     const journey = await browser.newPage();
+    await journey.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     const destinations = [];
     const requests = [];
     await journey.setRequestInterception(true);
@@ -211,10 +219,11 @@ try {
         await journey.waitForFunction(() => document.querySelector('[data-download-status]').textContent.includes('could not be opened'));
       } else {
         await Promise.all([journey.waitForNavigation(), journey.click('[data-details-download]')]);
-        assert.deepEqual(destinations, [scenario === 'guest' ? 'https://nodedojo.gumroad.com/l/spike-planter-01?wanted=true' : 'https://downloads.example.test/fixture-planter.zip']);
+        assert.deepEqual(destinations, [scenario === 'guest' ? 'https://checkout.stripe.com/c/pay/fixture' : 'https://downloads.example.test/fixture-planter.zip']);
       }
       assert.equal(issued, ['member', 'owned'].includes(scenario) ? 1 : 0);
-      if (scenario !== 'guest') assert.equal(destinations.some(url => url.includes('gumroad.com')), false, 'Members are never routed to paid checkout');
+      assert.equal(checkouts, scenario === 'guest' ? 1 : 0, 'Members and owners skip checkout');
+      assert.equal(destinations.some(url => url.includes('gumroad.com')), false, 'Prints never hands off to Gumroad');
       journeys.push({ scenario, issued, handoff: destinations, downloadRequests: requests.filter(url => url.includes('/api/prints/download')).length });
     } finally {
       await journey.close();

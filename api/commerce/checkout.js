@@ -5,6 +5,8 @@ import {
   offerKeyForHandle,
 } from './lib/client.js';
 import { getSupabaseServiceClient } from '../lib/supabaseAdmin.js';
+import { getPrintDelivery } from '../prints/lib/catalog.js';
+import { resolvePrintAccess } from '../prints/lib/access.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
@@ -19,15 +21,23 @@ export default async function handler(req, res) {
   if (!offerKey) return res.status(400).json({ error: 'invalid_product_handle' });
 
   try {
-    const supabase = getSupabaseServiceClient();
-    if (!supabase) return res.status(503).json({ error: 'catalog_unavailable' });
-    const { data: product, error } = await supabase
-      .from('products')
-      .select('handle, status')
-      .eq('handle', handle)
-      .maybeSingle();
-    if (error) throw new Error(`Product lookup failed: ${error.message}`);
-    if (!product || product.status !== 'active') return res.status(404).json({ error: 'product_not_available' });
+    const print = getPrintDelivery(handle);
+    if (print) {
+      const { access } = await resolvePrintAccess(req, res, handle);
+      if (access.mode === 'download') return res.status(409).json({ error: 'already_entitled' });
+      if (access.mode === 'unavailable' || print.status !== 'active') return res.status(503).json({ error: 'delivery_unavailable' });
+    }
+    if (!print) {
+      const supabase = getSupabaseServiceClient();
+      if (!supabase) return res.status(503).json({ error: 'catalog_unavailable' });
+      const { data: product, error } = await supabase
+        .from('products')
+        .select('handle, status')
+        .eq('handle', handle)
+        .maybeSingle();
+      if (error) throw new Error(`Product lookup failed: ${error.message}`);
+      if (!product || product.status !== 'active') return res.status(404).json({ error: 'product_not_available' });
+    }
 
     const { response, payload } = await commerceFetch(req, res, '/api/checkout', {
       method: 'POST',
