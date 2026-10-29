@@ -1,6 +1,7 @@
 {
   "version": 2,
-  "git": { "deploymentEnabled": { "main": false } },
+  "git": { "deploymentEnabled": { "main": false,
+      "codex/storefront-prints": false } },
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": null,

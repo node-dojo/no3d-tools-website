@@ -41,7 +41,9 @@
     "acceptance:analytics": "node scripts/analytics-acceptance.mjs",
     "site-editor": "node scripts/solvet-site-editor-server.mjs",
     "site-editor:publish": "doppler run -- env SOLVET_SITE_EDITOR_ALLOW_PUBLISH=1 node scripts/solvet-site-editor-server.mjs",
-    "acceptance:site-editor": "node scripts/solvet-site-editor-acceptance.mjs"
+    "acceptance:site-editor": "node scripts/solvet-site-editor-acceptance.mjs",
+    "preview:prints": "node scripts/prints-preview-server.mjs",
+    "acceptance:prints": "node scripts/prints-acceptance.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",

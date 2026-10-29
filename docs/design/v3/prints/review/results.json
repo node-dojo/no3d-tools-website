@@ -1,0 +1,95 @@
+{
+  "status": "passed",
+  "result": [
+    {
+      "label": "desktop-mace",
+      "width": 1440,
+      "height": 1100,
+      "scrollWidth": 1440,
+      "active": "mace-and-chain",
+      "title": {
+        "left": 278,
+        "right": 1416,
+        "top": 794.25,
+        "bottom": 926
+      },
+      "images": true,
+      "position": "01 / 02",
+      "titleStyle": {
+        "opacity": "1",
+        "blend": "normal",
+        "shadow": "none",
+        "filter": "none"
+      },
+      "imageOverlay": "none"
+    },
+    {
+      "label": "desktop-planter",
+      "width": 1440,
+      "height": 1100,
+      "scrollWidth": 1440,
+      "active": "spike-planter-01",
+      "title": {
+        "left": 278,
+        "right": 1416,
+        "top": 860.125,
+        "bottom": 926
+      },
+      "images": true,
+      "position": "02 / 02",
+      "titleStyle": {
+        "opacity": "1",
+        "blend": "normal",
+        "shadow": "none",
+        "filter": "none"
+      },
+      "imageOverlay": "none"
+    },
+    {
+      "label": "mobile-mace",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "active": "mace-and-chain",
+      "title": {
+        "left": 12,
+        "right": 378,
+        "top": 506.4375,
+        "bottom": 637
+      },
+      "images": true,
+      "position": "01 / 02",
+      "titleStyle": {
+        "opacity": "1",
+        "blend": "normal",
+        "shadow": "none",
+        "filter": "none"
+      },
+      "imageOverlay": "none"
+    },
+    {
+      "label": "mobile-planter",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "active": "spike-planter-01",
+      "title": {
+        "left": 12,
+        "right": 378,
+        "top": 571.71875,
+        "bottom": 637
+      },
+      "images": true,
+      "position": "02 / 02",
+      "titleStyle": {
+        "opacity": "1",
+        "blend": "normal",
+        "shadow": "none",
+        "filter": "none"
+      },
+      "imageOverlay": "none"
+    }
+  ],
+  "errors": [],
+  "printsExternalRequests": []
+}
