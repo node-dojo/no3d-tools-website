@@ -30,7 +30,7 @@ export function initStorefrontSelector(root = document) {
   toggle.setAttribute('aria-label', `Choose storefront, currently ${current.name}`);
   toggle.setAttribute('aria-controls', 'storefront-destinations');
   toggle.setAttribute('aria-expanded', 'false');
-  toggle.innerHTML = '<svg viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg>';
+  toggle.innerHTML = '<svg class="site-caret" viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg>';
   const panel = document.createElement('nav');
   panel.id = 'storefront-destinations';
   panel.className = 'storefront-destinations';

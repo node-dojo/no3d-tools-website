@@ -34,8 +34,6 @@
 .prints-pagination{display:flex;align-items:center;justify-content:space-between;gap:24px;max-width:680px;font:600 10px var(--ui)}
 .prints-pagination button{width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:inherit;cursor:pointer}
 .prints-pagination button:disabled{opacity:.25;cursor:default}
-.prints-pagination svg{width:10px;height:20px;fill:currentColor;shape-rendering:crispEdges}
-.prints-pagination button:first-child svg{transform:scaleX(-1)}
 .prints-stone{width:44px;height:44px;object-fit:contain}
 .prints-page button:focus-visible,.prints-page a:focus-visible{outline:2px solid currentColor;outline-offset:5px}
 .prints-search{position:relative;z-index:20;display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:18px;padding:18px;background:var(--paper);color:var(--ink);border:1px solid var(--ink);pointer-events:auto}

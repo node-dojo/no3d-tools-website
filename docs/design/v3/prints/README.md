@@ -14,6 +14,8 @@ The masthead switches between the existing Tools and Prints wordmarks. The Print
 
 The desktop and mobile photo sources/focal positions can be replaced independently. The current planter uses its published group photograph on desktop and its published portrait cover on mobile. The mace uses its published original cover. All images are original downloaded media; no generated imagery is used.
 
+Caret correction during review (2026-10-28): the inherited chunky pixel carousel glyph is rejected. This candidate uses one clean stroked chevron for the Tools shelf, Prints carousel, and storefront dropdown, rotated for direction. This is a local review change; the live site and approved master files remain unchanged.
+
 ## Start and review
 
 ```sh

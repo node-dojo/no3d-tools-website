@@ -162,8 +162,9 @@
 .product-grid-controls{display:grid;grid-template-columns:1fr 1fr;align-items:center}
 .product-grid-control{width:42px;height:42px;display:grid;place-items:center;border:0;background:transparent;cursor:pointer}
 .product-grid-control:last-child{justify-self:end}
-.product-grid-control svg{width:10px;height:20px;fill:currentColor;shape-rendering:crispEdges}
-.product-grid-control:first-child svg{transform:scaleX(-1)}
+.site-caret{display:block;width:12px;height:8px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5}
+.site-caret--left{transform:rotate(90deg)}
+.site-caret--right{transform:rotate(-90deg)}
 .product-grid-control:hover:not(:disabled),.product-grid-control:focus-visible{color:var(--paper);background:var(--ink)}
 .product-grid-control:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .product-grid-control:disabled{opacity:.2;cursor:default}

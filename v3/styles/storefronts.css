@@ -2,7 +2,6 @@
 .storefront-brand .v3-wordmark{display:block;width:210px}
 .storefront-brand .v3-wordmark img{width:100%;height:auto}
 .storefront-toggle{position:absolute;top:50%;right:0;width:56%;height:44px;transform:translateY(-50%);border:0;background:transparent;display:flex;align-items:center;justify-content:flex-end;padding:12px;cursor:pointer;color:inherit}
-.storefront-toggle svg{width:12px;height:8px;fill:none;stroke:currentColor;stroke-width:1.5}
 .storefront-toggle[aria-expanded=true] svg{transform:rotate(180deg)}
 .storefront-toggle:focus-visible,.storefront-brand a:focus-visible{outline:2px solid currentColor;outline-offset:4px}
 .storefront-destinations{position:absolute;top:calc(100% + 24px);left:0;width:min(360px,calc(100vw - 48px));background:var(--paper);color:var(--ink);border:1px solid var(--ink);text-align:left;isolation:isolate}

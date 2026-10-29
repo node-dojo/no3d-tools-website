@@ -185,7 +185,7 @@ test('Shared Source Folder is additive, filename-led, and reuses the existing pr
   assert.match(styles, /\.mobile-home \.product-grid\{[^}]*scrollbar-width:none/);
   assert.match(styles, /\.mobile-home \.product-grid::\-webkit-scrollbar\{display:none\}/);
   assert.match(styles, /\.product-grid-controls\{[^}]*grid-template-columns:1fr 1fr/);
-  assert.match(styles, /\.product-grid-control svg\{[^}]*shape-rendering:crispEdges/);
+  assert.match(styles, /\.site-caret\{[^}]*fill:none;stroke:currentColor/);
   assert.match(home, /data-grid-previous aria-label="Previous products"/);
   assert.match(home, /data-grid-next aria-label="Next products"/);
   assert.match(homeJs, /grid\.addEventListener\('wheel'/);
