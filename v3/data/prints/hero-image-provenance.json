@@ -1,77 +1,108 @@
 {
-  "authorization": "Joe requested using the supplied expanded-background hero images in the local Prints preview on 2026-10-28.",
+  "authorization": "Joe supplied two new background images in this conversation on 2026-10-28 and requested saving and using them.",
   "files": [
     {
-      "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Mace and Chain Lighter Keeper/Background Expansions/mace-chain-expanded-2048.png",
-      "local": "v3/assets/prints/mace-chain-expanded-2048.png",
-      "sha256": "5a52f4ab5652f90141ede2a2c4fd6af01ee9205731f80934b781eff702d4f764",
-      "source_edit_provenance": {
-        "created": "2026-10-28",
-        "authorization": "Joe requested AI background expansion wider and taller, with subjects untouched, in the current conversation.",
-        "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Mace and Chain Lighter Keeper/white mace square cover.png",
-        "generation_mode": "Built-in image_gen, background outpainting",
-        "prompt": "Use case: precise-object-edit. Edit target: the provided photograph of a WHITE 3D printed mace and chain lighter keeper on black wood. OUTPAINT ONLY THE BACKGROUND. Create a square expanded-canvas photograph with significantly more of the existing black wood surface above, below, left and right so the whole intact group is smaller in the frame. Treat the original photo as an immutable central image at 60 percent of the new canvas width and height. Keep product group centered and its entire arrangement exactly the same. Preserve absolutely every original product detail and pixel as far as possible: the exact white mace silhouette, spikes and count, recessed circles, print layer lines, metal and red lighter parts, handle geometry and lock, all chain links and their exact connectivity, positions, overlaps and shadows. Also preserve the black rock behind the lighter. No retouching, regeneration, redesign, material changes, smoothing, relighting, added links or moved objects. Only continue the surrounding empty black wood grain realistically into the new canvas, matching perspective, highlights and shadow falloff. Large natural margin on all four sides. No text, borders, logos, new objects or watermark. One image, square, highest available resolution.",
-        "finishing": "Original subject photo pixels restored with ImageMagick at native resolution and integer translation. Soft blending restricted to background around the source rectangle. Separate 2048px export is downsampled from master.",
-        "native_source_origin_in_master": [
-          837,
-          940
-        ],
-        "source_rect_retained": {
-          "x": 0,
-          "y": 0,
-          "width": 3024,
-          "height": 3024,
-          "background_feather": 80
-        },
-        "master_dimensions": [
-          4761,
-          4761
-        ],
-        "verification": {
-          "master": "mace-chain-expanded-master.png",
-          "opaque_region_pixels_compared": 8202496,
-          "exact_original_pixel_match": true,
-          "changed_channels": 0,
-          "maximum_channel_difference": 0,
-          "source_sha256": "e120d8a2892cea4299be76de67592695ffe6198968db350659ce20fca7915c62"
-        }
-      }
+      "product": "mace-and-chain",
+      "source_attachment": "/var/folders/l8/gxbzxq6x2ylbz_mtcnfdmp540000gn/T/codex-clipboard-23e5c588-2cc7-48f0-8ae4-360cedeb6df8.png",
+      "saved_source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Mace and Chain Lighter Keeper/Background Expansions/mace-chain-background-v2.png",
+      "local": "v3/assets/prints/mace-chain-background-v2.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sha256": "fe689050e5aa59c83b929ce3fa9923087dacc19692749b19605b7d8d61736735",
+      "processing": "Copied byte-for-byte; no image edits."
     },
     {
-      "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Spike Vases/Gumroad Listing/Background Expansions/spike-planter-expanded-2048.png",
-      "local": "v3/assets/prints/spike-planter-expanded-2048.png",
-      "sha256": "c92d1a5bd9b8dfe07a5e4aa9c37245a3536187d7e5a8e25083e2c9c9e19a6b7c",
-      "source_edit_provenance": {
-        "created": "2026-10-28",
-        "authorization": "Joe requested AI background expansion wider and taller, with subjects untouched, in the current conversation.",
-        "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Spike Vases/Spike Planter 01 - ecomm media/IMG_5290.png",
-        "generation_mode": "Built-in image_gen, background outpainting",
-        "prompt": "Use case: precise-object-edit. Edit target: the provided original photograph of a black spiked planter with a green variegated plant. OUTPAINT ONLY THE BACKGROUND. Create a square expanded-canvas photograph with substantially more existing dark painted wood background above, below, left and right, so the existing plant and planter are noticeably smaller in the frame. Think of placing the existing image inside a larger square canvas, keeping the entire subject intact, and filling only new exterior space. Target the whole plant plus planter at roughly 45 percent of final image height with generous margins on every side. Preserve the original subject absolutely: exact planter silhouette, spikes and their number and placement, print layer lines, joint, proportions, every leaf shape and variegation, stems, positions, edges, shadows and original lighting. Do not redraw, reimagine, retouch, reconstruct, beautify, relight, add leaves or simplify any part of the plant or planter. Only extend the existing vertical-grain black painted wood backdrop seamlessly, continuing realistic grain, scuffs, tonal variation and illumination. Extend black wood across the new canvas, avoiding visible beige outer support strips. No new objects, frame, border, text or watermark. Keep the original photograph's camera angle and natural photographic character. One image, square, highest available resolution.",
-        "finishing": "Original subject photo pixels restored with ImageMagick at native resolution and integer translation. Soft blending restricted to background around the source rectangle. Separate 2048px export is downsampled from master.",
-        "native_source_origin_in_master": [
-          1046,
-          583
-        ],
-        "source_rect_retained": {
-          "x": 400,
-          "y": 500,
-          "width": 3500,
-          "height": 4600,
-          "background_feather": 200
+      "product": "spike-planter-01",
+      "source_attachment": "/var/folders/l8/gxbzxq6x2ylbz_mtcnfdmp540000gn/T/codex-clipboard-a5407355-8860-42f2-9ba0-297c20fb548d.png",
+      "saved_source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Spike Vases/Gumroad Listing/Background Expansions/spike-planter-background-v2.png",
+      "local": "v3/assets/prints/spike-planter-background-v2.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sha256": "48a002396023466fe1726de320ca9a9d36cfa3875365196042d0bd8c8e63fdaa",
+      "processing": "Copied byte-for-byte; no image edits."
+    }
+  ],
+  "previous_versions": [
+    {
+      "authorization": "Joe requested using the supplied expanded-background hero images in the local Prints preview on 2026-10-28.",
+      "files": [
+        {
+          "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Mace and Chain Lighter Keeper/Background Expansions/mace-chain-expanded-2048.png",
+          "local": "v3/assets/prints/mace-chain-expanded-2048.png",
+          "sha256": "5a52f4ab5652f90141ede2a2c4fd6af01ee9205731f80934b781eff702d4f764",
+          "source_edit_provenance": {
+            "created": "2026-10-28",
+            "authorization": "Joe requested AI background expansion wider and taller, with subjects untouched, in the current conversation.",
+            "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Mace and Chain Lighter Keeper/white mace square cover.png",
+            "generation_mode": "Built-in image_gen, background outpainting",
+            "prompt": "Use case: precise-object-edit. Edit target: the provided photograph of a WHITE 3D printed mace and chain lighter keeper on black wood. OUTPAINT ONLY THE BACKGROUND. Create a square expanded-canvas photograph with significantly more of the existing black wood surface above, below, left and right so the whole intact group is smaller in the frame. Treat the original photo as an immutable central image at 60 percent of the new canvas width and height. Keep product group centered and its entire arrangement exactly the same. Preserve absolutely every original product detail and pixel as far as possible: the exact white mace silhouette, spikes and count, recessed circles, print layer lines, metal and red lighter parts, handle geometry and lock, all chain links and their exact connectivity, positions, overlaps and shadows. Also preserve the black rock behind the lighter. No retouching, regeneration, redesign, material changes, smoothing, relighting, added links or moved objects. Only continue the surrounding empty black wood grain realistically into the new canvas, matching perspective, highlights and shadow falloff. Large natural margin on all four sides. No text, borders, logos, new objects or watermark. One image, square, highest available resolution.",
+            "finishing": "Original subject photo pixels restored with ImageMagick at native resolution and integer translation. Soft blending restricted to background around the source rectangle. Separate 2048px export is downsampled from master.",
+            "native_source_origin_in_master": [
+              837,
+              940
+            ],
+            "source_rect_retained": {
+              "x": 0,
+              "y": 0,
+              "width": 3024,
+              "height": 3024,
+              "background_feather": 80
+            },
+            "master_dimensions": [
+              4761,
+              4761
+            ],
+            "verification": {
+              "master": "mace-chain-expanded-master.png",
+              "opaque_region_pixels_compared": 8202496,
+              "exact_original_pixel_match": true,
+              "changed_channels": 0,
+              "maximum_channel_difference": 0,
+              "source_sha256": "e120d8a2892cea4299be76de67592695ffe6198968db350659ce20fca7915c62"
+            }
+          }
         },
-        "master_dimensions": [
-          6434,
-          6434
-        ],
-        "verification": {
-          "master": "spike-planter-expanded-master.png",
-          "opaque_region_pixels_compared": 13020000,
-          "exact_original_pixel_match": true,
-          "changed_channels": 0,
-          "maximum_channel_difference": 0,
-          "source_sha256": "74d27c897921b79127efd5d216c51a5a0806c34a3536f9240df826352a84a332"
+        {
+          "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Spike Vases/Gumroad Listing/Background Expansions/spike-planter-expanded-2048.png",
+          "local": "v3/assets/prints/spike-planter-expanded-2048.png",
+          "sha256": "c92d1a5bd9b8dfe07a5e4aa9c37245a3536187d7e5a8e25083e2c9c9e19a6b7c",
+          "source_edit_provenance": {
+            "created": "2026-10-28",
+            "authorization": "Joe requested AI background expansion wider and taller, with subjects untouched, in the current conversation.",
+            "source": "/Users/joebowers/Library/CloudStorage/Dropbox/Caveman Creative/THE WELL_Digital Assets/THE WELL_play files/Spike Vases/Spike Planter 01 - ecomm media/IMG_5290.png",
+            "generation_mode": "Built-in image_gen, background outpainting",
+            "prompt": "Use case: precise-object-edit. Edit target: the provided original photograph of a black spiked planter with a green variegated plant. OUTPAINT ONLY THE BACKGROUND. Create a square expanded-canvas photograph with substantially more existing dark painted wood background above, below, left and right, so the existing plant and planter are noticeably smaller in the frame. Think of placing the existing image inside a larger square canvas, keeping the entire subject intact, and filling only new exterior space. Target the whole plant plus planter at roughly 45 percent of final image height with generous margins on every side. Preserve the original subject absolutely: exact planter silhouette, spikes and their number and placement, print layer lines, joint, proportions, every leaf shape and variegation, stems, positions, edges, shadows and original lighting. Do not redraw, reimagine, retouch, reconstruct, beautify, relight, add leaves or simplify any part of the plant or planter. Only extend the existing vertical-grain black painted wood backdrop seamlessly, continuing realistic grain, scuffs, tonal variation and illumination. Extend black wood across the new canvas, avoiding visible beige outer support strips. No new objects, frame, border, text or watermark. Keep the original photograph's camera angle and natural photographic character. One image, square, highest available resolution.",
+            "finishing": "Original subject photo pixels restored with ImageMagick at native resolution and integer translation. Soft blending restricted to background around the source rectangle. Separate 2048px export is downsampled from master.",
+            "native_source_origin_in_master": [
+              1046,
+              583
+            ],
+            "source_rect_retained": {
+              "x": 400,
+              "y": 500,
+              "width": 3500,
+              "height": 4600,
+              "background_feather": 200
+            },
+            "master_dimensions": [
+              6434,
+              6434
+            ],
+            "verification": {
+              "master": "spike-planter-expanded-master.png",
+              "opaque_region_pixels_compared": 13020000,
+              "exact_original_pixel_match": true,
+              "changed_channels": 0,
+              "maximum_channel_difference": 0,
+              "source_sha256": "74d27c897921b79127efd5d216c51a5a0806c34a3536f9240df826352a84a332"
+            }
+          }
         }
-      }
+      ]
     }
   ]
 }

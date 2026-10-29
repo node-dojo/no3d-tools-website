@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { readFile, realpath } from 'node:fs/promises';
 import { dirname, extname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createPrintHandler } from '../api/prints/lib/access.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.mp4': 'video/mp4' };
@@ -11,7 +12,12 @@ const collections = {
   'full-library': JSON.parse(await readFile(join(root, 'v3/data/prints/tools-full-library.json'))),
   'no3d-chrome-tools': JSON.parse(await readFile(join(root, 'v3/data/prints/tools-chrome-collection.json'))),
 };
-export function createPrintsPreviewServer() {
+export function createPrintsPreviewServer({ printDependencies = {} } = {}) {
+  // A local guest by default. Test-only dependencies are supplied by the test
+  // process, never selected through HTTP input. No production credentials.
+  const dependencies = { authenticate: async () => null, ...printDependencies };
+  const access = createPrintHandler({ dependencies });
+  const download = createPrintHandler({ download: true, dependencies });
   return createServer(async (request, response) => {
     response.setHeader('X-Robots-Tag', 'noindex, nofollow');
     response.setHeader('Cache-Control', 'no-store');
@@ -21,6 +27,13 @@ export function createPrintsPreviewServer() {
     try {
       let path = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
       if (path === '/') { response.writeHead(302, { Location: '/v3/prints/' }); return response.end(); }
+      if (path === '/api/prints/access' || path === '/api/prints/download') {
+        const url = new URL(request.url, 'http://127.0.0.1');
+        request.query = { handle: url.searchParams.getAll('handle').length === 1 ? url.searchParams.get('handle') : null };
+        response.status = value => { response.statusCode = value; return response; };
+        response.json = value => json(response.statusCode, value);
+        return await (path.endsWith('/access') ? access : download)(request, response);
+      }
       if (path === '/api/products' || path === '/api/get-all-products') return json(200, path.endsWith('get-all-products') ? products : { products });
       if (path.startsWith('/api/products/')) {
         const product = products.find(item => item.handle === path.split('/').pop());

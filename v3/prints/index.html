@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/v3/styles/v3.css">
   <link rel="stylesheet" href="/v3/styles/storefronts.css">
   <link rel="stylesheet" href="/v3/styles/prints.css">
+  <link rel="stylesheet" href="/v3/styles/print-product.css">
 </head>
 <body class="prints-page" data-storefront="prints">
   <a class="prints-skip" href="#print-carousel">Skip to prints</a>
@@ -17,10 +18,12 @@
     <h1 class="visually-hidden">NO3D Prints</h1>
     <div class="prints-carousel" id="print-carousel" data-print-carousel tabindex="0" role="region" aria-roledescription="carousel" aria-label="Print download products">
       <article class="print-slide" data-product="mace-and-chain" role="group" aria-roledescription="slide" aria-label="1 of 2: Mace and Chain Lighter Keeper">
-        <picture class="print-image"><img src="/v3/assets/prints/mace-chain-expanded-2048.png" alt="White 3D printed Mace and Chain Lighter Keeper on a dark wood surface" fetchpriority="high" width="2048" height="2048"></picture>
+        <picture class="print-image"><img src="/v3/assets/prints/mace-chain-background-v2.png" alt="White 3D printed Mace and Chain Lighter Keeper on a dark wood surface" fetchpriority="high" width="1254" height="1254"></picture>
+        <button class="print-hotspot" type="button" data-details="mace-and-chain" aria-label="Open Mace and Chain Lighter Keeper product details" aria-haspopup="dialog"></button>
       </article>
       <article class="print-slide" data-product="spike-planter-01" role="group" aria-roledescription="slide" aria-label="2 of 2: Spike Planter 01" inert>
-        <picture class="print-image"><img src="/v3/assets/prints/spike-planter-expanded-2048.png" alt="3D printed Spike Planter 01 with raised spikes and a screw-in drip tray" width="2048" height="2048"></picture>
+        <picture class="print-image"><img src="/v3/assets/prints/spike-planter-background-v2.png" alt="3D printed Spike Planter 01 with raised spikes and a screw-in drip tray" width="1254" height="1254"></picture>
+        <button class="print-hotspot" type="button" data-details="spike-planter-01" aria-label="Open Spike Planter 01 product details" aria-haspopup="dialog"></button>
       </article>
     </div>
     <p class="prints-empty" data-prints-empty hidden>No prints match this search.</p>
@@ -40,14 +43,14 @@
           <h2><button type="button" class="print-item-toggle" data-go-product="mace-and-chain" id="print-name-mace" aria-current="true" aria-expanded="true" aria-controls="print-info-mace"><span>01</span><span>Mace and Chain<br>Lighter Keeper</span></button></h2>
           <div class="print-item-details" id="print-info-mace" role="region" aria-labelledby="print-name-mace">
             <p class="print-type">3D printable · STL + 3MF</p>
-            <div class="print-item-actions"><button type="button" data-details="mace-and-chain">Product details <span aria-hidden="true">+</span></button><span class="print-price">$11.11</span><a href="https://nodedojo.gumroad.com/l/jvbin" target="_blank" rel="noopener noreferrer">View on Gumroad <span aria-hidden="true">↗</span></a></div>
+            <div class="print-item-actions"><button type="button" data-details="mace-and-chain" aria-haspopup="dialog">Product details <span aria-hidden="true">+</span></button><span class="print-price">$11.11</span></div>
           </div>
         </li>
         <li class="print-item" data-print-item="spike-planter-01">
           <h2><button type="button" class="print-item-toggle" data-go-product="spike-planter-01" id="print-name-planter" aria-current="false" aria-expanded="false" aria-controls="print-info-planter"><span>02</span><span>Spike Planter 01</span></button></h2>
           <div class="print-item-details" id="print-info-planter" role="region" aria-labelledby="print-name-planter" hidden>
             <p class="print-type">3D printable · STL + 3MF</p>
-            <div class="print-item-actions"><button type="button" data-details="spike-planter-01">Product details <span aria-hidden="true">+</span></button><span class="print-price">$11.11</span><a href="https://nodedojo.gumroad.com/l/spike-planter-01" target="_blank" rel="noopener noreferrer">View on Gumroad <span aria-hidden="true">↗</span></a></div>
+            <div class="print-item-actions"><button type="button" data-details="spike-planter-01" aria-haspopup="dialog">Product details <span aria-hidden="true">+</span></button><span class="print-price">$11.11</span></div>
           </div>
         </li>
       </ol>
@@ -59,7 +62,35 @@
     </footer>
   </div>
   <p class="visually-hidden" data-print-announcement aria-live="polite" aria-atomic="true"></p>
-  <dialog class="print-details" data-print-details aria-labelledby="print-details-title"><button type="button" class="print-details-close" data-details-close>Close ×</button><p class="technical">Digital print files</p><h2 id="print-details-title"></h2><div data-details-body></div><a class="print-details-link" data-details-link target="_blank" rel="noopener noreferrer">View on Gumroad ↗</a></dialog>
+  <dialog class="print-details" data-print-details aria-labelledby="print-details-title">
+    <div class="print-document">
+      <header class="print-document-mast">
+        <button type="button" class="print-document-brand" data-details-close aria-label="Return to Prints catalog"><img src="/assets/light/stone-logo.png" alt="Stone W"><span>Node Dojo / NO3D Tools</span></button>
+        <button type="button" class="print-document-back" data-details-close aria-label="Close product details" autofocus>←<br>Catalog</button>
+      </header>
+      <div class="print-document-key"><span>Product document / 3D print files</span><span data-document-reference></span></div>
+      <section class="print-document-assembly">
+        <div class="print-document-hero">
+          <div class="print-gallery" data-gallery tabindex="0" role="region" aria-roledescription="carousel" aria-label="Product photos"></div>
+          <div class="print-gallery-bar">
+            <div class="print-gallery-thumbnails" data-gallery-thumbnails role="group" aria-label="Choose a product photo"></div>
+            <div class="print-gallery-controls"><button type="button" data-gallery-previous aria-label="Previous product photo"><svg class="site-caret site-caret--left" viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg></button><span data-gallery-position aria-live="polite"></span><button type="button" data-gallery-next aria-label="Next product photo"><svg class="site-caret site-caret--right" viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg></button></div>
+          </div>
+        </div>
+        <aside class="print-document-docket">
+          <section class="print-document-cell"><span class="print-document-micro">NO3D Product / Gumroad</span><h2 id="print-details-title"></h2></section>
+          <section class="print-document-cell"><span class="print-document-micro">STL + Bambu Studio 3MF</span></section>
+          <section class="print-document-acquire">
+            <div class="print-document-price"><span class="print-document-micro" data-details-price-label>3D print files</span><strong data-details-price></strong></div>
+            <button type="button" class="print-document-action" data-details-download disabled><span>Download</span><span aria-hidden="true">→</span></button>
+          </section>
+          <div class="print-document-access"><p data-download-status role="status"></p><a data-member-signin>Members: sign in for free downloads →</a></div>
+        </aside>
+      </section>
+      <section class="print-document-documentation"><div class="print-document-index" data-document-index></div><article class="print-document-description" data-details-body></article></section>
+      <footer class="print-document-footer"><span>Node Dojo by Joe Bowers</span><span>NO3D Tools / Gumroad</span></footer>
+    </div>
+  </dialog>
   <script type="module" src="/v3/js/storefronts.js"></script>
   <script type="module" src="/v3/js/prints.js"></script>
 </body>

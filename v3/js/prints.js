@@ -1,4 +1,5 @@
 import { printProducts } from '../data/prints/catalog.js';
+import { createPrintProductView } from './print-product.js';
 
 const carousel = document.querySelector('[data-print-carousel]');
 const slides = [...carousel.querySelectorAll('[data-product]')];
@@ -41,7 +42,7 @@ function updateActive(index, updateUrl = true) {
   if (updateUrl && current) {
     const url = new URL(location.href);
     url.searchParams.set('product', current.dataset.product);
-    history.replaceState(null, '', url);
+    history.replaceState(history.state, '', url);
   }
 }
 
@@ -93,7 +94,7 @@ function setSearchOpen(open) {
 searchToggle.addEventListener('click', () => setSearchOpen(searchRegion.hidden));
 document.querySelector('[data-search-close]').addEventListener('click', () => setSearchOpen(false));
 document.addEventListener('keydown', event => {
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setSearchOpen(searchRegion.hidden); }
+  if (!dialog.open && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setSearchOpen(searchRegion.hidden); }
   if (event.key === 'Escape' && !searchRegion.hidden && !dialog.open) setSearchOpen(false);
 });
 search.addEventListener('input', () => {
@@ -108,30 +109,12 @@ search.addEventListener('input', () => {
   carousel.scrollTo({ left: 0, behavior: 'instant' });
 });
 
-document.querySelectorAll('[data-details]').forEach(button => button.addEventListener('click', () => {
-  const product = printProducts.find(item => item.slug === button.dataset.details);
-  document.querySelector('#print-details-title').textContent = product.name;
-  const body = document.querySelector('[data-details-body]');
-  body.replaceChildren();
-  for (const text of product.paragraphs.filter(text => text !== 'Included in the Download:')) {
-    const paragraph = document.createElement('p'); paragraph.textContent = text.replace(/\n*Included in the Download:$/, ''); body.append(paragraph);
-  }
-  const label = document.createElement('p'); label.textContent = 'Included in the Download:';
-  const list = document.createElement('ul');
-  product.included.forEach(text => { const item = document.createElement('li'); item.textContent = text; list.append(item); });
-  body.append(label, list);
-  document.querySelector('[data-details-link]').href = product.url;
-  dialog.showModal();
-}));
-document.querySelector('[data-details-close]').addEventListener('click', () => dialog.close());
-dialog.addEventListener('click', event => {
-  const rect = dialog.getBoundingClientRect();
-  if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
-});
+const productView = createPrintProductView(dialog);
 function restoreFromUrl() {
   const requested = new URL(location.href).searchParams.get('product');
   const index = visible.findIndex(slide => slide.dataset.product === requested);
   goTo(index < 0 ? 0 : index, false);
+  productView.restoreFromUrl();
 }
 addEventListener('popstate', restoreFromUrl);
 restoreFromUrl();

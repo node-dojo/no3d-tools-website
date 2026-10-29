@@ -26,9 +26,15 @@
         "left": 58,
         "right": 244,
         "top": 318.890625,
-        "bottom": 454.890625
+        "bottom": 402.890625
       },
       "heroContentCount": 0,
+      "hotspot": {
+        "x": 316.8046875,
+        "y": 198,
+        "width": 806.390625,
+        "height": 704
+      },
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",
@@ -62,9 +68,15 @@
         "left": 58,
         "right": 244,
         "top": 376.890625,
-        "bottom": 512.890625
+        "bottom": 460.890625
       },
       "heroContentCount": 0,
+      "hotspot": {
+        "x": 316.8046875,
+        "y": 198,
+        "width": 806.390625,
+        "height": 704
+      },
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",
@@ -82,8 +94,8 @@
       "title": {
         "left": 12,
         "right": 378,
-        "top": 555,
-        "bottom": 601
+        "top": 601,
+        "bottom": 647
       },
       "images": true,
       "position": "01 / 02",
@@ -97,10 +109,16 @@
       "panel": {
         "left": 46,
         "right": 378,
-        "top": 601,
+        "top": 647,
         "bottom": 712
       },
       "heroContentCount": 0,
+      "hotspot": {
+        "x": 85.8046875,
+        "y": 151.921875,
+        "width": 218.390625,
+        "height": 540.15625
+      },
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",
@@ -118,8 +136,8 @@
       "title": {
         "left": 12,
         "right": 378,
-        "top": 611,
-        "bottom": 655
+        "top": 657,
+        "bottom": 701
       },
       "images": true,
       "position": "02 / 02",
@@ -133,10 +151,16 @@
       "panel": {
         "left": 46,
         "right": 378,
-        "top": 655,
+        "top": 701,
         "bottom": 766
       },
       "heroContentCount": 0,
+      "hotspot": {
+        "x": 85.8046875,
+        "y": 151.921875,
+        "width": 218.390625,
+        "height": 540.15625
+      },
       "titleStyle": {
         "opacity": "1",
         "blend": "normal",
@@ -144,6 +168,44 @@
         "filter": "none"
       },
       "imageOverlay": "none"
+    }
+  ],
+  "journeys": [
+    {
+      "scenario": "guest",
+      "issued": 0,
+      "handoff": [
+        "https://nodedojo.gumroad.com/l/spike-planter-01?wanted=true"
+      ],
+      "downloadRequests": 0
+    },
+    {
+      "scenario": "member",
+      "issued": 1,
+      "handoff": [
+        "https://downloads.example.test/fixture-planter.zip"
+      ],
+      "downloadRequests": 1
+    },
+    {
+      "scenario": "owned",
+      "issued": 1,
+      "handoff": [
+        "https://downloads.example.test/fixture-planter.zip"
+      ],
+      "downloadRequests": 1
+    },
+    {
+      "scenario": "unavailable",
+      "issued": 0,
+      "handoff": [],
+      "downloadRequests": 0
+    },
+    {
+      "scenario": "revoked",
+      "issued": 0,
+      "handoff": [],
+      "downloadRequests": 1
     }
   ],
   "errors": [],

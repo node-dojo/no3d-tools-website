@@ -37,7 +37,8 @@ async function audit(label) {
       expanded: [...document.querySelectorAll('[data-go-product][aria-expanded="true"]')].map(el => el.dataset.goProduct),
       openPanels: [...document.querySelectorAll('.print-item-details:not([hidden])')].map(el => el.closest('[data-print-item]').dataset.printItem),
       panel: { left: panelRect.left, right: panelRect.right, top: panelRect.top, bottom: panelRect.bottom },
-      heroContentCount: document.querySelectorAll('.print-slide h1,.print-slide h2,.print-slide button,.print-slide a,.print-copy').length,
+      heroContentCount: document.querySelectorAll('.print-slide h1,.print-slide h2,.print-slide button:not(.print-hotspot),.print-slide a,.print-copy').length,
+      hotspot: (() => { const r = slide.querySelector('.print-hotspot').getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; })(),
       titleStyle: (() => { const s = getComputedStyle(selected); return { opacity: s.opacity, blend: s.mixBlendMode, shadow: s.textShadow, filter: s.filter }; })(),
       imageOverlay: getComputedStyle(slide.querySelector('.print-image'), '::after').content,
     };
@@ -56,6 +57,24 @@ async function audit(label) {
   result.push({ label, ...state });
   await page.screenshot({ path: `${output}/${label}.png` });
 }
+async function auditDetails(label) {
+  const layout = await page.evaluate(() => {
+    const dialog = document.querySelector('dialog');
+    const assembly = dialog.querySelector('.print-document-assembly');
+    const gallery = dialog.querySelector('[data-gallery]');
+    return { width: innerWidth, dialogWidth: dialog.clientWidth, scrollWidth: dialog.scrollWidth,
+      columns: getComputedStyle(assembly).gridTemplateColumns.split(' ').length,
+      imageReady: [...gallery.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0),
+      videoAutoplay: [...gallery.querySelectorAll('video')].some(video => video.autoplay),
+    };
+  });
+  assert.equal(layout.dialogWidth, layout.width, `${label}: product page fills the viewport`);
+  assert.equal(layout.scrollWidth, layout.dialogWidth, `${label}: detail content cannot overflow horizontally`);
+  assert.equal(layout.columns, label.startsWith('mobile') ? 1 : 2, `${label}: matches Gumroad's responsive assembly`);
+  assert.ok(layout.imageReady);
+  assert.equal(layout.videoAutoplay, false);
+  await page.screenshot({ path: `${output}/${label}.png` });
+}
 try {
   for (const [label, viewport] of [['desktop', { width: 1440, height: 1100 }], ['mobile', { width: 390, height: 844 }]]) {
     await page.setViewport(viewport);
@@ -67,6 +86,7 @@ try {
     await page.waitForFunction(() => document.querySelector('[data-print-position]').textContent === '02 / 02');
     await settled();
     await audit(`${label}-planter`);
+    assert.deepEqual(result.at(-1).hotspot, result.at(-2).hotspot, 'Both product photographs use the same centered hitbox');
     assert.equal(await page.$eval('[data-print-next]', el => el.disabled), true);
     await page.click('[data-go-product="mace-and-chain"]');
     await page.waitForFunction(() => document.querySelector('.print-slide:not([inert])').dataset.product === 'mace-and-chain');
@@ -76,11 +96,44 @@ try {
     await page.waitForFunction(() => document.querySelector('.print-slide:not([inert])').dataset.product === 'spike-planter-01');
     await page.reload({ waitUntil: 'networkidle0' });
     assert.equal(await page.$eval('.print-slide:not([inert])', el => el.dataset.product), 'spike-planter-01');
-    await page.click('[data-details="spike-planter-01"]');
+    await page.click('.print-hotspot[data-details="spike-planter-01"]');
     assert.equal(await page.$eval('dialog', el => el.open), true);
     assert.match(await page.$eval('[data-details-body]', el => el.textContent), /Wall-mount hanger/);
-    assert.equal(await page.$eval('[data-details-link]', el => el.href), 'https://nodedojo.gumroad.com/l/spike-planter-01');
+    await page.waitForFunction(() => !document.querySelector('[data-details-download]').disabled);
+    assert.equal(await page.$$eval('a', links => links.some(link => link.textContent.includes('View on Gumroad'))), false);
+    assert.equal(await page.$$eval('[data-gallery-thumbnails] button', buttons => buttons.length), 5);
+    assert.equal(await page.$eval('[data-gallery-position]', el => el.textContent), '1 / 5');
+    await settled();
+    await auditDetails(`${label}-planter-details`);
+    await page.click('[data-gallery-thumbnails] button:last-child');
+    await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '5 / 5');
+    assert.equal(await page.$eval('[data-gallery] figure:not([inert]) img', el => el.alt), 'Wall-mount hanger');
     await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('dialog').open);
+    assert.equal(await page.$eval('.print-hotspot[data-details="spike-planter-01"]', el => el === document.activeElement), true);
+    assert.equal(new URL(page.url()).searchParams.has('details'), false);
+    await page.click('.print-item-actions [data-details="spike-planter-01"]');
+    await page.reload({ waitUntil: 'networkidle0' });
+    assert.equal(await page.$eval('dialog', el => el.open), true, 'Detail deep links survive refresh');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('dialog').open);
+    await page.click('[data-go-product="mace-and-chain"]');
+    await page.click('.print-hotspot[data-details="mace-and-chain"]');
+    await settled();
+    await auditDetails(`${label}-mace-details`);
+    const signInUrl = await page.$eval('[data-member-signin]', link => link.href);
+    assert.equal(new URL(signInUrl).searchParams.get('mode'), 'signin');
+    assert.equal(new URL(signInUrl).searchParams.get('next'), '/v3/prints/?product=mace-and-chain&details=1');
+    assert.equal(await page.$$eval('[data-gallery-thumbnails] button', buttons => buttons.length), 4);
+    await page.focus('[data-gallery]');
+    await page.keyboard.press('End');
+    await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '4 / 4');
+    await page.goBack();
+    await page.waitForFunction(() => !document.querySelector('dialog').open);
+    await page.goForward();
+    await page.waitForFunction(() => document.querySelector('dialog').open);
+    await page.click('[aria-label="Close product details"]');
+    await page.waitForFunction(() => !document.querySelector('dialog').open);
     await page.click('.storefront-toggle');
     assert.equal(await page.$eval('.storefront-destinations', el => el.hidden), false);
     await page.screenshot({ path: `${output}/${label}-selector.png` });
@@ -115,7 +168,60 @@ try {
   assert.ok(page.url().includes('/v3/prints/'));
   await page.goBack({ waitUntil: 'networkidle0' });
   assert.equal(new URL(page.url()).pathname, '/v3/');
-  await writeFile(`${output}/results.json`, JSON.stringify({ status: 'passed', result, errors, printsExternalRequests }, null, 2));
+  await page.goto(`${origin}/v3/onboarding/create-account/?mode=signin&next=%2Fv3%2Fprints%2F%3Fproduct%3Dspike-planter-01%26details%3D1`, { waitUntil: 'networkidle0' });
+  assert.equal(await page.$eval('[data-auth-mode="signin"]', el => el.classList.contains('active')), true, 'Members arrive in sign-in mode');
+  // Exercise the actual UI + HTTP handlers with isolated server identities.
+  // External navigations are intercepted before they leave this test browser.
+  const journeys = [];
+  for (const scenario of ['guest', 'member', 'owned', 'unavailable', 'revoked']) {
+    let activeMember = ['member', 'unavailable', 'revoked'].includes(scenario);
+    let issued = 0;
+    const printDependencies = {
+      authenticate: async () => scenario === 'guest' ? null : ({ user: { id: 'fixture-user', email: 'fixture@example.test', email_confirmed_at: '2026-10-01' } }),
+      subscription: async () => activeMember ? ({ tier: 'subscriber', status: 'active' }) : null,
+      account: async () => ({ entitlements: [], products: scenario === 'owned' ? [{ handle: 'spike-planter-01', owned: true, permanent: true, entitlementStatus: 'active', fulfillmentStatus: 'fulfilled', paymentStatus: 'paid' }] : [] }),
+      product: async handle => scenario === 'unavailable' ? null : ({ handle, status: 'active', file_url: 'fixtures/planter.zip' }),
+      deliveryReady: () => true,
+      sign: async () => { issued++; return 'https://downloads.example.test/fixture-planter.zip'; },
+    };
+    const fixtureServer = createPrintsPreviewServer({ printDependencies });
+    await new Promise(resolve => fixtureServer.listen(0, '127.0.0.1', resolve));
+    const fixtureOrigin = `http://127.0.0.1:${fixtureServer.address().port}`;
+    const journey = await browser.newPage();
+    const destinations = [];
+    const requests = [];
+    await journey.setRequestInterception(true);
+    journey.on('request', req => {
+      requests.push(req.url());
+      if (req.url().startsWith(fixtureOrigin) || req.url().startsWith('data:')) return req.continue();
+      destinations.push(req.url());
+      return req.respond({ status: 200, contentType: 'text/html', body: '<title>Isolated handoff fixture</title>' });
+    });
+    try {
+      await journey.goto(`${fixtureOrigin}/v3/prints/?product=spike-planter-01&details=1`, { waitUntil: 'networkidle0' });
+      assert.equal(await journey.$eval('[data-details-price]', el => el.textContent), scenario === 'guest' ? '$11.11' : 'Free');
+      if (scenario === 'unavailable') {
+        assert.equal(await journey.$eval('[data-details-download]', el => el.disabled), true);
+        assert.match(await journey.$eval('[data-download-status]', el => el.textContent), /not available yet/);
+      } else if (scenario === 'revoked') {
+        // A revocation on the signing request must fail closed even after the
+        // button's fresh access request has succeeded.
+        journey.on('request', req => { if (req.url().includes('/api/prints/download?')) activeMember = false; });
+        await journey.click('[data-details-download]');
+        await journey.waitForFunction(() => document.querySelector('[data-download-status]').textContent.includes('could not be opened'));
+      } else {
+        await Promise.all([journey.waitForNavigation(), journey.click('[data-details-download]')]);
+        assert.deepEqual(destinations, [scenario === 'guest' ? 'https://nodedojo.gumroad.com/l/spike-planter-01?wanted=true' : 'https://downloads.example.test/fixture-planter.zip']);
+      }
+      assert.equal(issued, ['member', 'owned'].includes(scenario) ? 1 : 0);
+      if (scenario !== 'guest') assert.equal(destinations.some(url => url.includes('gumroad.com')), false, 'Members are never routed to paid checkout');
+      journeys.push({ scenario, issued, handoff: destinations, downloadRequests: requests.filter(url => url.includes('/api/prints/download')).length });
+    } finally {
+      await journey.close();
+      await new Promise(resolve => fixtureServer.close(resolve));
+    }
+  }
+  await writeFile(`${output}/results.json`, JSON.stringify({ status: 'passed', result, journeys, errors, printsExternalRequests }, null, 2));
   console.log(`Prints acceptance passed. Screenshots and results: ${output}`);
 } finally {
   await browser.close();

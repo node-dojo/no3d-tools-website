@@ -1,0 +1,71 @@
+{
+  "source": "Original public Gumroad listing media; no generated or substituted imagery.",
+  "retrieved": "2026-10-28",
+  "derivatives": "Original photos copied unchanged. Two GIF demonstrations transcoded to H.264 MP4 with static first-frame thumbnails for native playback controls and no autoplay.",
+  "files": [
+    {
+      "source": "https://public-files.gumroad.com/pa0tx0a3dz29h9aafq8x74pycxj6",
+      "source_sha256": "559b914753feb374b45f04da837ceee708aaf70978ab345a16508a9a284d53c6",
+      "local": [
+        "v3/assets/prints/mace-detail-1.mp4",
+        "v3/assets/prints/mace-detail-1-poster.jpg"
+      ],
+      "local_sha256": {
+        "v3/assets/prints/mace-detail-1.mp4": "9276477fdb7edce0adf7d178920522e4d60539bd93075a6fcc03814191ce376e",
+        "v3/assets/prints/mace-detail-1-poster.jpg": "8b36b7191047e10223c580b0dba67cf9ef06cd22dec371b8bf8d97da69b42431"
+      }
+    },
+    {
+      "source": "https://public-files.gumroad.com/1avjis725ir5fmsq0av4pwh1qbga",
+      "source_sha256": "6520710c6588f8e5ff7330b4a229a90dd93ff96772be29af6ec9b64e4a207b1d",
+      "local": [
+        "v3/assets/prints/mace-detail-2.jpg"
+      ],
+      "local_sha256": {
+        "v3/assets/prints/mace-detail-2.jpg": "6520710c6588f8e5ff7330b4a229a90dd93ff96772be29af6ec9b64e4a207b1d"
+      }
+    },
+    {
+      "source": "https://public-files.gumroad.com/osbxao7md1tckizkzt4dth9no5g6",
+      "source_sha256": "829d31700bceaefae20a25a3a0497c5dbd1e63323707ddb2611068e8992647ff",
+      "local": [
+        "v3/assets/prints/mace-detail-3.png"
+      ],
+      "local_sha256": {
+        "v3/assets/prints/mace-detail-3.png": "829d31700bceaefae20a25a3a0497c5dbd1e63323707ddb2611068e8992647ff"
+      }
+    },
+    {
+      "source": "https://public-files.gumroad.com/lbb54btfbrkum3ls75np77a1h5o1",
+      "source_sha256": "61ce7b772820a9cff827032bcc209005e54d1d1f3c8d1c2526881689160c9222",
+      "local": [
+        "v3/assets/prints/planter-feet.mp4",
+        "v3/assets/prints/planter-feet-poster.jpg"
+      ],
+      "local_sha256": {
+        "v3/assets/prints/planter-feet.mp4": "30eb4fcb43d38240321bf3506a7f9c63681b231f3199c15ea860eef9941d6876",
+        "v3/assets/prints/planter-feet-poster.jpg": "08423fa7ab5d2d36af894951b32d91980dfeae6017feb274d84381bdd7a79a71"
+      }
+    },
+    {
+      "source": "https://public-files.gumroad.com/5cwqg7n1v8ux5ufn9v3y7dmx8vdk",
+      "source_sha256": "e248c45401e8140d4e3ae84ded846920ff91a9dbc8b7539fb3a4cd1890536a49",
+      "local": [
+        "v3/assets/prints/planter-drainage.png"
+      ],
+      "local_sha256": {
+        "v3/assets/prints/planter-drainage.png": "e248c45401e8140d4e3ae84ded846920ff91a9dbc8b7539fb3a4cd1890536a49"
+      }
+    },
+    {
+      "source": "https://public-files.gumroad.com/2y072jkabudycrsgom4oyh04zc7t",
+      "source_sha256": "21af8700ebe571ff354ca5e5d637fdbc17d8d916101b23cc61cf902ae64f914b",
+      "local": [
+        "v3/assets/prints/planter-wall-mount.png"
+      ],
+      "local_sha256": {
+        "v3/assets/prints/planter-wall-mount.png": "21af8700ebe571ff354ca5e5d637fdbc17d8d916101b23cc61cf902ae64f914b"
+      }
+    }
+  ]
+}

@@ -14,7 +14,32 @@ export const printProducts = [
       "Heft/Handle lighter holder (.stls)",
       "BambuStudio .3mf files of the assemblies"
     ],
-    "source": "gumroad-mace.json"
+    "source": "gumroad-mace.json",
+    "reference": "NO3D–GUMROAD–006",
+    "documentIndex": "Product document / 006\nGumroad / jvbin",
+    "media": [
+      {
+        "src": "/v3/assets/prints/mace-gumroad-cover.png",
+        "alt": "Mace and Chain Lighter Keeper",
+        "type": "image"
+      },
+      {
+        "src": "/v3/assets/prints/mace-detail-1.mp4",
+        "alt": "Mace and Chain demonstration",
+        "poster": "/v3/assets/prints/mace-detail-1-poster.jpg",
+        "type": "video"
+      },
+      {
+        "src": "/v3/assets/prints/mace-detail-2.jpg",
+        "alt": "Mace and Chain product detail",
+        "type": "image"
+      },
+      {
+        "src": "/v3/assets/prints/mace-detail-3.png",
+        "alt": "Mace and Chain printable parts",
+        "type": "image"
+      }
+    ]
   },
   {
     "slug": "spike-planter-01",
@@ -33,6 +58,36 @@ export const printProducts = [
       "Wall-mount hanger (.stl)",
       "Bambu Studio project with all three parts (.3mf)"
     ],
-    "source": "gumroad-planter.json"
+    "source": "gumroad-planter.json",
+    "reference": "Spike Planter 01",
+    "documentIndex": "Product document / 01\nGumroad / spike-planter-01",
+    "media": [
+      {
+        "src": "/v3/assets/prints/planter-gumroad-cover.png",
+        "alt": "White Spike Planter 01 held in one hand",
+        "type": "image"
+      },
+      {
+        "src": "/v3/assets/prints/planter-gumroad-wide.png",
+        "alt": "Spike Planter 01 in three colors",
+        "type": "image"
+      },
+      {
+        "src": "/v3/assets/prints/planter-feet.mp4",
+        "alt": "Spike feet demonstration",
+        "poster": "/v3/assets/prints/planter-feet-poster.jpg",
+        "type": "video"
+      },
+      {
+        "src": "/v3/assets/prints/planter-drainage.png",
+        "alt": "Drainage holes and screw-in drip tray",
+        "type": "image"
+      },
+      {
+        "src": "/v3/assets/prints/planter-wall-mount.png",
+        "alt": "Wall-mount hanger",
+        "type": "image"
+      }
+    ]
   }
 ];

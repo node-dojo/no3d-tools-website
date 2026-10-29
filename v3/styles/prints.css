@@ -3,9 +3,9 @@
 .prints-carousel{height:100%;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;outline-offset:-4px;touch-action:pan-x pan-y}
 .prints-carousel::-webkit-scrollbar{display:none}
 .print-slide{position:relative;flex:0 0 100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;isolation:isolate}
+.print-hotspot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:56%;height:64%;padding:0;border:0;background:transparent;color:var(--paper);cursor:pointer;touch-action:pan-x pan-y}
 .print-image{position:absolute;inset:0;display:block;z-index:-1}
-.print-image img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 52%}
-.print-slide[data-product=spike-planter-01] .print-image img{object-position:center 58%}
+.print-image img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
 .prints-chrome{position:fixed;inset:0;pointer-events:none;padding:18px var(--print-gutter);color:var(--paper)}
 .prints-chrome a,.prints-chrome button,.prints-chrome input,.prints-chrome nav,.prints-index{pointer-events:auto}
 .prints-chrome .v3-mast{position:relative;border-color:rgba(241,240,235,.5);min-height:62px}
@@ -25,9 +25,8 @@
 .print-item-details{margin:4px 0 2px 34px;padding-bottom:16px;border-bottom:1px solid currentColor}
 .print-type{margin:0 0 12px;font:600 8px/1.5 var(--ui);text-transform:uppercase;letter-spacing:.025em}
 .print-item-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 8px}
-.print-item-actions button,.print-item-actions a{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;border:0;padding:8px 0;background:transparent;color:inherit;font:600 9px/1.5 var(--ui);text-align:left;text-transform:uppercase;text-decoration:none;cursor:pointer}
+.print-item-actions button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;border:0;padding:8px 0;background:transparent;color:inherit;font:600 9px/1.5 var(--ui);text-align:left;text-transform:uppercase;text-decoration:none;cursor:pointer}
 .print-item-actions button:hover{text-decoration:underline;text-underline-offset:4px}
-.print-item-actions a{grid-column:1/-1;min-height:40px;padding:10px 12px;background:var(--yellow);color:var(--ink)}
 .print-price{font:900 24px/1 var(--body);font-variation-settings:'wght' 900,'ROND' 100;white-space:nowrap}
 .prints-footer{position:absolute;bottom:18px;left:var(--print-gutter);right:var(--print-gutter);height:44px;display:grid;grid-template-columns:var(--print-rail) 1fr auto;align-items:center;gap:34px}
 .prints-footer-links{display:flex;gap:24px;font:600 10px var(--ui);text-transform:uppercase}
@@ -42,12 +41,6 @@
 .prints-search input{min-width:0;background:transparent;color:inherit;border:0;border-bottom:1px solid;padding:8px;font:700 16px var(--body)}
 .prints-search button{border:0;background:transparent;cursor:pointer;padding:12px}
 .prints-empty{position:absolute;inset:50% 24px auto;text-align:center;color:var(--paper);font:700 24px var(--body)}
-.print-details{inset:auto 0 0;margin:0 auto;width:min(100%,860px);max-height:85svh;overflow:auto;border:1px solid var(--ink);background:var(--paper);color:var(--ink);padding:36px}
-.print-details::backdrop{background:rgba(17,17,17,.65)}
-.print-details h2{font:700 clamp(28px,4vw,52px)/.95 var(--display);letter-spacing:-.035em;text-transform:uppercase;margin:36px 0 28px;max-width:670px}
-.print-details p,.print-details li{font:700 15px/1.5 var(--body)}
-.print-details-close{position:absolute;right:24px;top:20px;border:0;background:transparent;font:600 10px var(--ui);text-transform:uppercase;cursor:pointer;padding:12px}
-.print-details-link{display:inline-block;margin-top:18px;padding:16px 20px;background:var(--yellow);font:600 11px var(--ui);text-decoration:none;text-transform:uppercase}
 .visually-hidden,.prints-skip{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .prints-skip:focus{z-index:100;width:auto;height:auto;clip:auto;inset:8px auto auto 8px;margin:0;padding:16px;background:var(--paper);color:var(--ink)}
 @media(max-width:1000px){.prints-subheading{font-size:13px}}
@@ -62,10 +55,8 @@
   .print-item-details{padding-bottom:10px;margin-top:0}
   .print-type{margin-bottom:6px}
   .print-item-actions{gap:6px 12px}
-  .print-image img{object-position:58% center}.print-slide[data-product=spike-planter-01] .print-image img{object-position:center 48%}
   .prints-footer{grid-template-columns:1fr 170px 30px;gap:12px;bottom:12px}
   .prints-footer-links{font-size:8px;gap:16px}.prints-pagination{font-size:9px;gap:12px}.prints-stone{width:30px;height:30px}
   .prints-search{grid-template-columns:1fr auto;gap:8px;padding:14px}.prints-search label{grid-column:1/-1}.prints-search input{font-size:14px}
-  .print-details{padding:28px 20px}.print-details h2{margin-top:42px}.print-details p,.print-details li{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.prints-carousel{scroll-behavior:auto}}

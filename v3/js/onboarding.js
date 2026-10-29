@@ -82,6 +82,7 @@ if (form) {
   };
 
   modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.authMode)));
+  if (params.get('mode') === 'signin') setMode('signin');
   const providerLinks = [...document.querySelectorAll('[data-oauth]')];
   const providers = await getAuthProviders().catch(() => ({ google: false, github: false }));
   let providerCount = 0;
