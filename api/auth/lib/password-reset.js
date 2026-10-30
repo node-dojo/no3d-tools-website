@@ -7,7 +7,7 @@ const LIFETIME = 15 * 60;
 
 export function resetNext(value) {
   const next = safeAuthNext(value);
-  return next && (next === '/v3/' || next.startsWith('/v3/account/') || next.startsWith('/v3/prints/') || next.startsWith('/v3/product/') || next.startsWith('/v3/membership/'))
+  return next && (next === '/v3/' || /^\/p\/[a-z0-9][a-z0-9-]{0,127}\/?$/.test(next) || next.startsWith('/v3/account/') || next.startsWith('/v3/prints/') || next.startsWith('/v3/product/') || next.startsWith('/v3/membership/'))
     ? next : '/v3/account/';
 }
 

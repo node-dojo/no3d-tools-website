@@ -15,7 +15,7 @@ const collections = {
 export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixture = null } = {}) {
   // A local guest by default. Test-only dependencies are supplied by the test
   // process, never selected through HTTP input. No production credentials.
-  const dependencies = { authenticate: async () => null, ...printDependencies };
+  const dependencies = { authenticate: async () => null, account: async () => ({ products: [], entitlements: [] }), subscription: async () => null, ...printDependencies };
   const access = createPrintHandler({ dependencies });
   const download = createPrintHandler({ download: true, dependencies });
   return createServer(async (request, response) => {
@@ -32,6 +32,7 @@ export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixt
     if (!['GET', 'HEAD'].includes(request.method)) return json(405, { error: 'local_preview_read_only' });
     try {
       let path = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
+      if (/^\/p\/[a-z0-9][a-z0-9-]{0,127}\/?$/.test(path)) path = '/v3/product/landing/index.html';
       if (path === '/') { response.writeHead(302, { Location: '/v3/prints/' }); return response.end(); }
       if (path === '/api/prints/access' || path === '/api/prints/download') {
         const url = new URL(request.url, 'http://127.0.0.1');

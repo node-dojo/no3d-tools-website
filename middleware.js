@@ -32,7 +32,7 @@ const ROOT_DOCUMENTS = new Set(['/ads.txt', '/llms.txt', '/llms-full.txt', '/rob
 const STATIC_PREFIXES = ['/assets/', '/data/', '/fonts/', '/images/', '/scripts/', '/styles/', '/extensions/'];
 
 export function routeKind(pathname) {
-  if (pathname === '/' || pathname === '/v3' || pathname.startsWith('/v3/')) return 'v3';
+  if (pathname === '/' || pathname === '/v3' || pathname.startsWith('/v3/') || pathname.startsWith('/p/')) return 'v3';
   if (pathname === '/blog' || pathname.startsWith('/blog/')) return 'blog';
   if (LEGACY_DOCUMENTS.has(pathname) || pathname.endsWith('.html')) return 'legacy';
   if (ROOT_DOCUMENTS.has(pathname)) return 'document';
@@ -188,7 +188,7 @@ export default async function middleware(request) {
   if (pathname === '/' && (v3ProductionLaunchEnabled() || v3OwnerGateEnabled())) {
     return Response.redirect(new URL('/v3/', request.url), 307);
   }
-  if (pathname === '/v3' || pathname.startsWith('/v3/')) return v3AccessMiddleware(request);
+  if (pathname === '/v3' || pathname.startsWith('/v3/') || pathname.startsWith('/p/')) return v3AccessMiddleware(request);
   return blogPreviewMiddleware(request);
 }
 

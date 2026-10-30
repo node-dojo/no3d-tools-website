@@ -1,22 +1,27 @@
+import { landingHandle, printLandingProduct } from '../../v3/js/product-landing-model.js';
 const ORIGIN = 'https://no3dtools.com';
 const escape = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const plainText = value => typeof value === 'string' ? value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
 
 export async function productPreviewResponse(request, { fetcher = fetch } = {}) {
   const url = new URL(request.url);
-  if (!/^\/v3\/product\/?$/.test(url.pathname)) return null;
-  const handle = url.searchParams.get('handle');
+  const landing = landingHandle(url.href);
+  if (!landing && !/^\/v3\/product\/?$/.test(url.pathname)) return null;
+  const handle = landing || url.searchParams.get('handle');
   if (!handle || !/^[a-z0-9][a-z0-9-]{0,127}$/.test(handle)) return null;
   const headers = { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store', Vary: 'User-Agent' };
   try {
-    const response = await fetcher(new URL(`/api/products/${encodeURIComponent(handle)}`, url), { signal: AbortSignal.timeout(5000) });
+    const print = landing && printLandingProduct(handle);
+    const response = print
+      ? Response.json({ product: { handle, title: print.title, description: print.paragraphs.join(' '), preview: print.media[0].src } })
+      : await fetcher(new URL(`/api/products/${encodeURIComponent(handle)}`, url), { signal: AbortSignal.timeout(5000) });
     if (response.status === 404) return new Response('<!doctype html><html lang="en"><head><title>Tool not found — NO3D Tools</title><meta name="robots" content="noindex"></head><body><h1>Tool not found</h1><a href="/v3/">Browse Tools</a></body></html>', { status: 404, headers });
     if (!response.ok) throw Error('product_source_unavailable');
     const { product } = await response.json();
     if (product?.handle !== handle || typeof product.title !== 'string' || !product.title.trim()) throw Error('invalid_product_source');
     const title = escape(product.title);
     const description = escape(plainText(product.description).slice(0, 400) || `${product.title} — a NO3D Tool for Blender.`);
-    const canonical = `${ORIGIN}/v3/product/?handle=${encodeURIComponent(handle)}`;
+    const canonical = landing ? `${ORIGIN}/p/${handle}` : `${ORIGIN}/v3/product/?handle=${encodeURIComponent(handle)}`;
     let image = `${ORIGIN}/assets/og-default.png`;
     for (const candidate of [product.preview, product.image]) {
       if (typeof candidate !== 'string' || !candidate.trim()) continue;

@@ -1,4 +1,4 @@
-import { CLIENT_EVENTS, publicPage, publicProperties, publicReferrer } from './analytics-contract.js';
+import { CLIENT_EVENTS, publicPage, publicProperties, publicReferrer } from './analytics-contract.js?v=landing-20261030a';
 const browser = typeof window !== 'undefined' && typeof document !== 'undefined';
 const state = browser ? (window.__no3dAnalytics ||= { initialized: false, once: new Set(), pending: new Set(), failures: 0 }) : {};
 function context() {

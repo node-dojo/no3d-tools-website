@@ -13,6 +13,7 @@
     { "source": "/go/asset-lib", "destination": "/blog/blenders-asset-library-sucks", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/p/:handle", "destination": "/v3/product/landing/index.html" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/v3", "destination": "/v3/index.html" },
     { "source": "/v3/prints", "destination": "/v3/prints/index.html" },

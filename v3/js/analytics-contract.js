@@ -14,6 +14,7 @@ export function publicPage(value) {
   try {
     const u = new URL(value, 'https://no3dtools.com');
     const p = u.pathname;
+    if (/^\/p\/[a-z0-9][a-z0-9-]{0,127}\/?$/.test(p)) return p.replace(/\/$/, '');
     if (/^\/v3\/account(?:\/|$)/.test(p)) return '/v3/account/';
     if (/^\/v3\/auth(?:\/|$)/.test(p)) return '/v3/auth/';
     if (/^\/v3\/product\/?$/.test(p)) {

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Product — NO3D</title>
+  <meta name="description" content="Product details and downloads from NO3D.">
+  <link rel="icon" href="/assets/light/stone-logo.png">
+  <link rel="preload" href="/fonts/druk-text-wide-cyr-bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/v3/styles/product-landing.css?v=landing-20261030a">
+</head>
+<body>
+  <a class="skip-link" href="#product">Skip to product</a>
+  <div class="landing-page">
+    <header class="landing-mast">
+      <a href="/v3/" aria-label="NO3D Tools home"><img class="landing-wordmark" src="/assets/light/no3d-tools.png" alt="NO3D Tools" width="210" height="34"></a>
+      <a class="micro landing-signin" data-signin href="/v3/onboarding/create-account/?mode=signin">Sign in <span aria-hidden="true">↗</span></a>
+    </header>
+    <main id="product" class="landing-product" aria-busy="true">
+      <header class="landing-identity">
+        <p class="micro" data-product-type>NO3D / Product download</p>
+        <h1 data-product-title>Loading product…</h1>
+      </header>
+      <section class="landing-media" aria-label="Product photos" hidden>
+        <div class="landing-gallery" data-gallery tabindex="0" role="region" aria-roledescription="carousel" aria-label="Product photos"></div>
+        <div class="landing-gallery-bar">
+          <div class="landing-thumbnails" data-thumbnails role="group" aria-label="Choose a product photo"></div>
+          <div class="landing-gallery-controls">
+            <button type="button" data-previous aria-label="Previous photo"><svg class="caret caret-left" viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg></button>
+            <span class="micro" data-position aria-live="polite"></span>
+            <button type="button" data-next aria-label="Next photo"><svg class="caret caret-right" viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg></button>
+          </div>
+        </div>
+      </section>
+      <div class="landing-description" data-description hidden></div>
+      <section class="landing-files" data-files-section hidden>
+        <h2 class="micro">Included in the download</h2>
+        <ul data-files></ul>
+        <div class="landing-file-notes" data-file-notes></div>
+      </section>
+      <section class="landing-acquire" aria-label="Get this product" hidden>
+        <div class="landing-purchase-row">
+          <div class="landing-price-block"><span class="micro" data-price-label>Digital download</span><strong class="landing-price" data-price>—</strong></div>
+          <button type="button" class="landing-action" data-acquire disabled><span data-action-label>Checking access…</span><span aria-hidden="true">↗</span></button>
+        </div>
+        <p class="landing-delivery-note" data-delivery-note></p>
+        <p class="landing-status" data-status role="status" aria-live="polite"></p>
+        <a class="landing-member-link" data-member-signin href="/v3/onboarding/create-account/?mode=signin">Already a member or owner? Sign in →</a>
+      </section>
+      <p class="landing-error" data-error role="alert" hidden></p>
+    </main>
+    <footer class="landing-footer"><span class="micro">Node Dojo by Joe Bowers</span><a class="micro" href="mailto:joe@welltarot.com">Need help? ↗</a><img src="/assets/light/stone-logo.png" alt="Stone W" width="32" height="32"></footer>
+  </div>
+  <noscript><p>This page needs JavaScript to show current pricing and open secure checkout. <a href="/v3/account/">Open your NO3D account</a>.</p></noscript>
+  <script type="module" src="/v3/js/product-landing.js?v=landing-20261030a"></script>
+</body>
+</html>

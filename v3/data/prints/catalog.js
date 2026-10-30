@@ -1,6 +1,7 @@
 export const printProducts = [
   {
     "slug": "mace-and-chain",
+    "landingHero": { "src": "/v3/assets/prints/mace-chain-background-v2.png", "alt": "Mace and Chain Lighter Keeper on dark wood", "type": "image" },
     "name": "3D printable Mace and Chain Lighter Keeper",
     "paragraphs": [
       "Prevent losing your lighter by subtly reminding your friends and loved ones of your capacity for violence with this lovely Mace and Chain Lighter Keeper. An innovation in anti-theft decoration!",
@@ -41,6 +42,7 @@ export const printProducts = [
   },
   {
     "slug": "spike-planter-01",
+    "landingHero": { "src": "/v3/assets/prints/spike-planter-background-v2.png", "alt": "Black Spike Planter with a plant against dark wood", "type": "image" },
     "name": "3D printable Spike Planter 01",
     "paragraphs": [
       "The Spike Planter has Spike feet that stand proudly on your man-made surface while softening towards the top near your beautiful plant. It also features a drip tray that screws in nicely and locks tight.",
