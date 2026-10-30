@@ -34,21 +34,21 @@ function cookieSecurity() {
   return process.env.NO3D_AUTH_COOKIE_SECURE === 'false' ? '' : '; Secure';
 }
 
-function setCookie(res, name, value, maxAge) {
+export function setCookie(res, name, value, maxAge) {
   appendCookie(
     res,
     `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; HttpOnly${cookieSecurity()}; SameSite=Lax`,
   );
 }
 
-function clearCookie(res, name) {
+export function clearCookie(res, name) {
   appendCookie(
     res,
     `${name}=; Path=/; Max-Age=0; HttpOnly${cookieSecurity()}; SameSite=Lax`,
   );
 }
 
-async function authFetch(path, { accessToken, body, method = 'POST' } = {}) {
+export async function authFetch(path, { accessToken, body, method = 'POST' } = {}) {
   const anonKey = requiredEnv('SUPABASE_ANON_KEY');
   const response = await fetch(`${requiredEnv('SUPABASE_URL').replace(/\/$/, '')}/auth/v1${path}`, {
     method,
@@ -60,7 +60,12 @@ async function authFetch(path, { accessToken, body, method = 'POST' } = {}) {
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.msg || payload.error_description || payload.error || `Supabase Auth ${response.status}`);
+  if (!response.ok) {
+    const error = new Error(payload.msg || payload.error_description || payload.error || `Supabase Auth ${response.status}`);
+    error.status = response.status;
+    error.code = payload.code || payload.error_code;
+    throw error;
+  }
   return payload;
 }
 
@@ -99,7 +104,7 @@ function sealVerifier(verifier) {
   return `${iv.toString('base64url')}.${tag.toString('base64url')}.${encrypted.toString('base64url')}`;
 }
 
-function sealPayload(payload) {
+export function sealPayload(payload) {
   const key = crypto.createHash('sha256').update(requiredEnv('NO3D_AUTH_STATE_SECRET')).digest();
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
@@ -108,7 +113,7 @@ function sealPayload(payload) {
   return `${iv.toString('base64url')}.${tag.toString('base64url')}.${encrypted.toString('base64url')}`;
 }
 
-function openPayload(value) {
+export function openPayload(value) {
   if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)) return null;
   try {
     const [ivValue, tagValue, encryptedValue] = value.split('.');
@@ -144,7 +149,7 @@ function openVerifier(value) {
   }
 }
 
-async function generateAuthLink({ email, password, type }) {
+export async function generateAuthLink({ email, password, type }) {
   const serviceKey = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
   const response = await fetch(`${requiredEnv('SUPABASE_URL').replace(/\/$/, '')}/auth/v1/admin/generate_link`, {
     method: 'POST',
@@ -161,7 +166,12 @@ async function generateAuthLink({ email, password, type }) {
     }),
   });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.msg || payload.message || payload.error_description || payload.error || `Supabase Auth ${response.status}`);
+  if (!response.ok) {
+    const error = new Error(payload.msg || payload.message || payload.error_description || payload.error || `Supabase Auth ${response.status}`);
+    error.status = response.status;
+    error.code = payload.code || payload.error_code;
+    throw error;
+  }
   if (!payload.hashed_token || !payload.verification_type) throw new Error('Supabase Auth link missing verification proof');
   return {
     tokenHash: payload.hashed_token,

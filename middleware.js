@@ -15,6 +15,8 @@ const PRODUCT_HANDLE_ALIASES = new Map([
 
 const PUBLIC_V3_PREFIXES = [
   '/v3/access',
+  '/v3/auth/reset-password',
+  '/v3/onboarding/create-account',
   '/v3/assets/',
   '/v3/js/',
   '/v3/styles/',

@@ -29,6 +29,11 @@ if (form) {
 	  const message = document.querySelector('[data-auth-message]');
 	  const signInRecovery = document.querySelector('[data-signin-recovery]');
 	  const recovery = document.querySelector('[data-purchase-recovery]');
+  const forgot = document.querySelector('[data-forgot-password]');
+  const title = document.querySelector('#account-entry-title');
+  const description = title.nextElementSibling;
+  const originalTitle = title.textContent;
+  const originalDescription = description.textContent;
 
 	  signInRecovery?.addEventListener('click', async () => {
 	    const context = currentAuthContext();
@@ -54,7 +59,7 @@ if (form) {
 	    }
 	  });
 
-	  if (purchaseOrderId) recovery.hidden = false;
+	  if (purchaseOrderId && recovery) recovery.hidden = false;
 	  recovery?.addEventListener('click', async () => {
 	    const context = currentAuthContext();
 	    recovery.disabled = true;
@@ -77,12 +82,24 @@ if (form) {
   const setMode = value => {
     mode = value;
     modeButtons.forEach(button => button.classList.toggle('active', button.dataset.authMode === mode));
-    submitLabel.textContent = mode === 'signup' ? 'Create free account' : 'Sign in';
+    const reset = mode === 'recovery';
+    submitLabel.textContent = reset ? 'Send reset link' : mode === 'signup' ? 'Create free account' : 'Sign in';
     password.autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+    password.required = !reset;
+    password.disabled = reset;
+    password.closest('label').hidden = reset;
+    if (forgot) forgot.hidden = mode !== 'signin';
+    if (recovery) recovery.hidden = reset || !purchaseOrderId;
+    title.textContent = reset ? 'Reset your password' : originalTitle;
+    description.textContent = reset ? 'Enter your account email. We’ll send a link to choose a new password.' : originalDescription;
+    document.querySelector('[data-auth-providers]').hidden = reset || ![...document.querySelectorAll('[data-oauth]')].some(link => !link.hidden);
   };
 
-  modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.authMode)));
+  modeButtons.forEach(button => button.addEventListener('click', () => { message.textContent = ''; setMode(button.dataset.authMode); }));
+  forgot?.addEventListener('click', () => { message.textContent = ''; setMode('recovery'); form.elements.email.focus(); });
   if (params.get('mode') === 'signin') setMode('signin');
+  if (params.get('mode') === 'recovery') setMode('recovery');
+  if (params.get('password') === 'updated') message.textContent = 'Your password has been updated. Sign in with your new password.';
   const providerLinks = [...document.querySelectorAll('[data-oauth]')];
   const providers = await getAuthProviders().catch(() => ({ google: false, github: false }));
   let providerCount = 0;
@@ -94,7 +111,7 @@ if (form) {
       providerCount += 1;
     }
   });
-  document.querySelector('[data-auth-providers]').hidden = providerCount === 0;
+  document.querySelector('[data-auth-providers]').hidden = providerCount === 0 || mode === 'recovery';
   document.querySelector('[data-email-rule]').textContent = providerCount ? 'Or continue with email' : 'Continue with email';
 
   if (params.get('access') === 'denied') {
@@ -106,7 +123,7 @@ if (form) {
     message.textContent = 'That sign-in method is not available. Use email or try another provider.';
   } else if (params.get('auth') === 'expired') {
     message.textContent = 'That one-time link expired or was already used. Enter your email and request a fresh link for this browser.';
-    signInRecovery.hidden = false;
+    if (signInRecovery) signInRecovery.hidden = false;
     setMode('signin');
   } else if (params.get('auth') === 'invalid') {
     message.textContent = 'That sign-in link could not be completed. Try again or use another method.';
@@ -118,6 +135,23 @@ if (form) {
     const button = form.querySelector('button[type="submit"]');
     const context = currentAuthContext();
     button.disabled = true;
+    if (mode === 'recovery') {
+      message.textContent = 'Sending your reset link…';
+      try {
+        const response = await fetch('/api/auth/reset-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+          body: JSON.stringify({ action: 'request', email: form.elements.email.value.trim(), next: context.next }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        message.textContent = 'If this email has an account, a password reset link is on its way. Check your inbox and spam folder. The link expires in 15 minutes.';
+      } catch (error) {
+        message.textContent = error.message === 'try_again_later'
+          ? 'Too many reset requests. Wait ten minutes, then try again.'
+          : 'The reset email could not be sent. Please try again shortly.';
+      } finally { button.disabled = false; }
+      return;
+    }
     message.textContent = mode === 'signup' ? 'Creating your account…' : 'Signing in…';
     track('account_submit', { mode, destination: context.destination });
     try {

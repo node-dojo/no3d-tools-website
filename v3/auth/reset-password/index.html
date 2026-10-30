@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f0eb">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Reset Your Password — NO3D Tools</title>
+  <link rel="stylesheet" href="/v3/styles/v3.css?v=prints-20261028b">
+</head>
+<body class="account-entry-page">
+  <div class="account-entry-wash" aria-hidden="true"></div>
+  <section class="account-entry-dialog" aria-labelledby="reset-title">
+    <header class="setup-index"><div><strong>NO3D</strong><span>Account</span></div><span>Password recovery</span></header>
+    <div class="account-entry-body">
+      <h1 id="reset-title">Reset your password</h1>
+      <p data-reset-message role="status">Continue to choose a new password.</p>
+      <button class="account-entry-submit" type="button" data-reset-verify hidden>Continue →</button>
+      <form class="account-entry-form" data-reset-form hidden>
+        <label>New password<input name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="200" placeholder="At least 10 characters"></label>
+        <label>Confirm new password<input name="confirmation" type="password" autocomplete="new-password" required minlength="10" maxlength="200"></label>
+        <button class="account-entry-submit" type="submit">Save new password →</button>
+      </form>
+      <a class="text-action" data-reset-resend href="/v3/onboarding/create-account/?mode=recovery" hidden>Request a new reset link →</a>
+      <a class="text-action" data-reset-done hidden>Continue →</a>
+    </div>
+    <footer class="account-entry-foot"><img src="/assets/light/stone-logo.png" alt=""><span>NO3D Account</span></footer>
+  </section>
+  <script type="module" src="/v3/js/password-reset.js?v=password-recovery-20261029"></script>
+</body>
+</html>

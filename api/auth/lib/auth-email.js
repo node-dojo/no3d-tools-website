@@ -15,12 +15,15 @@ function escapeHtml(value) {
 
 export async function sendAuthEmail({ email, continueUrl, kind = 'signin' }) {
   const confirmation = kind === 'signup';
-  const subject = confirmation ? 'Confirm your email address' : 'Your sign-in link';
+  const reset = kind === 'password-reset';
+  const subject = reset ? 'Reset your NO3D password' : confirmation ? 'Confirm your email address' : 'Your sign-in link';
   const heading = subject;
-  const instruction = confirmation
+  const instruction = reset
+    ? 'Use the link below to choose a new password. It expires in 15 minutes and can only be used once. If you did not request this, you can ignore this email; your password has not changed.'
+    : confirmation
     ? 'Follow the link below to confirm this email address and finish signing up.'
     : 'Follow the link below to sign in. This link expires shortly and can only be used once.';
-  const action = confirmation ? 'Confirm email address' : 'Sign in';
+  const action = reset ? 'Reset password' : confirmation ? 'Confirm email address' : 'Sign in';
   const safeUrl = escapeHtml(continueUrl);
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',

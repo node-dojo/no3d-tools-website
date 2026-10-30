@@ -44,7 +44,9 @@
     "acceptance:site-editor": "node scripts/solvet-site-editor-acceptance.mjs",
     "preview:prints": "node scripts/prints-preview-server.mjs",
     "acceptance:prints": "node scripts/prints-acceptance.mjs",
-    "acceptance:prints:commerce": "node scripts/prints-commerce-acceptance.mjs"
+    "acceptance:prints:commerce": "node scripts/prints-commerce-acceptance.mjs",
+    "acceptance:password-reset": "node scripts/password-reset-acceptance.mjs",
+    "acceptance:password-reset:staging": "node scripts/password-reset-staging-acceptance.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
