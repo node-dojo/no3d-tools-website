@@ -20,6 +20,40 @@ function paragraphs(target, items) {
   target.replaceChildren(...items.map(text => { const p = document.createElement('p'); p.textContent = text; return p; }));
 }
 
+function renderPrintLayout() {
+  document.body.classList.add('landing-print');
+  const brand = $('.landing-wordmark');
+  brand.src = '/assets/dark/no3d-prints-dark.png';
+  brand.alt = 'NO3D Prints';
+  brand.parentElement.href = '/v3/prints/';
+  brand.parentElement.setAttribute('aria-label', 'NO3D Prints home');
+  $('.landing-footer img').src = '/assets/dark/stone-logo-dark.png';
+
+  const hero = document.createElement('section');
+  hero.className = 'landing-print-hero';
+  hero.setAttribute('aria-label', product.title);
+  const photo = document.createElement('img');
+  photo.className = 'landing-print-backdrop';
+  photo.src = product.media[0].src;
+  photo.alt = product.media[0].alt;
+  photo.fetchPriority = 'high';
+  photo.width = 1254; photo.height = 1254;
+  const acquisition = $('.landing-acquire');
+  hero.append(photo, $('.landing-identity'), acquisition);
+  const more = document.createElement('a');
+  more.className = 'landing-print-more micro';
+  more.href = '#product-details';
+  more.textContent = 'Photos & details ↓';
+  acquisition.append(more);
+
+  const details = document.createElement('section');
+  details.id = 'product-details';
+  details.className = 'landing-print-details';
+  details.setAttribute('aria-label', 'Product photos and details');
+  details.append($('.landing-media'), $('[data-description]'), $('[data-files-section]'));
+  $('#product').prepend(hero, details);
+}
+
 function renderProduct() {
   document.title = `${product.title} — NO3D`;
   document.querySelector('meta[name=description]').content = product.paragraphs[0] || product.title;
@@ -33,7 +67,8 @@ function renderProduct() {
   $('[data-description]').hidden = !product.paragraphs.length;
   $('[data-files-section]').hidden = !product.included.length && !product.notes.length;
   $('.landing-acquire').hidden = false;
-  createProductGallery($('.landing-media'), product.media);
+  if (product.kind === 'print') renderPrintLayout();
+  createProductGallery($('.landing-media'), product.kind === 'print' && product.media.length > 1 ? product.media.slice(1) : product.media);
   track('product_view', { handle, source: 'product_landing' });
 }
 

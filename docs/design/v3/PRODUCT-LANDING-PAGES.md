@@ -30,10 +30,17 @@ photos/video. The title, description, files, and remaining media are shared
 with the Prints product document. No campaign-specific marketing copy or
 parallel product record is needed. Tool pages use the existing catalog API.
 
-Desktop pairs the gallery with the product information and acquisition block.
-Mobile places the acquisition block immediately after the gallery and before
-the longer description. Gallery thumbnails, arrows, swipe/scroll, keyboard
-navigation, video controls, and reduced motion are supported.
+Print pages open with a full-bleed expanded photograph on both mobile and
+desktop. The compact title sits above the subject; pricing and acquisition
+sit on the dark backdrop below it on mobile and to its left on desktop.
+Type stays opaque with no scrim, text shadow, or blend effect. Photos, video,
+description, and included files continue below the hero in the same page.
+The expanded hero is not repeated in the detail gallery.
+
+Tool pages keep the paper layout, with the gallery beside the product
+information on desktop and acquisition after the gallery on mobile. Gallery
+thumbnails, arrows, swipe/scroll, keyboard navigation, video controls, and
+reduced motion are supported in both layouts.
 
 ## Acquisition
 

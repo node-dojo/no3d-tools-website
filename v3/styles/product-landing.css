@@ -9,3 +9,55 @@
 @media(max-width:1000px){.landing-page{padding:0 24px}.landing-product{column-gap:28px;grid-template-columns:minmax(0,1fr) minmax(320px,1fr)}.landing-identity h1{font-size:34px}.landing-media{top:20px}.landing-thumbnails button{flex-basis:40px;width:40px;height:40px}.landing-gallery-bar{flex-wrap:wrap}.landing-gallery-controls{margin-left:auto}}
 @media(max-width:720px){body{font-size:15px}.landing-page{padding:0 20px}.landing-mast{min-height:78px}.landing-wordmark{width:170px}.landing-product{display:flex;flex-direction:column;gap:0;padding-top:26px;padding-bottom:36px}.landing-product>*{width:100%}.landing-identity h1{font-size:clamp(27px,7.8vw,50px);margin:17px 0 26px;line-height:1}.landing-identity{order:1}.landing-media{order:2;position:static}.landing-acquire{order:3;margin:25px 0 30px}.landing-description{order:4}.landing-files{order:5;padding-bottom:0}.landing-gallery-bar{padding:12px 0;flex-wrap:nowrap}.landing-thumbnails{gap:5px}.landing-thumbnails button{flex-basis:40px}.landing-gallery-controls button{width:32px}.landing-purchase-row{min-height:90px}.landing-action{padding:18px;font-size:11px}.landing-footer{min-height:90px;gap:15px}.landing-footer .micro{font-size:8px}.landing-signin{gap:12px}.landing-price{font-size:36px}.landing-error{order:6}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* Prints use the expanded photograph as the whole first screen. The image
+   supplies contrast; type is opaque, with no scrim, shadow, or blend effect. */
+.landing-print{background:var(--ink);color:var(--paper);--rule:#676863}
+.landing-print .landing-page{max-width:none;padding:0}
+.landing-print .landing-mast{position:absolute;inset:0 34px auto;z-index:2;min-height:98px}
+.landing-print .landing-product{display:block;padding:0}
+.landing-print-hero{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;min-height:900px;min-height:max(800px,100svh);padding:138px 34px 34px;overflow:hidden}
+.landing-print-backdrop{position:absolute;z-index:-1;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+.landing-print-hero .landing-identity{width:330px;max-width:100%;order:initial}
+.landing-print-hero .landing-identity h1{font-size:30px;line-height:1.04;margin:16px 0 0}
+.landing-print-hero .landing-acquire{width:330px;max-width:100%;margin:50px 0 0;order:initial}
+.landing-print-hero .landing-purchase-row{grid-template-columns:minmax(100px,.8fr) minmax(0,1.2fr);min-height:84px;border-color:var(--rule)}
+.landing-print-hero .landing-price{font-size:32px}
+.landing-print-hero .landing-price-block{padding:12px 12px 12px 0}
+.landing-print .landing-action{color:var(--ink);padding:16px;font-size:10px}
+.landing-print .landing-action:hover:not(:disabled){color:var(--ink);background:var(--paper)}
+.landing-print-hero .landing-delivery-note{font-size:9px;line-height:1.5;margin-top:11px}
+.landing-print-hero .landing-member-link{font-size:9px;margin-top:9px;min-height:25px}
+.landing-print-more{display:block;margin-top:16px;width:fit-content;text-decoration:none;min-height:28px}
+.landing-print-details{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);gap:0 48px;padding:58px 34px;align-items:start;scroll-margin-top:24px}
+.landing-print-details .landing-media{grid-row:1/3;top:24px}
+.landing-print-details .landing-gallery{aspect-ratio:1.4}
+.landing-print-details .landing-description{grid-row:1}
+.landing-print-details .landing-files{grid-row:2}
+.landing-print .landing-thumbnails button[aria-current=true]{border-color:var(--paper)}
+.landing-print .video-marker{color:var(--ink)}
+.landing-print .landing-footer{margin:0 34px}
+.landing-print :is(a,button,[tabindex]):focus-visible{outline-color:var(--paper)}
+.landing-print .skip-link{color:var(--ink)}
+@media(max-width:1000px) and (min-width:721px){.landing-print-details{column-gap:28px;grid-template-columns:minmax(0,1fr) minmax(320px,1fr)}}
+@media(max-width:720px){
+  .landing-print .landing-mast{inset:0 20px auto;min-height:76px}
+  .landing-print .landing-wordmark{width:174px}
+  .landing-print-hero{min-height:max(740px,100svh);padding:101px 20px 20px}
+  .landing-print-hero .landing-identity{width:100%;max-width:350px}
+  .landing-print-hero .landing-identity .micro{font-size:9px}
+  .landing-print-hero .landing-identity h1{font-size:clamp(22px,6.3vw,30px);line-height:1.05;margin-top:14px}
+  .landing-print-hero .landing-acquire{width:100%;max-width:none;margin-top:360px}
+  .landing-print-hero .landing-purchase-row{min-height:76px}
+  .landing-print-hero .landing-price{font-size:30px}
+  .landing-print-hero .landing-delivery-note{font-size:8px}
+  .landing-print-hero .landing-member-link{font-size:8px;min-height:22px}
+  .landing-print-more{margin-top:9px;font-size:9px;min-height:24px}
+  .landing-print-details{display:flex;flex-direction:column;gap:30px;padding:30px 20px 40px}
+  .landing-print-details .landing-media{width:calc(100% + 40px);margin:0 -20px;order:initial}
+  .landing-print-details .landing-gallery{aspect-ratio:1}
+  .landing-print-details .landing-gallery-bar{margin:0 20px}
+  .landing-print-details .landing-description,.landing-print-details .landing-files{order:initial;width:100%}
+  .landing-print-details .landing-files{padding-top:0}
+  .landing-print .landing-footer{margin:0 20px}
+}

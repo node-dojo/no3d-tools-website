@@ -52,19 +52,22 @@ try {
     assert.equal(await page.$eval('[data-price]', el => el.textContent), '$11.11');
     assert.equal(await page.$eval('[data-product-title]', el => el.textContent), 'Mace and Chain Lighter Keeper');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    assert.ok(await page.$eval('.landing-print-backdrop', el => el.getBoundingClientRect().left === 0 && el.getBoundingClientRect().width === innerWidth));
+    assert.deepEqual(await page.$eval('[data-product-title]', el => { const style = getComputedStyle(el); return [style.opacity, style.textShadow, style.mixBlendMode, style.filter]; }), ['1', 'none', 'normal', 'none']);
     assert.equal(await page.$eval('[data-signin]', el => new URL(el.href).searchParams.get('next')), '/p/mace-and-chain');
     assert.equal(await page.$eval('[data-next]', el => el.disabled), false);
     await page.click('[data-next]');
-    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '02 / 05');
+    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '02 / 04');
     await page.focus('[data-gallery]'); await page.keyboard.press('End');
-    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '05 / 05');
+    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '04 / 04');
     assert.equal(await page.$eval('[data-next]', el => el.disabled), true);
     await page.keyboard.press('Home');
-    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '01 / 05');
+    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '01 / 04');
     await page.click('[data-product-title]');
     await page.evaluate(() => scrollTo(0, 0));
+    await page.screenshot({ path: `${output}/${name}-full-bleed.png` });
     await page.screenshot({ path: `${output}/${name}.png`, fullPage: true });
-    report.checks.push(`${name}: readable layout, no overflow, gallery arrows and keyboard, sign-in return`);
+    report.checks.push(`${name}: full-bleed photo, opaque type, no overflow, gallery arrows and keyboard, sign-in return`);
   }
   await page.setViewport({ width: 1440, height: 1000 });
   await open();
