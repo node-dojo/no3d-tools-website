@@ -32,12 +32,12 @@ and per-product format. Access rules, prices, and checkout are unchanged.
 ## Viewer and gallery follow-up
 
 Joe requested on 2026-11-02 that the outdated yellow print-bed montage be
-removed once the STL viewer is available. The shared catalog currently lists
-it as `v3/assets/prints/mace-detail-3.png`, with the alt text
-"Mace and Chain printable parts". Keep it in the gallery until the replacement
-viewer is working; then remove its catalog media entry so both the Prints
-detail page and campaign page stop displaying it, and update gallery checks.
-Preserve the source image as historical media.
+removed once the STL viewer is available. That local viewer implementation is
+now complete and tested; the shared catalog entry has been removed. See
+`PRINT-PART-VIEWERS.md`. The removed entry was `v3/assets/prints/mace-detail-3.png`, with the alt text
+"Mace and Chain printable parts". Both the Prints detail page and campaign page now omit it, and gallery
+checks reflect three remaining media items. The source image is preserved as
+historical media.
 
 The replacement belongs in its own borderless "Included in Download:" section
 with the three selected parts identified by name. The website uses a fixed,

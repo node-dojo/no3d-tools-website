@@ -1,4 +1,4 @@
-import { printProducts } from '../data/prints/catalog.js?v=prints-files-20261102';
+import { printProducts } from '../data/prints/catalog.js?v=prints-viewers-20261102';
 
 export function landingHandle(value) {
   const url = new URL(value, 'https://no3dtools.com');
@@ -15,7 +15,7 @@ export function printLandingProduct(handle) {
     handle, kind: 'print', title: product.name.replace(/^3D printable /i, ''),
     type: 'NO3D Prints / Digital print files', format: product.format,
     paragraphs: product.paragraphs.slice(0, split < 0 ? undefined : split + 1).map(text => text.replace(/\n*Included in the Download:$/, '').trim()).filter(Boolean),
-    notes: split < 0 ? [] : product.paragraphs.slice(split + 1), included: product.included,
+    notes: split < 0 ? [] : product.paragraphs.slice(split + 1), included: product.included, previewParts: product.previewParts, previewNotes: product.previewNotes,
     media: product.landingHero ? [product.landingHero, ...product.media] : product.media,
   };
 }

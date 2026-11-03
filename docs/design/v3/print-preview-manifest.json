@@ -1,0 +1,68 @@
+[
+  {
+    "id": "mace-111mm",
+    "source": "111mm Mace Ball_0919_39_1412_001.stl",
+    "sourceSha256": "4d290f103c6c1dcf00bd9a536d302d5989762ebdbec6a149ce61d7aa50e40626",
+    "sourceTriangles": 50270,
+    "previewTriangles": 18000,
+    "vertices": 9028,
+    "asset": "mace-111mm-081759d987.bin",
+    "bytes": 324348,
+    "sha256": "081759d987d5fda806e9af4173b3d56c3dba3297dcf0bbd35265c21bf964d7d8"
+  },
+  {
+    "id": "big-chain",
+    "source": "Big Chain_0919_31_1412_001.stl",
+    "sourceSha256": "6f1cbb5bfe3294298e56b69b493682b52f3d0393b43b21f78f3c731e1ddcd3c1",
+    "sourceTriangles": 59412,
+    "previewTriangles": 22000,
+    "vertices": 11000,
+    "asset": "big-chain-ee7bbe9799.bin",
+    "bytes": 396012,
+    "sha256": "ee7bbe9799cc77a21502e6e9bff13b5d732ba0a071f4bc070a431f7a81c20d18"
+  },
+  {
+    "id": "lighter-haft",
+    "source": "Lighter Holding Haft handle_0919_58_1409_001.stl",
+    "sourceSha256": "23fb836f1c13372b20ac3a8092d053496020140ce06e75fe06f43dd1be4b8bd1",
+    "sourceTriangles": 68730,
+    "previewTriangles": 17999,
+    "vertices": 9004,
+    "asset": "lighter-haft-3c10986c6b.bin",
+    "bytes": 324048,
+    "sha256": "3c10986c6b6efd259f3bd626b970f9f856590a279eb3354f98de7c7d3b722d88"
+  },
+  {
+    "id": "planter-body",
+    "source": "Spike Vase 01 - 142 mm - main body.stl",
+    "sourceSha256": "4ec59f9f5fbdf571346d7236d0238f0ab5e4d61a4380d1a23afd67f640e1fdee",
+    "sourceTriangles": 2201304,
+    "previewTriangles": 38924,
+    "vertices": 19372,
+    "asset": "planter-body-683ff602f3.bin",
+    "bytes": 699564,
+    "sha256": "683ff602f3da3b4870ac10580905ba9fe4a3376fec909b7e067e9afd32556de2"
+  },
+  {
+    "id": "planter-tray",
+    "source": "Spike Vase 01 - 142 mm - drip tray.stl",
+    "sourceSha256": "e2a4017b938f0976dd079096f20971d90e2d6672bbd72b3645298afa7dd8220a",
+    "sourceTriangles": 1319794,
+    "previewTriangles": 17999,
+    "vertices": 9001,
+    "asset": "planter-tray-45de6183b8.bin",
+    "bytes": 324012,
+    "sha256": "45de6183b81c587eb5129c73892d49090711f7d6a71bf9463eb5b7b38753b0be"
+  },
+  {
+    "id": "planter-hanger",
+    "source": "Spike Vase 01 - 142 mm - wall mount hanger.stl",
+    "sourceSha256": "1189ab6392208e0fdbbbd9118656d11ca618cb68f8bba04a65ecfaf27fabc3b5",
+    "sourceTriangles": 1324,
+    "previewTriangles": 1000,
+    "vertices": 498,
+    "asset": "planter-hanger-96a2cd03e3.bin",
+    "bytes": 17988,
+    "sha256": "96a2cd03e3f6f6194ae7bdcf0a22c1e95316aea3980a71bc4922e1fc1849e335"
+  }
+]

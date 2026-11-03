@@ -57,12 +57,12 @@ try {
     assert.equal(await page.$eval('[data-signin]', el => new URL(el.href).searchParams.get('next')), '/p/mace-and-chain');
     assert.equal(await page.$eval('[data-next]', el => el.disabled), false);
     await page.click('[data-next]');
-    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '02 / 04');
+    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '02 / 03');
     await page.focus('[data-gallery]'); await page.keyboard.press('End');
-    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '04 / 04');
+    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '03 / 03');
     assert.equal(await page.$eval('[data-next]', el => el.disabled), true);
     await page.keyboard.press('Home');
-    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '01 / 04');
+    await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '01 / 03');
     await page.click('[data-product-title]');
     await page.evaluate(() => scrollTo(0, 0));
     await page.screenshot({ path: `${output}/${name}-full-bleed.png` });

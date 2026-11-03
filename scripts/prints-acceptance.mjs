@@ -124,10 +124,10 @@ try {
     const signInUrl = await page.$eval('[data-member-signin]', link => link.href);
     assert.equal(new URL(signInUrl).searchParams.get('mode'), 'signin');
     assert.equal(new URL(signInUrl).searchParams.get('next'), '/v3/prints/?product=mace-and-chain&details=1');
-    assert.equal(await page.$$eval('[data-gallery-thumbnails] button', buttons => buttons.length), 4);
+    assert.equal(await page.$$eval('[data-gallery-thumbnails] button', buttons => buttons.length), 3);
     await page.focus('[data-gallery]');
     await page.keyboard.press('End');
-    await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '4 / 4');
+    await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '3 / 3');
     await page.goBack();
     await page.waitForFunction(() => !document.querySelector('dialog').open);
     await page.goForward();

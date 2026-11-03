@@ -1,4 +1,5 @@
-import { printProducts } from '../data/prints/catalog.js?v=prints-files-20261102';
+import { mountPrintParts } from './print-parts.js?v=parts-20261102';
+import { printProducts } from '../data/prints/catalog.js?v=prints-viewers-20261102';
 import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
 import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
@@ -20,6 +21,7 @@ export function createPrintProductView(dialog) {
   let closeTimer;
   let pointerStart;
   let price = '';
+  let disposeParts;
 
   function syncGallery(index) {
     photo = Math.max(0, Math.min(index, product.media.length - 1));
@@ -92,6 +94,7 @@ export function createPrintProductView(dialog) {
 
   function renderDescription() {
     const body = dialog.querySelector('[data-details-body]');
+    disposeParts?.();
     body.replaceChildren();
     const addParagraph = text => { const p = document.createElement('p'); p.textContent = text; body.append(p); };
     // Preserve the listing's order: the Planter's size note follows the file list.
@@ -100,10 +103,7 @@ export function createPrintProductView(dialog) {
       const paragraph = text.replace(/\n*Included in the Download:$/, '').trim();
       if (paragraph) addParagraph(paragraph);
     }
-    addParagraph('Included in the Download:');
-    const list = document.createElement('ul');
-    product.included.forEach(text => { const item = document.createElement('li'); item.textContent = text; list.append(item); });
-    body.append(list);
+    disposeParts = mountPrintParts(body, product);
     product.paragraphs.slice(split + 1).forEach(addParagraph);
   }
 
@@ -207,6 +207,8 @@ export function createPrintProductView(dialog) {
     dialog.querySelectorAll('video').forEach(video => video.pause());
     dialog.classList.add('is-closing');
     const finish = () => {
+      disposeParts?.();
+      disposeParts = null;
       dialog.close();
       dialog.classList.remove('is-closing');
       opener?.focus({ preventScroll: true });

@@ -1,7 +1,11 @@
 export const printProducts = [
   {
     "slug": "mace-and-chain",
-    "landingHero": { "src": "/v3/assets/prints/mace-chain-background-v2.png", "alt": "Mace and Chain Lighter Keeper on dark wood", "type": "image" },
+    "landingHero": {
+      "src": "/v3/assets/prints/mace-chain-background-v2.png",
+      "alt": "Mace and Chain Lighter Keeper on dark wood",
+      "type": "image"
+    },
     "name": "3D printable Mace and Chain Lighter Keeper",
     "format": "STL",
     "paragraphs": [
@@ -32,17 +36,33 @@ export const printProducts = [
         "src": "/v3/assets/prints/mace-detail-2.jpg",
         "alt": "Mace and Chain product detail",
         "type": "image"
+      }
+    ],
+    "previewParts": [
+      {
+        "id": "mace-111mm",
+        "name": "111 mm Mace",
+        "src": "/v3/assets/prints/previews/mace-111mm-081759d987.bin"
       },
       {
-        "src": "/v3/assets/prints/mace-detail-3.png",
-        "alt": "Mace and Chain printable parts",
-        "type": "image"
+        "id": "big-chain",
+        "name": "Big Chain",
+        "src": "/v3/assets/prints/previews/big-chain-ee7bbe9799.bin"
+      },
+      {
+        "id": "lighter-haft",
+        "name": "Lighter Holding Haft",
+        "src": "/v3/assets/prints/previews/lighter-haft-3c10986c6b.bin"
       }
     ]
   },
   {
     "slug": "spike-planter-01",
-    "landingHero": { "src": "/v3/assets/prints/spike-planter-background-v2.png", "alt": "Black Spike Planter with a plant against dark wood", "type": "image" },
+    "landingHero": {
+      "src": "/v3/assets/prints/spike-planter-background-v2.png",
+      "alt": "Black Spike Planter with a plant against dark wood",
+      "type": "image"
+    },
     "name": "3D printable Spike Planter 01",
     "format": "STL + Bambu Studio 3MF",
     "paragraphs": [
@@ -87,6 +107,26 @@ export const printProducts = [
         "alt": "Wall-mount hanger",
         "type": "image"
       }
+    ],
+    "previewParts": [
+      {
+        "id": "planter-body",
+        "name": "Spike Planter 01 main body",
+        "src": "/v3/assets/prints/previews/planter-body-683ff602f3.bin"
+      },
+      {
+        "id": "planter-tray",
+        "name": "Screw-in drip tray",
+        "src": "/v3/assets/prints/previews/planter-tray-45de6183b8.bin"
+      },
+      {
+        "id": "planter-hanger",
+        "name": "Wall-mount hanger",
+        "src": "/v3/assets/prints/previews/planter-hanger-96a2cd03e3.bin"
+      }
+    ],
+    "previewNotes": [
+      "Also included: Bambu Studio project with all three parts (.3mf)."
     ]
   }
 ];

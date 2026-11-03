@@ -44,6 +44,7 @@
     "acceptance:site-editor": "node scripts/solvet-site-editor-acceptance.mjs",
     "preview:prints": "node scripts/prints-preview-server.mjs",
     "acceptance:prints": "node scripts/prints-acceptance.mjs",
+    "acceptance:print-parts": "node scripts/print-parts-acceptance.mjs",
     "acceptance:landing": "node scripts/product-landing-acceptance.mjs",
     "acceptance:prints:commerce": "node scripts/prints-commerce-acceptance.mjs",
     "acceptance:password-reset": "node scripts/password-reset-acceptance.mjs",

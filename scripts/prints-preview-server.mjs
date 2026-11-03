@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { createPrintHandler } from '../api/prints/lib/access.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.mp4': 'video/mp4' };
+const mime = { '.bin': 'application/octet-stream', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.mp4': 'video/mp4' };
 const catalog = JSON.parse(await readFile(join(root, 'v3/data/prints/tools-preview-catalog.json')));
 const products = Array.isArray(catalog) ? catalog : catalog.products;
 const collections = {

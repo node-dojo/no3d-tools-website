@@ -1,0 +1,31 @@
+/* Borderless display meshes share the document surface. */
+.print-parts{container-type:inline-size;margin:30px 0;min-width:0}
+.print-parts .print-parts-heading{margin:0 0 8px;font:600 11px/1.5 var(--ui);letter-spacing:.045em;text-transform:uppercase}
+.print-parts .print-parts-hint,.parts-expanded .print-parts-hint{margin:0 0 16px;font:600 9px/1.5 var(--ui);opacity:.6;text-transform:uppercase;letter-spacing:.025em}
+.print-parts-grid{display:grid;grid-template-columns:1fr;gap:28px 20px}
+.print-part{margin:0;min-width:0}
+.part-stage{position:relative;display:block;width:100%;aspect-ratio:1.25;padding:0;border:0;background:transparent;color:inherit;cursor:grab;touch-action:pan-y pinch-zoom;user-select:none;-webkit-user-select:none;overflow:hidden}
+.part-stage:active{cursor:grabbing}
+.part-stage:focus-visible,.part-control:focus-visible{outline:1px solid currentColor;outline-offset:4px}
+.part-canvas{display:block;width:100%;height:100%;pointer-events:none}
+.part-state{position:absolute;inset:0;display:grid;place-content:center;padding:20px;font:600 10px/1.5 var(--ui);text-align:center;opacity:.6}
+.part-caption{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font:600 10px/1.5 var(--ui);letter-spacing:.025em;text-transform:uppercase}
+.part-format{opacity:.5}
+.print-parts .print-parts-note{margin:22px 0 0;font:600 10px/1.55 var(--ui)}
+@container(min-width:560px){.print-parts-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.part-stage{aspect-ratio:1}.part-caption{font-size:9px}}
+.parts-expanded{inset:0;width:100%;height:100dvh;max-width:none;max-height:none;margin:0;padding:20px 24px;border:0;background:var(--paper);color:var(--ink);overflow:hidden;overscroll-behavior:contain}
+.parts-expanded[open]{display:flex;flex-direction:column}
+.parts-expanded::backdrop{background:var(--paper)}
+.parts-expanded-header,.parts-expanded-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-shrink:0}
+.parts-expanded .parts-expanded-title{margin:0;font:600 12px/1.5 var(--ui);letter-spacing:.045em;text-transform:uppercase}
+.part-control{min-height:44px;min-width:44px;padding:10px 0;border:0;background:transparent;color:inherit;font:600 10px/1.5 var(--ui);text-transform:uppercase;cursor:pointer}
+.parts-expanded .part-stage-expanded{flex:1;min-height:0;aspect-ratio:auto;touch-action:none}
+.parts-expanded .print-parts-hint{text-align:center;margin:10px 0 0}
+.parts-expanded-footer{justify-content:center;gap:30px;padding-bottom:env(safe-area-inset-bottom)}
+.landing-print .parts-expanded{background:var(--paper);color:var(--ink)}
+@media(max-width:600px){.parts-expanded{padding:14px}.print-parts-grid{gap:24px}.parts-expanded-header{gap:12px}}
+.landing-print-details .landing-files{grid-column:1/-1;grid-row:3;width:100%}
+/* The photo column stops before the full-width parts section. */
+.landing-print-details .landing-media{position:static}
+.part-stage,.part-control{-webkit-tap-highlight-color:transparent}
+.part-control:disabled{opacity:.4;cursor:default}
