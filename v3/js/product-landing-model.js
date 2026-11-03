@@ -1,4 +1,6 @@
-import { printProducts } from '../data/prints/catalog.js?v=prints-standing-20261102';
+// Shared with Edge share previews; this import must be a plain module path.
+// Catalog responses revalidate (the immutable cache rule only covers js/styles).
+import { printProducts } from '../data/prints/catalog.js';
 
 export function landingHandle(value) {
   const url = new URL(value, 'https://no3dtools.com');
