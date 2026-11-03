@@ -44,7 +44,10 @@ try {
           // Element screenshots scroll nested snap containers back to slide 1.
           // Capture the gallery's visible rectangle without scrolling its child.
           await page.$eval('[data-gallery]', e => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-          const clip = await (await page.$('[data-gallery]')).boundingBox();
+          const clip = await page.$eval('[data-gallery]', e => {
+            const r = e.getBoundingClientRect();
+            return { x: r.x + scrollX, y: r.y + scrollY, width: r.width, height: r.height };
+          });
           const capture = () => page.screenshot({ clip, captureBeyondViewport: false });
           const before = await capture();
           let changed = false;
