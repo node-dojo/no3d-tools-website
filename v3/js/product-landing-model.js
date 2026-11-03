@@ -1,4 +1,4 @@
-import { printProducts } from '../data/prints/catalog.js?v=prints-viewers-20261102';
+import { printProducts } from '../data/prints/catalog.js?v=prints-standing-20261102';
 
 export function landingHandle(value) {
   const url = new URL(value, 'https://no3dtools.com');

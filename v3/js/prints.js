@@ -1,5 +1,5 @@
-import { printProducts } from '../data/prints/catalog.js?v=prints-viewers-20261102';
-import { createPrintProductView } from './print-product.js?v=prints-viewers-20261102';
+import { printProducts } from '../data/prints/catalog.js?v=prints-standing-20261102';
+import { createPrintProductView } from './print-product.js?v=prints-standing-20261102';
 import { getPrintOffer } from './api.js?v=prints-20261028b';
 import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 

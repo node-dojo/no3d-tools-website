@@ -29,7 +29,7 @@ async function reveal(selector = '.print-parts') {
 }
 async function loadProduct(slug) {
   await page.goto(`${origin}/v3/prints/?product=${slug}&details=1`, { waitUntil: 'networkidle0' });
-  await reveal(); await ready(first);
+  await reveal(first); await ready(first);
 }
 async function touchDrag(client, from, to) {
   await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from.x, y: from.y, id: 0 }] });
@@ -42,7 +42,7 @@ try {
   assert.equal(meshRequests.length, 0, 'catalog does not load any 3D meshes');
   for (const slug of ['mace-and-chain', 'spike-planter-01']) {
     await loadProduct(slug);
-    await page.waitForFunction(() => document.querySelectorAll('.print-parts [data-state=ready]').length === 3);
+    await page.waitForFunction(count => document.querySelectorAll('.print-parts [data-state=ready]').length === count, {}, slug === 'spike-planter-01' ? 5 : 3);
     assert.equal(await page.$eval('.print-parts-grid', el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 3);
     const before = await state(first);
     const pixelsBefore = await (await page.$(first)).screenshot();
@@ -105,9 +105,15 @@ try {
   await page.tap('.parts-expanded-header button'); await page.waitForFunction(() => !document.querySelector('.parts-expanded'));
   for (const slug of ['mace-and-chain','spike-planter-01']) {
     await loadProduct(slug);
-    for (let i=0;i<3;i++) { const selector=`.print-part:nth-child(${i+1}) .part-stage`; await reveal(selector); await ready(selector); }
+    for (let i=0;i<(slug === 'spike-planter-01' ? 5 : 3);i++) { const selector=`.print-part:nth-child(${i+1}) .part-stage`; await reveal(selector); await ready(selector); }
     await (await page.$('.print-parts')).screenshot({ path: `${output}/${slug}-mobile-grid.png` });
   }
+  const standing = '.print-part:nth-child(5) .part-stage';
+  await page.tap(standing); await ready('.parts-expanded .part-stage');
+  assert.equal(await page.$eval('.parts-expanded-title', el => el.textContent), 'Free-standing screw-in drip tray');
+  await page.tap('.parts-expanded-header button');
+  await page.waitForFunction(() => !document.querySelector('.parts-expanded'));
+  assert.doesNotMatch(await page.$eval('.print-parts', el => el.textContent), /Also included:/);
   results.push({ mobile: 'native horizontal rotation, vertical scrolling, tap, two-finger pinch, reset and both responsive grids passed' });
   // A failed mesh or missing WebGL cannot block product content or checkout controls.
   blockMesh = true;

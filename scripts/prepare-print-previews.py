@@ -9,6 +9,7 @@ import fast_simplification
 parser = argparse.ArgumentParser()
 parser.add_argument('--mace-dir', type=Path, required=True)
 parser.add_argument('--planter-dir', type=Path, required=True)
+parser.add_argument('--standing-dir', type=Path, required=True)
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
 out = root / 'v3/assets/prints/previews'
@@ -20,6 +21,8 @@ specs = [
     (args.planter_dir, 'Spike Vase 01 - 142 mm - main body.stl', 'planter-body', 26000),
     (args.planter_dir, 'Spike Vase 01 - 142 mm - drip tray.stl', 'planter-tray', 18000),
     (args.planter_dir, 'Spike Vase 01 - 142 mm - wall mount hanger.stl', 'planter-hanger', 1000),
+    (args.standing_dir, 'Spike Planter 01 - Free Standing - 142 mm - Main Body.stl', 'planter-standing-body', 26000),
+    (args.standing_dir, 'Spike Planter 01 - Free Standing - 142 mm - Drip Tray.stl', 'planter-standing-tray', 18000),
 ]
 manifest = []
 for directory, filename, slug, target in specs:

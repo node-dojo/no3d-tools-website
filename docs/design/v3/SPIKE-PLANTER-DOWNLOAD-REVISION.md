@@ -61,11 +61,11 @@ Physical printing and thread-fit validation have not been performed.
 
 The shared catalog now distinguishes the two versions, lists all six download
 files, and explains millimeter import at 100% scale. Existing wall-mounted
-preview names were clarified. The ongoing viewer implementation is separate:
-its three original wall-mounted previews are preserved; the additional standing
-STLs are currently listed in the preview notes. Add their viewer derivatives
-from this package when integrating that work, without replacing the original
-wall-mounted mesh sources with this Blend file.
+preview names were clarified. The viewer now includes all five STLs: the original wall-mounted previews are
+preserved, and two free-standing derivatives were generated from this package.
+These replace the former "Also included" standing-file note. The wall-mounted
+Bambu Studio project note remains. See `PRINT-PART-VIEWERS.md`; source hashes
+are recorded in `print-preview-manifest.json`.
 
 Local website checks passed: 195 unit tests, Prints browser acceptance, and the
 V3 eight-route acceptance suite at 390×844 and 1440×1100. The catalog and campaign

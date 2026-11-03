@@ -7,9 +7,9 @@ import { printProducts } from '../v3/data/prints/catalog.js';
 const manifest = JSON.parse(await readFile(new URL('../docs/design/v3/print-preview-manifest.json', import.meta.url)));
 
 test('every included part has a valid, reduced display mesh with recorded source provenance', async () => {
-  assert.equal(manifest.length, 6);
+  assert.equal(manifest.length, 8);
   for (const product of printProducts) {
-    assert.equal(product.previewParts.length, 3);
+    assert.equal(product.previewParts.length, product.slug === 'spike-planter-01' ? 5 : 3);
     for (const part of product.previewParts) {
       const meta = manifest.find(item => item.id === part.id);
       assert.ok(meta); assert.ok(part.src.endsWith(meta.asset));
@@ -27,6 +27,8 @@ test('every included part has a valid, reduced display mesh with recorded source
   assert.equal(printProducts[0].media.length, 3);
   assert.ok(!printProducts[0].media.some(item => item.src.includes('mace-detail-3')));
   assert.match(printProducts[1].previewNotes.join(' '), /3mf/);
+  assert.doesNotMatch(printProducts[1].previewNotes.join(' '), /Also included:/);
+  assert.deepEqual(printProducts[1].previewParts.slice(3).map(part => part.name), ['Free-standing main body', 'Free-standing screw-in drip tray']);
 });
 
 test('preview parser rejects truncated, oversized, non-finite and out-of-bounds geometry', () => {

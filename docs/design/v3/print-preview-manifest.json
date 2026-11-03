@@ -64,5 +64,27 @@
     "asset": "planter-hanger-96a2cd03e3.bin",
     "bytes": 17988,
     "sha256": "96a2cd03e3f6f6194ae7bdcf0a22c1e95316aea3980a71bc4922e1fc1849e335"
+  },
+  {
+    "id": "planter-standing-body",
+    "source": "Spike Planter 01 - Free Standing - 142 mm - Main Body.stl",
+    "sourceSha256": "7cef07d872add2fe5dd4a93a62fa9330c96308f379f750c5f4e4f91a8cf90a3d",
+    "sourceTriangles": 673834,
+    "previewTriangles": 26000,
+    "vertices": 12910,
+    "asset": "planter-standing-body-c2026a3641.bin",
+    "bytes": 466932,
+    "sha256": "c2026a3641691c9a344a62a2b586baff314fa78c28d9f9137dc79dbe7868514f"
+  },
+  {
+    "id": "planter-standing-tray",
+    "source": "Spike Planter 01 - Free Standing - 142 mm - Drip Tray.stl",
+    "sourceSha256": "c99425880087e4dee5f39ef7ad70ff478843a02fba3250163d8d56f5e363854c",
+    "sourceTriangles": 405178,
+    "previewTriangles": 18000,
+    "vertices": 9002,
+    "asset": "planter-standing-tray-eb5ba1e981.bin",
+    "bytes": 324036,
+    "sha256": "eb5ba1e9816f6f6be718f0e6f30c52075548cc65920072b513e4b205df294ac7"
   }
 ]

@@ -125,10 +125,19 @@ export const printProducts = [
         "id": "planter-hanger",
         "name": "Wall-mount hanger",
         "src": "/v3/assets/prints/previews/planter-hanger-96a2cd03e3.bin"
+      },
+      {
+        "id": "planter-standing-body",
+        "name": "Free-standing main body",
+        "src": "/v3/assets/prints/previews/planter-standing-body-c2026a3641.bin"
+      },
+      {
+        "id": "planter-standing-tray",
+        "name": "Free-standing screw-in drip tray",
+        "src": "/v3/assets/prints/previews/planter-standing-tray-eb5ba1e981.bin"
       }
     ],
     "previewNotes": [
-      "Also included: Free-standing main body and matching screw-in drip tray (.stl), both in the nominal 142 mm size.",
       "Bambu Studio project for the wall-mounted version (.3mf)."
     ]
   }

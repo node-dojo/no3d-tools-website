@@ -1,7 +1,7 @@
 import { mountPrintParts } from './print-parts.js?v=parts-20261102';
 import { beginProductCheckout, getPrintOffer, getProduct } from './api.js?v=prints-20261028b';
 import { renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
-import { landingHandle, printLandingProduct, toolLandingProduct } from './product-landing-model.js?v=prints-viewers-20261102';
+import { landingHandle, printLandingProduct, toolLandingProduct } from './product-landing-model.js?v=prints-standing-20261102';
 import { landingAccess } from './product-landing-access.js?v=landing-20261030a';
 import { createProductGallery } from './product-gallery.js?v=landing-20261030a';
 import { initializeAnalytics, track } from './analytics.js?v=landing-20261030a';
