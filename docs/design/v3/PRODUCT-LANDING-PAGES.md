@@ -1,7 +1,7 @@
 # Focused product landing pages
 
-Implementation candidate, 2026-10-29. First visual review: Mace and Chain.
-This feature has not been published to production.
+Published 2026-11-02 with the Prints release. First visual review: Mace and Chain.
+See `../../deployment/PRINTS-RELEASE-20261102.md` for production verification.
 
 ## Links
 

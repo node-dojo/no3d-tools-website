@@ -1,0 +1,320 @@
+{
+  "base": "https://no3dtools.com",
+  "checkedAt": "2026-11-03T03:22:29.541Z",
+  "source": [
+    {
+      "path": "fonts/silka-mono-medium.woff2",
+      "bytes": 13596,
+      "sha256": "c772f91a8607b8edeaa50e5543b817153224261b69fbf7e6e96fb395661694d3",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/big-chain-ee7bbe9799.bin",
+      "bytes": 396012,
+      "sha256": "ee7bbe9799cc77a21502e6e9bff13b5d732ba0a071f4bc070a431f7a81c20d18",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/lighter-haft-3c10986c6b.bin",
+      "bytes": 324048,
+      "sha256": "3c10986c6b6efd259f3bd626b970f9f856590a279eb3354f98de7c7d3b722d88",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/mace-111mm-081759d987.bin",
+      "bytes": 324348,
+      "sha256": "081759d987d5fda806e9af4173b3d56c3dba3297dcf0bbd35265c21bf964d7d8",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/planter-body-683ff602f3.bin",
+      "bytes": 699564,
+      "sha256": "683ff602f3da3b4870ac10580905ba9fe4a3376fec909b7e067e9afd32556de2",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/planter-hanger-96a2cd03e3.bin",
+      "bytes": 17988,
+      "sha256": "96a2cd03e3f6f6194ae7bdcf0a22c1e95316aea3980a71bc4922e1fc1849e335",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/planter-standing-body-c2026a3641.bin",
+      "bytes": 466932,
+      "sha256": "c2026a3641691c9a344a62a2b586baff314fa78c28d9f9137dc79dbe7868514f",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/planter-standing-tray-eb5ba1e981.bin",
+      "bytes": 324036,
+      "sha256": "eb5ba1e9816f6f6be718f0e6f30c52075548cc65920072b513e4b205df294ac7",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/previews/planter-tray-45de6183b8.bin",
+      "bytes": 324012,
+      "sha256": "45de6183b81c587eb5129c73892d49090711f7d6a71bf9463eb5b7b38753b0be",
+      "matches": true
+    },
+    {
+      "path": "v3/data/prints/catalog.js",
+      "bytes": 5061,
+      "sha256": "32b68cb8618a792cab77f75a35e761e2f960879e6d9fb4297b760dd10d5c4ee2",
+      "matches": true
+    },
+    {
+      "path": "v3/js/analytics-contract.js",
+      "bytes": 2199,
+      "sha256": "68c391a79508c0d351db509f26b8f387b1557e28f232f1dfd9794ac45168c1e0",
+      "matches": true
+    },
+    {
+      "path": "v3/js/analytics.js",
+      "bytes": 4288,
+      "sha256": "8b03b949a6ff58563640c5800b1764823bd066448d482f9a8fbb634911ece683",
+      "matches": true
+    },
+    {
+      "path": "v3/js/carousel-video.js",
+      "bytes": 918,
+      "sha256": "6f4bba4c9c5de7ea1727cb86dc7eb443d19081d8e1a39f10a8c804ed2f097ab8",
+      "matches": true
+    },
+    {
+      "path": "v3/js/print-parts.js",
+      "bytes": 12667,
+      "sha256": "2c82cc919954ca407e1a8dd6afbcf632e15f404c7408cab01c50187feb4def1e",
+      "matches": true
+    },
+    {
+      "path": "v3/js/print-product.js",
+      "bytes": 11497,
+      "sha256": "1cd389ae27149d8b4a8e53e031ef308cbc140e1f8cd9063cab0bab9b0faaeee3",
+      "matches": true
+    },
+    {
+      "path": "v3/js/prints.js",
+      "bytes": 6595,
+      "sha256": "d4999b1d6b9e41d90702b2620ccbe05dfe3aab1fead61410a3cb33c55eef89a1",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-gallery.js",
+      "bytes": 3319,
+      "sha256": "7e883f4c08577c5f077fc410b5fbccb553285f6b1ce1f83ca96f66e10a282c77",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-landing-access.js",
+      "bytes": 2415,
+      "sha256": "742bd4178d16ca9023a182973bb0603bcdf77cb7ba1b791092a4424b9664f1aa",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-landing-model.js",
+      "bytes": 2079,
+      "sha256": "8b8e5ece0f4669b70c2e3b2bfabed3c105b58a7583e513b68a5d1f01e1d1f2df",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-landing.js",
+      "bytes": 9599,
+      "sha256": "fb073afa9b8ed5a7640716f90b7e36ffe134150fc77c5927f1366206c0de6be9",
+      "matches": true
+    },
+    {
+      "path": "v3/js/storefronts.js",
+      "bytes": 2994,
+      "sha256": "f64c58aec587043719a3ce6fc130a3675eef8aba2f8dd5171d7834a8ea1fec67",
+      "matches": true
+    },
+    {
+      "path": "v3/prints/index.html",
+      "bytes": 8998,
+      "sha256": "ac8f30812cb1b2bb2efbe357ca7bfc321df83a95e6c16178d859a9421c001bed",
+      "matches": true
+    },
+    {
+      "path": "v3/product/landing/index.html",
+      "bytes": 4280,
+      "sha256": "7d47075a15fa1c43294d90c6d72715d4b9e77f2bacfee36b1ce7a15573d05417",
+      "matches": true
+    },
+    {
+      "path": "v3/styles/print-parts.css",
+      "bytes": 3024,
+      "sha256": "4c950202a7ad828cf897886e3d8867ccc666d40a37c6f777e826dd3e06ca919c",
+      "matches": true
+    },
+    {
+      "path": "v3/styles/prints.css",
+      "bytes": 6970,
+      "sha256": "e1f4476b64b7fa0c9cfa23ce4443bdbb48a4b61684acb6f9954d9f437beae37e",
+      "matches": true
+    },
+    {
+      "path": "v3/styles/product-landing.css",
+      "bytes": 11906,
+      "sha256": "b8b9461a12ea6705a1aab6c41ffb604eb654e692e8d831826393ee2d807634ea",
+      "matches": true
+    },
+    {
+      "path": "v3/vendor/three/three-0.160.1.module.min.js",
+      "bytes": 670681,
+      "sha256": "3e690ac7d180b0aadf0891bea39eec643e29e2d3e75c99b18689518665f69ba6",
+      "matches": true
+    }
+  ],
+  "publicAccess": [
+    {
+      "handle": "mace-and-chain",
+      "guestMode": "purchase",
+      "anonymousDownload": 403
+    },
+    {
+      "handle": "spike-planter-01",
+      "guestMode": "purchase",
+      "anonymousDownload": 403
+    }
+  ],
+  "browser": [
+    {
+      "handle": "mace-and-chain",
+      "width": 1440,
+      "parts": 3,
+      "renderAndRotate": true,
+      "expand": true,
+      "videoAutoplayLoopNoControls": true,
+      "inactiveVideoPaused": true,
+      "overflow": false
+    },
+    {
+      "handle": "spike-planter-01",
+      "width": 1440,
+      "parts": 5,
+      "renderAndRotate": true,
+      "expand": true,
+      "videoAutoplayLoopNoControls": true,
+      "inactiveVideoPaused": true,
+      "overflow": false
+    },
+    {
+      "handle": "mace-and-chain",
+      "width": 1440,
+      "route": "campaign",
+      "parts": 3,
+      "render": true,
+      "overflow": false
+    },
+    {
+      "handle": "spike-planter-01",
+      "width": 1440,
+      "route": "campaign",
+      "parts": 5,
+      "render": true,
+      "overflow": false
+    },
+    {
+      "handle": "mace-and-chain",
+      "width": 390,
+      "parts": 3,
+      "renderAndRotate": true,
+      "expand": true,
+      "videoAutoplayLoopNoControls": true,
+      "inactiveVideoPaused": true,
+      "overflow": false
+    },
+    {
+      "handle": "spike-planter-01",
+      "width": 390,
+      "parts": 5,
+      "renderAndRotate": true,
+      "expand": true,
+      "videoAutoplayLoopNoControls": true,
+      "inactiveVideoPaused": true,
+      "overflow": false
+    },
+    {
+      "handle": "mace-and-chain",
+      "width": 390,
+      "route": "campaign",
+      "parts": 3,
+      "render": true,
+      "overflow": false
+    },
+    {
+      "handle": "spike-planter-01",
+      "width": 390,
+      "route": "campaign",
+      "parts": 5,
+      "render": true,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "status": "passed",
+  "commit": "bb84d05fe2c86f4654020e0a65a4081b8ae04808",
+  "deployment": "dpl_596cCkrkRKFk5pdXK33wzXC53oxn",
+  "deploymentUrl": "https://no3dtoolssite-clt7qjpkm-node-dojos-projects.vercel.app",
+  "stagingDeployment": "dpl_FhXoc46QajeVTungUuf2ieKKbPrb",
+  "rollback": {
+    "deployment": "dpl_2yN1fDcLQ4M9F522y5dvsayCUavn",
+    "url": "https://no3dtoolssite-3exi7f38t-node-dojos-projects.vercel.app",
+    "commit": "ba92034bd2ce59cb68c9e1940dbe3d65b1b3e5b0"
+  },
+  "productionCommerceEnvironment": "live",
+  "publicOffers": [
+    {
+      "handle": "mace-and-chain",
+      "unitAmount": 1111,
+      "currency": "usd"
+    },
+    {
+      "handle": "spike-planter-01",
+      "unitAmount": 1111,
+      "currency": "usd"
+    }
+  ],
+  "toolsSourceMatches": [
+    "v3/index.html",
+    "v3/js/home.js",
+    "v3/js/workbench.js"
+  ],
+  "campaignSocialPreview": true,
+  "packages": [
+    {
+      "handle": "mace-and-chain",
+      "filename": "mace-and-chain.zip",
+      "bytes": 3347209,
+      "checksum": "14dd2f99afa7fca29b0b338deb94f07c539039b78cf2d638916811885b8ea799",
+      "file_url": "no3d-prints/mace-and-chain/14dd2f99afa7fca2/mace-and-chain.zip",
+      "title": "3D printable Mace and Chain Lighter Keeper",
+      "status": "active"
+    },
+    {
+      "handle": "spike-planter-01",
+      "filename": "spike-planter-01.zip",
+      "bytes": 140220875,
+      "checksum": "03dbdad5ed17e21ec7f9fa72d11be8e15ec148a6f76eda852bfea7985e9e1b8c",
+      "file_url": "no3d-prints/spike-planter-01/03dbdad5ed17e21e/spike-planter-01.zip",
+      "title": "3D printable Spike Planter 01",
+      "status": "active"
+    }
+  ],
+  "tests": {
+    "unit": 195,
+    "failed": 0,
+    "v3Browser": "8 routes at desktop/mobile passed",
+    "printsBrowser": "passed",
+    "printPartsBrowser": "passed: WebGL pixels, orbit, touch, pinch, fallback, disposal, focus",
+    "campaignBrowser": "passed after Edge import fix",
+    "audit": "unchanged 9 advisories: 4 low, 1 moderate, 4 high"
+  },
+  "boundaries": [
+    "Production source bytes, public APIs, desktop/mobile browser UI and media playback verified.",
+    "Payment, member/owner delivery, fresh sign-in and revocation exercised on isolated staging with exact release ZIP checksums. No live charge.",
+    "Mobile checks use browser emulation, not a physical iPhone/Safari.",
+    "New free-standing geometry has not been physically print/thread-fit tested.",
+    "Existing source files, earlier private package objects, and unrelated integration checkout work retained."
+  ]
+}

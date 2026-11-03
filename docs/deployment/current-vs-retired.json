@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-10-29",
+  "updated": "2026-11-02",
   "purpose": "Single authority for what is CURRENT (V3) versus RETIRED in no3d-tools-website. Documentation, AI-facing files, and support copy must not describe retired behaviour as current. Machine-readable so a check can enforce it.",
   "current": {
     "journey": "V3",
@@ -21,7 +21,9 @@
     ],
     "commerceService": "no3d-commerce (Vercel project no3d-commerce)",
     "pricingSourceOfTruth": "Stripe Price lookup keys (no3dtools.product.<handle>). Displayed price on V3 product pages is read from /api/commerce/offer, so Stripe is what a visitor is actually charged.",
-    "passwordRecovery": "Forgot password in shared sign-in and Account Details; single-use email link, new password, managed session, and return to account/order/product. See docs/deployment/PASSWORD-RECOVERY.md."
+    "passwordRecovery": "Forgot password in shared sign-in and Account Details; single-use email link, new password, managed session, and return to account/order/product. See docs/deployment/PASSWORD-RECOVERY.md.",
+    "productLandingPages": "Focused /p/<handle> pages reuse the native account and Commerce flow. Prints include full-bleed photography and the shared included-part viewers.",
+    "prints": "Mace has three STL viewers/files. Spike Planter has five STL viewers/files for wall-mounted and free-standing versions, plus the wall-mounted 3MF project. Active gallery videos play muted inline loops with hidden controls. Release: docs/deployment/PRINTS-RELEASE-20261102.md."
   },
   "retired": {
     "licenseKeyEntry": {

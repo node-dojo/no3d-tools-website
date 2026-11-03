@@ -1,7 +1,7 @@
 # Prints included-part viewers — 2026-11-02
 
-Implemented for local review in the Prints catalog details and the shared
-campaign-page template. Not deployed. User direction: a separate borderless
+Published 2026-11-02 in the Prints catalog details and the shared campaign-page
+template. See `../../deployment/PRINTS-RELEASE-20261102.md`. User direction: a separate borderless
 "Included in Download:" grid, Wellbord-like clay models and direct rotation,
 with interactions suitable for a fixed mobile page.
 
