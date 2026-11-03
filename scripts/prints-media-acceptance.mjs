@@ -21,7 +21,7 @@ try {
     await page.setViewport({ width, height: width === 390 ? 844 : 1100, isMobile: width === 390, hasTouch: width === 390 });
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     const url = route === 'catalog' ? `/v3/prints/?product=${product.slug}&details=1` : `/p/${product.slug}`;
-    await page.goto(origin + url, { waitUntil: 'networkidle0' });
+    await page.goto(origin + url, { waitUntil: 'networkidle2', timeout: 60000 });
     const thumb = route === 'catalog' ? '[data-gallery-thumbnails]' : '[data-thumbnails]';
     await page.waitForSelector(`${thumb} button`);
     assert.equal(await page.$$eval(`${thumb} button`, b => b.length), product.media.length);

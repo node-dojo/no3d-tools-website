@@ -1,0 +1,354 @@
+{
+  "commit": "20e5dea33f10a05c97fd0e33a9fc2e681d5ae72b",
+  "deployment": "dpl_AY667wd1QGS3XxxejrSeiZ5Gcxyv",
+  "checkedAt": "2026-11-03T03:44:40.190Z",
+  "entries": [
+    {
+      "path": "v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+      "bytes": 2549819,
+      "sha256": "d82aa1233b32677cd10d76285f288534453b7defb89be2365b6f5e3ba5e0ece9",
+      "contentType": "video/mp4",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-assembly-poster-fda7704d17.webp",
+      "bytes": 6650,
+      "sha256": "fda7704d17dad50195f59fadea96448794f76d6c041739c022a22938af4b5f9e",
+      "contentType": "image/webp",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+      "bytes": 1033198,
+      "sha256": "f40d68f648811a0e5afd2e6f2d04bd2bfdb32545374633aa19667f5c7520ada6",
+      "contentType": "video/mp4",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-keychain-assembly-poster-2c99acf365.webp",
+      "bytes": 6506,
+      "sha256": "2c99acf3656d47b9e6222cc292b77002a47e0924941ec78e8765a1b20197245a",
+      "contentType": "image/webp",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+      "bytes": 1100732,
+      "sha256": "9a03e8d7ead52bb86aa596411636fc9de35ead9e41b5200089a7b0fcfdc4304a",
+      "contentType": "image/webp",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+      "bytes": 2624308,
+      "sha256": "caff74eb788c4b1856086e25d35c828112e8d7749b6f5425c0a988dab7d22b68",
+      "contentType": "image/gif",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-keychain-in-use-poster-c5d067a342.webp",
+      "bytes": 17376,
+      "sha256": "c5d067a342bfbf58cbcc8cfd68b99e3960a5a72619041ae0c871361c3289ed92",
+      "contentType": "image/webp",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+      "bytes": 922315,
+      "sha256": "e857b36811fc1af5942f4c0448f0deed9808e2479367b20dc36628a0c9332135",
+      "contentType": "video/mp4",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/mace-lighting-incense-poster-701ded14de.webp",
+      "bytes": 8772,
+      "sha256": "701ded14de182002cd93a2100ad77278efc4d95a69cbcc2c69adc6e599cdcdf6",
+      "contentType": "image/webp",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+      "bytes": 1697793,
+      "sha256": "5c33f2690312008ff8b6a930a835405447ee82f9f9491fb63737be80bb042922",
+      "contentType": "image/gif",
+      "matches": true
+    },
+    {
+      "path": "v3/assets/prints/planter-surface-closeup-poster-f0d3bc6c5b.webp",
+      "bytes": 16006,
+      "sha256": "f0d3bc6c5b47af1625c11949a49e40d55889929038d1672c81b6c84fb5c48681",
+      "contentType": "image/webp",
+      "matches": true
+    },
+    {
+      "path": "v3/data/prints/catalog.js",
+      "bytes": 6566,
+      "sha256": "4045d17fe68ad60a7610fe8e949256b86a280814d8d997897be3e68194ed3ecc",
+      "contentType": "application/javascript; charset=utf-8",
+      "matches": true
+    },
+    {
+      "path": "v3/js/carousel-image.js",
+      "bytes": 874,
+      "sha256": "f3e72bd2798d45d61d1285f0383fd3c1e435a41191394e738cd2309fe0f57b7b",
+      "contentType": "application/javascript; charset=utf-8",
+      "matches": true
+    },
+    {
+      "path": "v3/js/print-product.js",
+      "bytes": 11709,
+      "sha256": "391d6c21765ef824b5300833b2936b46d96bac088891f5a7fdbbf3f32d9408d8",
+      "contentType": "application/javascript; charset=utf-8",
+      "matches": true
+    },
+    {
+      "path": "v3/js/prints.js",
+      "bytes": 6585,
+      "sha256": "34c5fc6eeaab5e5c5bff0627864366497d592573d9cbf24833c34f4d3cd58876",
+      "contentType": "application/javascript; charset=utf-8",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-gallery.js",
+      "bytes": 3545,
+      "sha256": "8437996030a7a7ac6f35f074182e6c2fb1b4ffbb0c69fa2705fd2eea1d5632e2",
+      "contentType": "application/javascript; charset=utf-8",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-landing.js",
+      "bytes": 9589,
+      "sha256": "8f82162d34ea998713513620cf49135d23ddb7361374bf3c8e318f23654763fb",
+      "contentType": "application/javascript; charset=utf-8",
+      "matches": true
+    },
+    {
+      "path": "v3/prints/index.html",
+      "bytes": 8993,
+      "sha256": "758f9318000025f130774bcc006a195867c4e411e936f91d3dd24567b4b63015",
+      "contentType": "text/html; charset=utf-8",
+      "matches": true
+    },
+    {
+      "path": "v3/product/landing/index.html",
+      "bytes": 4275,
+      "sha256": "c6d605ae83d845d076d32b1c3a2c0d9e103b08eb2ba6ffd9a1aba0bb536ea21e",
+      "contentType": "text/html; charset=utf-8",
+      "matches": true
+    }
+  ],
+  "browser": {
+    "target": "https://no3dtools.com",
+    "results": [
+      {
+        "width": 1440,
+        "handle": "mace-and-chain",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "handle": "mace-and-chain",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "handle": "spike-planter-01",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "handle": "spike-planter-01",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "mace-and-chain",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "mace-and-chain",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "spike-planter-01",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "spike-planter-01",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          }
+        ]
+      }
+    ],
+    "errors": []
+  }
+}
