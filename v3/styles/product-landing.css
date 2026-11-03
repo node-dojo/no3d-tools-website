@@ -16,7 +16,7 @@
 .landing-print{background:var(--ink);color:var(--paper);--rule:#676863}
 .landing-print .landing-page{max-width:none;padding:0}
 .landing-print .landing-mast{position:absolute;inset:0 34px auto;z-index:2;min-height:116px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-content:center;padding:18px 0}
-.landing-subheading{grid-column:1/-1;justify-self:start;font:500 11px/1.45 var(--ui);text-decoration:none;text-transform:none}
+.landing-subheading{grid-column:1/-1;justify-self:start;font:500 9px/1.45 var(--ui);letter-spacing:.04em;text-decoration:none;text-transform:uppercase}
 .landing-subheading:hover{text-decoration:underline}
 .landing-print .landing-signin{min-height:28px}
 .landing-print .landing-product{display:block;padding:0}
