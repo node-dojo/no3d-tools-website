@@ -67,15 +67,17 @@ export const printProducts = [
     "format": "STL + Bambu Studio 3MF",
     "paragraphs": [
       "The Spike Planter has Spike feet that stand proudly on your man-made surface while softening towards the top near your beautiful plant. It also features a drip tray that screws in nicely and locks tight.",
-      "Stand it on a surface or use the included wall-mount hanger.",
+      "Includes wall-mounted and free-standing versions.",
       "Included in the Download:",
-      "STL files are the 142 mm version. Digital print files only."
+      "Both versions are the nominal 142 mm size (approximately 142.7 mm across). Import STL files in millimeters at 100% scale. Digital print files only."
     ],
     "included": [
-      "Spike Planter 01 main body (.stl)",
-      "Screw-in drip tray (.stl)",
-      "Wall-mount hanger (.stl)",
-      "Bambu Studio project with all three parts (.3mf)"
+      "Wall-mounted main body — 142 mm (.stl)",
+      "Wall-mounted screw-in drip tray — 142 mm (.stl)",
+      "Wall-mount hanger — 142 mm version (.stl)",
+      "Free-standing main body — 142 mm (.stl)",
+      "Free-standing screw-in drip tray — 142 mm (.stl)",
+      "Wall-mounted Bambu Studio project (.3mf)"
     ],
     "source": "gumroad-planter.json",
     "reference": "Spike Planter 01",
@@ -111,12 +113,12 @@ export const printProducts = [
     "previewParts": [
       {
         "id": "planter-body",
-        "name": "Spike Planter 01 main body",
+        "name": "Wall-mounted main body",
         "src": "/v3/assets/prints/previews/planter-body-683ff602f3.bin"
       },
       {
         "id": "planter-tray",
-        "name": "Screw-in drip tray",
+        "name": "Wall-mounted screw-in drip tray",
         "src": "/v3/assets/prints/previews/planter-tray-45de6183b8.bin"
       },
       {
@@ -126,7 +128,8 @@ export const printProducts = [
       }
     ],
     "previewNotes": [
-      "Also included: Bambu Studio project with all three parts (.3mf)."
+      "Also included: Free-standing main body and matching screw-in drip tray (.stl), both in the nominal 142 mm size.",
+      "Bambu Studio project for the wall-mounted version (.3mf)."
     ]
   }
 ];
