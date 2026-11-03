@@ -58,9 +58,12 @@ try {
     assert.equal(await page.$eval('[data-next]', el => el.disabled), false);
     await page.click('[data-next]');
     await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '02 / 03');
+    await page.waitForFunction(() => { const video = document.querySelector('[data-gallery] video'); return video && !video.paused && video.currentTime > .05; });
+    assert.deepEqual(await page.$eval('[data-gallery] video', video => [video.muted, video.loop, video.playsInline, video.controls, video.autoplay]), [true, true, true, false, true]);
     await page.focus('[data-gallery]'); await page.keyboard.press('End');
     await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '03 / 03');
     assert.equal(await page.$eval('[data-next]', el => el.disabled), true);
+    assert.equal(await page.$eval('[data-gallery] video', video => video.paused && !video.autoplay), true);
     await page.keyboard.press('Home');
     await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '01 / 03');
     await page.click('[data-product-title]');

@@ -1,3 +1,4 @@
+import { configureCarouselVideo, syncCarouselVideos } from './carousel-video.js?v=autoplay-20261102';
 import { mountPrintParts } from './print-parts.js?v=parts-20261102';
 import { printProducts } from '../data/prints/catalog.js?v=prints-standing-20261102';
 import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
@@ -27,8 +28,8 @@ export function createPrintProductView(dialog) {
     photo = Math.max(0, Math.min(index, product.media.length - 1));
     [...gallery.children].forEach((slide, i) => {
       slide.inert = i !== photo;
-      if (i !== photo) slide.querySelector('video')?.pause();
     });
+    syncCarouselVideos(gallery, photo, dialog.open && !dialog.classList.contains('is-closing'));
     [...thumbnails.children].forEach((button, i) => button.setAttribute('aria-current', String(i === photo)));
     previous.disabled = photo === 0;
     next.disabled = photo === product.media.length - 1;
@@ -58,6 +59,7 @@ export function createPrintProductView(dialog) {
   new ResizeObserver(() => { if (dialog.open) goToPhoto(photo, false); }).observe(gallery);
 
   function renderGallery() {
+    syncCarouselVideos(gallery, photo, false);
     gallery.replaceChildren();
     thumbnails.replaceChildren();
     product.media.forEach((media, i) => {
@@ -69,13 +71,7 @@ export function createPrintProductView(dialog) {
       const image = document.createElement(media.type === 'video' ? 'video' : 'img');
       image.src = media.src;
       if (media.type === 'video') {
-        image.controls = true;
-        image.playsInline = true;
-        image.muted = true;
-        image.loop = true;
-        image.preload = 'none';
-        image.poster = media.poster;
-        image.setAttribute('aria-label', media.alt);
+        configureCarouselVideo(image, media);
       } else image.alt = media.alt;
       slide.append(image);
       gallery.append(slide);
@@ -196,6 +192,7 @@ export function createPrintProductView(dialog) {
     renderDescription();
     renderGallery();
     if (!dialog.open) dialog.showModal();
+    syncGallery(photo);
     dialog.scrollTop = 0;
     dialog.querySelector('[autofocus]').focus({ preventScroll: true });
     inspectAccess();
@@ -204,7 +201,7 @@ export function createPrintProductView(dialog) {
   function close() {
     if (!dialog.open) return;
     request?.abort();
-    dialog.querySelectorAll('video').forEach(video => video.pause());
+    syncCarouselVideos(gallery, photo, false);
     dialog.classList.add('is-closing');
     const finish = () => {
       disposeParts?.();
@@ -237,6 +234,7 @@ export function createPrintProductView(dialog) {
       if (!dragged) open(button.dataset.details, button);
     });
   });
+  document.addEventListener('visibilitychange', () => { if (product) syncCarouselVideos(gallery, photo, dialog.open && !dialog.classList.contains('is-closing')); });
   return { restoreFromUrl() {
     const url = new URL(location.href);
     if (url.searchParams.get('details') === '1') open(url.searchParams.get('product'), null, false);

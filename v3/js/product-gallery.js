@@ -1,3 +1,5 @@
+import { configureCarouselVideo, syncCarouselVideos } from './carousel-video.js?v=autoplay-20261102';
+
 export function createProductGallery(root, media) {
   const gallery = root.querySelector('[data-gallery]');
   const thumbnails = root.querySelector('[data-thumbnails]');
@@ -9,8 +11,8 @@ export function createProductGallery(root, media) {
     index = Math.max(0, Math.min(media.length - 1, value));
     [...gallery.children].forEach((slide, i) => {
       slide.inert = i !== index;
-      if (i !== index) slide.querySelector('video')?.pause();
     });
+    syncCarouselVideos(gallery, index);
     [...thumbnails.children].forEach((button, i) => button.setAttribute('aria-current', String(i === index)));
     previous.disabled = index === 0;
     next.disabled = index === media.length - 1;
@@ -29,8 +31,7 @@ export function createProductGallery(root, media) {
     const visual = document.createElement(item.type === 'video' ? 'video' : 'img');
     visual.src = item.src;
     if (item.type === 'video') {
-      visual.controls = true; visual.playsInline = true; visual.preload = 'none'; visual.poster = item.poster;
-      visual.setAttribute('aria-label', item.alt);
+      configureCarouselVideo(visual, item);
     } else {
       visual.alt = item.alt; visual.loading = i ? 'lazy' : 'eager';
       if (!i) visual.fetchPriority = 'high';
@@ -53,5 +54,6 @@ export function createProductGallery(root, media) {
   });
   gallery.addEventListener('scroll', () => { clearTimeout(timer); timer = setTimeout(() => { if (gallery.clientWidth) sync(Math.round(gallery.scrollLeft / gallery.clientWidth)); }, 120); }, { passive: true });
   new ResizeObserver(() => go(index, false)).observe(gallery);
+  document.addEventListener('visibilitychange', () => syncCarouselVideos(gallery, index));
   sync(0);
 }

@@ -57,6 +57,15 @@ async function audit(label) {
   result.push({ label, ...state });
   await page.screenshot({ path: `${output}/${label}.png` });
 }
+async function auditVideoPlayback() {
+  await page.waitForFunction(() => {
+    const video = document.querySelector('[data-gallery] figure:not([inert]) video');
+    return video && !video.paused && video.currentTime > .05 && Number.isFinite(video.duration);
+  });
+  assert.deepEqual(await page.$eval('[data-gallery] video', video => [video.muted, video.loop, video.playsInline, video.controls, video.autoplay]), [true, true, true, false, true]);
+  await page.$eval('[data-gallery] video', video => { video.currentTime = Math.max(0, video.duration - .15); });
+  await page.waitForFunction(() => { const video = document.querySelector('[data-gallery] video'); return !video.paused && video.currentTime < 1; });
+}
 async function auditDetails(label) {
   const layout = await page.evaluate(() => {
     const dialog = document.querySelector('dialog');
@@ -65,14 +74,16 @@ async function auditDetails(label) {
     return { width: innerWidth, dialogWidth: dialog.clientWidth, scrollWidth: dialog.scrollWidth,
       columns: getComputedStyle(assembly).gridTemplateColumns.split(' ').length,
       imageReady: [...gallery.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0),
-      videoAutoplay: [...gallery.querySelectorAll('video')].some(video => video.autoplay),
+      silentLoops: [...gallery.querySelectorAll('video')].every(video => video.loop && video.muted && video.playsInline && !video.controls),
+      inactiveVideosPaused: [...gallery.querySelectorAll('figure[inert] video')].every(video => video.paused && !video.autoplay),
     };
   });
   assert.equal(layout.dialogWidth, layout.width, `${label}: product page fills the viewport`);
   assert.equal(layout.scrollWidth, layout.dialogWidth, `${label}: detail content cannot overflow horizontally`);
   assert.equal(layout.columns, label.startsWith('mobile') ? 1 : 2, `${label}: matches Gumroad's responsive assembly`);
   assert.ok(layout.imageReady);
-  assert.equal(layout.videoAutoplay, false);
+  assert.equal(layout.silentLoops, true);
+  assert.equal(layout.inactiveVideosPaused, true);
   await page.screenshot({ path: `${output}/${label}.png` });
 }
 try {
@@ -105,9 +116,12 @@ try {
     assert.equal(await page.$eval('[data-gallery-position]', el => el.textContent), '1 / 5');
     await settled();
     await auditDetails(`${label}-planter-details`);
+    await page.click('[data-gallery-thumbnails] button:nth-child(3)');
+    await auditVideoPlayback();
     await page.click('[data-gallery-thumbnails] button:last-child');
     await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '5 / 5');
     assert.equal(await page.$eval('[data-gallery] figure:not([inert]) img', el => el.alt), 'Wall-mount hanger');
+    assert.equal(await page.$eval('[data-gallery] video', video => video.paused && !video.autoplay), true);
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.querySelector('dialog').open);
     assert.equal(await page.$eval('.print-hotspot[data-details="spike-planter-01"]', el => el === document.activeElement), true);
@@ -128,8 +142,11 @@ try {
     await page.focus('[data-gallery]');
     await page.keyboard.press('End');
     await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '3 / 3');
+    await page.click('[data-gallery-thumbnails] button:nth-child(2)');
+    await auditVideoPlayback();
     await page.goBack();
     await page.waitForFunction(() => !document.querySelector('dialog').open);
+    assert.equal(await page.$eval('[data-gallery] video', video => video.paused && !video.autoplay), true, 'Closing product details stops video');
     await page.goForward();
     await page.waitForFunction(() => document.querySelector('dialog').open);
     await page.click('[aria-label="Close product details"]');
