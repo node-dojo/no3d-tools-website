@@ -212,6 +212,21 @@ export function mountPrintParts(host, product) {
     }, { signal: scope.signal });
   });
   for (const text of product.previewNotes || []) section.append(element('p', 'print-parts-note', text));
+  if (product.dimensions?.length) {
+    const table = element('table', 'print-dimensions');
+    table.append(element('caption', '', 'Part dimensions'));
+    const head = table.createTHead().insertRow();
+    for (const label of ['Part', 'X × Y × Z (mm)']) {
+      const cell = element('th', '', label); cell.scope = 'col'; head.append(cell);
+    }
+    const body = table.createTBody();
+    for (const part of product.dimensions) {
+      const row = body.insertRow();
+      const name = element('th', '', part.name); name.scope = 'row';
+      row.append(name, element('td', '', part.sizeMm.map(n => n.toFixed(1)).join(' × ')));
+    }
+    section.append(table);
+  }
   return () => {
     scope.abort(); observer.disconnect(); closeExpanded();
     for (const controller of loads.values()) controller.abort();

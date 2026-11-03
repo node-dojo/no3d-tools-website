@@ -26,8 +26,7 @@ test('every included part has a valid, reduced display mesh with recorded source
   }
   assert.equal(printProducts[0].media.length, 8);
   assert.ok(!printProducts[0].media.some(item => item.src.includes('mace-detail-3')));
-  assert.match(printProducts[1].previewNotes.join(' '), /3mf/);
-  assert.doesNotMatch(printProducts[1].previewNotes.join(' '), /Also included:/);
+  assert.ok(printProducts[1].included.some(text => text.includes('.3mf')));
   assert.deepEqual(printProducts[1].previewParts.slice(3).map(part => part.name), ['Free-standing main body', 'Free-standing screw-in drip tray']);
 });
 

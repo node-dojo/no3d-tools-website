@@ -26,7 +26,7 @@ test('print pages reuse the authored description, file list, and expanded photog
   assert.equal(mace.media[0].src, '/v3/assets/prints/mace-chain-background-v2.png');
   assert.equal(mace.media[2].type, 'video');
   assert.ok(mace.paragraphs[0].includes('An innovation in anti-theft decoration!'));
-  assert.ok(printLandingProduct('spike-planter-01').notes.some(text => text.includes('142 mm')));
+  assert.ok(printLandingProduct('spike-planter-01').notes.some(text => text.includes('millimeters')));
   assert.equal(printLandingProduct('not-a-print'), null);
 });
 

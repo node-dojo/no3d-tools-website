@@ -99,7 +99,7 @@ export const printProducts = [
       "The Spike Planter has Spike feet that stand proudly on your man-made surface while softening towards the top near your beautiful plant. It also features a drip tray that screws in nicely and locks tight.",
       "Includes wall-mounted and free-standing versions.",
       "Included in the Download:",
-      "Both versions are the nominal 142 mm size (approximately 142.7 mm across). Import STL files in millimeters at 100% scale. Digital print files only."
+      "Import STL files in millimeters at 100% scale. Digital print files only."
     ],
     "included": [
       "Wall-mounted main body — 142 mm (.stl)",
@@ -174,8 +174,47 @@ export const printProducts = [
         "src": "/v3/assets/prints/previews/planter-standing-tray-eb5ba1e981.bin"
       }
     ],
-    "previewNotes": [
-      "Bambu Studio project for the wall-mounted version (.3mf)."
+    "dimensions": [
+      {
+        "name": "Wall-mounted body",
+        "sizeMm": [
+          142.6,
+          142.7,
+          130.4
+        ]
+      },
+      {
+        "name": "Wall-mounted tray",
+        "sizeMm": [
+          125.3,
+          125.2,
+          52.3
+        ]
+      },
+      {
+        "name": "Wall-mount hanger",
+        "sizeMm": [
+          22.4,
+          51.2,
+          4.8
+        ]
+      },
+      {
+        "name": "Free-standing body",
+        "sizeMm": [
+          142.7,
+          142.7,
+          123.9
+        ]
+      },
+      {
+        "name": "Free-standing tray",
+        "sizeMm": [
+          137.1,
+          137.1,
+          49.7
+        ]
+      }
     ]
   }
 ];
