@@ -18,7 +18,7 @@ test('campaign URLs resolve one exact product and preserve the native auth retur
 
 test('print pages reuse the authored description, file list, and expanded photography', () => {
   const mace = printLandingProduct('mace-and-chain');
-  assert.equal(mace.title, 'Mace and Chain Lighter Keeper');
+  assert.equal(mace.title, 'The Lighter Keeper 01');
   assert.deepEqual(mace.included, ['111 mm Mace (.stl)', 'Big Chain (.stl)', 'Lighter Holding Haft (.stl)']);
   assert.equal(mace.format, 'STL');
   assert.equal(printLandingProduct('spike-planter-01').format, 'STL + Bambu Studio 3MF');
@@ -34,7 +34,7 @@ test('campaign share previews identify the print without fetching a Blender prod
   const response = await productPreviewResponse(new Request('https://staging.no3dtools.com/p/mace-and-chain?email=private@example.test'), { fetcher: () => { throw Error('Unexpected catalog fetch'); } });
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /property="og:title" content="Mace and Chain Lighter Keeper"/);
+  assert.match(html, /property="og:title" content="The Lighter Keeper 01"/);
   assert.match(html, /https:\/\/no3dtools.com\/p\/mace-and-chain/);
   assert.match(html, /mace-chain-background-v2.png/);
   assert.doesNotMatch(html, /private@example|staging.no3dtools|email=/);

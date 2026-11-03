@@ -50,7 +50,7 @@ try {
   for (const [name, width, height] of [['desktop', 1440, 1000], ['mobile', 390, 844], ['narrow', 320, 740]]) {
     await page.setViewport({ width, height }); await open();
     assert.equal(await page.$eval('[data-price]', el => el.textContent), '$11.11');
-    assert.equal(await page.$eval('[data-product-title]', el => el.textContent), 'Mace and Chain Lighter Keeper');
+    assert.equal(await page.$eval('[data-product-title]', el => el.textContent), 'The Lighter Keeper 01');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     assert.ok(await page.$eval('.landing-print-backdrop', el => el.getBoundingClientRect().left === 0 && el.getBoundingClientRect().width === innerWidth));
     assert.deepEqual(await page.$eval('[data-product-title]', el => { const style = getComputedStyle(el); return [style.opacity, style.textShadow, style.mixBlendMode, style.filter]; }), ['1', 'none', 'normal', 'none']);

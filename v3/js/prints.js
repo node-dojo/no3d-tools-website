@@ -113,7 +113,7 @@ search.addEventListener('input', () => {
   const term = search.value.trim().toLowerCase();
   visible = slides.filter(slide => {
     const product = printProducts.find(item => item.slug === slide.dataset.product);
-    slide.hidden = !`${product.name} ${product.paragraphs.join(' ')} ${product.included.join(' ')}`.toLowerCase().includes(term);
+    slide.hidden = !`${product.name} ${(product.searchAliases || []).join(' ')} ${product.paragraphs.join(' ')} ${product.included.join(' ')}`.toLowerCase().includes(term);
     return !slide.hidden;
   });
   document.querySelector('[data-prints-empty]').hidden = Boolean(visible.length);

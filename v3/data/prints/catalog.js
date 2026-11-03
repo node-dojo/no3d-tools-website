@@ -3,13 +3,14 @@ export const printProducts = [
     "slug": "mace-and-chain",
     "landingHero": {
       "src": "/v3/assets/prints/mace-chain-background-v2.png",
-      "alt": "Mace and Chain Lighter Keeper on dark wood",
+      "alt": "The Lighter Keeper 01 on dark wood",
       "type": "image"
     },
-    "name": "3D printable Mace and Chain Lighter Keeper",
+    "name": "The Lighter Keeper 01",
+    "searchAliases": ["Mace and Chain", "Mace and Chain Lighter Keeper"],
     "format": "STL",
     "paragraphs": [
-      "Prevent losing your lighter by subtly reminding your friends and loved ones of your capacity for violence with this lovely Mace and Chain Lighter Keeper. An innovation in anti-theft decoration!",
+      "Prevent losing your lighter by subtly reminding your friends and loved ones of your capacity for violence with The Lighter Keeper 01. An innovation in anti-theft decoration!",
       "Or! Just use the handle (fits a standard bic lighter) to keep your lighter on any keychain or lanyard! You decide!\n\nIncluded in the Download:"
     ],
     "included": [
@@ -23,23 +24,23 @@ export const printProducts = [
     "media": [
       {
         "src": "/v3/assets/prints/mace-gumroad-cover.png",
-        "alt": "Mace and Chain Lighter Keeper",
+        "alt": "The Lighter Keeper 01",
         "type": "image"
       },
       {
         "src": "/v3/assets/prints/mace-detail-1.mp4",
-        "alt": "Mace and Chain demonstration",
+        "alt": "The Lighter Keeper 01 demonstration",
         "poster": "/v3/assets/prints/mace-detail-1-poster.jpg",
         "type": "video"
       },
       {
         "src": "/v3/assets/prints/mace-detail-2.jpg",
-        "alt": "Mace and Chain product detail",
+        "alt": "The Lighter Keeper 01 product detail",
         "type": "image"
       },
       {
         "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
-        "alt": "Mace and Chain lighter keeper assembly",
+        "alt": "The Lighter Keeper 01 assembly",
         "type": "video",
         "poster": "/v3/assets/prints/mace-assembly-poster-fda7704d17.webp"
       },
@@ -58,7 +59,7 @@ export const printProducts = [
       },
       {
         "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
-        "alt": "Using the Mace and Chain lighter keeper to light incense",
+        "alt": "Using The Lighter Keeper 01 to light incense",
         "type": "video",
         "poster": "/v3/assets/prints/mace-lighting-incense-poster-701ded14de.webp"
       },
