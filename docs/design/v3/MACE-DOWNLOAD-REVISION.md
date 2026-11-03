@@ -28,3 +28,26 @@ its original source. The ZIP stays outside the public website and Git.
 
 Both the Prints detail page and campaign page use the revised included-file list
 and per-product format. Access rules, prices, and checkout are unchanged.
+
+## Viewer and gallery follow-up
+
+Joe requested on 2026-11-02 that the outdated yellow print-bed montage be
+removed once the STL viewer is available. The shared catalog currently lists
+it as `v3/assets/prints/mace-detail-3.png`, with the alt text
+"Mace and Chain printable parts". Keep it in the gallery until the replacement
+viewer is working; then remove its catalog media entry so both the Prints
+detail page and campaign page stop displaying it, and update gallery checks.
+Preserve the source image as historical media.
+
+The replacement belongs in its own borderless "Included in Download:" section
+with the three selected parts identified by name. The website uses a fixed,
+mobile-first grid rather than Wellbord's infinite-canvas interactions.
+
+Gumroad embedding is an idea to evaluate, not an approved publication change.
+Its [custom landing-page documentation](https://gumroad.com/help/article/353-custom-product-landing-pages)
+currently permits inline JavaScript and selected script CDNs but blocks
+JavaScript network requests and external media/players. Reusing a remotely
+hosted viewer is therefore not established as supported. A self-contained
+viewer with embedded preview geometry would require a separate proof of
+concept within the documented 500,000-character page limit. Linking to the
+NO3D viewer is the straightforward fallback. No Gumroad pages were changed.
