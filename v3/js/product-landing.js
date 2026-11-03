@@ -1,9 +1,9 @@
-import { mountPrintParts } from './print-parts.js?v=dimensions-20261103';
+import { mountPrintParts } from './print-parts.js?v=assembled-dimensions-20261103';
 import { beginProductCheckout, getPrintOffer, getProduct } from './api.js?v=prints-20261028b';
 import { renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
-import { landingHandle, printLandingProduct, toolLandingProduct } from './product-landing-model.js?v=dimensions-20261103';
+import { landingHandle, printLandingProduct, toolLandingProduct } from './product-landing-model.js?v=assembled-dimensions-20261103';
 import { landingAccess } from './product-landing-access.js?v=landing-20261030a';
-import { createProductGallery } from './product-gallery.js?v=dimensions-20261103';
+import { createProductGallery } from './product-gallery.js?v=assembled-dimensions-20261103';
 import { initializeAnalytics, track } from './analytics.js?v=landing-20261030a';
 
 const $ = selector => document.querySelector(selector);

@@ -175,46 +175,8 @@ export const printProducts = [
       }
     ],
     "dimensions": [
-      {
-        "name": "Wall-mounted body",
-        "sizeMm": [
-          142.6,
-          142.7,
-          130.4
-        ]
-      },
-      {
-        "name": "Wall-mounted tray",
-        "sizeMm": [
-          125.3,
-          125.2,
-          52.3
-        ]
-      },
-      {
-        "name": "Wall-mount hanger",
-        "sizeMm": [
-          22.4,
-          51.2,
-          4.8
-        ]
-      },
-      {
-        "name": "Free-standing body",
-        "sizeMm": [
-          142.7,
-          142.7,
-          123.9
-        ]
-      },
-      {
-        "name": "Free-standing tray",
-        "sizeMm": [
-          137.1,
-          137.1,
-          49.7
-        ]
-      }
+      { "name": "Wall-mounted", "sizeMm": [151, 145, 171] },
+      { "name": "Free-standing", "sizeMm": [143, 143, 163] }
     ]
   }
 ];
