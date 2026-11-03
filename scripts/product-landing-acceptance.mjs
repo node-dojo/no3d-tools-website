@@ -107,7 +107,7 @@ try {
   assert.equal(checkouts.length, 2);
   report.checks.push('Zero-price print: same email/checkout handoff');
   mode = 'guest'; await open('spike-planter-01');
-  assert.match(await page.$eval('[data-file-notes]', el => el.textContent), /142 mm/);
+  assert.match(await page.$eval('.print-dimensions', el => el.textContent), /142\.6 × 142\.7 × 130\.4/);
   await open('not-a-real-product');
   assert.equal(await page.$eval('[data-product-title]', el => el.textContent), 'Product unavailable');
   assert.equal(await page.$eval('.landing-acquire', el => el.hidden), true);
