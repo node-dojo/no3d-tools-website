@@ -1,0 +1,172 @@
+{
+  "source": "f68cdec",
+  "deployment": "dpl_BSEUaDDVHgdN5gupGzoJsmLdn1yS",
+  "browser": {
+    "target": "https://no3dtools.com",
+    "result": [
+      {
+        "route": "catalog",
+        "width": 1440,
+        "rows": [
+          [
+            "Wall-mounted",
+            "151",
+            "145",
+            "171"
+          ],
+          [
+            "Free-standing",
+            "143",
+            "143",
+            "163"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "campaign",
+        "width": 1440,
+        "rows": [
+          [
+            "Wall-mounted",
+            "151",
+            "145",
+            "171"
+          ],
+          [
+            "Free-standing",
+            "143",
+            "143",
+            "163"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "catalog",
+        "width": 390,
+        "rows": [
+          [
+            "Wall-mounted",
+            "151",
+            "145",
+            "171"
+          ],
+          [
+            "Free-standing",
+            "143",
+            "143",
+            "163"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "campaign",
+        "width": 390,
+        "rows": [
+          [
+            "Wall-mounted",
+            "151",
+            "145",
+            "171"
+          ],
+          [
+            "Free-standing",
+            "143",
+            "143",
+            "163"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "catalog",
+        "width": 320,
+        "rows": [
+          [
+            "Wall-mounted",
+            "151",
+            "145",
+            "171"
+          ],
+          [
+            "Free-standing",
+            "143",
+            "143",
+            "163"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "campaign",
+        "width": 320,
+        "rows": [
+          [
+            "Wall-mounted",
+            "151",
+            "145",
+            "171"
+          ],
+          [
+            "Free-standing",
+            "143",
+            "143",
+            "163"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      }
+    ],
+    "errors": []
+  },
+  "sourceHashes": [
+    {
+      "path": "v3/data/prints/catalog.js",
+      "sha256": "da0e11bf7a68de0ba8c2cb48f87e5b17dc86306533cdd4a8fa9885690a8ebcb3",
+      "matches": true
+    },
+    {
+      "path": "v3/js/print-parts.js",
+      "sha256": "7db601bf1c8190addaa909828ee32ed08306006a402198c5aec70243bc42b73f",
+      "matches": true
+    },
+    {
+      "path": "v3/js/print-product.js",
+      "sha256": "6e70c95ca1bddf7e046c633f8a0aa9274d42c61b384dbda7ae59fee176f79658",
+      "matches": true
+    },
+    {
+      "path": "v3/js/prints.js",
+      "sha256": "5f2ec645955f6339715d5f07a1e7e7323e9aa96c602943634e9e1f6edefcc517",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-landing.js",
+      "sha256": "c00b8efb9691eb17b91803018c86441816eba0af08ca778d5acd4fe3ce926afd",
+      "matches": true
+    },
+    {
+      "path": "v3/prints/index.html",
+      "sha256": "1937e807bbfe5c99740b33f00172a37ae2a991e9e22ad98ffaa528df58bb780c",
+      "matches": true
+    },
+    {
+      "path": "v3/product/landing/index.html",
+      "sha256": "b441bce067633e8e7b0a4c865a3cb0ecc253c72652c0c059d5394123bc6e93ed",
+      "matches": true
+    },
+    {
+      "path": "v3/styles/print-parts.css",
+      "sha256": "5387bb5973e2afabbdff2bd3daffceefb1f9b506aee17b905649b53e255da890",
+      "matches": true
+    }
+  ]
+}

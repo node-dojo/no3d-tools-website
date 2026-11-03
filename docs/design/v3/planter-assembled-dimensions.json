@@ -1,0 +1,47 @@
+{
+  "units": "mm",
+  "displayPrecision": "nearest whole millimeter; approximate assembled envelope",
+  "wallMounted": {
+    "source": "Spike Vase 01 STLS:3DFs/Spike Vase 01.3mf",
+    "sourceSha256": "37edbbc693373d4ea4ff94cfc2acef764489628dc12433ecd0d439f8f7c8bee0",
+    "method": "Use native assembly offsets for body/tray, applying the print scale to their combined coordinates. Slicer assembly transforms retain unscaled translations and are not the fitted pose. Width and depth follow the wall-facing orientation, not the rotated print-bed orientation.",
+    "scale": 0.8649769086218438,
+    "bodyNativeOffset": [
+      0,
+      -0.0413665771484375,
+      23.71860122680664
+    ],
+    "trayNativeOffset": [
+      -0.0250091552734375,
+      -3.3703079223632812,
+      -68.8314094543457
+    ],
+    "assembledBodyAndTraySizeMm": [
+      150.50495260468418,
+      144.47329078161164,
+      171.42114873220686
+    ],
+    "displaySizeMm": [
+      151,
+      145,
+      171
+    ]
+  },
+  "freeStanding": {
+    "source": "Spike Vase V03 / Spike Vase - Standing Version package-export snapshot",
+    "geometrySha256": "24f196aab21ba39d2bfcc02b62ebd5ce6f96f722a9a8f717c2c1ea8cda876396",
+    "method": "Union of referenced body and cleaned tray vertices in their source assembly positions, with the package uniform scale. Excludes the isolated unused vertex.",
+    "scale": 0.8216534481940708,
+    "assembledBodyAndTraySizeMm": [
+      142.71439361572266,
+      142.69128085126118,
+      162.7804800659516
+    ],
+    "displaySizeMm": [
+      143,
+      143,
+      163
+    ]
+  },
+  "scope": "Assembled planter body and fitted screw-in tray; no plant. Mesh-derived approximate dimensions, not physical print measurements."
+}
