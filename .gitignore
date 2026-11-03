@@ -44,3 +44,6 @@ email/.tmp-*
 
 # Graphify cache (if generated inside this repo)
 graphify-out/
+
+# Pinned renderer is a shipped source dependency, not generated build output.
+!v3/vendor/three/three-0.160.1.module.min.js
