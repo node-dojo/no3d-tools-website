@@ -1,8 +1,9 @@
 # Mace download revision — 2026-11-02
 
-Local candidate. The ZIP has not been uploaded and this revision has not been
-deployed. Upload and verify the new immutable object before deploying its
-`api/prints/lib/delivery.json` pointer. Retain the previous object.
+The private immutable ZIP was uploaded on 2026-11-02 and downloaded back with
+matching byte count and SHA-256. Its delivery pointer is ready for release.
+Production publication is recorded separately in the release receipt. The
+previous object is retained for rollback.
 
 Joe selected exactly these existing STL files:
 
@@ -11,8 +12,9 @@ Joe selected exactly these existing STL files:
 - `Lighter Holding Haft handle_0919_58_1409_001.stl`
 
 The alternate sizes, optional clip, and Bambu Studio project are excluded from
-this package. The original source directory is unchanged. Spike Planter keeps
-its existing STL and 3MF delivery.
+this package. The original source directory is unchanged. Spike Planter has a
+separate wall-mounted and free-standing revision documented in
+`SPIKE-PLANTER-DOWNLOAD-REVISION.md`.
 
 Prepared package:
 

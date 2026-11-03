@@ -1,10 +1,9 @@
 # Spike Planter download revision — 2026-11-02
 
-Local candidate. Not uploaded or deployed. The active delivery pointer in
-`api/prints/lib/delivery.json` has deliberately not changed: it still references
-the existing package. Upload and verify this private immutable object before
-updating that pointer and releasing the revised listing. Do not deploy the
-new included-file claims on their own.
+The private immutable package was uploaded on 2026-11-02 and downloaded back
+with matching byte count and SHA-256. The delivery pointer now references this
+verified package. Production publication is recorded separately in the release
+receipt; the previous object is retained for rollback.
 
 ## Package
 
