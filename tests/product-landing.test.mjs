@@ -22,7 +22,7 @@ test('print pages reuse the authored description, file list, and expanded photog
   assert.deepEqual(mace.included, ['111 mm Mace (.stl)', 'Big Chain (.stl)', 'Lighter Holding Haft (.stl)']);
   assert.equal(mace.format, 'STL');
   assert.equal(printLandingProduct('spike-planter-01').format, 'STL + Bambu Studio 3MF');
-  assert.equal(mace.media.length, 4);
+  assert.equal(mace.media.length, 9);
   assert.equal(mace.media[0].src, '/v3/assets/prints/mace-chain-background-v2.png');
   assert.equal(mace.media[2].type, 'video');
   assert.ok(mace.paragraphs[0].includes('An innovation in anti-theft decoration!'));

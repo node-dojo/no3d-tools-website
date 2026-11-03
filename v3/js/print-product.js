@@ -1,6 +1,7 @@
 import { configureCarouselVideo, syncCarouselVideos } from './carousel-video.js?v=autoplay-20261102';
+import { configureCarouselImage, syncCarouselImages } from './carousel-image.js?v=gifs-20261103';
 import { mountPrintParts } from './print-parts.js?v=parts-20261102';
-import { printProducts } from '../data/prints/catalog.js?v=prints-standing-20261102';
+import { printProducts } from '../data/prints/catalog.js?v=media-gifs-20261103';
 import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
 import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
@@ -30,6 +31,7 @@ export function createPrintProductView(dialog) {
       slide.inert = i !== photo;
     });
     syncCarouselVideos(gallery, photo, dialog.open && !dialog.classList.contains('is-closing'));
+    syncCarouselImages(gallery, photo, dialog.open && !dialog.classList.contains('is-closing'));
     [...thumbnails.children].forEach((button, i) => button.setAttribute('aria-current', String(i === photo)));
     previous.disabled = photo === 0;
     next.disabled = photo === product.media.length - 1;
@@ -69,15 +71,15 @@ export function createPrintProductView(dialog) {
       slide.setAttribute('aria-roledescription', 'slide');
       slide.setAttribute('aria-label', `${i + 1} of ${product.media.length}: ${media.alt}`);
       const image = document.createElement(media.type === 'video' ? 'video' : 'img');
-      image.src = media.src;
       if (media.type === 'video') {
+        image.src = media.src;
         configureCarouselVideo(image, media);
-      } else image.alt = media.alt;
+      } else configureCarouselImage(image, media);
       slide.append(image);
       gallery.append(slide);
       const button = document.createElement('button');
       button.type = 'button';
-      button.setAttribute('aria-label', `Show ${media.type === 'video' ? 'video' : 'photo'} ${i + 1}: ${media.alt}`);
+      button.setAttribute('aria-label', `Show ${media.animated ? 'animation' : media.type === 'video' ? 'video' : 'photo'} ${i + 1}: ${media.alt}`);
       const thumbnail = document.createElement('img');
       thumbnail.src = media.poster || media.src;
       thumbnail.alt = '';
@@ -202,6 +204,7 @@ export function createPrintProductView(dialog) {
     if (!dialog.open) return;
     request?.abort();
     syncCarouselVideos(gallery, photo, false);
+    syncCarouselImages(gallery, photo, false);
     dialog.classList.add('is-closing');
     const finish = () => {
       disposeParts?.();
@@ -234,7 +237,7 @@ export function createPrintProductView(dialog) {
       if (!dragged) open(button.dataset.details, button);
     });
   });
-  document.addEventListener('visibilitychange', () => { if (product) syncCarouselVideos(gallery, photo, dialog.open && !dialog.classList.contains('is-closing')); });
+  document.addEventListener('visibilitychange', () => { if (product) syncGallery(photo); });
   return { restoreFromUrl() {
     const url = new URL(location.href);
     if (url.searchParams.get('details') === '1') open(url.searchParams.get('product'), null, false);

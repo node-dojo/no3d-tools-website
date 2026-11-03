@@ -24,7 +24,7 @@ test('every included part has a valid, reduced display mesh with recorded source
       assert.ok(meta.bytes < 750000);
     }
   }
-  assert.equal(printProducts[0].media.length, 3);
+  assert.equal(printProducts[0].media.length, 8);
   assert.ok(!printProducts[0].media.some(item => item.src.includes('mace-detail-3')));
   assert.match(printProducts[1].previewNotes.join(' '), /3mf/);
   assert.doesNotMatch(printProducts[1].previewNotes.join(' '), /Also included:/);

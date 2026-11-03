@@ -36,6 +36,36 @@ export const printProducts = [
         "src": "/v3/assets/prints/mace-detail-2.jpg",
         "alt": "Mace and Chain product detail",
         "type": "image"
+      },
+      {
+        "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+        "alt": "Mace and Chain lighter keeper assembly",
+        "type": "video",
+        "poster": "/v3/assets/prints/mace-assembly-poster-fda7704d17.webp"
+      },
+      {
+        "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+        "alt": "Lighter keeper keychain assembly",
+        "type": "video",
+        "poster": "/v3/assets/prints/mace-keychain-assembly-poster-2c99acf365.webp"
+      },
+      {
+        "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+        "alt": "Blue lighter keeper attached to a keychain",
+        "type": "image",
+        "poster": "/v3/assets/prints/mace-keychain-in-use-poster-c5d067a342.webp",
+        "animated": true
+      },
+      {
+        "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+        "alt": "Using the Mace and Chain lighter keeper to light incense",
+        "type": "video",
+        "poster": "/v3/assets/prints/mace-lighting-incense-poster-701ded14de.webp"
+      },
+      {
+        "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+        "alt": "Blue lighter keeper haft on a keychain",
+        "type": "image"
       }
     ],
     "previewParts": [
@@ -108,6 +138,13 @@ export const printProducts = [
         "src": "/v3/assets/prints/planter-wall-mount.png",
         "alt": "Wall-mount hanger",
         "type": "image"
+      },
+      {
+        "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+        "alt": "Close-up of the white Spike Planter surface",
+        "type": "image",
+        "poster": "/v3/assets/prints/planter-surface-closeup-poster-f0d3bc6c5b.webp",
+        "animated": true
       }
     ],
     "previewParts": [
