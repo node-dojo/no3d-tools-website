@@ -48,7 +48,15 @@ function renderPrintLayout() {
   more.className = 'landing-print-more micro';
   more.href = '#product-details';
   more.textContent = 'Photos & details ↓';
-  acquisition.append(more);
+  const catalog = document.createElement('a');
+  catalog.className = 'landing-print-more micro';
+  catalog.href = 'https://no3dtools.com/';
+  catalog.textContent = 'Full catalog ↗';
+  const links = document.createElement('nav');
+  links.className = 'landing-print-links';
+  links.setAttribute('aria-label', 'Explore products');
+  links.append(more, catalog);
+  acquisition.append(links);
 
   const details = document.createElement('section');
   details.id = 'product-details';

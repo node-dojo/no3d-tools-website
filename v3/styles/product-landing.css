@@ -32,7 +32,11 @@
 .landing-print .landing-action:hover:not(:disabled){color:var(--ink);background:var(--paper)}
 .landing-print-hero .landing-delivery-note{font-size:9px;line-height:1.5;margin-top:11px}
 .landing-print-hero .landing-member-link{font-size:9px;margin-top:9px;min-height:25px}
-.landing-print-more{display:block;margin-top:16px;width:fit-content;text-decoration:none;min-height:28px}
+.landing-print-links{display:flex;align-items:center;justify-content:space-between;gap:8px 18px;flex-wrap:wrap;margin-top:16px}
+.landing-print-more{display:flex;align-items:center;width:fit-content;text-decoration:none;min-height:28px}
+.landing-print-more:hover{text-decoration:underline;text-underline-offset:4px}
+.landing-footer-links{display:flex;align-items:center;gap:14px 24px;flex-wrap:wrap;margin-left:auto}
+.landing-footer .landing-footer-links a{margin-left:0}
 .landing-print-details{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);gap:0 48px;padding:58px 34px;align-items:start;scroll-margin-top:24px}
 .landing-print-details .landing-media{grid-row:1/3;top:24px}
 .landing-print-details .landing-gallery{aspect-ratio:1.4}
@@ -57,7 +61,8 @@
   .landing-print-hero .landing-price{font-size:30px}
   .landing-print-hero .landing-delivery-note{font-size:8px}
   .landing-print-hero .landing-member-link{font-size:8px;min-height:22px}
-  .landing-print-more{margin-top:9px;font-size:9px;min-height:24px}
+  .landing-print-links{margin-top:9px}
+  .landing-print-more{font-size:9px;min-height:24px}
   .landing-print-details{display:flex;flex-direction:column;gap:30px;padding:30px 20px 40px}
   .landing-print-details .landing-media{width:calc(100% + 40px);margin:0 -20px;order:initial}
   .landing-print-details .landing-gallery{aspect-ratio:1}
@@ -66,5 +71,6 @@
   .landing-print-details .landing-files{padding-top:0}
   .landing-print .landing-footer{margin:0 20px;padding:24px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px}
   .landing-print .landing-footer a{margin-left:0}
+  .landing-footer-links{margin-left:0;gap:12px 18px}
   .landing-credit{grid-column:1/-1;font-size:10px}
 }
