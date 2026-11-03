@@ -1,4 +1,5 @@
-.prints-page{--print-gutter:24px;--print-rail:220px;background:var(--ink);height:100svh;overflow:hidden}
+@font-face{font-family:SilkaV3;src:url('/fonts/silka-mono-medium.woff2') format('woff2');font-weight:500;font-display:swap}
+.prints-page{--print-gutter:24px;--print-rail:220px;--print-subheading-line-height:13.05px;background:var(--ink);height:100svh;overflow:hidden}
 .prints-stage{position:fixed;inset:0}
 .prints-carousel{height:100%;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;outline-offset:-4px;touch-action:pan-x pan-y}
 .prints-carousel::-webkit-scrollbar{display:none}
@@ -6,15 +7,16 @@
 .print-hotspot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:56%;height:64%;padding:0;border:0;background:transparent;color:var(--paper);cursor:pointer;touch-action:pan-x pan-y}
 .print-image{position:absolute;inset:0;display:block;z-index:-1}
 .print-image img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
-.prints-chrome{position:fixed;inset:0;pointer-events:none;padding:18px var(--print-gutter);color:var(--paper)}
+.prints-chrome{position:fixed;inset:0;display:flex;flex-direction:column;pointer-events:none;padding:18px var(--print-gutter) 84px;color:var(--paper)}
 .prints-chrome a,.prints-chrome button,.prints-chrome input,.prints-chrome nav,.prints-index{pointer-events:auto}
-.prints-chrome .v3-mast{position:relative;border-color:rgba(241,240,235,.5);min-height:62px}
+.prints-chrome .v3-mast{position:relative;flex-shrink:0;border-color:rgba(241,240,235,.5);min-height:62px}
 .prints-chrome .v3-wordmark img,.prints-stone{filter:invert(1)}
 .prints-chrome .v3-search,.prints-chrome .v3-status{font-size:10px}
 .prints-chrome .storefront-brand{color:var(--paper)}
 .prints-chrome .storefront-destinations{pointer-events:auto}
-.prints-index{position:absolute;left:var(--print-gutter);top:89.6px;bottom:84px;width:var(--print-rail);overflow-y:auto;scrollbar-width:thin;scrollbar-color:currentColor transparent}
-.prints-subheading{font:700 11.2px/1.45 var(--body);margin:0 0 52px;max-width:220px}
+.prints-index{position:relative;flex:1;min-height:0;margin-top:var(--print-subheading-line-height);width:var(--print-rail);overflow-y:auto;scrollbar-width:thin;scrollbar-color:currentColor transparent}
+.prints-subheading{font:500 9px/var(--print-subheading-line-height) var(--ui);letter-spacing:.04em;text-transform:uppercase;margin:0 0 52px;max-width:220px}
+.prints-subheading a{text-decoration:none}.prints-subheading a:hover{text-decoration:underline}
 .prints-index-heading{display:flex;justify-content:space-between;font:600 8px var(--ui);text-transform:uppercase;margin-bottom:18px;padding-bottom:12px}
 .prints-products{display:grid;gap:14px;margin:0;padding:0;list-style:none}
 .print-item{min-width:0}
@@ -45,13 +47,12 @@
 .prints-empty{position:absolute;inset:50% 24px auto;text-align:center;color:var(--paper);font:700 24px var(--body)}
 .visually-hidden,.prints-skip{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .prints-skip:focus{z-index:100;width:auto;height:auto;clip:auto;inset:8px auto auto 8px;margin:0;padding:16px;background:var(--paper);color:var(--ink)}
-@media(max-width:1000px){.prints-subheading{font-size:10.4px}}
 @media(max-width:650px){
   .prints-page{--print-gutter:12px}
-  .prints-chrome{padding-top:10px}.prints-chrome .v3-mast{display:grid;grid-template-columns:1fr auto auto;gap:8px;min-height:52px}
+  .prints-chrome{padding-top:10px;padding-bottom:76px}.prints-chrome .v3-mast{display:grid;grid-template-columns:1fr auto auto;gap:8px;min-height:52px}
   .prints-chrome .v3-search{grid-column:2;grid-row:1;padding:10px 0;font-size:8px}.prints-chrome .v3-status{grid-column:3;grid-row:1;font-size:8px}
-  .prints-index{top:68.6px;bottom:76px;width:calc(100% - 24px);display:flex;flex-direction:column;pointer-events:none}
-  .prints-subheading{max-width:245px;margin:0 0 24px;font-size:10.4px;line-height:1.4;pointer-events:auto}
+  .prints-index{width:100%;display:flex;flex-direction:column;pointer-events:none}
+  .prints-subheading{max-width:280px;margin:0 0 24px;pointer-events:auto}
   .prints-index-heading{display:none}
   .prints-products{margin-top:auto;gap:10px;pointer-events:auto}
   .print-item-details{padding-bottom:10px;margin-top:0}

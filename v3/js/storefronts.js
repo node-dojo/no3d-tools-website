@@ -7,7 +7,7 @@ export const storefronts = [
   {
     id: 'prints', name: 'NO3D Prints', suffix: 'Prints', href: '/v3/prints/',
     wordmark: '/assets/light/no3d-prints.png',
-    subheading: '3d printable downloads and build plans for next level projects',
+    subheading: '3D printable creations by The Well Tarot',
   },
 ];
 
