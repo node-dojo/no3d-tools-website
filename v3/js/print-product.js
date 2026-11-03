@@ -1,4 +1,4 @@
-import { printProducts } from '../data/prints/catalog.js?v=prints-20261028b';
+import { printProducts } from '../data/prints/catalog.js?v=prints-files-20261102';
 import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
 import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
@@ -184,6 +184,7 @@ export function createPrintProductView(dialog) {
     dialog.querySelector('#print-details-title').textContent = product.name;
     dialog.querySelector('[data-document-reference]').textContent = product.reference;
     dialog.querySelector('[data-document-index]').textContent = product.documentIndex;
+    dialog.querySelector('[data-details-format]').textContent = product.format;
     renderPrintPrice(dialog.querySelector('[data-details-price]'), '');
     dialog.querySelector('[data-details-price-label]').textContent = '3D print files';
     const url = new URL(location.href);

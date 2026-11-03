@@ -3,15 +3,15 @@ export const printProducts = [
     "slug": "mace-and-chain",
     "landingHero": { "src": "/v3/assets/prints/mace-chain-background-v2.png", "alt": "Mace and Chain Lighter Keeper on dark wood", "type": "image" },
     "name": "3D printable Mace and Chain Lighter Keeper",
+    "format": "STL",
     "paragraphs": [
       "Prevent losing your lighter by subtly reminding your friends and loved ones of your capacity for violence with this lovely Mace and Chain Lighter Keeper. An innovation in anti-theft decoration!",
       "Or! Just use the handle (fits a standard bic lighter) to keep your lighter on any keychain or lanyard! You decide!\n\nIncluded in the Download:"
     ],
     "included": [
-      "4 Mace models (.stl file type)",
-      "3 different size Chain models (.stls)",
-      "Heft/Handle lighter holder (.stls)",
-      "Bambu Studio assembly project (.3mf)"
+      "111 mm Mace (.stl)",
+      "Big Chain (.stl)",
+      "Lighter Holding Haft (.stl)"
     ],
     "source": "gumroad-mace.json",
     "reference": "NO3D–PRINTS–006",
@@ -44,6 +44,7 @@ export const printProducts = [
     "slug": "spike-planter-01",
     "landingHero": { "src": "/v3/assets/prints/spike-planter-background-v2.png", "alt": "Black Spike Planter with a plant against dark wood", "type": "image" },
     "name": "3D printable Spike Planter 01",
+    "format": "STL + Bambu Studio 3MF",
     "paragraphs": [
       "The Spike Planter has Spike feet that stand proudly on your man-made surface while softening towards the top near your beautiful plant. It also features a drip tray that screws in nicely and locks tight.",
       "Stand it on a surface or use the included wall-mount hanger.",
