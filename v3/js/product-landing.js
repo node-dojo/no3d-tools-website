@@ -27,6 +27,10 @@ function renderPrintLayout() {
   brand.alt = 'NO3D Prints';
   brand.parentElement.href = '/v3/prints/';
   brand.parentElement.setAttribute('aria-label', 'NO3D Prints home');
+  $('[data-print-subheading]').hidden = false;
+  const credit = $('.landing-footer > span');
+  credit.className = 'landing-credit';
+  credit.textContent = 'All No3D Prints are designs by Joe Bowers of The Well Tarot';
   $('.landing-footer img').src = '/assets/dark/stone-logo-dark.png';
 
   const hero = document.createElement('section');

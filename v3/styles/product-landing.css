@@ -1,6 +1,7 @@
 @font-face{font-family:DrukV3;src:url('/fonts/druk-text-wide-cyr-bold.woff2') format('woff2');font-weight:700;font-display:swap}
 @font-face{font-family:DotoV3;src:url('/fonts/doto.woff2') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:SilkaV3;src:url('/fonts/silka-mono-semibold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:SilkaV3;src:url('/fonts/silka-mono-medium.woff2') format('woff2');font-weight:500;font-display:swap}
 :root{--paper:#f1f0eb;--ink:#111;--yellow:#f5ff00;--rule:#aaa9a3;--display:DrukV3,Impact,sans-serif;--body:DotoV3,monospace;--ui:SilkaV3,monospace}
 *{box-sizing:border-box}html [hidden]{display:none!important}body{margin:0;background:var(--paper);color:var(--ink);font:700 15px/1.5 var(--body)}button,a{color:inherit}a{text-underline-offset:4px}button{font:inherit;border-radius:0;cursor:pointer}button:disabled{cursor:default;opacity:.45}a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ink);outline-offset:5px}img,video{max-width:100%}.micro{margin:0;font:600 10px/1.5 var(--ui);letter-spacing:.035em;text-transform:uppercase}.skip-link{position:fixed;top:8px;left:8px;z-index:5;transform:translateY(-150%);padding:12px;background:var(--yellow)}.skip-link:focus{transform:none}
 .landing-page{max-width:1600px;margin:auto;padding:0 34px}.landing-mast{min-height:98px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule)}.landing-wordmark{display:block;width:210px;height:auto}.landing-signin{text-decoration:none;display:flex;gap:28px;align-items:center;min-height:44px}.landing-product{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);column-gap:48px;padding:40px 0 50px;align-items:start}.landing-identity{grid-column:2;grid-row:1}.landing-identity h1{font:700 clamp(32px,3.6vw,57px)/.93 var(--display);letter-spacing:-.035em;text-transform:uppercase;margin:22px 0 27px;overflow-wrap:anywhere}.landing-media{grid-column:1;grid-row:1/5;position:sticky;top:24px;min-width:0}.landing-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;aspect-ratio:1;background:#111}.landing-gallery::-webkit-scrollbar{display:none}.landing-slide{flex:0 0 100%;min-width:0;margin:0;scroll-snap-align:start;scroll-snap-stop:always;display:grid;place-items:center}.landing-slide img,.landing-slide video{display:block;width:100%;height:100%;object-fit:contain}.landing-gallery-bar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--rule)}.landing-thumbnails{display:flex;gap:8px;overflow-x:auto;padding:3px;min-width:0}.landing-thumbnails button{position:relative;flex:0 0 48px;width:48px;height:48px;border:1px solid transparent;padding:3px;background:transparent}.landing-thumbnails button[aria-current=true]{border-color:var(--ink)}.landing-thumbnails img{width:100%;height:100%;object-fit:cover;display:block}.landing-thumbnails .video-marker{position:absolute;right:3px;bottom:3px;padding:1px 3px;background:var(--paper);font:9px var(--ui)}.landing-gallery-controls{display:flex;align-items:center;white-space:nowrap}.landing-gallery-controls button{width:40px;height:44px;border:0;background:none;display:grid;place-items:center}.caret{width:12px;height:8px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:square;stroke-linejoin:miter}.caret-left{transform:rotate(90deg)}.caret-right{transform:rotate(-90deg)}
@@ -14,9 +15,12 @@
    supplies contrast; type is opaque, with no scrim, shadow, or blend effect. */
 .landing-print{background:var(--ink);color:var(--paper);--rule:#676863}
 .landing-print .landing-page{max-width:none;padding:0}
-.landing-print .landing-mast{position:absolute;inset:0 34px auto;z-index:2;min-height:98px}
+.landing-print .landing-mast{position:absolute;inset:0 34px auto;z-index:2;min-height:116px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-content:center;padding:18px 0}
+.landing-subheading{grid-column:1/-1;justify-self:start;font:500 11px/1.45 var(--ui);text-decoration:none;text-transform:none}
+.landing-subheading:hover{text-decoration:underline}
+.landing-print .landing-signin{min-height:28px}
 .landing-print .landing-product{display:block;padding:0}
-.landing-print-hero{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;min-height:900px;min-height:max(800px,100svh);padding:138px 34px 34px;overflow:hidden}
+.landing-print-hero{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;min-height:900px;min-height:max(800px,100svh);padding:150px 34px 34px;overflow:hidden}
 .landing-print-backdrop{position:absolute;z-index:-1;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
 .landing-print-hero .landing-identity{width:330px;max-width:100%;order:initial}
 .landing-print-hero .landing-identity h1{font-size:30px;line-height:1.04;margin:16px 0 0}
@@ -37,13 +41,14 @@
 .landing-print .landing-thumbnails button[aria-current=true]{border-color:var(--paper)}
 .landing-print .video-marker{color:var(--ink)}
 .landing-print .landing-footer{margin:0 34px}
+.landing-credit{max-width:620px;font:500 11px/1.6 var(--ui);text-transform:none}
 .landing-print :is(a,button,[tabindex]):focus-visible{outline-color:var(--paper)}
 .landing-print .skip-link{color:var(--ink)}
 @media(max-width:1000px) and (min-width:721px){.landing-print-details{column-gap:28px;grid-template-columns:minmax(0,1fr) minmax(320px,1fr)}}
 @media(max-width:720px){
-  .landing-print .landing-mast{inset:0 20px auto;min-height:76px}
+  .landing-print .landing-mast{inset:0 20px auto;min-height:102px}
   .landing-print .landing-wordmark{width:174px}
-  .landing-print-hero{min-height:max(740px,100svh);padding:101px 20px 20px}
+  .landing-print-hero{min-height:max(740px,100svh);padding:125px 20px 20px}
   .landing-print-hero .landing-identity{width:100%;max-width:350px}
   .landing-print-hero .landing-identity .micro{font-size:9px}
   .landing-print-hero .landing-identity h1{font-size:clamp(22px,6.3vw,30px);line-height:1.05;margin-top:14px}
@@ -59,5 +64,7 @@
   .landing-print-details .landing-gallery-bar{margin:0 20px}
   .landing-print-details .landing-description,.landing-print-details .landing-files{order:initial;width:100%}
   .landing-print-details .landing-files{padding-top:0}
-  .landing-print .landing-footer{margin:0 20px}
+  .landing-print .landing-footer{margin:0 20px;padding:24px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px}
+  .landing-print .landing-footer a{margin-left:0}
+  .landing-credit{grid-column:1/-1;font-size:10px}
 }
