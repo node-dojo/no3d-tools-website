@@ -1,0 +1,226 @@
+{
+  "source": "1b777cd",
+  "deployment": "dpl_A34yrpzAQm2pxw2WdDW6nQ8v8U87",
+  "canonical": "https://no3dtools.com",
+  "browser": {
+    "target": "https://no3dtools.com",
+    "result": [
+      {
+        "route": "catalog",
+        "width": 1440,
+        "rows": [
+          [
+            "Wall-mounted body",
+            "142.6 \u00d7 142.7 \u00d7 130.4"
+          ],
+          [
+            "Wall-mounted tray",
+            "125.3 \u00d7 125.2 \u00d7 52.3"
+          ],
+          [
+            "Wall-mount hanger",
+            "22.4 \u00d7 51.2 \u00d7 4.8"
+          ],
+          [
+            "Free-standing body",
+            "142.7 \u00d7 142.7 \u00d7 123.9"
+          ],
+          [
+            "Free-standing tray",
+            "137.1 \u00d7 137.1 \u00d7 49.7"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "campaign",
+        "width": 1440,
+        "rows": [
+          [
+            "Wall-mounted body",
+            "142.6 \u00d7 142.7 \u00d7 130.4"
+          ],
+          [
+            "Wall-mounted tray",
+            "125.3 \u00d7 125.2 \u00d7 52.3"
+          ],
+          [
+            "Wall-mount hanger",
+            "22.4 \u00d7 51.2 \u00d7 4.8"
+          ],
+          [
+            "Free-standing body",
+            "142.7 \u00d7 142.7 \u00d7 123.9"
+          ],
+          [
+            "Free-standing tray",
+            "137.1 \u00d7 137.1 \u00d7 49.7"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "catalog",
+        "width": 390,
+        "rows": [
+          [
+            "Wall-mounted body",
+            "142.6 \u00d7 142.7 \u00d7 130.4"
+          ],
+          [
+            "Wall-mounted tray",
+            "125.3 \u00d7 125.2 \u00d7 52.3"
+          ],
+          [
+            "Wall-mount hanger",
+            "22.4 \u00d7 51.2 \u00d7 4.8"
+          ],
+          [
+            "Free-standing body",
+            "142.7 \u00d7 142.7 \u00d7 123.9"
+          ],
+          [
+            "Free-standing tray",
+            "137.1 \u00d7 137.1 \u00d7 49.7"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "campaign",
+        "width": 390,
+        "rows": [
+          [
+            "Wall-mounted body",
+            "142.6 \u00d7 142.7 \u00d7 130.4"
+          ],
+          [
+            "Wall-mounted tray",
+            "125.3 \u00d7 125.2 \u00d7 52.3"
+          ],
+          [
+            "Wall-mount hanger",
+            "22.4 \u00d7 51.2 \u00d7 4.8"
+          ],
+          [
+            "Free-standing body",
+            "142.7 \u00d7 142.7 \u00d7 123.9"
+          ],
+          [
+            "Free-standing tray",
+            "137.1 \u00d7 137.1 \u00d7 49.7"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "catalog",
+        "width": 320,
+        "rows": [
+          [
+            "Wall-mounted body",
+            "142.6 \u00d7 142.7 \u00d7 130.4"
+          ],
+          [
+            "Wall-mounted tray",
+            "125.3 \u00d7 125.2 \u00d7 52.3"
+          ],
+          [
+            "Wall-mount hanger",
+            "22.4 \u00d7 51.2 \u00d7 4.8"
+          ],
+          [
+            "Free-standing body",
+            "142.7 \u00d7 142.7 \u00d7 123.9"
+          ],
+          [
+            "Free-standing tray",
+            "137.1 \u00d7 137.1 \u00d7 49.7"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      },
+      {
+        "route": "campaign",
+        "width": 320,
+        "rows": [
+          [
+            "Wall-mounted body",
+            "142.6 \u00d7 142.7 \u00d7 130.4"
+          ],
+          [
+            "Wall-mounted tray",
+            "125.3 \u00d7 125.2 \u00d7 52.3"
+          ],
+          [
+            "Wall-mount hanger",
+            "22.4 \u00d7 51.2 \u00d7 4.8"
+          ],
+          [
+            "Free-standing body",
+            "142.7 \u00d7 142.7 \u00d7 123.9"
+          ],
+          [
+            "Free-standing tray",
+            "137.1 \u00d7 137.1 \u00d7 49.7"
+          ]
+        ],
+        "removedNotes": true,
+        "noOverflow": true
+      }
+    ],
+    "errors": []
+  },
+  "sourceHashes": [
+    {
+      "path": "v3/data/prints/catalog.js",
+      "sha256": "aa8e63e3c6ea8f91365e8997a29d5aec538eba76af0b976a9f9f6376f8521b8c",
+      "matches": true
+    },
+    {
+      "path": "v3/js/print-parts.js",
+      "sha256": "5acfcae10e570fb51b39b122dd434f9a54285c25ec37e73f651a7c8a83f5d71d",
+      "matches": true
+    },
+    {
+      "path": "v3/js/print-product.js",
+      "sha256": "eca86444efe9aaa411a197ad14ed5b6fc7a38052b39b4a0f8ce59a0b2cc7cbc9",
+      "matches": true
+    },
+    {
+      "path": "v3/js/prints.js",
+      "sha256": "74072496dc5e82ae1be4b9462e41dd8a939e454bd50aea521cc150543621a0f5",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-landing-model.js",
+      "sha256": "10199cc0c94db84ab2c307e4315d21e445fbaeb85e339b43c308b4f4425114cb",
+      "matches": true
+    },
+    {
+      "path": "v3/js/product-landing.js",
+      "sha256": "f00982df2e9c8f450d0a3bc0f8ab22915cc42ac9169d9560958bda41a330bf7c",
+      "matches": true
+    },
+    {
+      "path": "v3/prints/index.html",
+      "sha256": "9501f616079e2780e4aa1c69b9d5b8e98d61268c5c8f3f76f2ae5d7b53dbed54",
+      "matches": true
+    },
+    {
+      "path": "v3/product/landing/index.html",
+      "sha256": "1b9f25e11add42bc14e5a0d95daafbd66c9bb64f063df02c0ed321e73b136973",
+      "matches": true
+    },
+    {
+      "path": "v3/styles/print-parts.css",
+      "sha256": "c7d17bbaad157de5375c723dc20c9a6e83a40874dc02d62ac57918b3c0e90968",
+      "matches": true
+    }
+  ]
+}
