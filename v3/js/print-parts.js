@@ -214,16 +214,16 @@ export function mountPrintParts(host, product) {
   for (const text of product.previewNotes || []) section.append(element('p', 'print-parts-note', text));
   if (product.dimensions?.length) {
     const table = element('table', 'print-dimensions');
-    table.append(element('caption', '', 'Part dimensions'));
+    table.append(element('caption', '', 'Approx. assembled dimensions (mm)'));
     const head = table.createTHead().insertRow();
-    for (const label of ['Part', 'X × Y × Z (mm)']) {
+    for (const label of ['Version', 'Width', 'Depth', 'Height']) {
       const cell = element('th', '', label); cell.scope = 'col'; head.append(cell);
     }
     const body = table.createTBody();
     for (const part of product.dimensions) {
       const row = body.insertRow();
       const name = element('th', '', part.name); name.scope = 'row';
-      row.append(name, element('td', '', part.sizeMm.map(n => n.toFixed(1)).join(' × ')));
+      row.append(name, ...part.sizeMm.map(n => element('td', '', n.toFixed(0))));
     }
     section.append(table);
   }

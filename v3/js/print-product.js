@@ -1,7 +1,7 @@
 import { configureCarouselVideo, syncCarouselVideos } from './carousel-video.js?v=autoplay-20261102';
 import { configureCarouselImage, syncCarouselImages } from './carousel-image.js?v=gifs-20261103';
-import { mountPrintParts } from './print-parts.js?v=dimensions-20261103';
-import { printProducts } from '../data/prints/catalog.js?v=dimensions-20261103';
+import { mountPrintParts } from './print-parts.js?v=assembled-dimensions-20261103';
+import { printProducts } from '../data/prints/catalog.js?v=assembled-dimensions-20261103';
 import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
 import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
