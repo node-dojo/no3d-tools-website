@@ -1,3 +1,4 @@
+import { mountPrintSketchbook } from './print-sketchbook.js';
 import { printProducts } from '../data/prints/catalog.js?v=assembled-dimensions-20261103';
 import { createPrintProductView } from './print-product.js?v=assembled-dimensions-20261103';
 import { getPrintOffer } from './api.js?v=prints-20261028b';
@@ -25,7 +26,7 @@ const dialog = document.querySelector('[data-print-details]');
 let visible = [...slides];
 let active = 0;
 let scrollTimer;
-let wheelCooldown = 0;
+
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const number = value => String(value).padStart(2, '0');
 
@@ -87,15 +88,6 @@ carousel.addEventListener('keydown', event => {
     event.preventDefault(); goTo(event.key === 'Home' ? 0 : visible.length - 1);
   }
 });
-carousel.addEventListener('wheel', event => {
-  if (event.ctrlKey || event.metaKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY) || !matchMedia('(hover:hover)').matches) return;
-  if (Math.abs(event.deltaY) < 5) return;
-  event.preventDefault();
-  const now = performance.now();
-  if (now < wheelCooldown) return;
-  wheelCooldown = now + 650;
-  goTo(active + (event.deltaY > 0 ? 1 : -1));
-}, { passive: false });
 new ResizeObserver(() => goTo(active, false)).observe(carousel);
 
 function setSearchOpen(open) {
@@ -106,6 +98,7 @@ function setSearchOpen(open) {
 searchToggle.addEventListener('click', () => setSearchOpen(searchRegion.hidden));
 document.querySelector('[data-search-close]').addEventListener('click', () => setSearchOpen(false));
 document.addEventListener('keydown', event => {
+  if (document.querySelector('.print-sketchbook[open]')) return;
   if (!dialog.open && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setSearchOpen(searchRegion.hidden); }
   if (event.key === 'Escape' && !searchRegion.hidden && !dialog.open) setSearchOpen(false);
 });
@@ -130,3 +123,5 @@ function restoreFromUrl() {
 }
 addEventListener('popstate', restoreFromUrl);
 restoreFromUrl();
+
+mountPrintSketchbook();

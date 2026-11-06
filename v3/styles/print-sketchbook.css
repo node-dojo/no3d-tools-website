@@ -1,0 +1,57 @@
+.print-sketchbook {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  overscroll-behavior: none;
+}
+.print-sketchbook::backdrop { background: transparent; }
+.book-stage, .book-sheet, .book-sheet canvas, .book-sheet img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.book-stage {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  cursor: grab;
+}
+.book-stage:active { cursor: grabbing; }
+.book-sheet { pointer-events: none; }
+.book-sheet img { object-fit: contain; }
+.print-sketchbook[data-ready=true] .book-sheet img,
+.print-sketchbook:not([data-ready=true]) canvas { visibility: hidden; }
+.book-animating { transition: transform 290ms cubic-bezier(.19,.8,.24,1); }
+.book-access {
+  position: fixed;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  left: 50%;
+  padding: 0;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+.book-access:focus-visible, .book-status:not(:empty) {
+  width: auto;
+  height: auto;
+  clip-path: none;
+  padding: 8px 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 12px/1.25 var(--body);
+}
+.book-status:not(:empty) { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+@media (prefers-reduced-motion: reduce) {
+  .book-animating { transition: none; }
+}

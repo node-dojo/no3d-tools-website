@@ -62,16 +62,22 @@ export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixt
       if (path.endsWith('/')) path += 'index.html';
       const target = await realpath(join(root, path));
       const publicPath = relative(root, target);
-      if (!/^(?:v3|assets|fonts)\//.test(publicPath) || publicPath.split('/').some(part => part.startsWith('.')) || !mime[extname(target)]) return json(404, { error: 'not_found' });
+      const packedManifest = publicPath === 'v3/assets/sketchbook/manifest.json.gz';
+      if (!/^(?:v3|assets|fonts)\//.test(publicPath) || publicPath.split('/').some(part => part.startsWith('.')) || (!packedManifest && !mime[extname(target)])) return json(404, { error: 'not_found' });
       const data = await readFile(target);
-      response.writeHead(200, { 'Content-Type': mime[extname(target)] });
+      const headers = packedManifest ? { 'Content-Type':'application/json', 'Content-Encoding':'gzip' } : { 'Content-Type':mime[extname(target)] };
+      if (/^v3\/assets\/sketchbook\/poses\/[^/]+\.bin$/.test(publicPath)) {
+        headers['Content-Encoding']='gzip';
+        headers['Cache-Control']='public, max-age=31536000, immutable';
+      }
+      response.writeHead(200, headers);
       response.end(request.method === 'HEAD' ? undefined : data);
     } catch { json(404, { error: 'not_found' }); }
   });
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const server = createPrintsPreviewServer();
-  server.listen(Number(process.env.PRINTS_PREVIEW_PORT || 4174), '127.0.0.1', () => {
+  server.listen(Number(process.env.PRINTS_PREVIEW_PORT || 4174), process.env.PRINTS_PREVIEW_HOST || '127.0.0.1', () => {
     console.log(`Local Prints preview: http://127.0.0.1:${server.address().port}/v3/prints/`);
     console.log('Read-only local snapshots. No production APIs or credentials.');
   });
