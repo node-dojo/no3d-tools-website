@@ -10,6 +10,7 @@ export default function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({
     individualProductsEnabled: individualProductsEnabled(),
+    printsAccountFreeEnabled: process.env.PRINTS_ACCOUNT_FREE_ENABLED === 'true',
     membershipExpectedEnvironment: membershipExpectedEnvironment(),
   });
 }

@@ -46,6 +46,7 @@ export default async function handler(req, res) {
         attemptToken,
         offerKey,
         returnTarget: 'product',
+        ...(print && process.env.PRINTS_ACCOUNT_FREE_ENABLED === 'true' ? { printDelivery: true } : {}),
       }),
     });
     if (!response.ok) return res.status(response.status).json({ error: payload.error || 'checkout_failed' });
