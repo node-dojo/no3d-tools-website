@@ -1,0 +1,57 @@
+{
+  "startedAt": "2026-11-07T20:13:43.694Z",
+  "target": "https://no3dtools.com",
+  "products": [
+    {
+      "handle": "mace-and-chain",
+      "orderId": "c200a4c2-24ad-43b9-8885-c31d984ef58a",
+      "checkoutSessionId": "cs_live_b1epDWOSNjVL4OKHC469zRhZQMnZaz5HqLkEWsd3Jb09nbI6laJG9whpQb",
+      "amount": 1111,
+      "currency": "usd",
+      "livemode": true,
+      "accountFreeReturn": true
+    },
+    {
+      "handle": "spike-planter-01",
+      "orderId": "fe9551c3-a2b7-44fb-9b5b-b4353e7cceeb",
+      "checkoutSessionId": "cs_live_b1QQgWwkxx6HNLZBa8YD0LusIW5CQHRwPu2v8s0sT0VeDILzzDeh5rYniC",
+      "amount": 1111,
+      "currency": "usd",
+      "livemode": true,
+      "accountFreeReturn": true
+    }
+  ],
+  "assets": [
+    {
+      "file": "v3/prints/download/index.html",
+      "sha256": "335562925402ac576a42824c46917f11b05c4611acb3cd86bd7cb96303eff748"
+    },
+    {
+      "file": "v3/js/print-delivery.js",
+      "sha256": "341b7e99b4254b61e77519540393006aeede67ac017e7dd68e2866823b47a8bc"
+    },
+    {
+      "file": "v3/js/print-delivery-links.js",
+      "sha256": "f10bfd9d12a39e40a7daf475498f3841cd85bef370bef9324e9ee0670ec03c22"
+    },
+    {
+      "file": "v3/styles/print-delivery.css",
+      "sha256": "8a8c84169aeee50d5d27dc53862039c897a7d220bd17595a4c35e5ce896cde43"
+    }
+  ],
+  "boundaries": [
+    "Creates and expires unpaid live Checkout sessions through public buttons. No card entered and no charge made.",
+    "Production payment, transactional email receipt and paid downloads rely on sandbox acceptance until a genuine customer purchase."
+  ],
+  "config": {
+    "individualProductsEnabled": true,
+    "printsAccountFreeEnabled": true,
+    "membershipExpectedEnvironment": "live"
+  },
+  "status": "passed",
+  "expired": [
+    "cs_live_b1epDWOSNjVL4OKHC469zRhZQMnZaz5HqLkEWsd3Jb09nbI6laJG9whpQb",
+    "cs_live_b1QQgWwkxx6HNLZBa8YD0LusIW5CQHRwPu2v8s0sT0VeDILzzDeh5rYniC"
+  ],
+  "completedAt": "2026-11-07T20:14:01.759Z"
+}

@@ -1,0 +1,17 @@
+{
+  "verifiedAt": "2026-11-07T20:14:41.749Z",
+  "sessions": [
+    {
+      "orderId": "c200a4c2-24ad-43b9-8885-c31d984ef58a",
+      "status": "expired",
+      "payment": "unpaid",
+      "amount": 1111
+    },
+    {
+      "orderId": "fe9551c3-a2b7-44fb-9b5b-b4353e7cceeb",
+      "status": "expired",
+      "payment": "unpaid",
+      "amount": 1111
+    }
+  ]
+}

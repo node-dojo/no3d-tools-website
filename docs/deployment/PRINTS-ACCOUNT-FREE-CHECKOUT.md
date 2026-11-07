@@ -112,3 +112,56 @@ canonical website checkout's unrelated price/lifecycle work and the development
 checkout's unpublished naming/sketchbook work remain preserved. Dependency
 audit remains nine inherited advisories (4 low, 1 moderate, 4 high); dependencies
 were not changed.
+
+## Production release — November 7, 2026
+
+Joe approved publishing the prepared release. The final website source is
+`56873ff` (checkout runtime plus production smoke script and header-order fix);
+Commerce source is `82cb914`.
+
+- Website: `dpl_AhHmfkxx23KCRjjusXE87nNTkZio`,
+  https://no3dtoolssite-6m2v1u5pb-node-dojos-projects.vercel.app,
+  Ready at https://no3dtools.com.
+- Commerce: `dpl_3bnLuJqh2dv7JcdXJPV3bwoxSXLD`,
+  https://no3d-commerce-j5ri33bzc-node-dojos-projects.vercel.app,
+  Ready at https://no3d-commerce.vercel.app.
+- Migration `20261107192340` applied to production Commerce project
+  `kjavnsyravhfyrnxujau`; migration history matches the tracked filename.
+  All five new tables have RLS and deny anonymous/authenticated reads.
+  All eight new functions are invoker functions and deny anonymous execution.
+- `PRINTS_ACCOUNT_FREE_ENABLED=true` is deployed and recorded in both
+  production Doppler configurations. Existing provider secrets were preserved.
+
+The public buttons for both prints created live-mode, unpaid Stripe Checkout
+sessions at $11.11 USD with the account-free download return and delivery
+metadata. No email, card or payment was submitted. All four sessions from the
+initial and final smoke runs were expired; independent Stripe/Commerce readback
+confirmed unpaid/expired orders without fulfillment.
+
+Four live download HTML/JS/CSS assets matched source hashes. Desktop and mobile
+recovery views loaded without Auth requests or overflow. Invalid grants could
+not obtain a file URL, and unauthenticated mail requests were denied. The initial
+smoke caught the global Referrer-Policy overriding the download-specific rule;
+moving the rule after the global defaults fixed it. The final deployed page
+returns `no-referrer` and `private, no-store`, and the complete smoke passed.
+
+The production email worker responded successfully with an empty queue. Its
+trusted connection to the website mail adapter was checked using an invalid
+payload, without sending an email. Resend reports the configured sender domain
+`no3dtools.com` as verified. The operations monitor reports no Prints mail
+findings. Supabase's new-table RLS-without-policy informational findings are
+intentional for service-role-only tables; grants were independently verified.
+Existing unrelated database advisories were not changed.
+
+Evidence: [production smoke](prints-account-free-production-20261107.json) and
+[Stripe cleanup readback](prints-account-free-production-stripe-20261107.json).
+Screenshots: `/tmp/no3d-print-production-smoke/recovery-{390,1440}.png`.
+Run the repeatable non-payment check with
+`doppler run --project no3dtools --config prd -- node scripts/print-delivery-production-smoke.mjs --apply`.
+
+Paid fulfillment, email-link download and refund revocation were verified in
+the sandbox. No live charge was made; production paid delivery and actual inbox
+receipt have not yet been observed. No promotional or file-update campaign was
+sent. The rollback procedure above preserves links for any completed purchases.
+
+This receipt is a documentation follow-up, not a new runtime deployment.
