@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "updated": "2026-11-02",
+  "updated": "2026-11-07",
   "purpose": "Single authority for what is CURRENT (V3) versus RETIRED in no3d-tools-website. Documentation, AI-facing files, and support copy must not describe retired behaviour as current. Machine-readable so a check can enforce it.",
   "current": {
     "journey": "V3",
     "entrypoint": "/v3/",
-    "identity": "account sign-in with a guest token upgraded to a verified account",
+    "identity": "Tools and memberships use account sign-in with a guest token upgraded to a verified account; enabled Prints purchases use email delivery without signup.",
     "addonDelivery": "device grant via the add-on; no license key entry",
     "customerRoutes": [
       "/v3/",
@@ -17,13 +17,15 @@
       "/v3/auth/continue/",
       "/v3/type/",
       "/v3/prints/",
-      "/v3/auth/reset-password/"
+      "/v3/auth/reset-password/",
+      "/v3/prints/download/"
     ],
     "commerceService": "no3d-commerce (Vercel project no3d-commerce)",
     "pricingSourceOfTruth": "Stripe Price lookup keys (no3dtools.product.<handle>). Displayed price on V3 product pages is read from /api/commerce/offer, so Stripe is what a visitor is actually charged.",
     "passwordRecovery": "Forgot password in shared sign-in and Account Details; single-use email link, new password, managed session, and return to account/order/product. See docs/deployment/PASSWORD-RECOVERY.md.",
-    "productLandingPages": "Focused /p/<handle> pages reuse the native account and Commerce flow. Prints include full-bleed photography and the shared included-part viewers.",
-    "prints": "Mace has three STL viewers/files. Spike Planter has five STL viewers/files for wall-mounted and free-standing versions, plus the wall-mounted 3MF project. Active gallery videos play muted inline loops with hidden controls. Release: docs/deployment/PRINTS-RELEASE-20261102.md."
+    "productLandingPages": "Focused /p/<handle> pages reuse native Commerce. Prints purchases return directly to account-free downloads; existing member/owner downloads retain their native access path. Prints include full-bleed photography and shared included-part viewers.",
+    "prints": "Mace has three STL viewers/files. Spike Planter has five STL viewers/files for wall-mounted and free-standing versions, plus the wall-mounted 3MF project. Active gallery videos play muted inline loops with hidden controls. Release: docs/deployment/PRINTS-RELEASE-20261102.md.",
+    "printsCheckout": "Payment and email only, direct download return, automatic emailed purchase link, email-only recovery and separate update/promotion preferences. Contacts and purchases live in Commerce; no website Auth user is required. Release: docs/deployment/PRINTS-ACCOUNT-FREE-CHECKOUT.md."
   },
   "retired": {
     "licenseKeyEntry": {
