@@ -49,7 +49,6 @@
     }
   },
   "headers": [
-    { "source": "/v3/prints/download(.*)", "headers": [{ "key": "Cache-Control", "value": "private, no-store" }, { "key": "Referrer-Policy", "value": "no-referrer" }] },
     {
       "source": "/(.*)",
       "headers": [
@@ -59,6 +58,13 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(self)" },
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" }
+      ]
+    },
+    {
+      "source": "/v3/prints/download(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-store" },
+        { "key": "Referrer-Policy", "value": "no-referrer" }
       ]
     },
     {
