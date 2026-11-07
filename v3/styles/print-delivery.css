@@ -1,0 +1,13 @@
+.print-delivery-page { min-height: 100dvh; overflow-y: auto; }
+.print-delivery-page .account-entry-dialog { position: relative; inset: auto; transform: none; margin: 48px auto; max-width: calc(100% - 48px); }
+.print-delivery-page h1 { overflow-wrap: anywhere; }
+.print-delivery-page .setup-index a { color: inherit; }
+.print-delivery-page details { margin-top: 24px; }
+.print-delivery-page summary { cursor: pointer; }
+.print-preferences { display: grid; gap: 16px; padding-top: 16px; }
+.print-preferences label { display: flex; gap: 12px; align-items: start; }
+.print-promotion-choice { display: flex; gap: 12px; align-items: start; }
+.print-promotion-choice input { flex: 0 0 auto; accent-color: var(--ink, #111111); }
+.print-preferences input { flex: 0 0 auto; accent-color: var(--ink, #111111); }
+.print-delivery-page [data-print-download] { margin-bottom: 24px; }
+@media(max-width: 600px) { .print-delivery-page .account-entry-dialog { margin: 24px auto; max-width: calc(100% - 36px); } }

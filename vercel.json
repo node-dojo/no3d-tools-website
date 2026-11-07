@@ -13,6 +13,7 @@
     { "source": "/go/asset-lib", "destination": "/blog/blenders-asset-library-sucks", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/v3/prints/download", "destination": "/v3/prints/download/index.html" },
     { "source": "/p/:handle", "destination": "/v3/product/landing/index.html" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/v3", "destination": "/v3/index.html" },
@@ -48,6 +49,7 @@
     }
   },
   "headers": [
+    { "source": "/v3/prints/download(.*)", "headers": [{ "key": "Cache-Control", "value": "private, no-store" }, { "key": "Referrer-Policy", "value": "no-referrer" }] },
     {
       "source": "/(.*)",
       "headers": [

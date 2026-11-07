@@ -12,7 +12,7 @@ const collections = {
   'full-library': JSON.parse(await readFile(join(root, 'v3/data/prints/tools-full-library.json'))),
   'no3d-chrome-tools': JSON.parse(await readFile(join(root, 'v3/data/prints/tools-chrome-collection.json'))),
 };
-export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixture = null } = {}) {
+export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixture = null, purchaseFixture = null } = {}) {
   // A local guest by default. Test-only dependencies are supplied by the test
   // process, never selected through HTTP input. No production credentials.
   const dependencies = { authenticate: async () => null, account: async () => ({ products: [], entitlements: [] }), subscription: async () => null, ...printDependencies };
@@ -24,6 +24,10 @@ export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixt
     response.setHeader('Content-Security-Policy', "connect-src 'self'; form-action 'none'; frame-src 'none'; object-src 'none'");
     const json = (status, data) => { response.writeHead(status, { 'Content-Type': 'application/json' }); response.end(JSON.stringify(data)); };
     const pathUrl = new URL(request.url, 'http://127.0.0.1');
+    if (request.method === 'POST' && pathUrl.pathname === '/api/prints/purchase' && purchaseFixture) {
+      let body = ''; for await (const chunk of request) body += chunk;
+      const result = await purchaseFixture(JSON.parse(body)); return json(result.status || 200, result.body);
+    }
     if (request.method === 'POST' && pathUrl.pathname === '/api/commerce/checkout' && checkoutFixture) {
       let body = '';
       for await (const chunk of request) body += chunk;
