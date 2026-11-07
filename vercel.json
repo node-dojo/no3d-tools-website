@@ -49,7 +49,6 @@
     }
   },
   "headers": [
-    { "source": "/v3/prints/download(.*)", "headers": [{ "key": "Cache-Control", "value": "private, no-store" }, { "key": "Referrer-Policy", "value": "no-referrer" }] },
     { "source": "/v3/assets/sketchbook/manifest.json.gz", "headers": [{"key":"Content-Type","value":"application/json"},{"key":"Content-Encoding","value":"gzip"}] },
     { "source": "/v3/assets/sketchbook/poses/(.*)", "headers": [{"key":"Content-Type","value":"application/octet-stream"},{"key":"Content-Encoding","value":"gzip"},{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}] },
     {
@@ -61,6 +60,13 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(self)" },
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" }
+      ]
+    },
+    {
+      "source": "/v3/prints/download(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-store" },
+        { "key": "Referrer-Policy", "value": "no-referrer" }
       ]
     },
     {
