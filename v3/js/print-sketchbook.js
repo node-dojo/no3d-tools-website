@@ -106,8 +106,8 @@ export function mountPrintSketchbook() {
     dialog.dataset.phase = 'open';
     dialog.showModal();
     const {clientWidth:width, clientHeight:height} = stage;
-    // The first painted row of the square opening pose is at 207 / 768.
-    const top = renderer?.upperEdge(width,height) ?? height/2 + (207/768-.5)*Math.min(width,height);
+    // The first painted row of the flat opening pose is at 193 / 768.
+    const top = renderer?.upperEdge(width,height) ?? height/2 + (193/768-.5)*Math.min(width,height);
     travel = Math.max(1,height-Math.max(0,top)+2);
     offset(travel);
     stage.focus({preventScroll:true});
