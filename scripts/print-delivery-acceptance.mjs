@@ -23,6 +23,12 @@ try{
     await page.waitForSelector('[data-print-download]:not([hidden])');assert.equal(authRequests,0);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.screenshot({path:`${output}/ready-${width}.png`,fullPage:true});
+    await page.click('[data-promotion-optin]');
+    await page.waitForFunction(()=>document.querySelector('[data-promotion-status]').textContent.includes('You’re subscribed'));
+    assert.equal(requests.at(-1).promotions,true);assert.equal('updates' in requests.at(-1),false);
+    await page.click('[data-promotion-optin]');
+    await page.waitForFunction(()=>document.querySelector('[data-promotion-status]').textContent.includes('You’re unsubscribed'));
+    assert.equal(requests.at(-1).promotions,false);
     await page.click('summary');await page.click('input[name=updates]');await page.click('[data-print-preferences-form] button');
     await page.waitForFunction(()=>document.querySelector('[data-preference-status]').textContent.includes('saved'));
     assert.equal(requests.at(-1).updates,false);assert.equal(requests.at(-1).promotions,false);

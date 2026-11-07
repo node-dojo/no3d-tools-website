@@ -55,4 +55,60 @@ links must remain usable. Whole-site rollback to a pre-delivery build would
 break those links and is not a safe rollback after completed purchases.
 
 Production deployment and inbox acceptance remain separate from implementation
-and staging. Final staging results and revisions are appended after acceptance.
+and staging.
+
+## Staging acceptance completed
+
+Verified 2026-11-07 at 20:03 UTC.
+
+- Website runtime: `e999956`, isolated from live source `f68cdec`.
+  Development branch also contains the implementation as `52bfafd`.
+- Commerce runtime: `82cb914`.
+- Website staging: `dpl_C63GrTFCZbwr7N9SYXBsGFJnGZmi`,
+  https://no3d-tools-staging-bm4rmhn7s-node-dojos-projects.vercel.app,
+  aliased to https://staging.no3dtools.com.
+- Commerce staging: `dpl_5nDYwSEskxu7UzF4qP5ixo2sXBmg`,
+  https://no3d-commerce-staging-eigmcgu9a-node-dojos-projects.vercel.app,
+  aliased to https://commerce-staging.no3dtools.com.
+- Commerce sandbox migration applied to `lqidrljskdpjlshtwfbv`.
+  The two existing operations-monitor and reconciliation-page migrations were
+  also missing from staging and were applied there. The older sandbox webhook
+  was not completing event delivery; replacement
+  `we_1UZFe3LRzYZv3EhftliuTVA0` receives the unchanged event list/API version.
+  Its signing secret was stored directly in Doppler and Vercel; the old
+  `we_1UFdo8LRzYZv3EhfP2EaVb6l` endpoint is disabled.
+
+Both products passed real Stripe sandbox payments through public product
+buttons without sign-in. Mace delivery passed with the browser return blocked;
+Planter returned directly to its ready download page. Both emailed links worked
+in fresh browser contexts, and full ZIP byte counts and SHA-256 checksums matched
+the private manifest. Preference saves and a public resend request worked.
+Three final-run emails were accepted by Resend once each. No automatic provider
+retry was needed in this final run.
+
+Full sandbox refunds revoked both source entitlements and subsequent emailed-link
+downloads. Independent Stripe and Commerce readback confirmed the financial and
+access states. Website Auth-user counts stayed at nine before and after: no Auth
+user was created. Earlier failed-run test payments were refunded and abandoned
+test Checkout sessions expired.
+
+408 unit/contract tests passed (199 website, 209 Commerce), together with the
+transactional SQL acceptance, desktop/mobile delivery, eight-route V3, Prints,
+and product-landing checks. The optional checkbox beside Download was also
+tested to change promotion preference without changing file-update preference.
+Existing member/owner download bypass is covered by local Prints/landing checks;
+the hosted run covers the changed guest path.
+
+Evidence: [hosted journey](prints-account-free-staging-20261107.json) and
+[independent readback](prints-account-free-readback-20261107.json).
+The provider's last event was `sent`; actual inbox receipt is **not verified**.
+Mobile checks use browser emulation. Invalid/expired links, delayed payment,
+duplicate projection, retry/lease safety and suppression use local fixtures/SQL.
+
+Production read-only preflight found the Prints schema/functions absent and the
+new flag disabled, with the existing live storefront origin, sender and storage
+configured. No production migration or deployment has been performed. The
+canonical website checkout's unrelated price/lifecycle work and the development
+checkout's unpublished naming/sketchbook work remain preserved. Dependency
+audit remains nine inherited advisories (4 low, 1 moderate, 4 high); dependencies
+were not changed.

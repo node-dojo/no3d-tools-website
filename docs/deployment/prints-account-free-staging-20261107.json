@@ -1,0 +1,48 @@
+{
+  "target": "https://staging.no3dtools.com",
+  "startedAt": "2026-11-07T19:59:29.416Z",
+  "products": [
+    {
+      "handle": "mace-and-chain",
+      "checkoutStatus": 200,
+      "orderId": "40757ac0-8ccb-4e0c-b579-d65f585bdc77",
+      "paymentIntent": "pi_3UZFm2LRzYZv3Ehf0YnPCXOS",
+      "paid": true,
+      "returnBlocked": true,
+      "mailId": "01a1b798-e45b-76d7-8c5b-be31787319e8",
+      "emailEvent": "sent",
+      "freshBrowserLink": true,
+      "downloadChecksum": true,
+      "preferencesSaved": true,
+      "recoveryMailId": "01a1b799-cdd0-7a5d-8ea8-feca610a5362",
+      "recoveryEmailEvent": "sent",
+      "recoveryLink": true,
+      "refundId": "re_3UZFm2LRzYZv3Ehf08nJYGwG",
+      "refundRevoked": true
+    },
+    {
+      "handle": "spike-planter-01",
+      "checkoutStatus": 200,
+      "orderId": "3f2be7f6-2a1b-4b7c-8fb4-582a2f34a411",
+      "paymentIntent": "pi_3UZFnoLRzYZv3Ehf1hzgMz2K",
+      "paid": true,
+      "immediateDownloadPage": true,
+      "mailId": "01a1b79a-b892-78b6-9148-054ce1a17c35",
+      "emailEvent": "sent",
+      "freshBrowserLink": true,
+      "downloadChecksum": true,
+      "preferencesSaved": true,
+      "refundId": "re_3UZFnoLRzYZv3Ehf1NFCLvjA",
+      "refundRevoked": true
+    }
+  ],
+  "boundaries": [
+    "Real hosted Stripe test payments. No live charges.",
+    "Email content read from Resend; last provider event recorded separately. Sent is provider acceptance, not proof of inbox delivery. Recipient inbox UI is not inspected.",
+    "Fresh browser contexts; no auth user, injected login cookies or administrative sign-in links."
+  ],
+  "authUsersBefore": 9,
+  "authUsersAfter": 9,
+  "status": "passed",
+  "completedAt": "2026-11-07T20:02:36.674Z"
+}

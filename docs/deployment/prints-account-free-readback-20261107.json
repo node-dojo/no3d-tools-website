@@ -1,0 +1,76 @@
+{
+  "checkedAt": "2026-11-07T20:03:04.203Z",
+  "target": "sandbox",
+  "orders": [
+    {
+      "id": "40757ac0-8ccb-4e0c-b579-d65f585bdc77",
+      "resource_id": "mace-and-chain",
+      "payment_status": "refunded",
+      "fulfillment_status": "revoked",
+      "total_amount": 1111,
+      "paid_amount": 1111,
+      "refunded_amount": 1111
+    },
+    {
+      "id": "3f2be7f6-2a1b-4b7c-8fb4-582a2f34a411",
+      "resource_id": "spike-planter-01",
+      "payment_status": "refunded",
+      "fulfillment_status": "revoked",
+      "total_amount": 1111,
+      "paid_amount": 1111,
+      "refunded_amount": 1111
+    }
+  ],
+  "entitlements": [
+    {
+      "source_id": "40757ac0-8ccb-4e0c-b579-d65f585bdc77",
+      "status": "revoked"
+    },
+    {
+      "source_id": "3f2be7f6-2a1b-4b7c-8fb4-582a2f34a411",
+      "status": "revoked"
+    }
+  ],
+  "mail": [
+    {
+      "order_id": "40757ac0-8ccb-4e0c-b579-d65f585bdc77",
+      "kind": "delivery",
+      "status": "sent",
+      "attempts": 1,
+      "provider_id": "01a1b798-e45b-76d7-8c5b-be31787319e8"
+    },
+    {
+      "order_id": "40757ac0-8ccb-4e0c-b579-d65f585bdc77",
+      "kind": "recovery",
+      "status": "sent",
+      "attempts": 1,
+      "provider_id": "01a1b799-cdd0-7a5d-8ea8-feca610a5362"
+    },
+    {
+      "order_id": "3f2be7f6-2a1b-4b7c-8fb4-582a2f34a411",
+      "kind": "delivery",
+      "status": "sent",
+      "attempts": 1,
+      "provider_id": "01a1b79a-b892-78b6-9148-054ce1a17c35"
+    }
+  ],
+  "payments": [
+    {
+      "orderId": "40757ac0-8ccb-4e0c-b579-d65f585bdc77",
+      "paymentId": "pi_3UZFm2LRzYZv3Ehf0YnPCXOS",
+      "amount": 1111,
+      "refundAmount": 1111,
+      "refundStatus": "succeeded",
+      "livemode": false
+    },
+    {
+      "orderId": "3f2be7f6-2a1b-4b7c-8fb4-582a2f34a411",
+      "paymentId": "pi_3UZFnoLRzYZv3Ehf1hzgMz2K",
+      "amount": 1111,
+      "refundAmount": 1111,
+      "refundStatus": "succeeded",
+      "livemode": false
+    }
+  ],
+  "noAuthUserCreated": true
+}
