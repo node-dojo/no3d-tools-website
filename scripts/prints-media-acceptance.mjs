@@ -59,6 +59,12 @@ try {
           assert.equal(await page.$eval(`${selector} img`, img => img.getAttribute('src')), entry.src, 'The selected GIF stays active');
         }
       }
+      const fitsFrame = await page.$eval(selector, figure => {
+        const frame = figure.getBoundingClientRect();
+        const visual = figure.querySelector('img, video').getBoundingClientRect();
+        return visual.height <= frame.height + 1 && visual.width <= frame.width + 1;
+      });
+      assert.ok(fitsFrame, 'Portrait media must fit inside its gallery frame without clipping');
       assert.equal(await page.$$eval('[data-gallery] figure[inert] video', videos => videos.every(v => v.paused && !v.autoplay)), true);
       assert.equal(await page.$$eval('[data-gallery] figure[inert] img[data-animation-src]', imgs => imgs.every(img => img.getAttribute('src') === img.dataset.animationPoster)), true);
       checks.push({ src: entry.src, type: entry.type, animated: Boolean(entry.animated), passed: true });
