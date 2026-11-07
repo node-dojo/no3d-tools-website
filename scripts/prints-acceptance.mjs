@@ -112,14 +112,14 @@ try {
     assert.match(await page.$eval('[data-details-body]', el => el.textContent), /Wall-mount hanger/);
     await page.waitForFunction(() => !document.querySelector('[data-details-download]').disabled);
     assert.equal(await page.$$eval('a', links => links.some(link => link.textContent.includes('View on Gumroad'))), false);
-    assert.equal(await page.$$eval('[data-gallery-thumbnails] button', buttons => buttons.length), 6);
-    assert.equal(await page.$eval('[data-gallery-position]', el => el.textContent), '1 / 6');
+    assert.equal(await page.$$eval('[data-gallery-thumbnails] button', buttons => buttons.length), 7);
+    assert.equal(await page.$eval('[data-gallery-position]', el => el.textContent), '1 / 7');
     await settled();
     await auditDetails(`${label}-planter-details`);
     await page.click('[data-gallery-thumbnails] button:nth-child(3)');
     await auditVideoPlayback();
-    await page.click('[data-gallery-thumbnails] button:last-child');
-    await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '6 / 6');
+    await page.click('[data-gallery-thumbnails] button:nth-child(6)');
+    await page.waitForFunction(() => document.querySelector('[data-gallery-position]').textContent === '6 / 7');
     assert.equal(await page.$eval('[data-gallery] figure:not([inert]) img', el => el.alt), 'Close-up of the white Spike Planter surface');
     assert.equal(await page.$eval('[data-gallery] video', video => video.paused && !video.autoplay), true);
     await page.keyboard.press('Escape');

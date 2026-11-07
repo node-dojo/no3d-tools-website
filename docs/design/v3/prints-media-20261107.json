@@ -1,0 +1,29 @@
+{
+  "approval": "Joe requested adding the video shown in Photos to Spike Planter product media on NO3D Prints, 2026-11-07.",
+  "entries": [
+    {
+      "handle": "spike-planter-01",
+      "source": "/Users/joebowers/Downloads/add to product media files/Spike Planter Proximity/prox spike display.mp4",
+      "photosUuid": "1A9207C2-296F-4FC9-9305-C09477826DBA",
+      "photosAlbum": "Dojo Generative Vases",
+      "sourceSha256": "c1e5ad909e56daebc8920f3a41c62d6ecc574b3b907d6da1f262f78fa0e0aa4b",
+      "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+      "alt": "Proximity spike displacement animation",
+      "type": "video",
+      "poster": "/v3/assets/prints/planter-proximity-spike-displacement-poster-654f809b0a.webp",
+      "sha256": "a3418aab6a416cbbe038c2e1fb8b0b994d6253e87edbdb81c81606e9beff1799",
+      "posterSha256": "654f809b0ab8c675ce3794448057a992b66e2d88895ebc1c71370e0af47b77f8",
+      "bytes": 2471474,
+      "sourceDuration": 26.166667,
+      "duration": 26.167007,
+      "width": 608,
+      "height": 1080,
+      "fps": 30,
+      "codec": "H.264",
+      "audio": "AAC retained; muted by the existing gallery",
+      "posterTimestamp": 23,
+      "encoding": "libx264 preset slow CRF 20, Lanczos scale 608:1080, AAC 128k, faststart; full frame and duration retained"
+    }
+  ],
+  "policy": "Original Photos export preserved unchanged outside Git. Optimized web copy and a frame-23-second poster added as the seventh gallery item; existing gallery playback behavior retained."
+}

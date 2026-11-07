@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer';
 import { createPrintsPreviewServer } from './prints-preview-server.mjs';
 import { printProducts } from '../v3/data/prints/catalog.js';
 
-const manifest = JSON.parse(await readFile(new URL('../docs/design/v3/prints-media-20261102.json', import.meta.url)));
+const manifest = JSON.parse(await readFile(new URL(process.env.PRINTS_MEDIA_MANIFEST || '../docs/design/v3/prints-media-20261102.json', import.meta.url)));
 const server = process.env.PRINTS_MEDIA_URL ? null : createPrintsPreviewServer();
 if (server) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = process.env.PRINTS_MEDIA_URL || `http://127.0.0.1:${server.address().port}`;
