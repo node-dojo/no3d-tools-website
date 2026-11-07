@@ -1,0 +1,155 @@
+{
+  "recordedAt": "2026-11-07T21:24:08.437325+00:00",
+  "runtimeCommit": "69d480a7e9b0d5ab79a5ad61168515ad3b573c8d",
+  "baselineCommit": "c13cf82",
+  "productionDeployment": "dpl_9fiZ2mojmct77zVhX6sS7xQPsvok",
+  "productionUrl": "https://no3dtoolssite-58gj5z5bt-node-dojos-projects.vercel.app",
+  "canonicalUrl": "https://no3dtools.com/p/spike-planter-01",
+  "previewDeployment": "dpl_Gdd1R5KaSqsFuimPcUWPVkTnYyAs",
+  "rollbackDeployment": "dpl_AhHmfkxx23KCRjjusXE87nNTkZio",
+  "rollbackUrl": "https://no3dtoolssite-6m2v1u5pb-node-dojos-projects.vercel.app",
+  "change": "Added full proximity spike displacement video as seventh Spike Planter gallery item in catalog details and product landing; constrained landing media minimum height so portrait images/videos fit their existing frame. Original Photos export retained unchanged.",
+  "validation": {
+    "unitTests": 199,
+    "v3": "8 routes at 390 and 1440 pixels passed",
+    "prints": "Passed on retry after initial revoked-access fixture timeout",
+    "landing": "Passed at desktop, mobile and narrow sizes, with existing product/access cases",
+    "existingMedia": "24 local checks passed",
+    "newMedia": "4 local and 4 live playback, loop and frame-containment checks passed",
+    "liveVisuals": "Inspected full portrait frame at 23 seconds on 390px and 1440px product pages",
+    "mobileLimit": "Browser emulation, not physical hardware",
+    "dependencyAudit": {
+      "low": 4,
+      "moderate": 1,
+      "high": 4,
+      "critical": 0,
+      "unchanged": true
+    }
+  },
+  "readback": {
+    "checkedAt": "2026-11-07T21:23:31.829Z",
+    "target": "https://no3dtools.com",
+    "records": [
+      {
+        "path": "/v3/data/prints/catalog.js",
+        "status": 200,
+        "sha256": "1b828d4b3095b468f40a14431cfcd18e728f0c6d8ff8ee84e6693d5fa9782731",
+        "matchesLocal": true
+      },
+      {
+        "path": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+        "status": 200,
+        "sha256": "a3418aab6a416cbbe038c2e1fb8b0b994d6253e87edbdb81c81606e9beff1799",
+        "matchesLocal": true
+      },
+      {
+        "path": "/v3/assets/prints/planter-proximity-spike-displacement-poster-654f809b0a.webp",
+        "status": 200,
+        "sha256": "654f809b0ab8c675ce3794448057a992b66e2d88895ebc1c71370e0af47b77f8",
+        "matchesLocal": true
+      },
+      {
+        "path": "/v3/styles/product-landing.css",
+        "status": 200,
+        "sha256": "c6a193980d1c7724d5497a11dfe36c002ed6709de17dc7b3bc5ae016e13d94dd",
+        "matchesLocal": true
+      },
+      {
+        "path": "/v3/product/landing/index.html",
+        "status": 200,
+        "sha256": "7024fead844e1d96504cff473a5ded1c0c6bc6a0975ea38d0b42b817d9e6a4ea",
+        "matchesLocal": true
+      }
+    ]
+  },
+  "liveMediaAcceptance": {
+    "target": "https://no3dtools.com",
+    "results": [
+      {
+        "width": 1440,
+        "handle": "mace-and-chain",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": []
+      },
+      {
+        "width": 1440,
+        "handle": "mace-and-chain",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": []
+      },
+      {
+        "width": 1440,
+        "handle": "spike-planter-01",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "handle": "spike-planter-01",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "mace-and-chain",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": []
+      },
+      {
+        "width": 390,
+        "handle": "mace-and-chain",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": []
+      },
+      {
+        "width": 390,
+        "handle": "spike-planter-01",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "spike-planter-01",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      }
+    ],
+    "errors": []
+  }
+}
