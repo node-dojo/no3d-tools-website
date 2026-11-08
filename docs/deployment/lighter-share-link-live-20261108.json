@@ -1,0 +1,59 @@
+{
+  "origin": "https://no3dtools.com",
+  "checkedAt": "2026-11-08T10:14:00.989Z",
+  "checks": [
+    {
+      "path": "/lighter",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/mace-and-chain"
+    },
+    {
+      "path": "/lighter/",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/mace-and-chain"
+    },
+    {
+      "path": "/lighter?utm_source=instagram&utm_medium=social&utm_campaign=lighter_keeper",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/mace-and-chain?utm_source=instagram&utm_medium=social&utm_campaign=lighter_keeper"
+    },
+    {
+      "socialAgent": "facebookexternalhit/1.1",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200
+    },
+    {
+      "socialAgent": "Twitterbot/1.0",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200
+    },
+    {
+      "socialAgent": "WhatsApp/2.0",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200
+    },
+    {
+      "viewport": "mobile",
+      "title": "The Lighter Keeper 01",
+      "price": "$11.11",
+      "sketchbookAccess": true,
+      "errors": []
+    },
+    {
+      "viewport": "desktop",
+      "title": "The Lighter Keeper 01",
+      "price": "$11.11",
+      "sketchbookAccess": true,
+      "errors": []
+    }
+  ]
+}
