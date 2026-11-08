@@ -8,13 +8,18 @@ if (server) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
 const origin = process.env.PRINTS_TEST_ORIGIN || 'http://127.0.0.1:' + server.address().port;
 const browser = await puppeteer.launch({headless:true,args:['--enable-unsafe-swiftshader']});
 try {
-  const page = await browser.newPage();
-  page.setDefaultTimeout(60000);
-  await page.setViewport({width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:1});
   const errors = [], assets = [];
-  page.on('pageerror',error=>errors.push(error.message));
-  page.on('request',request=>{if(request.url().includes('/sketchbook/')) assets.push(request.url());});
-  const cdp = await page.createCDPSession();
+  let page, cdp;
+  async function freshMobilePage() {
+    if (page) { await cdp.detach(); await page.close(); }
+    page = await browser.newPage();
+    page.setDefaultTimeout(60000);
+    await page.setViewport({width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:1});
+    page.on('pageerror',error=>errors.push(error.message));
+    page.on('request',request=>{if(request.url().includes('/sketchbook/')) assets.push(request.url());});
+    cdp = await page.createCDPSession();
+  }
+  await freshMobilePage();
   function touch(type,points=[]) {
     return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map(([id,x,y])=>({id,x,y}))});
   }
@@ -168,11 +173,16 @@ try {
   const details=await lift();
   assert.equal(await page.$eval('.print-sketchbook',el=>el.dataset.book),'spike-planter');
   await lower(details);
+  // Isolate the standalone journey. In hosted headless Chrome, reusing the
+  // scrolled dialog target across navigation can drop CDP touch events before
+  // they reach the new document (including its capture listeners).
+  await freshMobilePage();
   await page.goto(origin+'/p/mace-and-chain',{waitUntil:'networkidle0'});
   await page.evaluate(()=>scrollTo({top:420,behavior:'instant'}));
   const landing=await lift();
   assert.equal(await page.$eval('.print-sketchbook',el=>el.dataset.book),'default');
   await lower(landing);
+  await freshMobilePage();
   await page.goto(origin+'/v3/prints/',{waitUntil:'networkidle0'});
   await page.mouse.move(225,320);
   await page.mouse.wheel({deltaY:180});await opened();
