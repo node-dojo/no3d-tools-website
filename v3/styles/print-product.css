@@ -22,10 +22,11 @@
 .print-gallery-slide img,.print-gallery-slide video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .print-gallery-slide:not(:first-child) img,.print-gallery-slide video{object-fit:contain}
 .print-gallery-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:80px;padding:12px;border-top:1px solid var(--ink);background:var(--paper)}
-.print-gallery-thumbnails{display:flex;gap:8px;min-width:0;overflow-x:auto;padding:3px;scrollbar-width:thin}
+.print-gallery-thumbnails{display:flex;gap:8px;min-width:0;overflow-x:auto;overflow-y:hidden;padding:3px;scrollbar-width:none}
+.print-gallery-thumbnails::-webkit-scrollbar{display:none}
 .print-gallery-thumbnails button{position:relative;flex:0 0 48px;width:48px;height:48px;padding:0;border:1px solid transparent;background:#d8d7d1;opacity:.55}
 .print-gallery-thumbnails button[aria-current=true]{opacity:1;outline:1px solid var(--ink);outline-offset:2px}
-.print-gallery-thumbnails img{width:100%;height:100%;object-fit:cover}
+.print-gallery-thumbnails img{display:block;width:100%;height:100%;object-fit:cover}
 .print-gallery-controls{display:flex;align-items:center;gap:4px;flex-shrink:0;font:600 9px var(--ui)}
 .print-gallery-controls button{display:grid;place-items:center;width:32px;height:44px;padding:0;border:0;background:transparent}
 .print-gallery-controls button:disabled{opacity:.25;cursor:default}
