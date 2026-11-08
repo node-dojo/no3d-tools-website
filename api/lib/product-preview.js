@@ -1,4 +1,4 @@
-import { landingHandle, printLandingProduct } from '../../v3/js/product-landing-model.js';
+import { landingHandle, landingPath, printLandingProduct } from '../../v3/js/product-landing-model.js';
 const ORIGIN = 'https://no3dtools.com';
 const escape = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const plainText = value => typeof value === 'string' ? value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
@@ -13,7 +13,7 @@ export async function productPreviewResponse(request, { fetcher = fetch } = {}) 
   try {
     const print = landing && printLandingProduct(handle);
     const response = print
-      ? Response.json({ product: { handle, title: print.title, description: print.paragraphs.join(' '), preview: print.media[0].src } })
+      ? Response.json({ product: { handle, title: print.title, description: print.paragraphs.join(' '), preview: print.shareImage?.src || print.media[0].src } })
       : await fetcher(new URL(`/api/products/${encodeURIComponent(handle)}`, url), { signal: AbortSignal.timeout(5000) });
     if (response.status === 404) return new Response('<!doctype html><html lang="en"><head><title>Tool not found — NO3D Tools</title><meta name="robots" content="noindex"></head><body><h1>Tool not found</h1><a href="/v3/">Browse Tools</a></body></html>', { status: 404, headers });
     if (!response.ok) throw Error('product_source_unavailable');
@@ -21,7 +21,7 @@ export async function productPreviewResponse(request, { fetcher = fetch } = {}) 
     if (product?.handle !== handle || typeof product.title !== 'string' || !product.title.trim()) throw Error('invalid_product_source');
     const title = escape(product.title);
     const description = escape(plainText(product.description).slice(0, 400) || `${product.title} — a NO3D Tool for Blender.`);
-    const canonical = landing ? `${ORIGIN}/p/${handle}` : `${ORIGIN}/v3/product/?handle=${encodeURIComponent(handle)}`;
+    const canonical = landing ? `${ORIGIN}${landingPath(handle)}` : `${ORIGIN}/v3/product/?handle=${encodeURIComponent(handle)}`;
     let image = `${ORIGIN}/assets/og-default.png`;
     for (const candidate of [product.preview, product.image]) {
       if (typeof candidate !== 'string' || !candidate.trim()) continue;
@@ -34,6 +34,7 @@ export async function productPreviewResponse(request, { fetcher = fetch } = {}) 
 <meta property="og:title" content="${title}"><meta property="og:description" content="${description}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="NO3D Tools">
 <meta property="og:url" content="${escape(canonical)}"><meta property="og:image" content="${escape(image)}">
+${print?.shareImage ? `<meta property="og:image:width" content="${print.shareImage.width}"><meta property="og:image:height" content="${print.shareImage.height}"><meta property="og:image:alt" content="${escape(print.shareImage.alt)}"><meta name="twitter:image:alt" content="${escape(print.shareImage.alt)}">` : ''}
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}">
 <meta name="twitter:description" content="${description}"><meta name="twitter:image" content="${escape(image)}">
 </head><body><h1>${title}</h1><p>${description}</p><a href="${escape(canonical)}">View ${title}</a></body></html>`, { status: 200, headers });

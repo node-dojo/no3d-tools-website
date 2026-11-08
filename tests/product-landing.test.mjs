@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { landingHandle, printLandingProduct } from '../v3/js/product-landing-model.js';
+import { landingHandle, landingPath, printLandingProduct } from '../v3/js/product-landing-model.js';
 import { productPreviewResponse } from '../api/lib/product-preview.js';
 import { publicPage, publicProperties } from '../v3/js/analytics-contract.js';
 import { resetNext } from '../api/auth/lib/password-reset.js';
@@ -14,6 +14,22 @@ test('campaign URLs resolve one exact product and preserve the native auth retur
   }
   for (const path of ['/p/', '/p/mace-and-chain/extra', '/p/../api/private', '/p/a%2fb', '/v3/account/']) assert.equal(landingHandle(path), null);
   for (const path of ['/p/../api/private', '/p/mace-and-chain?token=secret', '//evil.test/p/mace']) assert.equal(resetNext(path), '/v3/account/');
+});
+
+test('the public lighter-keeper name preserves purchase identity and auth return', () => {
+  for (const name of ['lighter-keeper', 'mace-and-chain']) {
+    for (const suffix of ['', '/', '?utm_source=social']) {
+      const handle = landingHandle(`/p/${name}${suffix}`);
+      assert.equal(handle, 'mace-and-chain');
+      assert.equal(printLandingProduct(handle).handle, 'mace-and-chain');
+      assert.equal(landingPath(handle), '/p/lighter-keeper');
+    }
+  }
+  assert.equal(resetNext('/p/lighter-keeper'), '/p/lighter-keeper');
+  assert.equal(routeKind('/p/lighter-keeper'), 'v3');
+  assert.equal(landingPath('spike-planter-01'), '/p/spike-planter-01');
+  assert.equal(landingPath('chrome-crayon'), '/p/chrome-crayon');
+  assert.equal(landingPath(null), '/v3/');
 });
 
 test('print pages reuse the authored description, file list, and expanded photography', () => {
@@ -31,13 +47,17 @@ test('print pages reuse the authored description, file list, and expanded photog
 });
 
 test('campaign share previews identify the print without fetching a Blender product or leaking query state', async () => {
-  const response = await productPreviewResponse(new Request('https://staging.no3dtools.com/p/mace-and-chain?email=private@example.test'), { fetcher: () => { throw Error('Unexpected catalog fetch'); } });
-  assert.equal(response.status, 200);
-  const html = await response.text();
-  assert.match(html, /property="og:title" content="The Lighter Keeper 01"/);
-  assert.match(html, /https:\/\/no3dtools.com\/p\/mace-and-chain/);
-  assert.match(html, /mace-chain-background-v2.png/);
-  assert.doesNotMatch(html, /private@example|staging.no3dtools|email=/);
+  for (const name of ['lighter-keeper', 'mace-and-chain']) {
+    const response = await productPreviewResponse(new Request(`https://staging.no3dtools.com/p/${name}?email=private@example.test`), { fetcher: () => { throw Error('Unexpected catalog fetch'); } });
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /property="og:title" content="The Lighter Keeper 01"/);
+    assert.match(html, /https:\/\/no3dtools.com\/p\/lighter-keeper/);
+    assert.match(html, /lighter-keeper-social-2c8dc1c41f.jpg/);
+    assert.match(html, /property="og:image:width" content="720"/);
+    assert.match(html, /property="og:image:height" content="720"/);
+    assert.doesNotMatch(html, /private@example|staging.no3dtools|email=|mace-chain-background-v2.png/);
+  }
 });
 
 test('campaign tool previews use the existing catalog and fail closed on unknown products', async () => {

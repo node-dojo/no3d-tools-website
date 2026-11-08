@@ -40,7 +40,7 @@ page.on('request', async request => {
   if (url.origin !== origin && !url.href.startsWith('data:')) return request.abort();
   return request.continue();
 });
-async function open(handle = 'mace-and-chain') {
+async function open(handle = 'lighter-keeper') {
   await page.goto(`${origin}/p/${handle}`, { waitUntil: 'networkidle0' });
   await page.waitForSelector('#product[aria-busy="false"]');
   await page.evaluate(() => document.fonts.ready);
@@ -54,7 +54,7 @@ try {
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     assert.ok(await page.$eval('.landing-print-backdrop', el => el.getBoundingClientRect().left === 0 && el.getBoundingClientRect().width === innerWidth));
     assert.deepEqual(await page.$eval('[data-product-title]', el => { const style = getComputedStyle(el); return [style.opacity, style.textShadow, style.mixBlendMode, style.filter]; }), ['1', 'none', 'normal', 'none']);
-    assert.equal(await page.$eval('[data-signin]', el => new URL(el.href).searchParams.get('next')), '/p/mace-and-chain');
+    assert.equal(await page.$eval('[data-signin]', el => new URL(el.href).searchParams.get('next')), '/p/lighter-keeper');
     assert.equal(await page.$eval('[data-next]', el => el.disabled), false);
     await page.click('[data-next]');
     await page.waitForFunction(() => document.querySelector('[data-position]').textContent === '02 / 08');

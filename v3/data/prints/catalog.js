@@ -1,6 +1,13 @@
 export const printProducts = [
   {
     "slug": "mace-and-chain",
+    "publicSlug": "lighter-keeper",
+    "shareImage": {
+      "src": "/v3/assets/prints/lighter-keeper-social-2c8dc1c41f.jpg",
+      "alt": "The Lighter Keeper 01, with its spiked mace, chain, and lighter holder on dark wood",
+      "width": 720,
+      "height": 720
+    },
     "landingHero": {
       "src": "/v3/assets/prints/mace-chain-background-v2.png",
       "alt": "The Lighter Keeper 01 on dark wood",

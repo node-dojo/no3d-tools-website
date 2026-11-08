@@ -1,7 +1,7 @@
 import { mountPrintParts } from './print-parts.js?v=assembled-dimensions-20261103';
 import { beginProductCheckout, getPrintOffer, getProduct } from './api.js?v=prints-20261028b';
 import { renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
-import { landingHandle, printLandingProduct, toolLandingProduct } from './product-landing-model.js?v=assembled-dimensions-20261103';
+import { landingHandle, landingPath, printLandingProduct, toolLandingProduct } from './product-landing-model.js?v=lighter-keeper-20261108';
 import { landingAccess } from './product-landing-access.js?v=landing-20261030a';
 import { createProductGallery } from './product-gallery.js?v=assembled-dimensions-20261103';
 import { initializeAnalytics, track } from './analytics.js?v=landing-20261030a';
@@ -12,7 +12,7 @@ let product;
 let busy = false;
 const action = $('[data-acquire]');
 const status = $('[data-status]');
-const canonicalPath = handle ? `/p/${handle}` : '/v3/';
+const canonicalPath = landingPath(handle);
 const signinPath = `/v3/onboarding/create-account/?mode=signin&next=${encodeURIComponent(canonicalPath)}`;
 for (const element of document.querySelectorAll('[data-signin], [data-member-signin]')) element.href = signinPath;
 initializeAnalytics();

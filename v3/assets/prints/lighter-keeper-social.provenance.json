@@ -1,0 +1,9 @@
+{
+  "output": "lighter-keeper-social-2c8dc1c41f.jpg",
+  "source": "mace-chain-background-v2.png",
+  "sourceSha256": "fe689050e5aa59c83b929ce3fa9923087dacc19692749b19605b7d8d61736735",
+  "operation": "ImageMagick crop 720x720+275+260, strip metadata, JPEG quality 94; no upscaling or generative changes",
+  "outputSha256": "2c8dc1c41f73dab448d2ad68269cb6d8abd9b8bcfc05610b72ca726f7fed96f7",
+  "destination": "Square social link preview for /p/lighter-keeper",
+  "direction": "2026-11-08: user requested the subject fill more of the link-preview frame, retaining the existing photograph"
+}

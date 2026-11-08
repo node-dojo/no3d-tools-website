@@ -6,7 +6,15 @@ export function landingHandle(value) {
   const url = new URL(value, 'https://no3dtools.com');
   const handle = url.pathname.match(/^\/p\/([a-z0-9][a-z0-9-]{0,127})\/?$/)?.[1]
     || (url.pathname.startsWith('/v3/product/landing/') ? url.searchParams.get('handle') : null);
-  return /^[a-z0-9][a-z0-9-]{0,127}$/.test(handle || '') ? handle : null;
+  if (!/^[a-z0-9][a-z0-9-]{0,127}$/.test(handle || '')) return null;
+  // Public names can evolve while purchases and downloads retain their identity.
+  return printProducts.find(product => product.publicSlug === handle)?.slug || handle;
+}
+
+export function landingPath(handle) {
+  if (!/^[a-z0-9][a-z0-9-]{0,127}$/.test(handle || '')) return '/v3/';
+  const product = printProducts.find(item => item.slug === handle);
+  return `/p/${product?.publicSlug || handle}`;
 }
 
 export function printLandingProduct(handle) {
@@ -19,6 +27,7 @@ export function printLandingProduct(handle) {
     paragraphs: product.paragraphs.slice(0, split < 0 ? undefined : split + 1).map(text => text.replace(/\n*Included in the Download:$/, '').trim()).filter(Boolean),
     notes: split < 0 ? [] : product.paragraphs.slice(split + 1), included: product.included, previewParts: product.previewParts, previewNotes: product.previewNotes, dimensions: product.dimensions,
     media: product.landingHero ? [product.landingHero, ...product.media] : product.media,
+    shareImage: product.shareImage,
   };
 }
 
