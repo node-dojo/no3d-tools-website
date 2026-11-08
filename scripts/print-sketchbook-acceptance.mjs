@@ -177,7 +177,9 @@ try {
   // scrolled dialog target across navigation can drop CDP touch events before
   // they reach the new document (including its capture listeners).
   await freshMobilePage();
-  await page.goto(origin+'/p/mace-and-chain',{waitUntil:'networkidle0'});
+  // Live analytics may stay pending after the interactive page is ready.
+  await page.goto(origin+'/p/mace-and-chain',{waitUntil:'domcontentloaded'});
+  await page.waitForSelector('body > .book-access');
   await page.evaluate(()=>scrollTo({top:420,behavior:'instant'}));
   const landing=await lift();
   assert.equal(await page.$eval('.print-sketchbook',el=>el.dataset.book),'default');

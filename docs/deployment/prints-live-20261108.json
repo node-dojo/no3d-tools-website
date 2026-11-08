@@ -1,0 +1,772 @@
+{
+  "passed": true,
+  "checkedAt": "2026-11-08T08:48:28.588Z",
+  "target": "https://no3dtools.com",
+  "source": "58ad077fe02a738b4d04d43fbab0d42056359102",
+  "assets": [
+    {
+      "path": "v3/assets/sketchbook/manifest.json.gz",
+      "status": 200,
+      "decodedSha256": "487c4950df926861ebe7884f5e26412e5a7e90c6536cbdf1774bd7713d74ab28",
+      "gzip": true
+    },
+    {
+      "path": "v3/assets/sketchbook/poses/000.c268ebf12467.bin",
+      "status": 200,
+      "decodedSha256": "c268ebf1246709720f19df2294a2743bc5534da4ea3064b3f42b6ef87e6086c2",
+      "gzip": true
+    },
+    {
+      "path": "v3/assets/sketchbook/poses/025.af40398dd5c7.bin",
+      "status": 200,
+      "decodedSha256": "af40398dd5c7a2c6e4d6bc961aa3643cbac18d43b336d73915ff321fcab63777",
+      "gzip": true
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/manifest.json.gz",
+      "status": 200,
+      "decodedSha256": "627891ad4c8bb00921dc31fb1d83122cb72d7c49d8c0411b773ee2e40d5d0a8a",
+      "gzip": true
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/poses/000.0ccc6555ae33.bin",
+      "status": 200,
+      "decodedSha256": "0ccc6555ae33d66b534e9526fc8d7f381b56536f63e5123a12df67d7e59447df",
+      "gzip": true
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/poses/035.4a50cfd6b258.bin",
+      "status": 200,
+      "decodedSha256": "4a50cfd6b2586a09cb55b0a2c3a3b72fb009291197c15bbed350ab110a4a8589",
+      "gzip": true
+    },
+    {
+      "path": "v3/assets/prints/sketchbook-open.svg",
+      "status": 200,
+      "sha256": "1319df53ccc8075d3763a003535d73e5bcf24637090003d9de94647ccf31713d"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/open.webp",
+      "status": 200,
+      "sha256": "ae3aa996da7babadc707bf30e7eaed652e1c928e08344b4632591cdbae74ea91"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/closed.webp",
+      "status": 200,
+      "sha256": "947c5545d972132130f1245784bf3b053af87e163446b2eebfc73fc15b22796c"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/14003b557054ffa1.webp",
+      "status": 200,
+      "sha256": "512fdd1f7c0553e9822cd00c924ba7d7f3d4f87860a6e067f4b4a98f453b041b"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/69f0a7dd1f7effd4.webp",
+      "status": 200,
+      "sha256": "4fd388c09f742db66587fedb347521680fc5bda9813421bda0e7445c64e0ae2d"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/3eb18d74a76c035e.webp",
+      "status": 200,
+      "sha256": "e70c5fdfffe8c30422bf8baee20222d8af0d59db584547330d5479abeaa03d6a"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/44cd6f508fe97d49.webp",
+      "status": 200,
+      "sha256": "0c2c8bbd6ce249826c9af1261f4030b5d8686c7bc99bf330d4f0159328f90f50"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/5f1c5785eacd1b75.webp",
+      "status": 200,
+      "sha256": "68ba07714b5678088a99ad7c40c964c0a5eefc4e593e49fc15ffd92cf9382b4a"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/6eb3ea85a30a4609.webp",
+      "status": 200,
+      "sha256": "a01f1763e27b359f9284543b2bbb5cad88d87d8a9750088c9b114a8f72d0fb07"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/78e3eaf119220687.webp",
+      "status": 200,
+      "sha256": "69d08b8d4017e66a2944fa62cdb131381056d96744cc5b04fa01a7964e419efc"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/7eb60a3b9f2a6f31.webp",
+      "status": 200,
+      "sha256": "79ed79fedcfe9d65c61eaa3c19d0be63e7ea98fc56022eee92c01c53088a997e"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/7d3d211228cb06eb.webp",
+      "status": 200,
+      "sha256": "574c5598056a154dfdc7b5826670bfff30580080c0e5bf8b3fc18caddc697a9c"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/82053b012fd14932.webp",
+      "status": 200,
+      "sha256": "9bb00be8a6e30c074e88b194847edc6d74623a17a2c1396b47e001e01fcca9b5"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/8b8408ba05a29cac.webp",
+      "status": 200,
+      "sha256": "3576adcbfc559169e389b9554b1b5f158cd65cbe78a831792e47949772068988"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/a41eadb87f70399b.webp",
+      "status": 200,
+      "sha256": "f740e180bacd2ba63096168166e5a1a12c0d9d7afbc1b51d3337a70c14784de2"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/8741d94ffa4d1205.webp",
+      "status": 200,
+      "sha256": "0bc2b8566a5c591f8b2f56fd7b031dc65ca09440978780ca1defeecd1ebf53f8"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/ae52235d21d7568b.webp",
+      "status": 200,
+      "sha256": "7375297ff83ac5163315e8426ea8516ac2d4eea7d1db3d021597404f1827f30b"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/ce29b9cc22e5f282.webp",
+      "status": 200,
+      "sha256": "8d35e7d0b408927d7438b9d94ec6ad1db56b308524c1244dff3e4c2a0d7c691e"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/a57f01be38326aa1.webp",
+      "status": 200,
+      "sha256": "9d48785416aa8b92bc1ede41f1e4876250283538711cd75743429be383f98581"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/c4c7ff223561c565.webp",
+      "status": 200,
+      "sha256": "831537881b6cfcfb219a0c22faff3cd117aaea6f59ef76baac800fb339997134"
+    },
+    {
+      "path": "v3/assets/sketchbook/closed.webp",
+      "status": 200,
+      "sha256": "8fee1ec057f318c61b6b9ce3c5f791d4b525ef4fd3ed743f716fe317e17897f3"
+    },
+    {
+      "path": "v3/assets/sketchbook/open.webp",
+      "status": 200,
+      "sha256": "55f1225c94538688ea6e454b00224eae7ee073732bee7cf50382b089462d961b"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/e555971d20b4037d.webp",
+      "status": 200,
+      "sha256": "c5d4454dfcc0c228717bc1f3e3e5f9ce963bcb3c30fe1c31d1efc684e7b72d42"
+    },
+    {
+      "path": "v3/assets/sketchbook/books/spike-planter/v1/textures/e863a9c39cf38a2d.webp",
+      "status": 200,
+      "sha256": "4b59a9a57329aafec9ca0554d5a2331f2d059d9312a741c4be7bbee13c91183c"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/47959c6fda7e.webp",
+      "status": 200,
+      "sha256": "0bafa79c4537273dca1333af6f5de823f7b0c9214b747bd249866148a86f07e0"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/14b3f8683c2a.webp",
+      "status": 200,
+      "sha256": "19377c1ca699562a6accc854da90a9e4faa2a6583f1c141f30ff5b6cc0a52791"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/2c1288902363.webp",
+      "status": 200,
+      "sha256": "94291b27dcb87329afc49b9b548ead677ea7f262924855124dec55d6ba799afc"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/038a611722fa.webp",
+      "status": 200,
+      "sha256": "f280361b63f4138502a16c82fdd10068623c717a5afa42e56e12d22131ef5afa"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/526271d74827.webp",
+      "status": 200,
+      "sha256": "02344cbee92602657631352e99fea5909269ca27623bb507c4fba809efe88c6d"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/a3709534bbaf.webp",
+      "status": 200,
+      "sha256": "0899e8b1a37bf7a08edfd460ec70956e49e14b05a291ccdcac0884eca38cf56b"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/6ae0b140f6ea.webp",
+      "status": 200,
+      "sha256": "f85958281848c15e631d756cbf48ea0aa1ff1924a8bc007e22280d86765902a4"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/6404743f33d6.webp",
+      "status": 200,
+      "sha256": "ba65c3095da87f50fb8544fad42f237c65c6ff8a620537d8e085e4d6c477deba"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/af7cd5f13eb9.webp",
+      "status": 200,
+      "sha256": "4b0f700e79df9b60a3676c944dfb9485f209a99dd9e39b696737807f0c453698"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/b95179810c6f.webp",
+      "status": 200,
+      "sha256": "20059fe9a0b8392e7d66f08add626936d229e67aa455cf26ca1090e43cc30d8a"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/b2e0aa495297.webp",
+      "status": 200,
+      "sha256": "97551d2f869437aa97c96046d9b289953a3350cfc876a6ab0186aca5324661c2"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/c1f3b2ddc8ae.webp",
+      "status": 200,
+      "sha256": "86815a6b134d87d2e5e615d777be0c9f853a40267daedf40b48b309597bee533"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/cadf41928f70.webp",
+      "status": 200,
+      "sha256": "f7787fdd93da00ad346db4bb56676e2be4f6210e7efe9e80aea9d300139f4f76"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/ddf90511b9f7.webp",
+      "status": 200,
+      "sha256": "93e1d61d32c16f25ceb6e8fcd75df49b02a10502ad5f99cf6352a717ea4f974c"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/f76f851061fe.webp",
+      "status": 200,
+      "sha256": "faed9f0b6b51288630da02e55d8fb49aee92215296ac24d374ed11a1d36b8923"
+    },
+    {
+      "path": "v3/assets/sketchbook/textures/d1b5f2e2adf6.webp",
+      "status": 200,
+      "sha256": "9bcec72f2da482d207b30de701e30224e4e0364b518c77881c10cc63e291a4ce"
+    },
+    {
+      "path": "v3/js/print-download.js",
+      "status": 200,
+      "sha256": "1082903f847d2bb7f5c19e192168e0ea1bff68dd982a324c98c92904eaee0174"
+    },
+    {
+      "path": "v3/js/print-sketchbook.js",
+      "status": 200,
+      "sha256": "c3e04df11d20e4da1ee2df19f10fdff57ee6463eb2a876dbeff780feb8463e8a"
+    },
+    {
+      "path": "v3/js/print-product.js",
+      "status": 200,
+      "sha256": "8ef9e1f65080595ca2333f003c3b3680cb6959cc98e4413fdc274a569b86d6a5"
+    },
+    {
+      "path": "v3/data/prints/catalog.js",
+      "status": 200,
+      "sha256": "09012f5306588f2423c19af0514c4a93ef8d3e808daf2a105edb6ad87b2401dd"
+    },
+    {
+      "path": "v3/js/sketchbook/books.js",
+      "status": 200,
+      "sha256": "933cf10809699c5b698afdf6df113014f930edc692f973af0365fb647a9dbde4"
+    },
+    {
+      "path": "v3/js/prints.js",
+      "status": 200,
+      "sha256": "e510a617a57f2b070ca3e072c48fba0b535a0fe7abb376a0701751119b58711a"
+    },
+    {
+      "path": "v3/js/sketchbook/deform-pose.js",
+      "status": 200,
+      "sha256": "210aa5567bdaaeff957de9b9ed5877d2d074a58dfcd5287995200a7f1ca88a23"
+    },
+    {
+      "path": "v3/js/product-landing.js",
+      "status": 200,
+      "sha256": "b52400980430814fc832db58f5c928b25088ecd191f8010cc558a0a5b5c68710"
+    },
+    {
+      "path": "v3/js/sketchbook/pose-codec.js",
+      "status": 200,
+      "sha256": "f750b1193f9fb98261fb7539d0baa47416d7302954d6955d8e2d53ee23de81e1"
+    },
+    {
+      "path": "v3/js/sketchbook/resources.js",
+      "status": 200,
+      "sha256": "c0985412b36a11c95fb8aae26c3c92612fa1b1b984290807dade999e66ce6524"
+    },
+    {
+      "path": "v3/js/sketchbook/interaction.js",
+      "status": 200,
+      "sha256": "4e51416ec4e9281a875b5a5f202bf026399294657596f44f6974415ba8978c57"
+    },
+    {
+      "path": "v3/js/sketchbook/pose-store.js",
+      "status": 200,
+      "sha256": "d8d0f3bf09bd753224150675192da0701c8e180fd07d1de13ec8318011fcaa31"
+    },
+    {
+      "path": "v3/js/sketchbook/soft-tilt.js",
+      "status": 200,
+      "sha256": "12d4396594a8c3d45a67ae3be4a26ad169634f7de4bf963a5bf16b486de6a862"
+    },
+    {
+      "path": "v3/js/sketchbook/view-navigation.js",
+      "status": 200,
+      "sha256": "c6ba1ace2a251bcdf95ddf32adcd9f954e45417b48dda8771b654b3be43e10b8"
+    },
+    {
+      "path": "v3/js/sketchbook/view-motion.js",
+      "status": 200,
+      "sha256": "fd44a1facbf9fbfefe975f8f717e10b2be839925b9a7174ac728d2c9392e4123"
+    },
+    {
+      "path": "v3/js/sketchbook/three-renderer.js",
+      "status": 200,
+      "sha256": "5deff97226519a050a37a0b276e6e0d02f85544e9f5c846082b38e13c8317a82"
+    },
+    {
+      "path": "v3/styles/print-product.css",
+      "status": 200,
+      "sha256": "9f062870034a61b5d3277e95961ffbd0825484d41137b3bfe6f7fcd9e98dcd15"
+    },
+    {
+      "path": "v3/prints/index.html",
+      "status": 200,
+      "sha256": "831219efcd8c754a7131670996f3dcb27084ddc4585e58816fb57b80b7b9754a"
+    },
+    {
+      "path": "v3/styles/print-sketchbook.css",
+      "status": 200,
+      "sha256": "0461b585cb089d94565d1d22cf621269e47d78c9f858fece854ad9b6c9b0aaa8"
+    },
+    {
+      "path": "v3/product/landing/index.html",
+      "status": 200,
+      "sha256": "a13114f0a61e353bd0f59dedd06a08f29f5016e8ca5c4c1ab276759b18ce46df"
+    },
+    {
+      "path": "v3/styles/prints.css",
+      "status": 200,
+      "sha256": "5d2b60b0d1ece650f5431b193a49443404dd37b7ea9514dd213cdb35703d29e8"
+    },
+    {
+      "path": "v3/styles/product-landing.css",
+      "status": 200,
+      "sha256": "c97e90a6f6081eb2a3a7a3f48a633a4113b0913b66bd842435613a2264b27160"
+    },
+    {
+      "path": "v3/vendor/sketchbook-three/three.module.js",
+      "status": 200,
+      "sha256": "104f56145899722094556490d787aae0617cc2fc3382f31df02d724ea1aee341"
+    },
+    {
+      "path": "v3/vendor/sketchbook-three/three.core.js",
+      "status": 200,
+      "sha256": "613e370f76638fdef83926642bf256dc9615684922de1ce1f63a8583e5d78578"
+    },
+    {
+      "path": "v3/js/api.js",
+      "status": 200,
+      "sha256": "72f004c093d5c1617167e2cc44ae1cc97fb6f2736d2e32da41bbc85460071770"
+    },
+    {
+      "path": "v3/index.html",
+      "status": 200,
+      "sha256": "799542eaf779b00e0ccd7a66b385a4442b34c8ef6707dffe2087dfe0e768b168"
+    },
+    {
+      "path": "v3/js/home.js",
+      "status": 200,
+      "sha256": "e5212318974477e18d6771f8fadf0e2a74f8032b8331bd82075edd314e9d1c86"
+    }
+  ],
+  "api": [
+    {
+      "handle": "mace-and-chain",
+      "price": 1111,
+      "currency": "usd",
+      "anonymousAccess": "purchase",
+      "anonymousDownload": 403
+    },
+    {
+      "handle": "spike-planter-01",
+      "price": 1111,
+      "currency": "usd",
+      "anonymousAccess": "purchase",
+      "anonymousDownload": 403
+    }
+  ],
+  "routes": [
+    {
+      "route": "/",
+      "status": 200
+    },
+    {
+      "route": "/v3/",
+      "status": 200
+    },
+    {
+      "route": "/v3/prints/",
+      "status": 200
+    },
+    {
+      "route": "/p/mace-and-chain",
+      "status": 200
+    },
+    {
+      "route": "/p/spike-planter-01",
+      "status": 200
+    },
+    {
+      "route": "/v3/account/",
+      "status": 200
+    },
+    {
+      "route": "/v3/prints/download/",
+      "status": 200
+    }
+  ],
+  "boundary": "Read-only public requests; no payments, accounts, messages or private downloads created.",
+  "deployment": {
+    "id": "dpl_3zdCGveAoUnnBdYBLcJVuMBB9y4r",
+    "url": "https://no3dtoolssite-qot7rhayg-node-dojos-projects.vercel.app",
+    "status": "Ready",
+    "canonicalHostVerified": "https://no3dtools.com",
+    "rollbackId": "dpl_9fiZ2mojmct77zVhX6sS7xQPsvok",
+    "rollbackUrl": "https://no3dtoolssite-58gj5z5bt-node-dojos-projects.vercel.app",
+    "rollbackSource": "69d480a7e9b0d5ab79a5ad61168515ad3b573c8d"
+  },
+  "media": {
+    "target": "https://no3dtools.com",
+    "results": [
+      {
+        "width": 1440,
+        "handle": "mace-and-chain",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-detail-1.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "handle": "mace-and-chain",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-detail-1.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "handle": "spike-planter-01",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-feet.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "handle": "spike-planter-01",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-feet.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "mace-and-chain",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-detail-1.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "mace-and-chain",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/mace-assembly-d82aa1233b.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-assembly-f40d68f648.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-in-use-caff74eb78.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-lighting-incense-e857b36811.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-keychain-haft-9a03e8d7ea.webp",
+            "type": "image",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/mace-detail-1.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "spike-planter-01",
+        "route": "catalog",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-feet.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "handle": "spike-planter-01",
+        "route": "campaign",
+        "initialGifRequests": 0,
+        "checks": [
+          {
+            "src": "/v3/assets/prints/planter-surface-closeup-5c33f26903.gif",
+            "type": "image",
+            "animated": true,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-feet.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          },
+          {
+            "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+            "type": "video",
+            "animated": false,
+            "passed": true
+          }
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "visual": {
+    "origin": "https://no3dtools.com",
+    "results": [
+      {
+        "width": 390,
+        "slug": "mace-and-chain",
+        "ready": true
+      },
+      {
+        "width": 390,
+        "slug": "spike-planter-01",
+        "ready": true
+      },
+      {
+        "width": 1440,
+        "slug": "mace-and-chain",
+        "ready": true
+      },
+      {
+        "width": 1440,
+        "slug": "spike-planter-01",
+        "ready": true
+      }
+    ],
+    "errors": []
+  },
+  "interactions": {
+    "sketchbook": "Passed: eased offscreen entrance during cold load, closed centered cover on reopen, visible book control, corner close and focus, upward/downward dismissal, zoomed offscreen pan, bottom pull, canceled lift, alpha composition, horizontal flip, pinch isolation, nested product details, standalone print, return state, wheel and keyboard.",
+    "productBooks": "Passed: product switching, fresh opening state, per-product posters, standalone Spike, stale-load cancellation, failed-load retry."
+  },
+  "localValidation": {
+    "unitTests": 205,
+    "passed": [
+      "isolated npm ci and build",
+      "acceptance:v3",
+      "acceptance:prints",
+      "acceptance:landing",
+      "print-sketchbook-acceptance",
+      "sketchbook-product-acceptance",
+      "prints-media-acceptance"
+    ],
+    "audit": {
+      "low": 4,
+      "moderate": 1,
+      "high": 4,
+      "critical": 0,
+      "inherited": true
+    }
+  },
+  "acceptanceBoundary": "Public mobile and desktop Chromium, including real WebGL and CDP touch. Physical iPhone/Safari acceptance remains with Joe. Payment branches were fixture-tested; no new real payment or fulfillment lifecycle was run for this layout/sketchbook release. Public price and anonymous access were checked read-only.",
+  "completedAt": "2026-11-08T08:51:36.219981+00:00"
+}

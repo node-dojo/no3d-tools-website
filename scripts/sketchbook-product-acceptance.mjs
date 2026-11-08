@@ -35,7 +35,9 @@ try {
   assert.equal(manifests.filter(url=>url.endsWith('/books/spike-planter/v1/manifest.json.gz')).length,2);
   assert.equal(manifests.filter(url=>url.endsWith('/sketchbook/manifest.json.gz')).length,1);
   await close();
-  await page.goto(origin+'/p/spike-planter-01',{waitUntil:'networkidle0'});
+  // Live analytics may stay pending after the interactive page is ready.
+  await page.goto(origin+'/p/spike-planter-01',{waitUntil:'domcontentloaded'});
+  await page.waitForSelector('body > .book-access');
   await open();await ready('spike-planter');await close();
 
   // Hold the old request across a product switch, then let it finish late.
