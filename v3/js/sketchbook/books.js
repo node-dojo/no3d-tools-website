@@ -4,7 +4,7 @@ import { printProducts } from '../../data/prints/catalog.js?v=product-books-1';
 export const defaultBook = Object.freeze({
   id: 'default',
   manifest: '/v3/assets/sketchbook/manifest.json.gz',
-  poster: '/v3/assets/sketchbook/open.webp',
+  poster: '/v3/assets/sketchbook/closed.webp',
   initialProgress: .5050505,
   pageStops: [0,.099,.18,.261,.342,.423,.504,.585,.666,.747,.828,.909,.99],
 });
@@ -12,7 +12,7 @@ const books = {
   'spike-planter': {
     id: 'spike-planter',
     manifest: '/v3/assets/sketchbook/books/spike-planter/v1/manifest.json.gz',
-    poster: '/v3/assets/sketchbook/books/spike-planter/v1/open.webp',
+    poster: '/v3/assets/sketchbook/books/spike-planter/v1/closed.webp',
   },
 };
 

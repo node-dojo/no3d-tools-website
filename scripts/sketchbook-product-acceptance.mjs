@@ -26,10 +26,11 @@ try {
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('+');
   await close();await select('mace-and-chain');await open();await ready('default');
-  assert.ok((await page.$eval('.book-sheet img',el=>el.src)).endsWith('/sketchbook/open.webp'));
+  assert.ok((await page.$eval('.book-sheet img',el=>el.src)).endsWith('/sketchbook/closed.webp'));
   await close();await select('spike-planter-01');await open();await ready('spike-planter');
   assert.equal(await page.$eval('.book-sheet canvas',el=>el.toDataURL()),opening,'returning to a different book resets its page and zoom');
-  assert.ok((await page.$eval('.book-sheet img',el=>el.src)).endsWith('/books/spike-planter/v1/open.webp'));
+  assert.ok((await page.$eval('.book-sheet img',el=>el.src)).endsWith('/books/spike-planter/v1/closed.webp'));
+  assert.ok(await page.$eval('.book-sheet',el=>parseFloat(getComputedStyle(el).transitionDuration)<.001),'reduced motion skips the slide');
   assert.equal(manifests.filter(url=>url.endsWith('/books/spike-planter/v1/manifest.json.gz')).length,2);
   assert.equal(manifests.filter(url=>url.endsWith('/sketchbook/manifest.json.gz')).length,1);
   await close();

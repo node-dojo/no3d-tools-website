@@ -1,4 +1,4 @@
-import { mountPrintSketchbook } from './print-sketchbook.js?v=sketchbook-layout-1';
+import { mountPrintSketchbook } from './print-sketchbook.js?v=closed-entry-1';
 import { printProducts } from '../data/prints/catalog.js?v=assembled-dimensions-20261103';
 import { createPrintProductView } from './print-product.js?v=sketchbook-layout-1';
 import { downloadPrint } from './print-download.js?v=sketchbook-layout-1';

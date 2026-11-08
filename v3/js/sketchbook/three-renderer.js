@@ -4,13 +4,13 @@ import {createPoseStore} from './pose-store.js';
 import {deformPose} from './deform-pose.js';
 import {createViewMotion} from './view-motion.js';
 import {bookNavigation} from './books.js?v=product-books-1';
-export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},onError=()=>{},signal}={}){
+export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},onError=()=>{},signal,initialProgress}={}){
   const manifestURL=rootManifest.three.manifest;
   const base=manifestURL.slice(0,manifestURL.lastIndexOf('/')+1);
   const response=await fetch(manifestURL,{signal});if(!response.ok)throw new Error('The sketchbook is unavailable.');
   const manifest=await response.json();
   signal?.throwIfAborted();
-  const navigation=bookNavigation(manifest,rootManifest);
+  const navigation=bookNavigation(initialProgress===undefined ? manifest : {...manifest,initialProgress},rootManifest);
   onStatus('Preparing 3D graphics…');
   // Keep the last frame visible while the demand-driven renderer is idle.
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
@@ -28,7 +28,9 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
   let resolveFirstDraw,rejectFirstDraw;
   const firstDraw=new Promise((resolve,reject)=>{resolveFirstDraw=resolve;rejectFirstDraw=reject;});
   firstDraw.catch(()=>{});
-  function fail(error){if(runtimeError||destroyed)return;runtimeError=error;rejectFirstDraw(error);onError(error);}
+  const waitingDraws=new Set();
+  function rejectDraws(error){for(const pending of waitingDraws)pending.reject(error);waitingDraws.clear();}
+  function fail(error){if(runtimeError||destroyed)return;runtimeError=error;rejectFirstDraw(error);rejectDraws(error);onError(error);}
   function contextLost(event){event.preventDefault();fail(new Error('3D graphics were interrupted. Tap Retry to reload the book.'));}
   canvas.addEventListener('webglcontextlost',contextLost);
   renderer.debug.onShaderError=()=>{throw new Error('The 3D shader could not compile on this browser.');};
@@ -136,6 +138,7 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
     renderTimes.push(performance.now()-renderStarted);if(renderTimes.length>120)renderTimes.shift();
     if(renderer.getContext().isContextLost())throw new Error('3D graphics were interrupted. Tap Retry to reload the book.');
     resolveFirstDraw();
+    if(lastProgress===state.progress){for(const pending of waitingDraws)pending.resolve();waitingDraws.clear();}
     drawTimes.push(now);drawTimes=drawTimes.filter(t=>now-t<1000);
     canvas.dataset.tiltPitch=(combined.pitch*180/Math.PI).toFixed(3);canvas.dataset.tiltYaw=(combined.yaw*180/Math.PI).toFixed(3);
     if(moving)requestDraw();
@@ -144,6 +147,10 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
   return {
     navigation,
     ready:firstDraw,
+    whenDrawn(){
+      if(runtimeError||destroyed)return Promise.reject(runtimeError||new DOMException('Viewer closed.','AbortError'));
+      return new Promise((resolve,reject)=>{waitingDraws.add({resolve,reject});requestDraw();});
+    },
     upperEdge(viewWidth, viewHeight) {
       if (lastProgress < 0) return null;
       book.updateWorldMatrix(true, false);
@@ -187,6 +194,6 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
     setActive(value){active=value;justActivated=value;if(!value){cancelAnimationFrame(raf);raf=0;resetTilt();viewMotion.reset(state);}else requestDraw();},
     resize(w,h,pixelRatio=1){width=w;height=h;renderer.setPixelRatio(Math.min(pixelRatio,2));renderer.setSize(w,h,false);requestDraw();},
     getStats(){const average=values=>values.reduce((a,b)=>a+b,0)/Math.max(1,values.length),shown=viewMotion.get();return {renderer:'Baked 3D deformation',samples:sampleCount,vertices:items.reduce((n,i)=>n+i.part.vertexCount,0),...poses.getStats(),decodedMemoryMB:poses.getStats().poseMemoryMB+items.reduce((n,i)=>n+i.positions.byteLength+i.normals.byteLength,0)/1048576,drawsPerSecond:drawTimes.filter(t=>performance.now()-t<1000).length,deformationMs:average(deformTimes),renderSubmitMs:average(renderTimes),displayedProgress:lastProgress,viewZoom:shown.zoom,viewPanX:shown.panX,viewPanY:shown.panY,viewFollowing:shown.moving,tiltDegrees:Math.hypot(pivot.rotation.x,pivot.rotation.y)*180/Math.PI,pullTiltDegrees:Math.hypot(motionTilt.pitch,motionTilt.yaw)*180/Math.PI,detail:'Air-damped pan/zoom · reactive tilt · exact rig geometry and normals',geometryMemoryOnly:true};},
-    destroy(){destroyed=true;rejectFirstDraw(new DOMException('Viewer closed.','AbortError'));poses.destroy();cancelAnimationFrame(raf);canvas.removeEventListener('webglcontextlost',contextLost);motionQuery.removeEventListener('change',onMotionPreference);for(const i of items){i.geometry.dispose();i.material.dispose();}for(const p of textures.values())p.then(t=>t.dispose()).catch(()=>{});renderer.dispose();renderer.forceContextLoss();}
+    destroy(){destroyed=true;const error=new DOMException('Viewer closed.','AbortError');rejectFirstDraw(error);rejectDraws(error);poses.destroy();cancelAnimationFrame(raf);canvas.removeEventListener('webglcontextlost',contextLost);motionQuery.removeEventListener('change',onMotionPreference);for(const i of items){i.geometry.dispose();i.material.dispose();}for(const p of textures.values())p.then(t=>t.dispose()).catch(()=>{});renderer.dispose();renderer.forceContextLoss();}
   };
 }

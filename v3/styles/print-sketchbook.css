@@ -32,6 +32,7 @@
 .print-sketchbook[data-ready=true] .book-sheet img,
 .print-sketchbook:not([data-ready=true]) canvas { visibility: hidden; }
 .book-animating { transition: transform 290ms cubic-bezier(.19,.8,.24,1); }
+.book-arriving { transition: transform 760ms cubic-bezier(.16,1,.3,1); }
 .book-close {
   position: absolute;
   top: max(68px, calc(env(safe-area-inset-top) + 52px));
@@ -70,5 +71,5 @@
 }
 .book-status:not(:empty) { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 @media (prefers-reduced-motion: reduce) {
-  .book-animating { transition: none; }
+  .book-animating, .book-arriving { transition: none; }
 }

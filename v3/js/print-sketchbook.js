@@ -1,5 +1,5 @@
 import { controlBook } from './sketchbook/interaction.js?v=sketchbook-layout-1';
-import { bookForProduct, defaultBook } from './sketchbook/books.js?v=product-books-1';
+import { bookForProduct, defaultBook } from './sketchbook/books.js?v=closed-entry-1';
 
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -36,6 +36,7 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
 
   let renderer, loading, failed = false, returnFocus, contact, closeTimer, suppressClickUntil = 0;
   let attempt = 0;
+  let entrance = 0;
   let selectedBook, loadController;
   let travel = innerHeight, lastSheetWheel = -Infinity;
   const atEdge = y => y >= innerHeight-Math.min(130, innerHeight*.2);
@@ -47,11 +48,12 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
     settle: () => animateTo(0)
   });
   function offset(pixels) {
-    sheet.classList.remove('book-animating');
+    sheet.classList.remove('book-animating', 'book-arriving');
     sheet.style.transform = 'translateY('+pixels+'px)';
   }
-  function animateTo(pixels, axis = 'Y') {
+  function animateTo(pixels, axis = 'Y', arriving = false) {
     sheet.classList.add('book-animating');
+    sheet.classList.toggle('book-arriving', arriving);
     sheet.style.transform = 'translate'+axis+'('+pixels+'px)';
   }
   function resize() {
@@ -67,31 +69,33 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   }
   async function prepare() {
     const version = attempt;
+    const entry = entrance;
     if (!loading) {
       const surface = canvas;
       const descriptor = selectedBook;
       loadController = new AbortController();
       const signal = loadController.signal;
       loading = (async () => {
-        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js?v=sketchbook-layout-1');
+        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js?v=closed-entry-1');
         if (signal.aborted) return;
         const book = await createThreeRenderer(surface, {...descriptor, three:{manifest:descriptor.manifest}}, {
-          signal,
+          signal, initialProgress: 0,
           onError: () => { if (version === attempt) showFailure(); }
         });
         if (version !== attempt) { book.destroy(); return; }
         renderer = book;
-        controls.configure(book.navigation);
         controls.attach(renderer);
       })();
     }
     try {
       await loading;
-      if (version !== attempt || !renderer || !dialog.open || dialog.dataset.phase === 'closing') return;
+      if (version !== attempt || entry !== entrance || !renderer || !dialog.open || dialog.dataset.phase === 'closing') return;
+      controls.configure({...renderer.navigation, initialProgress: 0});
       renderer.setActive(!document.hidden);
       resize();
-      await renderer.ready;
-      if (version === attempt && !failed) dialog.dataset.ready = 'true';
+      // Reopening must paint the closed cover before exposing a retained canvas.
+      await renderer.whenDrawn();
+      if (version === attempt && entry === entrance && !failed) dialog.dataset.ready = 'true';
     } catch { if (version === attempt) showFailure(); }
   }
   function releaseBook() {
@@ -123,22 +127,32 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
       dialog.dataset.book = descriptor.id;
     }
 
+    const entry = ++entrance;
     dialog.dataset.phase = 'open';
+    dialog.dataset.ready = 'false';
     dialog.showModal();
     const {clientWidth:width, clientHeight:height} = stage;
-    // The first painted row of the flat opening pose is at 193 / 768.
-    const top = renderer?.upperEdge(width,height) ?? height/2 + (193/768-.5)*Math.min(width,height);
+    // Bring the cover to the bottom edge for a finger-led reveal. Icon entry
+    // starts a whole screen below, so every part is outside the frame.
+    const top = height/2 - .34*Math.min(width,height);
     travel = Math.max(1,height-Math.max(0,top)+2);
-    offset(travel);
+    offset(underFinger ? travel : height + 2);
     stage.focus({preventScroll:true});
     // Flush the offscreen starting position before the first compositor transition.
     sheet.getBoundingClientRect();
-    if (!underFinger) animateTo(0);
+    if (!underFinger) {
+      // The small closed-cover poster makes cold mobile loads feel immediate.
+      // It is rendered from this same model and replaced by its first 3D frame.
+      poster.decode().catch(()=>{}).then(() => {
+        if (entry === entrance && dialog.open && dialog.dataset.phase === 'open') animateTo(0, 'Y', true);
+      });
+    }
     if (!failed) prepare();
   }
   function finishClose() {
     if (!dialog.open) return;
     clearTimeout(closeTimer);
+    entrance++;
     dialog.close();
     dialog.dataset.phase = 'closed';
     renderer?.setActive(false);

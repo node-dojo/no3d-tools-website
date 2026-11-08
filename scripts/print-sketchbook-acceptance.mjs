@@ -26,7 +26,10 @@ try {
       photoTop:document.querySelector('.print-slide:not([inert]) img, .landing-print-backdrop')?.getBoundingClientRect().top
     }));
   }
-  const opened = () => page.waitForSelector('.print-sketchbook[open][data-ready=true]');
+  const opened = async () => {
+    await page.waitForSelector('.print-sketchbook[open][data-ready=true]');
+    await page.waitForFunction(()=>Math.abs(new DOMMatrix(getComputedStyle(document.querySelector('.book-sheet')).transform).m42)<1);
+  };
   const closed = () => page.waitForFunction(()=>!document.querySelector('.print-sketchbook').open);
   async function lift() {
     const before = await productState();
@@ -53,6 +56,37 @@ try {
   }
   await page.goto(origin+'/v3/prints/?product=spike-planter-01',{waitUntil:'networkidle0'});
   assert.ok(!assets.some(url=>/manifest|poses|textures|three-renderer/.test(url)),'lazy 3D load');
+  // A cold mobile load still shows the closed-cover entrance immediately.
+  await page.setRequestInterception(true);
+  let heldManifest;
+  const hold = request => {
+    if (request.url().endsWith('/books/spike-planter/v1/manifest.json.gz')) heldManifest = request;
+    else void request.continue();
+  };
+  page.on('request',hold);
+  await page.click('#print-info-planter [data-sketchbook-open]');
+  await page.waitForFunction(()=>document.querySelector('.book-sheet').getAnimations().length>0);
+  const arrival = await page.$eval('.book-sheet', sheet => {
+    const animation=sheet.getAnimations()[0];animation.pause();
+    const duration=animation.effect.getTiming().duration;
+    const offsets=[0,duration/3,duration*2/3,duration].map(time=>{
+      animation.currentTime=time;
+      return new DOMMatrix(getComputedStyle(sheet).transform).m42;
+    });
+    return {duration,offsets,poster:sheet.querySelector('img').src,posterVisible:getComputedStyle(sheet.querySelector('img')).visibility,ready:sheet.closest('dialog').dataset.ready};
+  });
+  assert.ok(arrival.offsets[0]>=844,'entire sheet starts below the viewport');
+  assert.ok(arrival.duration>=600 && arrival.duration<=1000,'deliberate, brief entrance');
+  assert.ok(arrival.offsets[1]>arrival.offsets[2] && arrival.offsets[2]>0);
+  assert.ok(arrival.offsets[0]-arrival.offsets[1]>arrival.offsets[1]-arrival.offsets[2],'arrival decelerates');
+  assert.ok(Math.abs(arrival.offsets[3])<1,'arrival settles at the resting position');
+  assert.ok(arrival.poster.endsWith('/closed.webp') && arrival.posterVisible==='visible' && arrival.ready==='false','closed poster is visible while 3D is pending');
+  assert.ok(heldManifest,'3D request is held for the cold-load check');
+  await heldManifest.continue();
+  page.off('request',hold);
+  await page.setRequestInterception(false);
+  await opened();
+  await page.click('.book-close');await closed();
   await touch('touchStart',[[1,190,800]]);
   await touch('touchMove',[[1,190,769]]);
   await touch('touchEnd');
@@ -64,13 +98,14 @@ try {
   const pixels = () => page.$eval('.book-sheet canvas',canvas=>{
     const gl=canvas.getContext('webgl2'),w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
     const data=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,data);
-    let opaque=0,transparent=0,signature=0;
+    let opaque=0,transparent=0,signature=0,left=w,right=0,top=h,bottom=0;
     for(let i=0;i<data.length;i+=20){
       if(data[i+3]===255)opaque++;
       if(data[i+3]===0)transparent++;
       signature=(Math.imul(signature,31)+data[i]+data[i+3])|0;
+      if(data[i+3]>200){const x=(i/4)%w,y=h-1-Math.floor(i/4/w);left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
     }
-    return {opaque,transparent,signature,alpha:gl.getContextAttributes().alpha};
+    return {opaque,transparent,signature,left,right,top,bottom,width:w,height:h,alpha:gl.getContextAttributes().alpha};
   });
   const neutral=await pixels();
   assert.ok(neutral.alpha && neutral.opaque>1000 && neutral.transparent>1000,'book has opaque ink and transparent surround');
@@ -92,6 +127,10 @@ try {
   await opened();
   assert.equal(await page.$eval('.print-sketchbook', el=>el.dataset.book), 'spike-planter');
   assert.deepEqual(await productState(), catalog);
+  const closedCover=await pixels();
+  assert.ok((closedCover.right-closedCover.left)/(closedCover.bottom-closedCover.top)<.85,'icon reopens on a closed portrait cover after turning pages');
+  assert.ok(Math.abs((closedCover.left+closedCover.right)/2-closedCover.width/2)<32 && Math.abs((closedCover.top+closedCover.bottom)/2-closedCover.height/2)<32,'closed cover rests in the center');
+  await page.screenshot({path:'/tmp/no3d-prints-closed-arrival.png'});
   await page.click('.book-close');
   await closed();
   assert.equal(await page.$eval(entry, el=>el===document.activeElement), true, 'Close returns focus to the book control');
@@ -155,7 +194,7 @@ try {
   await page.click('.book-close');
   await closed();
   assert.deepEqual(errors,[]);
-  console.log('Passed: visible book control, corner close and focus, upward/downward dismissal, zoomed offscreen pan, bottom pull, canceled lift, alpha composition, horizontal flip, pinch isolation, nested product details, standalone print, return state, wheel and keyboard.');
+  console.log('Passed: eased offscreen entrance during cold load, closed centered cover on reopen, visible book control, corner close and focus, upward/downward dismissal, zoomed offscreen pan, bottom pull, canceled lift, alpha composition, horizontal flip, pinch isolation, nested product details, standalone print, return state, wheel and keyboard.');
 } finally {
   await browser.close();
   await new Promise(resolve=>server.close(resolve));
