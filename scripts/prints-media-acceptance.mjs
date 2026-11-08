@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer';
 import { createPrintsPreviewServer } from './prints-preview-server.mjs';
 import { printProducts } from '../v3/data/prints/catalog.js';
 
-const manifest = JSON.parse(await readFile(new URL('../docs/design/v3/prints-media-20261102.json', import.meta.url)));
+const manifest = JSON.parse(await readFile(new URL(process.env.PRINTS_MEDIA_MANIFEST || '../docs/design/v3/prints-media-20261102.json', import.meta.url)));
 const server = process.env.PRINTS_MEDIA_URL ? null : createPrintsPreviewServer();
 if (server) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = process.env.PRINTS_MEDIA_URL || `http://127.0.0.1:${server.address().port}`;
@@ -59,6 +59,12 @@ try {
           assert.equal(await page.$eval(`${selector} img`, img => img.getAttribute('src')), entry.src, 'The selected GIF stays active');
         }
       }
+      const fitsFrame = await page.$eval(selector, figure => {
+        const frame = figure.getBoundingClientRect();
+        const visual = figure.querySelector('img, video').getBoundingClientRect();
+        return visual.height <= frame.height + 1 && visual.width <= frame.width + 1;
+      });
+      assert.ok(fitsFrame, 'Portrait media must fit inside its gallery frame without clipping');
       assert.equal(await page.$$eval('[data-gallery] figure[inert] video', videos => videos.every(v => v.paused && !v.autoplay)), true);
       assert.equal(await page.$$eval('[data-gallery] figure[inert] img[data-animation-src]', imgs => imgs.every(img => img.getAttribute('src') === img.dataset.animationPoster)), true);
       checks.push({ src: entry.src, type: entry.type, animated: Boolean(entry.animated), passed: true });

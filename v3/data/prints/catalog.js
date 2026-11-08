@@ -147,6 +147,12 @@ export const printProducts = [
         "type": "image",
         "poster": "/v3/assets/prints/planter-surface-closeup-poster-f0d3bc6c5b.webp",
         "animated": true
+      },
+      {
+        "src": "/v3/assets/prints/planter-proximity-spike-displacement-a3418aab6a.mp4",
+        "alt": "Proximity spike displacement animation",
+        "type": "video",
+        "poster": "/v3/assets/prints/planter-proximity-spike-displacement-poster-654f809b0a.webp"
       }
     ],
     "previewParts": [
