@@ -8,6 +8,7 @@
   "outputDirectory": ".",
   "redirects": [
     { "source": "/lighter", "destination": "/p/mace-and-chain", "permanent": true },
+    { "source": "/lighter/", "destination": "/p/mace-and-chain", "permanent": true },
     { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true },
     { "source": "/go/naming", "destination": "/blog/quick-print-naming-problem", "permanent": true },
     { "source": "/go/supports", "destination": "/blog/easy-engineered-supports", "permanent": true },
