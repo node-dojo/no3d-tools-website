@@ -54,8 +54,6 @@ try {
     await closed();
     assert.deepEqual(await productState(),before,'same URL, product, gallery and scroll after lowering');
   }
-  await page.goto(origin+'/v3/prints/?product=spike-planter-01',{waitUntil:'networkidle0'});
-  assert.ok(!assets.some(url=>/manifest|poses|textures|three-renderer/.test(url)),'lazy 3D load');
   // A cold mobile load still shows the closed-cover entrance immediately.
   await page.setRequestInterception(true);
   let heldManifest;
@@ -64,6 +62,11 @@ try {
     else void request.continue();
   };
   page.on('request',hold);
+  await page.goto(origin+'/v3/prints/?product=spike-planter-01',{waitUntil:'networkidle2'});
+  await page.waitForFunction(()=>document.querySelector('.print-slide:not([inert]) img')?.complete);
+  const warmDeadline=Date.now()+5000;while(!heldManifest&&Date.now()<warmDeadline)await new Promise(resolve=>setTimeout(resolve,20));
+  assert.ok(heldManifest,'selected book starts downloading before activation');
+  assert.ok(!assets.some(url=>/three-renderer|three.module/.test(url)),'GPU renderer stays lazy');
   await page.click('#print-info-planter [data-sketchbook-open]');
   await page.waitForFunction(()=>document.querySelector('.book-sheet').getAnimations().length>0);
   const arrival = await page.$eval('.book-sheet', sheet => {
@@ -82,10 +85,15 @@ try {
   assert.ok(Math.abs(arrival.offsets[3])<1,'arrival settles at the resting position');
   assert.ok(arrival.poster.endsWith('/closed.webp') && arrival.posterVisible==='visible' && arrival.ready==='false','closed poster is visible while 3D is pending');
   assert.ok(heldManifest,'3D request is held for the cold-load check');
+  await page.waitForSelector('.book-loading:not([hidden])');
+  assert.equal(await page.$eval('.book-stage',el=>el.getAttribute('aria-busy')),'true');
+  assert.equal(assets.filter(url=>url.endsWith('/books/spike-planter/v1/manifest.json.gz')).length,1,'open shares pending warm request');
   await heldManifest.continue();
   page.off('request',hold);
   await page.setRequestInterception(false);
   await opened();
+  assert.equal(await page.$eval('.book-loading',el=>el.hidden),true,'loading dots disappear when interactive');
+  assert.equal(await page.$eval('.book-stage',el=>el.getAttribute('aria-busy')),'false');
   await page.click('.book-close');await closed();
   await touch('touchStart',[[1,190,800]]);
   await touch('touchMove',[[1,190,769]]);

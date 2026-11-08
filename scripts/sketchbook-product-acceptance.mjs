@@ -38,7 +38,6 @@ try {
   await open();await ready('spike-planter');await close();
 
   // Hold the old request across a product switch, then let it finish late.
-  await page.goto(origin+'/v3/prints/?product=spike-planter-01',{waitUntil:'networkidle0'});
   await page.setRequestInterception(true);
   let held,mode='hold';
   page.on('request',request=>{
@@ -48,6 +47,8 @@ try {
     }
     void request.continue();
   });
+  await page.goto(origin+'/v3/prints/?product=spike-planter-01',{waitUntil:'domcontentloaded'});
+  await page.waitForSelector('body > .book-access');
   await open();await page.waitForSelector('.print-sketchbook[open][data-ready=false]');
   const deadline=Date.now()+5000;while(!held&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));
   assert.ok(held,'old manifest request is pending');

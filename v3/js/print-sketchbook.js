@@ -1,5 +1,6 @@
 import { controlBook } from './sketchbook/interaction.js?v=sketchbook-layout-1';
 import { bookForProduct, defaultBook } from './sketchbook/books.js?v=closed-entry-1';
+import { createBookResources } from './sketchbook/resources.js?v=book-warm-1';
 
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -21,6 +22,16 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   const status = document.createElement('div');
   status.className = 'book-status';
   status.setAttribute('role','status');
+  const busy = document.createElement('div');
+  busy.className = 'book-loading';
+  busy.hidden = true;
+  busy.setAttribute('role', 'status');
+  busy.setAttribute('aria-label', 'Loading sketchbook');
+  for (let i=0; i<3; i++) {
+    const dot = document.createElement('span');
+    dot.setAttribute('aria-hidden', 'true');
+    busy.append(dot);
+  }
   const retry = document.createElement('button');
   retry.type = 'button';
   retry.textContent = 'Retry';
@@ -31,13 +42,14 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   accessibleClose.textContent = '×';
   sheet.append(poster, canvas);
   stage.append(sheet);
-  dialog.append(stage, status, accessibleClose);
+  dialog.append(stage, busy, status, accessibleClose);
   document.body.append(dialog);
 
   let renderer, loading, failed = false, returnFocus, contact, closeTimer, suppressClickUntil = 0;
   let attempt = 0;
   let entrance = 0;
-  let selectedBook, loadController;
+  let selectedBook, loadController, resources, warmTimer, busyTimer;
+  let warming = false;
   let travel = innerHeight, lastSheetWheel = -Infinity;
   const atEdge = y => y >= innerHeight-Math.min(130, innerHeight*.2);
   const threshold = () => Math.min(100, innerHeight*.12);
@@ -63,6 +75,7 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   }
   new ResizeObserver(resize).observe(stage);
   function showFailure() {
+    stopLoading();
     failed = true;
     dialog.dataset.ready = 'false';
     status.replaceChildren(document.createTextNode('Sketchbook could not load. '),retry);
@@ -76,10 +89,11 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
       loadController = new AbortController();
       const signal = loadController.signal;
       loading = (async () => {
-        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js?v=closed-entry-1');
+        const fetcher = resources.fetch;
+        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js?v=book-warm-1');
         if (signal.aborted) return;
         const book = await createThreeRenderer(surface, {...descriptor, three:{manifest:descriptor.manifest}}, {
-          signal, initialProgress: 0,
+          signal, initialProgress: 0, fetcher,
           onError: () => { if (version === attempt) showFailure(); }
         });
         if (version !== attempt) { book.destroy(); return; }
@@ -95,10 +109,18 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
       resize();
       // Reopening must paint the closed cover before exposing a retained canvas.
       await renderer.whenDrawn();
-      if (version === attempt && entry === entrance && !failed) dialog.dataset.ready = 'true';
+      if (version === attempt && entry === entrance && !failed) {
+        dialog.dataset.ready = 'true';
+        stopLoading();
+      }
     } catch { if (version === attempt) showFailure(); }
   }
   function releaseBook() {
+    clearTimeout(warmTimer);
+    stopLoading();
+    resources?.destroy();
+    resources = null;
+    warming = false;
     attempt++;
     loadController?.abort();
     controls.reset();
@@ -112,25 +134,57 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
     dialog.dataset.ready = 'false';
     status.replaceChildren();
   }
+  function stopLoading() {
+    clearTimeout(busyTimer);
+    busy.hidden = true;
+    stage.setAttribute('aria-busy', 'false');
+  }
+  function startLoading() {
+    stopLoading();
+    stage.setAttribute('aria-busy', 'true');
+    busyTimer = setTimeout(() => {
+      if (dialog.open && dialog.dataset.phase === 'open' && dialog.dataset.ready !== 'true' && !failed) busy.hidden = false;
+    }, 500);
+  }
+  function selectProduct(handle) {
+    const descriptor = bookForProduct(handle);
+    if (descriptor.id !== selectedBook?.id || !resources) {
+      releaseBook();
+      selectedBook = descriptor;
+      resources = createBookResources(descriptor);
+      dialog.dataset.book = descriptor.id;
+    }
+    if (warming || document.hidden || navigator.connection?.saveData) return;
+    clearTimeout(warmTimer);
+    const version = attempt;
+    // Let product imagery paint first, and avoid downloading books during a swipe.
+    warmTimer = setTimeout(async () => {
+      const hero = document.querySelector('.print-slide:not([inert]) img, .landing-print-backdrop');
+      await hero?.decode().catch(() => {});
+      if (version !== attempt || document.hidden || warming) return;
+      warming = true;
+      poster.src = descriptor.poster;
+      resources.warm().catch(() => { /* Opening can retry a failed warm-up. */ });
+    }, 600);
+  }
   retry.addEventListener('click', () => {
     releaseBook();
+    selectProduct(getProduct());
+    startLoading();
     prepare();
   });
   function open(underFinger = false) {
     if (dialog.open) return;
     returnFocus = document.activeElement;
-    const descriptor = bookForProduct(getProduct());
-    if (descriptor.id !== selectedBook?.id) {
-      releaseBook();
-      selectedBook = descriptor;
-      poster.src = descriptor.poster;
-      dialog.dataset.book = descriptor.id;
-    }
+    selectProduct(getProduct());
+    clearTimeout(warmTimer);
+    poster.src = selectedBook.poster;
 
     const entry = ++entrance;
     dialog.dataset.phase = 'open';
     dialog.dataset.ready = 'false';
     dialog.showModal();
+    if (!failed) startLoading();
     const {clientWidth:width, clientHeight:height} = stage;
     // Bring the cover to the bottom edge for a finger-led reveal. Icon entry
     // starts a whole screen below, so every part is outside the frame.
@@ -152,6 +206,7 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   function finishClose() {
     if (!dialog.open) return;
     clearTimeout(closeTimer);
+    stopLoading();
     entrance++;
     dialog.close();
     dialog.dataset.phase = 'closed';
@@ -162,6 +217,7 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   function dismiss(direction = 1) {
     if (!dialog.open || dialog.dataset.phase === 'closing') return;
     dialog.dataset.phase = 'closing';
+    stopLoading();
     if (direction?.x) animateTo(stage.clientWidth * direction.x, 'X');
     else animateTo(stage.clientHeight * (direction === -1 || direction?.y === -1 ? -1 : 1));
     if (reduceMotion()) finishClose();
@@ -176,6 +232,7 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   document.addEventListener('visibilitychange', () => {
     renderer?.setActive(!document.hidden && dialog.open && dialog.dataset.phase !== 'closing');
     if (document.hidden) controls.reset();
+    else selectProduct(getProduct());
   });
   window.addEventListener('popstate',finishClose);
 
@@ -261,4 +318,6 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
     entry.addEventListener('click',()=>open());
     container.append(entry);
   }
+  selectProduct(getProduct());
+  return {selectProduct};
 }

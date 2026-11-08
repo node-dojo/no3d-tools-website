@@ -4,10 +4,10 @@ import {createPoseStore} from './pose-store.js';
 import {deformPose} from './deform-pose.js';
 import {createViewMotion} from './view-motion.js';
 import {bookNavigation} from './books.js?v=product-books-1';
-export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},onError=()=>{},signal,initialProgress}={}){
+export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},onError=()=>{},signal,initialProgress,fetcher=fetch}={}){
   const manifestURL=rootManifest.three.manifest;
   const base=manifestURL.slice(0,manifestURL.lastIndexOf('/')+1);
-  const response=await fetch(manifestURL,{signal});if(!response.ok)throw new Error('The sketchbook is unavailable.');
+  const response=await fetcher(manifestURL,{signal});if(!response.ok)throw new Error('The sketchbook is unavailable.');
   const manifest=await response.json();
   signal?.throwIfAborted();
   const navigation=bookNavigation(initialProgress===undefined ? manifest : {...manifest,initialProgress},rootManifest);
@@ -34,12 +34,17 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
   function contextLost(event){event.preventDefault();fail(new Error('3D graphics were interrupted. Tap Retry to reload the book.'));}
   canvas.addEventListener('webglcontextlost',contextLost);
   renderer.debug.onShaderError=()=>{throw new Error('The 3D shader could not compile on this browser.');};
-  const poses=createPoseStore(manifest,base,{onChange:requestDraw,onError:fail});
+  const poses=createPoseStore(manifest,base,{onChange:requestDraw,onError:fail,fetcher});
   async function textureFor(info){
     if(!info.texture)return null;
-    if(!textures.has(info.texture))textures.set(info.texture,loader.loadAsync(base+info.texture).then(t=>{
+    if(!textures.has(info.texture))textures.set(info.texture,(async()=>{
+      const response=await fetcher(base+info.texture,{signal});
+      if(!response.ok)throw new Error('A sketchbook page could not load.');
+      const url=URL.createObjectURL(await response.blob());
+      let t;
+      try{t=await loader.loadAsync(url);}finally{URL.revokeObjectURL(url);}
       t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=info.extension==='CLIP'?THREE.ClampToEdgeWrapping:THREE.RepeatWrapping;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t;
-    }));
+    })());
     return textures.get(info.texture);
   }
   let loadedTextures=0;

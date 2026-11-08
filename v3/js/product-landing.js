@@ -82,7 +82,7 @@ function renderProduct() {
   $('.landing-acquire').hidden = false;
   if (product.kind === 'print') {
     renderPrintLayout();
-    import('./print-sketchbook.js?v=closed-entry-1').then(({mountPrintSketchbook}) => mountPrintSketchbook({ getProduct: () => handle }));
+    import('./print-sketchbook.js?v=book-warm-1').then(({mountPrintSketchbook}) => mountPrintSketchbook({ getProduct: () => handle }));
     $('[data-files-section] h2').remove();
     $('[data-files]').remove();
     const viewers = document.createElement('div');

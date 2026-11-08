@@ -1,4 +1,4 @@
-import { mountPrintSketchbook } from './print-sketchbook.js?v=closed-entry-1';
+import { mountPrintSketchbook } from './print-sketchbook.js?v=book-warm-1';
 import { printProducts } from '../data/prints/catalog.js?v=assembled-dimensions-20261103';
 import { createPrintProductView } from './print-product.js?v=sketchbook-layout-1';
 import { downloadPrint } from './print-download.js?v=sketchbook-layout-1';
@@ -41,6 +41,7 @@ const searchRegion = document.querySelector('#prints-search');
 const searchToggle = document.querySelector('[data-prints-search-toggle]');
 const dialog = document.querySelector('[data-print-details]');
 let visible = [...slides];
+let sketchbook;
 let active = 0;
 let scrollTimer;
 
@@ -51,6 +52,7 @@ function updateActive(index, updateUrl = true) {
   active = Math.max(0, Math.min(index, visible.length - 1));
   const current = visible[active];
   slides.forEach(slide => { slide.inert = slide !== current; });
+  if (current) sketchbook?.selectProduct(current.dataset.product);
   document.querySelector('[data-result-count]').textContent = number(visible.length);
   let restoreListFocus = false;
   for (const item of productItems) {
@@ -136,4 +138,4 @@ function restoreFromUrl() {
 addEventListener('popstate', restoreFromUrl);
 restoreFromUrl();
 
-mountPrintSketchbook({ getProduct: () => dialog.open ? dialog.dataset.product : visible[active]?.dataset.product });
+sketchbook = mountPrintSketchbook({ getProduct: () => dialog.open ? dialog.dataset.product : visible[active]?.dataset.product });
