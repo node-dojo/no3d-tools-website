@@ -11,6 +11,7 @@
     { "source": "/lighter/", "destination": "/p/lighter-keeper", "permanent": true },
     { "source": "/p/mace-and-chain", "destination": "/p/lighter-keeper", "permanent": true },
     { "source": "/p/mace-and-chain/", "destination": "/p/lighter-keeper", "permanent": true },
+    { "source": "/p/lighter-keeper/", "destination": "/p/lighter-keeper", "permanent": true },
     { "source": "/go/gulf", "destination": "/blog/quick-print-gulf-of-execution", "permanent": true },
     { "source": "/go/naming", "destination": "/blog/quick-print-naming-problem", "permanent": true },
     { "source": "/go/supports", "destination": "/blog/easy-engineered-supports", "permanent": true },
