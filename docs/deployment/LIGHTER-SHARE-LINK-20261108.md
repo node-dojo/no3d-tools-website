@@ -1,5 +1,8 @@
 # Lighter Keeper share link — 2026-11-08
 
+Historical first release. Superseded by
+[Lighter Keeper URL and preview](LIGHTER-KEEPER-URL-PREVIEW-20261108.md).
+
 Public URL: https://no3dtools.com/lighter
 
 `/lighter` and `/lighter/` permanently redirect (308) to `/p/mace-and-chain`.

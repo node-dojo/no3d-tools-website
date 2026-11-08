@@ -1,0 +1,104 @@
+{
+  "origin": "https://no3dtools.com",
+  "checkedAt": "2026-11-08T21:52:39.238Z",
+  "checks": [
+    {
+      "path": "/p/lighter-keeper",
+      "status": 200,
+      "redirects": [],
+      "destination": "/p/lighter-keeper"
+    },
+    {
+      "path": "/p/lighter-keeper/",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/lighter-keeper"
+    },
+    {
+      "path": "/p/mace-and-chain",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/lighter-keeper"
+    },
+    {
+      "path": "/p/mace-and-chain/",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/lighter-keeper"
+    },
+    {
+      "path": "/lighter",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/lighter-keeper"
+    },
+    {
+      "path": "/lighter/",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/lighter-keeper"
+    },
+    {
+      "path": "/lighter?utm_source=instagram&utm_medium=social&utm_campaign=lighter_keeper",
+      "status": 200,
+      "redirects": [
+        308
+      ],
+      "destination": "/p/lighter-keeper?utm_source=instagram&utm_medium=social&utm_campaign=lighter_keeper"
+    },
+    {
+      "socialAgent": "facebookexternalhit/1.1",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200,
+      "exactImageBytes": true
+    },
+    {
+      "socialAgent": "Twitterbot/1.0",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200,
+      "exactImageBytes": true
+    },
+    {
+      "socialAgent": "WhatsApp/2.0",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200,
+      "exactImageBytes": true
+    },
+    {
+      "socialAgent": "iMessageBot/1.0",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200,
+      "exactImageBytes": true
+    },
+    {
+      "socialAgent": "Applebot/0.1",
+      "title": "The Lighter Keeper 01",
+      "imageStatus": 200,
+      "exactImageBytes": true
+    },
+    {
+      "viewport": "mobile",
+      "title": "The Lighter Keeper 01",
+      "price": "$11.11",
+      "sketchbookAccess": true,
+      "errors": []
+    },
+    {
+      "viewport": "desktop",
+      "title": "The Lighter Keeper 01",
+      "price": "$11.11",
+      "sketchbookAccess": true,
+      "errors": []
+    }
+  ]
+}
