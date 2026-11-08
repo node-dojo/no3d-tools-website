@@ -2,12 +2,14 @@ import assert from 'node:assert/strict';
 import { createPrintsPreviewServer } from './prints-preview-server.mjs';
 import puppeteer from 'puppeteer';
 
-const server = createPrintsPreviewServer();
-await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-const origin = 'http://127.0.0.1:' + server.address().port;
+// The same read-only interactions can verify a hosted release before promotion.
+const server = process.env.PRINTS_TEST_ORIGIN ? null : createPrintsPreviewServer();
+if (server) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+const origin = process.env.PRINTS_TEST_ORIGIN || 'http://127.0.0.1:' + server.address().port;
 const browser = await puppeteer.launch({headless:true,args:['--enable-unsafe-swiftshader']});
 try {
   const page = await browser.newPage();
+  page.setDefaultTimeout(60000);
   await page.setViewport({width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:1});
   const errors = [], assets = [];
   page.on('pageerror',error=>errors.push(error.message));
@@ -205,5 +207,5 @@ try {
   console.log('Passed: eased offscreen entrance during cold load, closed centered cover on reopen, visible book control, corner close and focus, upward/downward dismissal, zoomed offscreen pan, bottom pull, canceled lift, alpha composition, horizontal flip, pinch isolation, nested product details, standalone print, return state, wheel and keyboard.');
 } finally {
   await browser.close();
-  await new Promise(resolve=>server.close(resolve));
+  if (server) await new Promise(resolve=>server.close(resolve));
 }

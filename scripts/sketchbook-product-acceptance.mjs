@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import puppeteer from 'puppeteer';
 import {createPrintsPreviewServer} from './prints-preview-server.mjs';
 
-const server=createPrintsPreviewServer();
-await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const origin=`http://127.0.0.1:${server.address().port}`;
+const server=process.env.PRINTS_TEST_ORIGIN ? null : createPrintsPreviewServer();
+if(server)await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const origin=process.env.PRINTS_TEST_ORIGIN || `http://127.0.0.1:${server.address().port}`;
 const browser=await puppeteer.launch({headless:true,args:['--enable-unsafe-swiftshader']});
 try {
   const page=await browser.newPage();
+  page.setDefaultTimeout(60000);
   await page.setViewport({width:1280,height:900});
   await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
   const errors=[],manifests=[];
@@ -63,4 +64,4 @@ try {
   assert.equal(await page.$eval('.book-status',el=>el.textContent),'');
   assert.deepEqual(errors,[]);
   console.log('Passed: product switching, fresh opening state, per-product posters, standalone Spike, stale-load cancellation, failed-load retry.');
-} finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
+} finally {await browser.close();if(server)await new Promise(resolve=>server.close(resolve));}
