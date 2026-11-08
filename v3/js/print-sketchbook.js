@@ -1,4 +1,4 @@
-import { controlBook } from './sketchbook/interaction.js?v=product-books-1';
+import { controlBook } from './sketchbook/interaction.js?v=sketchbook-layout-1';
 import { bookForProduct, defaultBook } from './sketchbook/books.js?v=product-books-1';
 
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -6,11 +6,12 @@ const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matche
 export function mountPrintSketchbook({getProduct = () => null} = {}) {
   const dialog = document.createElement('dialog');
   dialog.className = 'print-sketchbook';
+  dialog.id = 'print-sketchbook';
   dialog.setAttribute('aria-label','Sketchbook');
   const stage = document.createElement('div');
   stage.className = 'book-stage';
   stage.tabIndex = 0;
-  stage.setAttribute('aria-label','Sketchbook. Swipe sideways to turn pages. Pinch and drag with two fingers to inspect. Swipe down or press Escape to lower.');
+  stage.setAttribute('aria-label','Sketchbook. Swipe sideways to turn pages. Pinch and drag with two fingers to inspect. Drag up or down, or press Escape to close.');
   const sheet = document.createElement('div');
   sheet.className = 'book-sheet';
   let canvas = document.createElement('canvas');
@@ -25,8 +26,9 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
   retry.textContent = 'Retry';
   const accessibleClose = document.createElement('button');
   accessibleClose.type = 'button';
-  accessibleClose.className = 'book-access';
-  accessibleClose.textContent = 'Lower sketchbook';
+  accessibleClose.className = 'book-close';
+  accessibleClose.setAttribute('aria-label','Close sketchbook');
+  accessibleClose.textContent = '×';
   sheet.append(poster, canvas);
   stage.append(sheet);
   dialog.append(stage, status, accessibleClose);
@@ -48,9 +50,9 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
     sheet.classList.remove('book-animating');
     sheet.style.transform = 'translateY('+pixels+'px)';
   }
-  function animateTo(pixels) {
+  function animateTo(pixels, axis = 'Y') {
     sheet.classList.add('book-animating');
-    sheet.style.transform = 'translateY('+pixels+'px)';
+    sheet.style.transform = 'translate'+axis+'('+pixels+'px)';
   }
   function resize() {
     if (!renderer || !dialog.open) return;
@@ -71,7 +73,7 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
       loadController = new AbortController();
       const signal = loadController.signal;
       loading = (async () => {
-        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js?v=product-books-1');
+        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js?v=sketchbook-layout-1');
         if (signal.aborted) return;
         const book = await createThreeRenderer(surface, {...descriptor, three:{manifest:descriptor.manifest}}, {
           signal,
@@ -140,17 +142,21 @@ export function mountPrintSketchbook({getProduct = () => null} = {}) {
     dialog.close();
     dialog.dataset.phase = 'closed';
     renderer?.setActive(false);
-    controls.reset();
+    controls.reset({recenter:true});
     returnFocus?.focus?.({preventScroll:true});
   }
-  function dismiss() {
+  function dismiss(direction = 1) {
     if (!dialog.open || dialog.dataset.phase === 'closing') return;
     dialog.dataset.phase = 'closing';
-    animateTo(stage.clientHeight);
+    if (direction?.x) animateTo(stage.clientWidth * direction.x, 'X');
+    else animateTo(stage.clientHeight * (direction === -1 || direction?.y === -1 ? -1 : 1));
     if (reduceMotion()) finishClose();
     else closeTimer = setTimeout(finishClose,310);
   }
-  accessibleClose.addEventListener('click',dismiss);
+  accessibleClose.addEventListener('click',()=>dismiss());
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-sketchbook-open]')) open();
+  });
   dialog.addEventListener('cancel',event => { event.preventDefault(); dismiss(); });
   dialog.addEventListener('wheel',event => event.preventDefault(),{passive:false});
   document.addEventListener('visibilitychange', () => {

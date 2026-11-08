@@ -1,6 +1,7 @@
-import { mountPrintSketchbook } from './print-sketchbook.js?v=product-books-1';
+import { mountPrintSketchbook } from './print-sketchbook.js?v=sketchbook-layout-1';
 import { printProducts } from '../data/prints/catalog.js?v=assembled-dimensions-20261103';
-import { createPrintProductView } from './print-product.js?v=assembled-dimensions-20261103';
+import { createPrintProductView } from './print-product.js?v=sketchbook-layout-1';
+import { downloadPrint } from './print-download.js?v=sketchbook-layout-1';
 import { getPrintOffer } from './api.js?v=prints-20261028b';
 import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
@@ -8,17 +9,33 @@ const carousel = document.querySelector('[data-print-carousel]');
 const slides = [...carousel.querySelectorAll('[data-product]')];
 const productItems = [...document.querySelectorAll('[data-print-item]')];
 for (const item of productItems) {
+  const product = printProducts.find(product => product.slug === item.dataset.printItem);
+  item.querySelector('[data-print-description]').textContent = product.paragraphs[0];
+  const download = item.querySelector('[data-print-download]');
+  const status = item.querySelector('[data-catalog-download-status]');
+  download.addEventListener('click', async () => {
+    download.disabled = true;
+    try {
+      await downloadPrint(product.slug, {
+        onAccess(access) { renderPrintPrice(item.querySelector('.print-price'), item.dataset.price, access.entitlement === 'member'); },
+        onStatus(text) { status.textContent = text; },
+      });
+    } catch {
+      status.textContent = 'Your download could not be opened. Select Download to try again.';
+    } finally { download.disabled = false; }
+  });
   const price = item.querySelector('.print-price');
   if (price) {
     renderPrintPrice(price, '');
     Promise.all([
       getPrintOffer(item.dataset.printItem),
       getPrintAccess(item.dataset.printItem).catch(() => null),
-    ]).then(([offer, access]) => renderPrintPrice(price, offer?.formatted, access?.entitlement === 'member'));
+    ]).then(([offer, access]) => {
+      item.dataset.price = offer?.formatted || '';
+      renderPrintPrice(price, offer?.formatted, access?.entitlement === 'member');
+    });
   }
 }
-const previous = document.querySelector('[data-print-previous]');
-const next = document.querySelector('[data-print-next]');
 const search = document.querySelector('#print-search');
 const searchRegion = document.querySelector('#prints-search');
 const searchToggle = document.querySelector('[data-prints-search-toggle]');
@@ -34,9 +51,6 @@ function updateActive(index, updateUrl = true) {
   active = Math.max(0, Math.min(index, visible.length - 1));
   const current = visible[active];
   slides.forEach(slide => { slide.inert = slide !== current; });
-  previous.disabled = active === 0 || !visible.length;
-  next.disabled = active >= visible.length - 1;
-  document.querySelector('[data-print-position]').textContent = `${number(current ? active + 1 : 0)} / ${number(visible.length)}`;
   document.querySelector('[data-result-count]').textContent = number(visible.length);
   let restoreListFocus = false;
   for (const item of productItems) {
@@ -66,8 +80,6 @@ function goTo(index, smooth = true) {
   carousel.scrollTo({ left: visible[target].offsetLeft, behavior: smooth && !reducedMotion() ? 'smooth' : 'instant' });
 }
 
-previous.addEventListener('click', () => goTo(active - 1));
-next.addEventListener('click', () => goTo(active + 1));
 document.querySelectorAll('[data-go-product]').forEach(button => {
   button.addEventListener('click', () => goTo(visible.findIndex(slide => slide.dataset.product === button.dataset.goProduct)));
 });

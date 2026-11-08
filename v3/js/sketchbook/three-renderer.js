@@ -164,6 +164,26 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
     setPointer(x,y){pointer={x,y};requestDraw();},
     reactToMotion(motion){if(motionQuery.matches||!active)return;pull.push({...motion,zoom:viewMotion.get().zoom});requestDraw();},
     captureView(){const {zoom,panX,panY}=viewMotion.get();const current={zoom,panX,panY};state={...state,...current};viewMotion.reset(current);requestDraw();return current;},
+    offscreenDirection(view) {
+      if (lastProgress < 0) return null;
+      book.updateWorldMatrix(true, false);
+      const e = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(book.matrixWorld).elements;
+      let left=Infinity, right=-Infinity, top=Infinity, bottom=-Infinity;
+      const side=Math.min(width,height)*view.zoom;
+      // Only measured on release, so inspection adds no per-frame geometry work.
+      for (const {positions} of items) for (let i=0;i<positions.length;i+=3) {
+        const x=positions[i], y=positions[i+1], z=positions[i+2];
+        const w=e[3]*x+e[7]*y+e[11]*z+e[15];
+        const px=width*(.5+view.panX)+(e[0]*x+e[4]*y+e[8]*z+e[12])/w*side/2;
+        const py=height*(.5+view.panY)-(e[1]*x+e[5]*y+e[9]*z+e[13])/w*side/2;
+        left=Math.min(left,px);right=Math.max(right,px);top=Math.min(top,py);bottom=Math.max(bottom,py);
+      }
+      if (right < width*.12) return {x:-1};
+      if (left > width*.88) return {x:1};
+      if (bottom < height*.12) return {y:-1};
+      if (top > height*.88) return {y:1};
+      return null;
+    },
     setActive(value){active=value;justActivated=value;if(!value){cancelAnimationFrame(raf);raf=0;resetTilt();viewMotion.reset(state);}else requestDraw();},
     resize(w,h,pixelRatio=1){width=w;height=h;renderer.setPixelRatio(Math.min(pixelRatio,2));renderer.setSize(w,h,false);requestDraw();},
     getStats(){const average=values=>values.reduce((a,b)=>a+b,0)/Math.max(1,values.length),shown=viewMotion.get();return {renderer:'Baked 3D deformation',samples:sampleCount,vertices:items.reduce((n,i)=>n+i.part.vertexCount,0),...poses.getStats(),decodedMemoryMB:poses.getStats().poseMemoryMB+items.reduce((n,i)=>n+i.positions.byteLength+i.normals.byteLength,0)/1048576,drawsPerSecond:drawTimes.filter(t=>performance.now()-t<1000).length,deformationMs:average(deformTimes),renderSubmitMs:average(renderTimes),displayedProgress:lastProgress,viewZoom:shown.zoom,viewPanX:shown.panX,viewPanY:shown.panY,viewFollowing:shown.moving,tiltDegrees:Math.hypot(pivot.rotation.x,pivot.rotation.y)*180/Math.PI,pullTiltDegrees:Math.hypot(motionTilt.pitch,motionTilt.yaw)*180/Math.PI,detail:'Air-damped pan/zoom · reactive tilt · exact rig geometry and normals',geometryMemoryOnly:true};},

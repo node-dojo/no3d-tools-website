@@ -55,11 +55,12 @@ export function controlBook(stage, sheet) {
     if (isFitView(state)) zoomAt(2.5, event.clientX/stage.clientWidth-.5, event.clientY/stage.clientHeight-.5);
     else { Object.assign(state, {zoom:1, panX:0, panY:0}); present(); }
   }
-  function reset() {
+  function reset({recenter = false} = {}) {
     pause();
     fingers.clear();
     drag = pinch = lastTap = null;
     multiTouch = false;
+    if (recenter) { Object.assign(state, {zoom:1,panX:0,panY:0}); present(); }
     centerPointer();
   }
 
@@ -113,10 +114,10 @@ export function controlBook(stage, sheet) {
     lastTap = null;
     if (drag.kind === 'pending') {
       if (Math.abs(dx) > Math.abs(dy)*1.2) drag.kind = 'turn';
-      else if (dy > Math.abs(dx)*1.2) drag.kind = 'lower';
+      else if (Math.abs(dy) > Math.abs(dx)*1.2) drag.kind = 'lower';
       else return;
     }
-    if (drag.kind === 'lower') sheet.offset(clamp(dy, 0, stage.clientHeight));
+    if (drag.kind === 'lower') sheet.offset(clamp(dy, -stage.clientHeight, stage.clientHeight));
     if (drag.kind === 'turn') state.progress = clamp(drag.progress-dx/stage.clientWidth*.25,0,1);
     if (drag.kind === 'pan') {
       const oldX = state.panX, oldY = state.panY;
@@ -130,8 +131,11 @@ export function controlBook(stage, sheet) {
     if (!fingers.delete(event.pointerId)) return;
     const released = event.type === 'pointerup';
     if (drag?.kind === 'lower') {
-      if (released && event.clientY-drag.y >= sheet.threshold()) sheet.dismiss();
+      if (released && Math.abs(event.clientY-drag.y) >= sheet.threshold()) sheet.dismiss(Math.sign(event.clientY-drag.y));
       else sheet.settle();
+    } else if (released && !fingers.size && (multiTouch || drag?.kind === 'pan') && renderer?.offscreenDirection) {
+      const direction = renderer.offscreenDirection(state);
+      if (direction) sheet.dismiss(direction);
     } else if (released && !multiTouch && !drag?.moved && event.pointerType === 'touch') {
       const now = performance.now();
       if (lastTap && now-lastTap.at < 320 && Math.hypot(event.clientX-lastTap.x,event.clientY-lastTap.y)<32) {

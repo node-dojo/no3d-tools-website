@@ -2,7 +2,8 @@ import { configureCarouselVideo, syncCarouselVideos } from './carousel-video.js?
 import { configureCarouselImage, syncCarouselImages } from './carousel-image.js?v=gifs-20261103';
 import { mountPrintParts } from './print-parts.js?v=assembled-dimensions-20261103';
 import { printProducts } from '../data/prints/catalog.js?v=assembled-dimensions-20261103';
-import { beginProductCheckout, getPrintOffer } from './api.js?v=prints-20261028b';
+import { getPrintOffer } from './api.js?v=prints-20261028b';
+import { downloadPrint } from './print-download.js?v=sketchbook-layout-1';
 import { getPrintAccess, renderPrintPrice } from './print-price.js?v=prints-member-price-20261029';
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -142,27 +143,12 @@ export function createPrintProductView(dialog) {
     request?.abort();
     request = new AbortController();
     try {
-      // Recheck at the action boundary; an earlier display state is not authority.
-      const access = await getPrintAccess(product.slug, request.signal);
-      showAccess(access);
-      if (access.mode === 'purchase') {
-        download.disabled = true;
-        status.textContent = 'Opening checkout…';
-        const url = new URL(await beginProductCheckout(product.slug));
-        if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com') throw new Error('invalid_checkout');
-        location.assign(url.href);
-      } else if (access.mode === 'download') {
-        download.disabled = true;
-        status.textContent = 'Preparing your download…';
-        const response = await fetch(`/api/prints/download?handle=${encodeURIComponent(product.slug)}`, { credentials: 'same-origin', cache: 'no-store', signal: request.signal });
-        if (!response.ok) throw new Error('download_unavailable');
-        const result = await response.json();
-        const url = new URL(result.url);
-        if (url.protocol !== 'https:') throw new Error('invalid_download');
-        location.assign(url.href);
-        status.textContent = 'Your download is ready.';
-        download.disabled = false;
-      }
+      const access = await downloadPrint(product.slug, {
+        signal: request.signal,
+        onAccess(value) { showAccess(value); download.disabled = true; },
+        onStatus(text) { status.textContent = text; },
+      });
+      if (access?.mode === 'download') download.disabled = false;
     } catch (error) {
       if (error.name === 'AbortError') return;
       status.textContent = 'Your download could not be opened. Select Download to try again.';

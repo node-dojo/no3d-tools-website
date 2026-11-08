@@ -32,7 +32,11 @@ async function audit(label) {
       active: slide?.dataset.product,
       title: title && { left: title.left, right: title.right, top: title.top, bottom: title.bottom },
       images: [...document.querySelectorAll('.print-image img')].every(image => image.complete && image.naturalWidth > 0),
-      position: document.querySelector('[data-print-position]').textContent,
+      announcement: document.querySelector('[data-print-announcement]').textContent,
+      mastRule: getComputedStyle(document.querySelector('.v3-mast')).borderBottomWidth,
+      panelRule: getComputedStyle(panel).borderBottomWidth,
+      previewClamp: getComputedStyle(panel.querySelector('[data-print-description]')).webkitLineClamp,
+      icon: (() => { const r = panel.querySelector('[data-sketchbook-open]').getBoundingClientRect(); return { left:r.left, right:r.right, width:r.width, height:r.height }; })(),
       selected: item.dataset.printItem,
       expanded: [...document.querySelectorAll('[data-go-product][aria-expanded="true"]')].map(el => el.dataset.goProduct),
       openPanels: [...document.querySelectorAll('.print-item-details:not([hidden])')].map(el => el.closest('[data-print-item]').dataset.printItem),
@@ -51,6 +55,10 @@ async function audit(label) {
   assert.deepEqual(state.expanded, [state.active], `${label}: only the active list item expands`);
   assert.deepEqual(state.openPanels, [state.active], `${label}: inactive product actions must be hidden`);
   assert.equal(state.heroContentCount, 0, `${label}: photographs must have no large title or purchase overlay`);
+  assert.equal(state.mastRule, '0px', 'No masthead hairline');
+  assert.equal(state.panelRule, '0px', 'No product hairline');
+  assert.equal(state.previewClamp, '4', 'Description preview is truncated');
+  assert.ok(state.icon.left >= 0 && state.icon.right <= state.width && state.icon.width >= 44 && state.icon.height >= 44, 'Sketchbook control stays visible and touchable');
   assert.ok(state.images, `${label}: images missing`);
   assert.deepEqual(state.titleStyle, { opacity: '1', blend: 'normal', shadow: 'none', filter: 'none' }, `${label}: titles must remain opaque without effects`);
   assert.equal(state.imageOverlay, 'none', `${label}: image composition supplies contrast, not an overlay`);
@@ -91,14 +99,12 @@ try {
     await page.setViewport(viewport);
     await page.goto(`${origin}/v3/prints/`, { waitUntil: 'networkidle0' });
     await settled();
-    assert.equal(await page.$eval('[data-print-previous]', el => el.disabled), true);
     await audit(`${label}-mace`);
-    await page.click('[data-print-next]');
-    await page.waitForFunction(() => document.querySelector('[data-print-position]').textContent === '02 / 02');
+    await page.click('[data-go-product="spike-planter-01"]');
+    await page.waitForFunction(() => document.querySelector('[data-print-announcement]').textContent.includes('2 of 2'));
     await settled();
     await audit(`${label}-planter`);
     assert.deepEqual(result.at(-1).hotspot, result.at(-2).hotspot, 'Both product photographs use the same centered hitbox');
-    assert.equal(await page.$eval('[data-print-next]', el => el.disabled), true);
     await page.click('[data-go-product="mace-and-chain"]');
     await page.waitForFunction(() => document.querySelector('.print-slide:not([inert])').dataset.product === 'mace-and-chain');
     assert.equal(await page.$eval('#print-info-planter', el => el.hidden), true);
@@ -126,7 +132,7 @@ try {
     await page.waitForFunction(() => !document.querySelector('dialog').open);
     assert.equal(await page.$eval('.print-hotspot[data-details="spike-planter-01"]', el => el === document.activeElement), true);
     assert.equal(new URL(page.url()).searchParams.has('details'), false);
-    await page.click('.print-item-actions [data-details="spike-planter-01"]');
+    await page.click('.print-hotspot[data-details="spike-planter-01"]');
     await page.reload({ waitUntil: 'networkidle0' });
     assert.equal(await page.$eval('dialog', el => el.open), true, 'Detail deep links survive refresh');
     await page.keyboard.press('Escape');
@@ -162,7 +168,7 @@ try {
     assert.equal(await page.$$eval('[data-print-item]:not([hidden]),.print-item-details:not([hidden])', els => els.length), 0);
     await page.$eval('#print-search', el => { el.value = 'mace'; el.dispatchEvent(new Event('input')); });
     assert.equal(await page.$$eval('.print-slide:not([hidden])', els => els.length), 1);
-    assert.equal(await page.$eval('[data-print-position]', el => el.textContent), '01 / 01');
+    assert.match(await page.$eval('[data-print-announcement]', el => el.textContent), /1 of 1/);
     await page.$eval('#print-search', el => { el.value = ''; el.dispatchEvent(new Event('input')); });
     await page.keyboard.press('Escape');
     await page.focus('[data-print-carousel]');
@@ -190,7 +196,7 @@ try {
   // Exercise the actual UI + HTTP handlers with isolated server identities.
   // External navigations are intercepted before they leave this test browser.
   const journeys = [];
-  for (const scenario of ['guest', 'member', 'owned', 'unavailable', 'revoked']) {
+  for (const [surface, scenario] of ['details', 'catalog'].flatMap(surface => ['guest', 'member', 'owned', 'unavailable', 'revoked'].map(scenario => [surface, scenario]))) {
     let activeMember = ['member', 'unavailable', 'revoked'].includes(scenario);
     let issued = 0;
     const printDependencies = {
@@ -249,23 +255,33 @@ try {
           await journey.waitForFunction(() => Boolean(document.querySelector('[data-details-price] s')));
         }
       }
+      const action = surface === 'catalog' ? '[data-print-download="spike-planter-01"]' : '[data-details-download]';
+      const actionStatus = surface === 'catalog' ? '#print-info-planter [data-catalog-download-status]' : '[data-download-status]';
+      if (surface === 'catalog') {
+        await journey.click('[data-details-close]');
+        await journey.waitForFunction(() => !document.querySelector('[data-print-details]').open);
+      }
       if (scenario === 'unavailable') {
+        if (surface === 'catalog') {
+          await journey.click(action);
+          await journey.waitForFunction(selector => document.querySelector(selector).textContent.includes('not available yet'), {}, actionStatus);
+        }
         assert.equal(await journey.$eval('[data-details-download]', el => el.disabled), true);
         assert.match(await journey.$eval('[data-download-status]', el => el.textContent), /not available yet/);
       } else if (scenario === 'revoked') {
         // A revocation on the signing request must fail closed even after the
         // button's fresh access request has succeeded.
         journey.on('request', req => { if (req.url().includes('/api/prints/download?')) activeMember = false; });
-        await journey.click('[data-details-download]');
-        await journey.waitForFunction(() => document.querySelector('[data-download-status]').textContent.includes('could not be opened'));
+        await journey.click(action);
+        await journey.waitForFunction(selector => document.querySelector(selector).textContent.includes('could not be opened'), {}, actionStatus);
       } else {
-        await Promise.all([journey.waitForNavigation(), journey.click('[data-details-download]')]);
+        await Promise.all([journey.waitForNavigation(), journey.click(action)]);
         assert.deepEqual(destinations, [scenario === 'guest' ? 'https://checkout.stripe.com/c/pay/fixture' : 'https://downloads.example.test/fixture-planter.zip']);
       }
       assert.equal(issued, ['member', 'owned'].includes(scenario) ? 1 : 0);
       assert.equal(checkouts, scenario === 'guest' ? 1 : 0, 'Members and owners skip checkout');
       assert.equal(destinations.some(url => url.includes('gumroad.com')), false, 'Prints never hands off to Gumroad');
-      journeys.push({ scenario, issued, handoff: destinations, downloadRequests: requests.filter(url => url.includes('/api/prints/download')).length });
+      journeys.push({ surface, scenario, issued, handoff: destinations, downloadRequests: requests.filter(url => url.includes('/api/prints/download')).length });
     } finally {
       await journey.close();
       await new Promise(resolve => fixtureServer.close(resolve));

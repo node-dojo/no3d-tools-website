@@ -9,10 +9,10 @@
   <title>NO3D Prints</title>
   <link rel="stylesheet" href="/v3/styles/v3.css?v=prints-20261028b">
   <link rel="stylesheet" href="/v3/styles/storefronts.css?v=prints-20261028b">
-  <link rel="stylesheet" href="/v3/styles/prints.css?v=prints-subheading-20261102">
+  <link rel="stylesheet" href="/v3/styles/prints.css?v=sketchbook-layout-1">
   <link rel="stylesheet" href="/v3/styles/print-product.css?v=prints-thumbnails-20261108">
   <link rel="stylesheet" href="/v3/styles/print-parts.css?v=assembled-dimensions-20261103">
-  <link rel="stylesheet" href="/v3/styles/print-sketchbook.css?v=book1">
+  <link rel="stylesheet" href="/v3/styles/print-sketchbook.css?v=sketchbook-layout-1">
 </head>
 <body class="prints-page" data-storefront="prints">
   <a class="prints-skip" href="#print-carousel">Skip to prints</a>
@@ -39,27 +39,28 @@
     <div class="prints-search" id="prints-search" hidden><label for="print-search">Search prints</label><input id="print-search" type="search" autocomplete="off" placeholder="Search print downloads"><button type="button" data-search-close aria-label="Close search">Close ×</button></div>
     <aside class="prints-index" aria-label="Print catalog">
       <p class="prints-subheading"><a href="https://www.instagram.com/the.well.tarot/" target="_blank" rel="noopener noreferrer">3D printable creations by The Well Tarot</a></p>
-      <div class="prints-index-heading"><span>Prints</span><span data-result-count>02</span></div>
+      <div class="prints-index-heading visually-hidden"><span>Prints</span><span data-result-count>02</span></div>
       <ol class="prints-products" aria-label="Choose a print">
         <li class="print-item" data-print-item="mace-and-chain">
           <h2><button type="button" class="print-item-toggle" data-go-product="mace-and-chain" id="print-name-mace" aria-current="true" aria-expanded="true" aria-controls="print-info-mace"><span>01</span><span>The Lighter Keeper 01</span></button></h2>
           <div class="print-item-details" id="print-info-mace" role="region" aria-labelledby="print-name-mace">
-            <p class="print-type">3D printable · STL</p>
-            <div class="print-item-actions"><button type="button" data-details="mace-and-chain" aria-haspopup="dialog">Product details <span aria-hidden="true">+</span></button><span class="print-price">—</span></div>
+            <div class="print-item-actions"><div><span class="print-price">—</span><p class="print-type">3D printable · STL</p></div><button class="print-download" type="button" data-print-download="mace-and-chain">Download</button></div>
+            <div class="print-preview"><p data-print-description></p><button class="print-sketchbook-open" type="button" data-sketchbook-open aria-label="Open The Lighter Keeper 01 sketchbook" aria-haspopup="dialog" aria-controls="print-sketchbook"><svg viewBox="0 0 64 30" aria-hidden="true"><use href="/v3/assets/prints/sketchbook-open.svg#icon"/></svg></button></div>
+            <p class="print-catalog-status" data-catalog-download-status role="status"></p>
           </div>
         </li>
         <li class="print-item" data-print-item="spike-planter-01">
           <h2><button type="button" class="print-item-toggle" data-go-product="spike-planter-01" id="print-name-planter" aria-current="false" aria-expanded="false" aria-controls="print-info-planter"><span>02</span><span>Spike Planter 01</span></button></h2>
           <div class="print-item-details" id="print-info-planter" role="region" aria-labelledby="print-name-planter" hidden>
-            <p class="print-type">3D printable · STL + 3MF</p>
-            <div class="print-item-actions"><button type="button" data-details="spike-planter-01" aria-haspopup="dialog">Product details <span aria-hidden="true">+</span></button><span class="print-price">—</span></div>
+            <div class="print-item-actions"><div><span class="print-price">—</span><p class="print-type">3D printable · STL + 3MF</p></div><button class="print-download" type="button" data-print-download="spike-planter-01">Download</button></div>
+            <div class="print-preview"><p data-print-description></p><button class="print-sketchbook-open" type="button" data-sketchbook-open aria-label="Open Spike Planter 01 sketchbook" aria-haspopup="dialog" aria-controls="print-sketchbook"><svg viewBox="0 0 64 30" aria-hidden="true"><use href="/v3/assets/prints/sketchbook-open.svg#icon"/></svg></button></div>
+            <p class="print-catalog-status" data-catalog-download-status role="status"></p>
           </div>
         </li>
       </ol>
     </aside>
     <footer class="prints-footer">
       <nav aria-label="NO3D storefronts" class="prints-footer-links"><a href="/v3/">Tools</a><a href="/v3/prints/" aria-current="page">Prints</a><a data-print-recovery-link href="/v3/prints/download/" hidden>Resend my downloads</a></nav>
-      <div class="prints-pagination"><button type="button" data-print-previous aria-label="Previous print"><svg class="site-caret site-caret--left" viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg></button><span data-print-position>01 / 02</span><button type="button" data-print-next aria-label="Next print"><svg class="site-caret site-caret--right" viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5"/></svg></button></div>
       <img src="/assets/light/stone-logo.png" class="prints-stone" alt="Stone W mark">
     </footer>
   </div>
@@ -94,7 +95,7 @@
     </div>
   </dialog>
   <script type="module" src="/v3/js/storefronts.js?v=prints-subheading-20261102"></script>
-  <script type="module" src="/v3/js/prints.js?v=product-books-1"></script>
+  <script type="module" src="/v3/js/prints.js?v=sketchbook-layout-1"></script>
   <script type="module" src="/v3/js/print-delivery-links.js?v=prints-delivery-20261107"></script>
 </body>
 </html>

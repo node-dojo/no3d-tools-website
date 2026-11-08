@@ -32,6 +32,23 @@
 .print-sketchbook[data-ready=true] .book-sheet img,
 .print-sketchbook:not([data-ready=true]) canvas { visibility: hidden; }
 .book-animating { transition: transform 290ms cubic-bezier(.19,.8,.24,1); }
+.book-close {
+  position: absolute;
+  top: max(68px, calc(env(safe-area-inset-top) + 52px));
+  right: max(12px, env(safe-area-inset-right));
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font: 400 32px/1 var(--ui);
+  cursor: pointer;
+}
+.book-close:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
+.print-sketchbook[data-phase=closing] .book-close { visibility: hidden; }
 .book-access {
   position: fixed;
   bottom: max(8px, env(safe-area-inset-bottom));

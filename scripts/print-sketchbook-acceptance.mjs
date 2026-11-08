@@ -86,6 +86,28 @@ try {
   await touch('touchEnd');
   assert.ok(await page.$eval('.print-sketchbook',el=>el.open),'two-finger downward pan stays in the book');
   await lower(catalog);
+  // The visible entry opens the selected book without changing catalog state.
+  const entry = '#print-info-planter [data-sketchbook-open]';
+  await page.click(entry);
+  await opened();
+  assert.equal(await page.$eval('.print-sketchbook', el=>el.dataset.book), 'spike-planter');
+  assert.deepEqual(await productState(), catalog);
+  await page.click('.book-close');
+  await closed();
+  assert.equal(await page.$eval(entry, el=>el===document.activeElement), true, 'Close returns focus to the book control');
+  // A small vertical drag springs back; a committed upward drag dismisses too.
+  await page.click(entry);
+  await opened();
+  await touch('touchStart',[[1,190,430]]);
+  await touch('touchMove',[[1,191,405]]);
+  await touch('touchEnd');
+  await page.waitForFunction(()=>Math.abs(new DOMMatrix(getComputedStyle(document.querySelector('.book-sheet')).transform).m42)<1);
+  assert.equal(await page.$eval('.print-sketchbook', el=>el.open), true);
+  await touch('touchStart',[[1,190,430]]);
+  await touch('touchMove',[[1,192,250]]);
+  await touch('touchEnd');
+  await closed();
+  assert.deepEqual(await productState(), catalog);
   await page.click('.print-hotspot[data-details="spike-planter-01"]');
   await page.waitForSelector('.print-details[open]');
   await page.$eval('.print-details', el=>Promise.all(el.getAnimations().map(a=>a.finished)));
@@ -110,8 +132,30 @@ try {
   await page.focus('body > .book-access');
   await page.keyboard.press('Enter');await opened();
   await page.keyboard.press('Escape');await closed();
+  // A zoomed mouse drag remains a pan until the book is moved off an edge.
+  await page.setViewport({width:1100,height:800,isMobile:false,hasTouch:false});
+  await page.click('#print-info-mace [data-sketchbook-open]');
+  await opened();
+  await page.keyboard.press('+');
+  await page.waitForNetworkIdle();
+  await page.mouse.move(150,350);
+  await page.mouse.down();
+  await page.mouse.move(210,370,{steps:8});
+  await page.mouse.up();
+  assert.equal(await page.$eval('.print-sketchbook',el=>el.open),true,'ordinary zoomed pan does not dismiss');
+  await page.mouse.move(100,370);
+  await page.mouse.down();
+  await page.mouse.move(1090,370,{steps:20});
+  await page.mouse.up();
+  await closed();
+  await page.click('#print-info-mace [data-sketchbook-open]');
+  await opened();
+  await page.waitForNetworkIdle();
+  assert.ok((await pixels()).opaque>1000,'reopening after dismissal recenters the book');
+  await page.click('.book-close');
+  await closed();
   assert.deepEqual(errors,[]);
-  console.log('Passed: bottom pull, canceled lift, alpha composition, horizontal flip, pinch isolation, nested product details, standalone print, return state, wheel and keyboard.');
+  console.log('Passed: visible book control, corner close and focus, upward/downward dismissal, zoomed offscreen pan, bottom pull, canceled lift, alpha composition, horizontal flip, pinch isolation, nested product details, standalone print, return state, wheel and keyboard.');
 } finally {
   await browser.close();
   await new Promise(resolve=>server.close(resolve));
