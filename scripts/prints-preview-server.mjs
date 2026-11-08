@@ -66,11 +66,11 @@ export function createPrintsPreviewServer({ printDependencies = {}, checkoutFixt
       if (path.endsWith('/')) path += 'index.html';
       const target = await realpath(join(root, path));
       const publicPath = relative(root, target);
-      const packedManifest = publicPath === 'v3/assets/sketchbook/manifest.json.gz';
+      const packedManifest = /^v3\/assets\/sketchbook\/(?:books\/[a-z0-9-]+\/v[0-9]+\/)?manifest\.json\.gz$/.test(publicPath);
       if (!/^(?:v3|assets|fonts)\//.test(publicPath) || publicPath.split('/').some(part => part.startsWith('.')) || (!packedManifest && !mime[extname(target)])) return json(404, { error: 'not_found' });
       const data = await readFile(target);
       const headers = packedManifest ? { 'Content-Type':'application/json', 'Content-Encoding':'gzip' } : { 'Content-Type':mime[extname(target)] };
-      if (/^v3\/assets\/sketchbook\/poses\/[^/]+\.bin$/.test(publicPath)) {
+      if (/^v3\/assets\/sketchbook\/(?:books\/[a-z0-9-]+\/v[0-9]+\/)?poses\/[^/]+\.bin$/.test(publicPath)) {
         headers['Content-Encoding']='gzip';
         headers['Cache-Control']='public, max-age=31536000, immutable';
       }

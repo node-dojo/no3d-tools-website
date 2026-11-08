@@ -49,6 +49,9 @@
     }
   },
   "headers": [
+    { "source": "/v3/assets/sketchbook/books/:book/:version/manifest.json.gz", "headers": [{"key":"Content-Type","value":"application/json"},{"key":"Content-Encoding","value":"gzip"},{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}] },
+    { "source": "/v3/assets/sketchbook/books/:book/:version/poses/(.*)", "headers": [{"key":"Content-Type","value":"application/octet-stream"},{"key":"Content-Encoding","value":"gzip"},{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}] },
+    { "source": "/v3/assets/sketchbook/books/:book/:version/textures/(.*)", "headers": [{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}] },
     { "source": "/v3/assets/sketchbook/manifest.json.gz", "headers": [{"key":"Content-Type","value":"application/json"},{"key":"Content-Encoding","value":"gzip"}] },
     { "source": "/v3/assets/sketchbook/poses/(.*)", "headers": [{"key":"Content-Type","value":"application/octet-stream"},{"key":"Content-Encoding","value":"gzip"},{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}] },
     {

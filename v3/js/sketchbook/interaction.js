@@ -183,5 +183,13 @@ export function controlBook(stage, sheet) {
       event.preventDefault(); sheet.dismiss();
     }
   });
-  return { attach(value) { renderer=value; present(); }, present, reset };
+  return {
+    attach(value) { renderer=value; present(); }, present, reset,
+    configure({pageStops, initialProgress}) {
+      reset();
+      sheet.pageStops = pageStops;
+      Object.assign(state, {progress:initialProgress, zoom:1, panX:0, panY:0});
+      present();
+    }
+  };
 }

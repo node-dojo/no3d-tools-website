@@ -3,11 +3,14 @@ import {tiltTarget,stepSpring,limitTilt,createPullTilt} from './soft-tilt.js';
 import {createPoseStore} from './pose-store.js';
 import {deformPose} from './deform-pose.js';
 import {createViewMotion} from './view-motion.js';
-export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},onError=()=>{}}={}){
+import {bookNavigation} from './books.js?v=product-books-1';
+export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},onError=()=>{},signal}={}){
   const manifestURL=rootManifest.three.manifest;
   const base=manifestURL.slice(0,manifestURL.lastIndexOf('/')+1);
-  const response=await fetch(manifestURL);if(!response.ok)throw new Error('The 3D study is still being prepared.');
+  const response=await fetch(manifestURL,{signal});if(!response.ok)throw new Error('The sketchbook is unavailable.');
   const manifest=await response.json();
+  signal?.throwIfAborted();
+  const navigation=bookNavigation(manifest,rootManifest);
   onStatus('Preparing 3D graphics…');
   // Keep the last frame visible while the demand-driven renderer is idle.
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
@@ -18,7 +21,7 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
   scene.add(new THREE.HemisphereLight(0xffffff,0x888888,1.45));
   const light=new THREE.DirectionalLight(0xffffff,2.0);light.position.set(-2,3,4);scene.add(light);
   const loader=new THREE.TextureLoader(),textures=new Map(),items=[];
-  let state={progress:.5050505,zoom:1,panX:0,panY:0},width=1,height=1,raf=0,lastProgress=-1,destroyed=false,drawTimes=[],active=false;
+  let state={progress:navigation.initialProgress,zoom:1,panX:0,panY:0},width=1,height=1,raf=0,lastProgress=-1,destroyed=false,drawTimes=[],active=false;
   const viewMotion=createViewMotion(state);let justActivated=false;
   let pointer={x:0,y:0},pitch={value:0,velocity:0},yaw={value:0,velocity:0},lastDraw=0,runtimeError=null;
   const pull=createPullTilt();let motionTilt={pitch:0,yaw:0,moving:false},deformTimes=[],renderTimes=[];
@@ -53,7 +56,23 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
     geometry.setAttribute('normal',new THREE.BufferAttribute(normals,3).setUsage(THREE.DynamicDrawUsage));
     const color=new THREE.Color().setRGB(...(part.material.color||[.8,.8,.8]));
     const material=new THREE.MeshStandardMaterial({map:texture,color,roughness:part.material.roughness||.9,metalness:0,side:THREE.DoubleSide,alphaTest:part.name.startsWith('stickers')?.15:0});
-    if(texture&&part.material.extension==='CLIP'){
+    if(texture && part.material.artwork){
+      // Ink alpha blends onto opaque paper; it never cuts holes in the sheet.
+      const paper=part.material.paper || [.92,.90,.85];
+      material.onBeforeCompile=shader=>{
+        shader.uniforms.paperColor={value:new THREE.Color().setRGB(...paper)};
+        shader.fragmentShader='uniform vec3 paperColor;\n'+shader.fragmentShader;
+        shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
+          vec4 ink = texture2D(map, vMapUv);
+          float inside = step(0.0,vMapUv.x)*step(vMapUv.x,1.0)*step(0.0,vMapUv.y)*step(vMapUv.y,1.0);
+          float grain = fract(sin(dot(floor(vMapUv*2048.0),vec2(12.9898,78.233)))*43758.5453);
+          vec3 paper = paperColor * (0.985 + 0.015*grain);
+          diffuseColor.rgb *= gl_FrontFacing ? mix(paper, ink.rgb, ink.a*inside) : paper;
+          diffuseColor.a = 1.0;
+        `);
+      };
+      material.customProgramCacheKey=()=> 'opaque-paper-artwork-v1';
+    } else if(texture&&part.material.extension==='CLIP'){
       material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','if (any(lessThan(vMapUv, vec2(0.0))) || any(greaterThan(vMapUv, vec2(1.0)))) discard;\n#include <map_fragment>');};
       material.customProgramCacheKey=()=> 'clip-image-boundaries';
     } else if(part.name.startsWith('pages')){
@@ -64,16 +83,16 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
     const sampleOffset=manifest.parts.slice(0,index).reduce((n,p)=>n+p.vertexCount*3,0);
     const item={part,geometry,material,mesh,sampleOffset,positions,normals,indices:geometry.index.array};items.push(item);return item;
   }))]);
-  let loadTimeout;
-  try{await Promise.race([loading,new Promise((_,reject)=>{loadTimeout=setTimeout(()=>reject(new Error('The first view took too long to load. Tap Retry.')),30000);})]);}
-  catch(error){destroyed=true;poses.destroy();canvas.removeEventListener('webglcontextlost',contextLost);for(const i of items){i.geometry.dispose();i.material.dispose();}for(const p of textures.values())p.then(t=>t.dispose()).catch(()=>{});renderer.dispose();throw error;}
-  finally{clearTimeout(loadTimeout);}
+  let loadTimeout,abortLoad;
+  const aborted=new Promise((_,reject)=>{abortLoad=()=>reject(new DOMException('Book changed.','AbortError'));signal?.addEventListener('abort',abortLoad,{once:true});if(signal?.aborted)abortLoad();});
+  try{await Promise.race([loading,aborted,new Promise((_,reject)=>{loadTimeout=setTimeout(()=>reject(new Error('The first view took too long to load. Tap Retry.')),30000);})]);}
+  catch(error){destroyed=true;poses.destroy();canvas.removeEventListener('webglcontextlost',contextLost);for(const i of items){i.geometry.dispose();i.material.dispose();}for(const p of textures.values())p.then(t=>t.dispose()).catch(()=>{});renderer.dispose();renderer.forceContextLoss();throw error;}
+  finally{clearTimeout(loadTimeout);signal?.removeEventListener('abort',abortLoad);}
   onStatus('Drawing the sketchbook…');
   // Rotate around the middle of the cover, not the camera-space origin.
   const cover=items.find(i=>i.part.name.startsWith('cover'))||items[0],bounds=new THREE.Box3(),point=new THREE.Vector3();
   const initialPose=poses.get(state.progress*(manifest.sampleCount-1));
-  const neutralFrame=Math.floor((manifest.sampleCount-1)/2),neutralChunk=manifest.poseChunks.chunks[Math.floor(neutralFrame/manifest.poseChunks.interval)];
-  const offset=cover.sampleOffset*initialPose.count+(neutralFrame-neutralChunk.start)*cover.positions.length;
+  const offset=cover.sampleOffset*initialPose.count+initialPose.a*cover.positions.length;
   for(let i=0;i<cover.positions.length;i+=3){
     point.set(...[0,1,2].map(axis=>cover.part.min[axis]+initialPose.data[offset+i+axis]/65535*cover.part.span[axis]));bounds.expandByPoint(point);
   }
@@ -123,6 +142,7 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
   }
   function requestDraw(){if(!raf&&!destroyed&&active)raf=requestAnimationFrame(draw);}
   return {
+    navigation,
     ready:firstDraw,
     upperEdge(viewWidth, viewHeight) {
       if (lastProgress < 0) return null;
@@ -147,6 +167,6 @@ export async function createThreeRenderer(canvas,rootManifest,{onStatus=()=>{},o
     setActive(value){active=value;justActivated=value;if(!value){cancelAnimationFrame(raf);raf=0;resetTilt();viewMotion.reset(state);}else requestDraw();},
     resize(w,h,pixelRatio=1){width=w;height=h;renderer.setPixelRatio(Math.min(pixelRatio,2));renderer.setSize(w,h,false);requestDraw();},
     getStats(){const average=values=>values.reduce((a,b)=>a+b,0)/Math.max(1,values.length),shown=viewMotion.get();return {renderer:'Baked 3D deformation',samples:sampleCount,vertices:items.reduce((n,i)=>n+i.part.vertexCount,0),...poses.getStats(),decodedMemoryMB:poses.getStats().poseMemoryMB+items.reduce((n,i)=>n+i.positions.byteLength+i.normals.byteLength,0)/1048576,drawsPerSecond:drawTimes.filter(t=>performance.now()-t<1000).length,deformationMs:average(deformTimes),renderSubmitMs:average(renderTimes),displayedProgress:lastProgress,viewZoom:shown.zoom,viewPanX:shown.panX,viewPanY:shown.panY,viewFollowing:shown.moving,tiltDegrees:Math.hypot(pivot.rotation.x,pivot.rotation.y)*180/Math.PI,pullTiltDegrees:Math.hypot(motionTilt.pitch,motionTilt.yaw)*180/Math.PI,detail:'Air-damped pan/zoom · reactive tilt · exact rig geometry and normals',geometryMemoryOnly:true};},
-    destroy(){destroyed=true;poses.destroy();cancelAnimationFrame(raf);canvas.removeEventListener('webglcontextlost',contextLost);motionQuery.removeEventListener('change',onMotionPreference);for(const i of items){i.geometry.dispose();i.material.dispose();}for(const p of textures.values())p.then(t=>t.dispose()).catch(()=>{});renderer.dispose();}
+    destroy(){destroyed=true;rejectFirstDraw(new DOMException('Viewer closed.','AbortError'));poses.destroy();cancelAnimationFrame(raf);canvas.removeEventListener('webglcontextlost',contextLost);motionQuery.removeEventListener('change',onMotionPreference);for(const i of items){i.geometry.dispose();i.material.dispose();}for(const p of textures.values())p.then(t=>t.dispose()).catch(()=>{});renderer.dispose();renderer.forceContextLoss();}
   };
 }

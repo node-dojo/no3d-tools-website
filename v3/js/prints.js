@@ -1,4 +1,4 @@
-import { mountPrintSketchbook } from './print-sketchbook.js';
+import { mountPrintSketchbook } from './print-sketchbook.js?v=product-books-1';
 import { printProducts } from '../data/prints/catalog.js?v=assembled-dimensions-20261103';
 import { createPrintProductView } from './print-product.js?v=assembled-dimensions-20261103';
 import { getPrintOffer } from './api.js?v=prints-20261028b';
@@ -124,4 +124,4 @@ function restoreFromUrl() {
 addEventListener('popstate', restoreFromUrl);
 restoreFromUrl();
 
-mountPrintSketchbook();
+mountPrintSketchbook({ getProduct: () => dialog.open ? dialog.dataset.product : visible[active]?.dataset.product });

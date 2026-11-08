@@ -58,6 +58,9 @@ try {
   await touch('touchEnd');
   await closed();
   const catalog = await lift();
+  assert.equal(await page.$eval('.print-sketchbook',el=>el.dataset.book),'spike-planter');
+  assert.ok(assets.some(url=>url.endsWith('/books/spike-planter/v1/manifest.json.gz')));
+  assert.ok(!assets.some(url=>url.endsWith('/sketchbook/manifest.json.gz')),'Spike does not load the default geometry');
   const pixels = () => page.$eval('.book-sheet canvas',canvas=>{
     const gl=canvas.getContext('webgl2'),w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
     const data=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,data);
@@ -92,10 +95,12 @@ try {
   await page.$eval('.print-details',el=>el.scrollTo({top:220,behavior:'instant'}));
   await page.waitForNetworkIdle();
   const details=await lift();
+  assert.equal(await page.$eval('.print-sketchbook',el=>el.dataset.book),'spike-planter');
   await lower(details);
   await page.goto(origin+'/p/mace-and-chain',{waitUntil:'networkidle0'});
   await page.evaluate(()=>scrollTo({top:420,behavior:'instant'}));
   const landing=await lift();
+  assert.equal(await page.$eval('.print-sketchbook',el=>el.dataset.book),'default');
   await lower(landing);
   await page.goto(origin+'/v3/prints/',{waitUntil:'networkidle0'});
   await page.mouse.move(225,320);

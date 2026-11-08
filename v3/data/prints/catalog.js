@@ -89,6 +89,7 @@ export const printProducts = [
   },
   {
     "slug": "spike-planter-01",
+    "sketchbook": "spike-planter",
     "landingHero": {
       "src": "/v3/assets/prints/spike-planter-background-v2.png",
       "alt": "Black Spike Planter with a plant against dark wood",

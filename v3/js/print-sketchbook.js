@@ -1,10 +1,9 @@
-import { controlBook } from './sketchbook/interaction.js';
+import { controlBook } from './sketchbook/interaction.js?v=product-books-1';
+import { bookForProduct, defaultBook } from './sketchbook/books.js?v=product-books-1';
 
-const assets = '/v3/assets/sketchbook/';
-const pageStops = [0,.099,.18,.261,.342,.423,.504,.585,.666,.747,.828,.909,.99];
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function mountPrintSketchbook() {
+export function mountPrintSketchbook({getProduct = () => null} = {}) {
   const dialog = document.createElement('dialog');
   dialog.className = 'print-sketchbook';
   dialog.setAttribute('aria-label','Sketchbook');
@@ -35,11 +34,12 @@ export function mountPrintSketchbook() {
 
   let renderer, loading, failed = false, returnFocus, contact, closeTimer, suppressClickUntil = 0;
   let attempt = 0;
+  let selectedBook, loadController;
   let travel = innerHeight, lastSheetWheel = -Infinity;
   const atEdge = y => y >= innerHeight-Math.min(130, innerHeight*.2);
   const threshold = () => Math.min(100, innerHeight*.12);
   const controls = controlBook(stage, {
-    threshold, offset, dismiss, pageStops,
+    threshold, offset, dismiss, pageStops: defaultBook.pageStops,
     wheelDismiss() { lastSheetWheel = performance.now(); dismiss(); },
     closing: () => dialog.dataset.phase === 'closing',
     settle: () => animateTo(0)
@@ -67,27 +67,35 @@ export function mountPrintSketchbook() {
     const version = attempt;
     if (!loading) {
       const surface = canvas;
+      const descriptor = selectedBook;
+      loadController = new AbortController();
+      const signal = loadController.signal;
       loading = (async () => {
-        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js');
-        const book = await createThreeRenderer(surface, {three:{manifest:assets+'manifest.json.gz'}}, {
+        const {createThreeRenderer} = await import('./sketchbook/three-renderer.js?v=product-books-1');
+        if (signal.aborted) return;
+        const book = await createThreeRenderer(surface, {...descriptor, three:{manifest:descriptor.manifest}}, {
+          signal,
           onError: () => { if (version === attempt) showFailure(); }
         });
         if (version !== attempt) { book.destroy(); return; }
         renderer = book;
+        controls.configure(book.navigation);
         controls.attach(renderer);
       })();
     }
     try {
       await loading;
-      if (version !== attempt || !dialog.open || dialog.dataset.phase === 'closing') return;
+      if (version !== attempt || !renderer || !dialog.open || dialog.dataset.phase === 'closing') return;
       renderer.setActive(!document.hidden);
       resize();
       await renderer.ready;
-      if (!failed) dialog.dataset.ready = 'true';
+      if (version === attempt && !failed) dialog.dataset.ready = 'true';
     } catch { if (version === attempt) showFailure(); }
   }
-  retry.addEventListener('click', () => {
+  function releaseBook() {
     attempt++;
+    loadController?.abort();
+    controls.reset();
     controls.attach(null);
     renderer?.destroy();
     const fresh = canvas.cloneNode(false);
@@ -95,13 +103,23 @@ export function mountPrintSketchbook() {
     canvas = fresh;
     renderer = loading = null;
     failed = false;
+    dialog.dataset.ready = 'false';
     status.replaceChildren();
+  }
+  retry.addEventListener('click', () => {
+    releaseBook();
     prepare();
   });
   function open(underFinger = false) {
     if (dialog.open) return;
     returnFocus = document.activeElement;
-    if (!poster.hasAttribute('src')) poster.src = assets+'open.webp';
+    const descriptor = bookForProduct(getProduct());
+    if (descriptor.id !== selectedBook?.id) {
+      releaseBook();
+      selectedBook = descriptor;
+      poster.src = descriptor.poster;
+      dialog.dataset.book = descriptor.id;
+    }
 
     dialog.dataset.phase = 'open';
     dialog.showModal();
