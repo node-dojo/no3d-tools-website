@@ -57,3 +57,20 @@ footer{border-top:1px solid var(--rule);padding-top:32px;margin-top:var(--sectio
 @media(max-width:1100px) and (min-width:851px){.manufacturing-intro,.project-grid{grid-template-columns:1fr 1fr;gap:40px}.manufacturing-copy,.project-copy{grid-column:2}.manufacturing-copy .display,.project-copy .display{font-size:30px}.manufacturing-process,.approach-grid{grid-template-columns:1fr 1fr;gap:40px}.process-details,.approach-grid .reading{grid-column:2}.archive-portrait{width:70%;margin-left:8%}.manufacturing-process{margin-top:55px}}
 @media(max-width:850px){.manufacturing .section-top>span:last-child{max-width:150px}.manufacturing-intro,.project-grid,.approach-grid{display:flex;flex-direction:column;gap:32px;align-items:stretch}.manufacturing-copy{order:0}.factory-team{order:1;width:88%;align-self:flex-start}.manufacturing-copy .display,.project-copy .display{font-size:clamp(21px,6.7vw,38px);margin-bottom:26px}.manufacturing-copy .reading,.project-copy p{max-width:none}.manufacturing-process{display:block;margin-top:42px}.process-details{margin-top:36px;gap:26px 20px}.project-copy{order:0}.project-photo{order:1;width:92%;align-self:flex-end}.approach-grid .reading{order:0}.archive-portrait{order:1;width:65%;margin:0 0 0 auto}.approach .section-top{margin-bottom:28px}.approach .section-top h2{font-size:9px}}
 @media print{.manufacturing,.selected-project{margin-top:35px}.manufacturing-intro,.project-grid,.approach-grid{display:grid;grid-template-columns:1fr 1fr}.manufacturing-copy,.project-copy,.approach-grid .reading{grid-column:2}.factory-team,.project-photo,.archive-portrait{grid-column:1;width:100%;margin:0}.manufacturing-copy .display,.project-copy .display{font-size:22pt}}
+
+/* Photo explanations retain sentence case beside the compact caption titles. */
+.caption-detail{display:block;margin-top:8px;font-size:12px;line-height:1.6;letter-spacing:0;text-transform:none}
+
+/* Editable, accessible callouts follow Joe's supplied person markers. */
+.project-context{width:84%;max-width:1100px;margin:70px 0 0 auto}
+.annotated-photo{position:relative;isolation:isolate}
+.annotated-photo>img{width:100%;height:auto}
+.annotation-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;fill:none;stroke:var(--ink);stroke-width:1}
+.annotation-lines path,.annotation-lines circle{vector-effect:non-scaling-stroke}
+.annotation-lines circle{fill:var(--paper)}
+.photo-annotations{list-style:none;margin:0;padding:0}
+.photo-annotation{position:absolute;display:flex;align-items:center;gap:8px;transform:translate(-50%,-50%);padding:6px 10px 6px 6px;background:var(--paper);font:600 clamp(10px,1vw,12px)/1.25 var(--ui);letter-spacing:.025em;text-transform:uppercase;white-space:nowrap}
+.photo-annotation>span{display:grid;place-items:center;width:22px;height:22px;background:var(--ink);color:var(--paper);font-size:11px}
+.photo-annotation--one{left:23.984%;top:36.977%}
+.photo-annotation--two{left:62.02%;top:30.972%}
+@media(max-width:850px){.project-context{width:100%;margin-top:42px}.photo-annotation{gap:5px;padding:4px 6px 4px 4px;font-size:9px;letter-spacing:0}.photo-annotation>span{width:17px;height:17px;font-size:9px}.photo-annotation--one{left:22%}.photo-annotation--two{left:68%}}
