@@ -1,0 +1,251 @@
+{
+  "checkedAt": "2026-11-10T22:48:12.366Z",
+  "url": "https://no3dtools.com/about",
+  "implementationCommit": "77cda71",
+  "deployment": "dpl_KM7SqZx8FGBA3ZSC2bBhwJD5JjUF",
+  "status": 200,
+  "htmlSha256": "0a17a851ff99de7cee882b429abc788d39812268a367c428c1dd960db20d40bc",
+  "ordinaryAndOaiSearchBotMatchLocal": true,
+  "noindexHeader": false,
+  "logoCount": 9,
+  "photoCount": 10,
+  "teachingQuoteOccurrences": 1,
+  "oldQuoteAbsent": true,
+  "visibleLogoLabelsAbsent": true,
+  "assets": [
+    {
+      "path": "/v3/assets/about/client-amazon-de494dfdc9.png",
+      "status": 200,
+      "sha256": "de494dfdc9a6b8676a852597e1bb0961e9ec6aec945c018d85af6110f9c6c607",
+      "bytes": 17365
+    },
+    {
+      "path": "/v3/assets/about/client-apple-2e0e646b98.svg",
+      "status": 200,
+      "sha256": "2e0e646b98772b00b247604c0c9a684d989e7fc0a2a98d499eb7e0016926b8af",
+      "bytes": 744
+    },
+    {
+      "path": "/v3/assets/about/client-bellroy-e71e435c3e.svg",
+      "status": 200,
+      "sha256": "e71e435c3efd91d9e3240ce85547ef882031ef9d0a890a7e454c4d6e5bfa894f",
+      "bytes": 2639
+    },
+    {
+      "path": "/v3/assets/about/client-intel-4ea0758839.svg",
+      "status": 200,
+      "sha256": "4ea0758839458f8c6e629c5ac1254684d21ede4524dce409ad0b4489cb288f3c",
+      "bytes": 2430
+    },
+    {
+      "path": "/v3/assets/about/client-levis-8367255cd8.png",
+      "status": 200,
+      "sha256": "8367255cd8b48a669c696a5de24c9eac57a85a3a80c5382bd9476c6d346361f0",
+      "bytes": 21499
+    },
+    {
+      "path": "/v3/assets/about/client-nike-b0391fc2a2.svg",
+      "status": 200,
+      "sha256": "b0391fc2a2d17485c77ce4da5ee2ecd6944810ad0f4e3a34be67495c45efb047",
+      "bytes": 427
+    },
+    {
+      "path": "/v3/assets/about/client-rockefeller-wordmark-932fc7eedd.png",
+      "status": 200,
+      "sha256": "932fc7eeddbf6a6574adef56ad248d7eaa8a33e0c43b6d117c8c3477bf179ce2",
+      "bytes": 153072
+    },
+    {
+      "path": "/v3/assets/about/client-wildbird-594fc18d15.svg",
+      "status": 200,
+      "sha256": "594fc18d15eb38abb8c91c1518ddc46115830f80cbfc97e3869c1e451afbcbb9",
+      "bytes": 8081
+    },
+    {
+      "path": "/v3/assets/about/client-womp-03f2c4d89b.webp",
+      "status": 200,
+      "sha256": "03f2c4d89bbf4b6a9a04dd3e273eacc3200a5133601b9edf694ebf65869df45c",
+      "bytes": 93518
+    },
+    {
+      "path": "/v3/assets/about/complexcon-guests-1280-0ed5ab48aa.webp",
+      "status": 200,
+      "sha256": "0ed5ab48aa5e7b9022e235eb50737b3787be74217263655aa18a65d3c8bdaa48",
+      "bytes": 108504
+    },
+    {
+      "path": "/v3/assets/about/complexcon-guests-1920-e97754b553.webp",
+      "status": 200,
+      "sha256": "e97754b553e5267f052e18c0af3d02e4866ac1982aa705f43ea608ee398288e7",
+      "bytes": 229788
+    },
+    {
+      "path": "/v3/assets/about/complexcon-guests-640-268b53849c.webp",
+      "status": 200,
+      "sha256": "268b53849cd030ad256dd961df2c225656a137cd78da04df25db5ccaa5977c06",
+      "bytes": 33824
+    },
+    {
+      "path": "/v3/assets/about/factory-cnc-1280-bec3ad34f2.webp",
+      "status": 200,
+      "sha256": "bec3ad34f2aa9e0f4f96c4785559c4344c1b15a90f2fefd257e04869198e13b1",
+      "bytes": 202836
+    },
+    {
+      "path": "/v3/assets/about/factory-cnc-1920-4cb640770e.webp",
+      "status": 200,
+      "sha256": "4cb640770ecb5c4c7cfd0c45296aad9840ee8a293ac1327a1eb710f5b4db8545",
+      "bytes": 384540
+    },
+    {
+      "path": "/v3/assets/about/factory-cnc-640-ba571cb572.webp",
+      "status": 200,
+      "sha256": "ba571cb5725451c17c12a36cc229968b6738a3bfe49e424745032184d46bc670",
+      "bytes": 70536
+    },
+    {
+      "path": "/v3/assets/about/factory-fixture-1280-eb3bc1751f.webp",
+      "status": 200,
+      "sha256": "eb3bc1751f974c52b0f574d2fa95a09183303bcd9c2f86cd548b295c3191198d",
+      "bytes": 166354
+    },
+    {
+      "path": "/v3/assets/about/factory-fixture-1920-f6cdc04464.webp",
+      "status": 200,
+      "sha256": "f6cdc04464c6910f9bb0f0aac0f371b196313533948bd2ef497a565e051d5d61",
+      "bytes": 320936
+    },
+    {
+      "path": "/v3/assets/about/factory-fixture-640-058bfcbc45.webp",
+      "status": 200,
+      "sha256": "058bfcbc45b0bcf8a68c5e20bc2b0c8407e12be28ece7fb9dca690a045b69fef",
+      "bytes": 53450
+    },
+    {
+      "path": "/v3/assets/about/factory-floor-1280-bd4e7f94f5.webp",
+      "status": 200,
+      "sha256": "bd4e7f94f58c279e5137b3574a13018e0be608269227411c038d36415d039603",
+      "bytes": 301462
+    },
+    {
+      "path": "/v3/assets/about/factory-floor-1920-e309129ac9.webp",
+      "status": 200,
+      "sha256": "e309129ac9e9f4cbd46a9cb74053d38ae874a4daefd917ceead85c9b85be40ef",
+      "bytes": 611908
+    },
+    {
+      "path": "/v3/assets/about/factory-floor-640-785bfdff94.webp",
+      "status": 200,
+      "sha256": "785bfdff94cbbf4b3a9496d47e105682f3320a2b16c0efcb7891c4f6aa7d1150",
+      "bytes": 89886
+    },
+    {
+      "path": "/v3/assets/about/factory-press-1280-2ce3c432a5.webp",
+      "status": 200,
+      "sha256": "2ce3c432a5b846561b4bfaef06d506c3ec7d58953ed8101356225c15728e4382",
+      "bytes": 94334
+    },
+    {
+      "path": "/v3/assets/about/factory-press-1920-5b4889139f.webp",
+      "status": 200,
+      "sha256": "5b4889139fe4a62d17ba29f33692d21fcfd94bafec7acf3635585abccf90a4de",
+      "bytes": 195952
+    },
+    {
+      "path": "/v3/assets/about/factory-press-640-3cddcf4558.webp",
+      "status": 200,
+      "sha256": "3cddcf4558988041a58b4d2e39c4374714c5a9ed199c405e4a7043949017e454",
+      "bytes": 33562
+    },
+    {
+      "path": "/v3/assets/about/factory-sewing-1280-7e32a14a6d.webp",
+      "status": 200,
+      "sha256": "7e32a14a6d18ecd54195f2703bbcb257b32746896042e39d49778cffe97b9d24",
+      "bytes": 97642
+    },
+    {
+      "path": "/v3/assets/about/factory-sewing-1920-dab5837ec6.webp",
+      "status": 200,
+      "sha256": "dab5837ec6196738025648c5a9812119727800cd93482a2241681f96d8f6db87",
+      "bytes": 185336
+    },
+    {
+      "path": "/v3/assets/about/factory-sewing-640-5100474cd1.webp",
+      "status": 200,
+      "sha256": "5100474cd122a51092f46c03625f946431dc28f3dff2012cb643efa3f4aa3049",
+      "bytes": 39038
+    },
+    {
+      "path": "/v3/assets/about/factory-team-1280-7e41246b62.webp",
+      "status": 200,
+      "sha256": "7e41246b62854a05443badf02d1a8c4879ca8dfd91e4176af7fdefc39dc53d28",
+      "bytes": 173556
+    },
+    {
+      "path": "/v3/assets/about/factory-team-1920-bb7f2e93d3.webp",
+      "status": 200,
+      "sha256": "bb7f2e93d395ec28f583b75f363ae45d78067a3e3757e801ad9e8e212dedb389",
+      "bytes": 310854
+    },
+    {
+      "path": "/v3/assets/about/factory-team-640-429ab1eb80.webp",
+      "status": 200,
+      "sha256": "429ab1eb80965234079fecdf2db8a41debd043c0c88c674c2d9c4765e63348a4",
+      "bytes": 62018
+    },
+    {
+      "path": "/v3/assets/about/gallery-1280-06f1c01b78.webp",
+      "status": 200,
+      "sha256": "06f1c01b788f61beae1f3bd95bcc60c3ef26ed4a11cdd6f833e5cdc4b41060a3",
+      "bytes": 262542
+    },
+    {
+      "path": "/v3/assets/about/gallery-640-94b10b7b1b.webp",
+      "status": 200,
+      "sha256": "94b10b7b1b79d2735639cb9fb5edc1b004a70390f292db0046eb69acbf7b3aeb",
+      "bytes": 104870
+    },
+    {
+      "path": "/v3/assets/about/hero-1280-d51b8e03a0.webp",
+      "status": 200,
+      "sha256": "d51b8e03a0fa232c357b8d0af3c54c6bbbfe73b93d612ed633d031dfca71d594",
+      "bytes": 273200
+    },
+    {
+      "path": "/v3/assets/about/hero-1920-be6df9650b.webp",
+      "status": 200,
+      "sha256": "be6df9650bd5ba3c704cf6814f5c56783510edfb78b616fde44ff62d46377639",
+      "bytes": 330710
+    },
+    {
+      "path": "/v3/assets/about/hero-640-a0117fbf9d.webp",
+      "status": 200,
+      "sha256": "a0117fbf9d080c7316f569cb31aa610085f233043ce3bf6fd0752842828b538d",
+      "bytes": 93890
+    },
+    {
+      "path": "/v3/assets/about/reels-poster-1c35897d09.webp",
+      "status": 200,
+      "sha256": "1c35897d09a74de1eb48278a9257a76958c95a79db0ea9834e246040dbd5c803",
+      "bytes": 77448
+    },
+    {
+      "path": "/v3/assets/about/workshop-1280-e17baf9a35.webp",
+      "status": 200,
+      "sha256": "e17baf9a3583ddf05636cff74914ecc146fc078f4ee01d5d87401ed99269fc64",
+      "bytes": 207228
+    },
+    {
+      "path": "/v3/assets/about/workshop-640-82dd3b75f8.webp",
+      "status": 200,
+      "sha256": "82dd3b75f8334511d2248cb36cf47689c7672a38dd67cf170941896056a842f1",
+      "bytes": 78686
+    },
+    {
+      "path": "/v3/styles/about.css?v=b1fc8af421",
+      "status": 200,
+      "sha256": "b1fc8af421427c0ceea3dc5ed60b56912fe05ff6253c2721e24d82db02068880",
+      "bytes": 14705
+    }
+  ]
+}
