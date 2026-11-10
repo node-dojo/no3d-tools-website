@@ -1,0 +1,98 @@
+[
+  {
+    "path": "/about",
+    "user_agent": "Mozilla/5.0",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "robots_header": null,
+    "bytes": 11736,
+    "matches_source": true
+  },
+  {
+    "path": "/about",
+    "user_agent": "OAI-SearchBot/1.0",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "robots_header": null,
+    "bytes": 11736,
+    "matches_source": true
+  },
+  {
+    "path": "/about",
+    "user_agent": "Googlebot/2.1",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "robots_header": null,
+    "bytes": 11736,
+    "matches_source": true
+  },
+  {
+    "path": "/sitemap.xml",
+    "user_agent": "Mozilla/5.0",
+    "status": 200,
+    "content_type": "application/xml; charset=utf-8",
+    "robots_header": null,
+    "bytes": 8241,
+    "about_listed": true
+  },
+  {
+    "path": "/v3/",
+    "user_agent": "Mozilla/5.0",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "robots_header": null,
+    "bytes": 7529,
+    "about_footer": true
+  },
+  {
+    "path": "/robots.txt",
+    "user_agent": "Mozilla/5.0",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "robots_header": null,
+    "bytes": 154
+  },
+  {
+    "path": "/llms.txt",
+    "user_agent": "Mozilla/5.0",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "robots_header": null,
+    "bytes": 9754,
+    "about_listed": true
+  },
+  {
+    "path": "/v3/assets/about/reels-v02-cf57f7b5dd.mp4",
+    "user_agent": "Mozilla/5.0",
+    "status": 200,
+    "content_type": "video/mp4",
+    "robots_header": null,
+    "bytes": 6838735,
+    "sha256": "cf57f7b5dd2b1d7639b8ffea2112ea3c0915a655ff5dba627b0b469d14fb6e8e"
+  },
+  {
+    "path": "/about/",
+    "status": 308,
+    "location": "/about"
+  },
+  {
+    "path": "/v3/about",
+    "status": 308,
+    "location": "/about"
+  },
+  {
+    "path": "/v3/about/",
+    "status": 308,
+    "location": "/about"
+  },
+  {
+    "path": "/v3/about/index.html",
+    "status": 308,
+    "location": "/about"
+  },
+  {
+    "path": "video range request",
+    "status": 206,
+    "bytes": 1024
+  }
+]
