@@ -58,13 +58,13 @@
     {
       "name": "Rockefeller Foundation",
       "key": "rockefeller",
-      "file": "client-rockefeller.svg",
-      "width": 196,
-      "height": 211,
+      "file": "client-rockefeller-wordmark.png",
+      "width": 6868,
+      "height": 2536,
       "source_page": "https://www.rockefellerfoundation.org/",
-      "source_asset": "https://www.rockefellerfoundation.org/wp-content/themes/fantasy-therockf/Static/assets/images/RF_LogoMark_DarkGreen.svg",
+      "source_asset": "https://www.rockefellerfoundation.org/wp-content/themes/fantasy-therockf/Static/assets/images/RF_logo_screen_green.png",
       "retrieved": "2026-11-10",
-      "sha256": "07d9de76189394142c49c98a6e928cefbfbd64985c5c56010e29b302e90ead12"
+      "sha256": "932fc7eeddbf6a6574adef56ad248d7eaa8a33e0c43b6d117c8c3477bf179ce2"
     },
     {
       "name": "Wildbird",
@@ -100,5 +100,5 @@
       "sha256": "e71e435c3efd91d9e3240ce85547ef882031ef9d0a890a7e454c4d6e5bfa894f"
     }
   ],
-  "presentation": "Official marks; monochrome presentation on the page. Apple and Nike viewBoxes trimmed to the visible mark; Intel and Rockefeller SVG fills normalized to ink. Original downloaded assets retained. Raster images unchanged; Amazon uses the press site CDN thumbnail."
+  "presentation": "Official company marks, centered without visible name captions. Accessible image names remain. Rockefeller uses the official full-name wordmark lockup. Apple is 50% larger and Intel 20% smaller than the preceding page; monochrome is applied in page CSS. Original downloaded assets retained."
 }
