@@ -1,0 +1,35 @@
+[
+  {
+    "path": "/about",
+    "userAgent": "Mozilla/5.0",
+    "status": 200,
+    "sourceMatch": true
+  },
+  {
+    "path": "/about",
+    "userAgent": "OAI-SearchBot/1.0",
+    "status": 200,
+    "sourceMatch": true
+  },
+  {
+    "path": "/v3/assets/about/reels-v03-f41026d769.mp4",
+    "status": 200,
+    "sha256": "f41026d7693f935338cb465bf4f032d8c74aa2d1f311033a709e9c2df51323ea"
+  },
+  {
+    "path": "/v3/assets/about/workshop-1280-e17baf9a35.webp",
+    "status": 404
+  },
+  {
+    "path": "/v3/assets/about/white-1280-3d2990591d.webp",
+    "status": 404
+  },
+  {
+    "path": "/v3/assets/about/bus-1280-be982051d4.webp",
+    "status": 404
+  },
+  {
+    "path": "/v3/assets/about/wide-1280-fabe67adca.webp",
+    "status": 404
+  }
+]
