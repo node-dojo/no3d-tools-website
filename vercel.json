@@ -7,6 +7,10 @@
   "framework": null,
   "outputDirectory": ".",
   "redirects": [
+    { "source": "/about/", "destination": "/about", "permanent": true },
+    { "source": "/v3/about", "destination": "/about", "permanent": true },
+    { "source": "/v3/about/", "destination": "/about", "permanent": true },
+    { "source": "/v3/about/index.html", "destination": "/about", "permanent": true },
     { "source": "/lighter", "destination": "/p/lighter-keeper", "permanent": true },
     { "source": "/lighter/", "destination": "/p/lighter-keeper", "permanent": true },
     { "source": "/p/mace-and-chain", "destination": "/p/lighter-keeper", "permanent": true },
@@ -18,6 +22,7 @@
     { "source": "/go/asset-lib", "destination": "/blog/blenders-asset-library-sucks", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/about", "destination": "/v3/about/index.html" },
     { "source": "/v3/prints/download", "destination": "/v3/prints/download/index.html" },
     { "source": "/p/:handle", "destination": "/v3/product/landing/index.html" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },

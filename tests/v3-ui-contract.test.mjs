@@ -549,6 +549,7 @@ test('Vercel migrates every registered legacy customer route into V3', async () 
   assert.equal(rewrites.get('/v3/onboarding/connect'), '/v3/account/index.html?state=connect');
   assert.equal(rewrites.get('/v3/type'), '/v3/type/index.html');
   assert.equal(rewrites.get('/sitemap.xml'), '/api/sitemap');
+  assert.equal(rewrites.get('/about'), '/v3/about/index.html');
   for (const migration of registry.migrations) {
     const source = migration.source.replace(':orderId', '11111111-1111-4111-8111-111111111111');
     const expected = migration.destination.replace(':orderId', '11111111-1111-4111-8111-111111111111');
@@ -574,6 +575,7 @@ test('canonical public routes are indexable and recovery surfaces are not', asyn
     'https://no3dtools.com/v3/membership/',
     'https://no3dtools.com/v3/collections/no3d-chrome-tools/',
     'https://no3dtools.com/v3/collections/full-library/',
+    'https://no3dtools.com/about',
   ]) assert.match(sitemap, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.match(sitemap, /https:\/\/no3dtools\.com\/v3\/product\/\?handle=sample-tool/);
   assert.match(sitemap, /https:\/\/no3dtools\.com\/blog\/sample-article/);
@@ -582,6 +584,14 @@ test('canonical public routes are indexable and recovery surfaces are not', asyn
   assert.match(await load('v3/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/"/);
   assert.match(await load('v3/index.html'), /name="google-site-verification" content="[A-Za-z0-9_-]+"/);
   assert.match(await load('v3/membership/index.html'), /rel="canonical" href="https:\/\/no3dtools\.com\/v3\/membership\/"/);
+  const about = await load('v3/about/index.html');
+  assert.match(about, /rel="canonical" href="https:\/\/no3dtools\.com\/about"/);
+  assert.doesNotMatch(about, /noindex|nofollow/);
+  assert.match(about, /Joe Bowers is an artist, designer, and engineer/);
+  const profile = JSON.parse(about.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  assert.equal(profile['@type'], 'ProfilePage');
+  assert.equal(profile.mainEntity.name, 'Joe Bowers');
+  assert.ok(profile.mainEntity.sameAs.includes('https://www.instagram.com/the.well.tarot/'));
   assert.match(await load('v3/product/index.html'), /data-product-structured-data/);
   assert.match(await load('v3/product/index.html'), /product\.js\?v=commerce-20261002/);
   assert.match(await load('v3/js/product.js'), /document\.querySelector\('link\[rel="canonical"\]'\)\.href = canonicalUrl/);

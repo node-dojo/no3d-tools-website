@@ -127,7 +127,7 @@ async function homeContentAudit(page, label) {
     const bounds = link.getBoundingClientRect();
     return { href: link.getAttribute('href'), visible: bounds.width > 0 && bounds.height > 0 && bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0 && bounds.bottom <= innerHeight };
   }));
-  assert.deepEqual(links.map(link => link.href), ['/blog', '/join']);
+  assert.deepEqual(links.map(link => link.href), ['/blog', '/join', '/about']);
   assert.ok(links.every(link => link.visible), `${label}: footer links outside viewport`);
   await page.screenshot({ path: join(outputDir, `${label}-footer.png`) });
   await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));

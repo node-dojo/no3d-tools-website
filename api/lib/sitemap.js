@@ -19,6 +19,7 @@ export function sitemapEntries({ products = [], articles = [] } = {}) {
     { location: `${ORIGIN}/v3/collections/no3d-chrome-tools/` },
     { location: `${ORIGIN}/v3/collections/full-library/` },
     { location: `${ORIGIN}/blog` },
+    { location: `${ORIGIN}/about`, modified: '2026-11-10' },
   ];
   for (const product of products) {
     if (!/^[a-z0-9][a-z0-9-]{0,99}$/.test(product?.handle || '')) continue;

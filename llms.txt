@@ -6,6 +6,7 @@
 
 ## Docs
 
+- [About Joe Bowers](https://no3dtools.com/about): Artist, designer, and engineer behind NO3D Tools and The Well. Procedural and generative design with Blender and Geometry Nodes, physical products, creative software, storytelling, conference talks, and team training.
 - [Getting Started](https://no3dtools.com/v3/account/?state=install): Install the addon, sign in with your account, sync your library
 - [Membership](https://no3dtools.com/v3/membership/): Get full-catalog NO3D Tools membership
 - [Account](https://no3dtools.com/v3/account/): Manage your subscription, downloads, and access
