@@ -12,13 +12,10 @@
 @media print{body{background:white;color:black;font-size:12pt}.mast nav,.text-link,.footer-links{display:none}.sheet{padding:0}.practice,.process,.speaking,.quote{margin-top:35px}figure{break-inside:avoid}.hero-grid,.practice-grid,.speaking-grid{display:grid;grid-template-columns:1fr 1fr}.hero-photo,.reading{grid-column:2}.display,h1{font-size:32pt}.wide-photo{break-before:page}}
 
 /* The reel is a single silent film; the link opens the real profile. */
+.approach{margin-top:var(--section)}
 .reel-feed{width:66%;max-width:420px;margin:60px 0 0 10%;order:2}
 .reel-link{display:block;background:#111;line-height:0}
 .reel-link:hover{background:#111}
 .reel-feed video{display:block;width:100%;height:auto;aspect-ratio:9/16;object-fit:contain}
-.reel-feed figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
-.reel-feed button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;border-bottom:1px solid currentColor;padding:0;cursor:pointer}
-.reel-feed button:focus-visible{outline:2px solid var(--ink);outline-offset:5px}
 [hidden]{display:none!important}
 @media(max-width:850px){.reel-feed{width:86%;max-width:360px;margin:0 0 30px auto;order:1}.speaking-grid .reading{order:2}.speaking-heading h2{margin-bottom:12px}}
-@media print{.reel-feed button{display:none}}

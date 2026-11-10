@@ -587,7 +587,7 @@ test('canonical public routes are indexable and recovery surfaces are not', asyn
   const about = await load('v3/about/index.html');
   assert.match(about, /rel="canonical" href="https:\/\/no3dtools\.com\/about"/);
   assert.doesNotMatch(about, /noindex|nofollow/);
-  assert.match(about, /Joe Bowers is an artist, designer, and engineer/);
+  assert.match(about, /Artist, designer and engineer that<br>makes things that<br>make things\./);
   const profile = JSON.parse(about.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
   assert.equal(profile['@type'], 'ProfilePage');
   assert.equal(profile.mainEntity.name, 'Joe Bowers');
