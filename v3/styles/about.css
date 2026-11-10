@@ -13,9 +13,27 @@
 
 /* The reel is a single silent film; the link opens the real profile. */
 .approach{margin-top:var(--section)}
-.reel-feed{width:66%;max-width:420px;margin:60px 0 0 10%;order:2}
+.reel-feed{width:66%;max-width:420px;margin:0 0 0 10%;order:2}
 .reel-link{display:block;background:#111;line-height:0}
 .reel-link:hover{background:#111}
 .reel-feed video{display:block;width:100%;height:auto;aspect-ratio:9/16;object-fit:contain}
 [hidden]{display:none!important}
 @media(max-width:850px){.reel-feed{width:86%;max-width:360px;margin:0 0 30px auto;order:1}.speaking-grid .reading{order:2}.speaking-heading h2{margin-bottom:12px}}
+
+/* Official company marks, paired with readable names in the HTML. */
+.clients{padding-block:36px 44px}
+.clients ul{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 24px}
+.client{display:flex;flex-direction:column;align-items:flex-start;gap:14px;min-width:0}
+.client-mark{display:flex;align-items:center;width:100%;height:60px}
+.client-mark img{width:auto;height:auto;max-width:140px;max-height:48px;object-fit:contain;filter:grayscale(1);mix-blend-mode:multiply}
+.client--apple img{height:42px}
+.client--nike img{width:96px}
+.client--amazon img{width:135px}
+.client--levis img{width:105px}
+.client--intel img{width:104px}
+.client--rockefeller img{height:48px}
+.client--wildbird img{width:140px}
+.client--womp img{height:54px;max-height:54px}
+.client--bellroy img{height:58px;max-height:58px}
+.client-name{font:600 10px/1.5 var(--ui);letter-spacing:.025em;text-transform:uppercase}
+@media(max-width:850px){.clients ul{gap:28px 16px}.client{gap:9px}.client-mark{height:48px}.client-mark img{max-width:100%;max-height:40px}.client--apple img{height:34px}.client--rockefeller img{height:40px}.client--womp img{height:44px;max-height:44px}.client--bellroy img{height:48px;max-height:48px}.client-name{font-size:9px;letter-spacing:0}.speaking .section-top h2{font-size:9px;max-width:170px}.approach .practice-grid h2{margin-bottom:28px}}

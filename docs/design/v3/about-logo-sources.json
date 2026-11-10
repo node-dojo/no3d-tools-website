@@ -1,0 +1,104 @@
+{
+  "companies": [
+    {
+      "name": "Apple",
+      "key": "apple",
+      "file": "client-apple.svg",
+      "width": 14,
+      "height": 17,
+      "source_page": "https://www.apple.com/",
+      "source_asset": "inline header SVG",
+      "retrieved": "2026-11-10",
+      "sha256": "2e0e646b98772b00b247604c0c9a684d989e7fc0a2a98d499eb7e0016926b8af"
+    },
+    {
+      "name": "Nike",
+      "key": "nike",
+      "file": "client-nike.svg",
+      "width": 20,
+      "height": 10,
+      "source_page": "https://www.nike.com/",
+      "source_asset": "inline header SVG",
+      "retrieved": "2026-11-10",
+      "sha256": "b0391fc2a2d17485c77ce4da5ee2ecd6944810ad0f4e3a34be67495c45efb047"
+    },
+    {
+      "name": "Amazon",
+      "key": "amazon",
+      "file": "client-amazon.png",
+      "width": 645,
+      "height": 216,
+      "source_page": "https://press.aboutamazon.com/logos?p=4",
+      "source_asset": "https://assets.aboutamazon.com/2e/d7/ac71f1f344c39f8949f48fc89e71/amazon-logo-squid-ink-smile-orange.png",
+      "retrieved": "2026-11-10",
+      "sha256": "de494dfdc9a6b8676a852597e1bb0961e9ec6aec945c018d85af6110f9c6c607"
+    },
+    {
+      "name": "Levi’s",
+      "key": "levis",
+      "file": "client-levis.png",
+      "width": 250,
+      "height": 103,
+      "source_page": "https://www.levistrauss.com/",
+      "source_asset": "https://www.levistrauss.com/wp-content/uploads/2018/12/levis-logo-250x103.png",
+      "retrieved": "2026-11-10",
+      "sha256": "8367255cd8b48a669c696a5de24c9eac57a85a3a80c5382bd9476c6d346361f0"
+    },
+    {
+      "name": "Intel",
+      "key": "intel",
+      "file": "client-intel.svg",
+      "width": 58,
+      "height": 23,
+      "source_page": "https://www.intel.com/",
+      "source_asset": "inline header SVG",
+      "retrieved": "2026-11-10",
+      "sha256": "4ea0758839458f8c6e629c5ac1254684d21ede4524dce409ad0b4489cb288f3c"
+    },
+    {
+      "name": "Rockefeller Foundation",
+      "key": "rockefeller",
+      "file": "client-rockefeller.svg",
+      "width": 196,
+      "height": 211,
+      "source_page": "https://www.rockefellerfoundation.org/",
+      "source_asset": "https://www.rockefellerfoundation.org/wp-content/themes/fantasy-therockf/Static/assets/images/RF_LogoMark_DarkGreen.svg",
+      "retrieved": "2026-11-10",
+      "sha256": "07d9de76189394142c49c98a6e928cefbfbd64985c5c56010e29b302e90ead12"
+    },
+    {
+      "name": "Wildbird",
+      "key": "wildbird",
+      "file": "client-wildbird.svg",
+      "width": 485.54,
+      "height": 103.8,
+      "source_page": "https://wildbird.co/",
+      "source_asset": "inline header SVG",
+      "retrieved": "2026-11-10",
+      "sha256": "594fc18d15eb38abb8c91c1518ddc46115830f80cbfc97e3869c1e451afbcbb9"
+    },
+    {
+      "name": "Womp",
+      "key": "womp",
+      "file": "client-womp.webp",
+      "width": 512,
+      "height": 479,
+      "source_page": "https://womp.com/",
+      "source_asset": "https://womp.com/womp-logo.webp",
+      "retrieved": "2026-11-10",
+      "sha256": "03f2c4d89bbf4b6a9a04dd3e273eacc3200a5133601b9edf694ebf65869df45c"
+    },
+    {
+      "name": "Bellroy",
+      "key": "bellroy",
+      "file": "client-bellroy.svg",
+      "width": 99,
+      "height": 58,
+      "source_page": "https://bellroy.com/",
+      "source_asset": "inline header SVG",
+      "retrieved": "2026-11-10",
+      "sha256": "e71e435c3efd91d9e3240ce85547ef882031ef9d0a890a7e454c4d6e5bfa894f"
+    }
+  ],
+  "presentation": "Official marks; monochrome presentation on the page. Apple and Nike viewBoxes trimmed to the visible mark; Intel and Rockefeller SVG fills normalized to ink. Original downloaded assets retained. Raster images unchanged; Amazon uses the press site CDN thumbnail."
+}
