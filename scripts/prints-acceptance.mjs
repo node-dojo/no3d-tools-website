@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import puppeteer from 'puppeteer';
+import { collectionDefinitions } from '../lib/collection-definitions.js';
 import { createPrintsPreviewServer } from './prints-preview-server.mjs';
 
 const output = process.env.PRINTS_ACCEPTANCE_OUTPUT || '/tmp/no3d-prints-acceptance';
@@ -196,13 +197,17 @@ try {
   // Exercise the actual UI + HTTP handlers with isolated server identities.
   // External navigations are intercepted before they leave this test browser.
   const journeys = [];
-  for (const [surface, scenario] of ['details', 'catalog'].flatMap(surface => ['guest', 'member', 'owned', 'unavailable', 'revoked'].map(scenario => [surface, scenario]))) {
-    let activeMember = ['member', 'unavailable', 'revoked'].includes(scenario);
+  for (const [surface, scenario] of ['details', 'catalog'].flatMap(surface => ['guest', 'member', 'chrome', 'owned', 'unavailable', 'revoked'].map(scenario => [surface, scenario]))) {
+    let activeMember = ['member', 'chrome', 'unavailable', 'revoked'].includes(scenario);
+    const chromeScope = collectionDefinitions['no3d-chrome-tools'].scope;
+    const entitlements = scenario === 'chrome'
+      ? [{ key: chromeScope, scopeId: chromeScope, scopeType: 'solvet_collection', status: 'active' }]
+      : [];
     let issued = 0;
     const printDependencies = {
       authenticate: async () => scenario === 'guest' ? null : ({ user: { id: 'fixture-user', email: 'fixture@example.test', email_confirmed_at: '2026-10-01' } }),
-      subscription: async () => activeMember ? ({ tier: 'subscriber', status: 'active' }) : null,
-      account: async () => ({ entitlements: [], products: scenario === 'owned' ? [{ handle: 'spike-planter-01', owned: true, permanent: true, entitlementStatus: 'active', fulfillmentStatus: 'fulfilled', paymentStatus: 'paid' }] : [] }),
+      subscription: async () => activeMember && scenario !== 'chrome' ? ({ tier: 'subscriber', status: 'active' }) : null,
+      account: async () => ({ entitlements, products: scenario === 'owned' ? [{ handle: 'spike-planter-01', owned: true, permanent: true, entitlementStatus: 'active', fulfillmentStatus: 'fulfilled', paymentStatus: 'paid' }] : [] }),
       product: async handle => scenario === 'unavailable' ? null : ({ handle, status: 'active', file_url: 'fixtures/planter.zip' }),
       deliveryReady: () => true,
       sign: async () => { issued++; return 'https://downloads.example.test/fixture-planter.zip'; },
@@ -278,7 +283,7 @@ try {
         await Promise.all([journey.waitForNavigation(), journey.click(action)]);
         assert.deepEqual(destinations, [scenario === 'guest' ? 'https://checkout.stripe.com/c/pay/fixture' : 'https://downloads.example.test/fixture-planter.zip']);
       }
-      assert.equal(issued, ['member', 'owned'].includes(scenario) ? 1 : 0);
+      assert.equal(issued, ['member', 'chrome', 'owned'].includes(scenario) ? 1 : 0);
       assert.equal(checkouts, scenario === 'guest' ? 1 : 0, 'Members and owners skip checkout');
       assert.equal(destinations.some(url => url.includes('gumroad.com')), false, 'Prints never hands off to Gumroad');
       journeys.push({ surface, scenario, issued, handoff: destinations, downloadRequests: requests.filter(url => url.includes('/api/prints/download')).length });
