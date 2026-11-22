@@ -45,17 +45,31 @@ test('active paid legacy membership skips checkout; only download request signs 
   assert.equal(JSON.stringify(access.body).includes('private/'), false);
 });
 
-test('full-library scope grants Prints but Chrome and revoked or future scopes do not', async () => {
+test('Full Library and Chrome grant Prints only for an active, matching collection scope', async () => {
+  const chromeScope = 'no3dtools.membership.no3d-chrome';
+  const chrome = { ...fullLibrary, key: chromeScope, scopeId: chromeScope };
   for (const [entitlement, expected] of [
     [fullLibrary, 'download'],
-    [{ ...fullLibrary, key: 'no3dtools.membership.no3d-chrome', scopeId: 'no3dtools.membership.no3d-chrome' }, 'purchase'],
+    [chrome, 'download'],
+    [{ ...chrome, status: 'revoked' }, 'purchase'],
+    [{ ...chrome, endsAt: '2026-10-28T12:00:00Z' }, 'purchase'],
+    [{ ...chrome, startsAt: '2026-10-29T12:00:00Z' }, 'purchase'],
+    [{ ...chrome, scopeType: 'product' }, 'purchase'],
+    [{ ...chrome, scopeId: fullLibrary.key }, 'purchase'],
+    [{ ...chrome, key: 'other', scopeId: 'other' }, 'purchase'],
     [{ ...fullLibrary, status: 'revoked' }, 'purchase'],
     [{ ...fullLibrary, endsAt: '2026-10-27T12:00:00Z' }, 'purchase'],
     [{ ...fullLibrary, startsAt: '2026-10-29T12:00:00Z' }, 'purchase'],
     [{ ...fullLibrary, scopeId: null }, 'purchase'],
   ]) {
     const f = fixture({ account: async () => ({ entitlements: [entitlement], products: [] }) });
-    assert.equal((await invoke(f.dependencies)).body.mode, expected);
+    for (const slug of ['mace-and-chain', 'spike-planter-01']) {
+      const access = await invoke(f.dependencies, { slug });
+      assert.equal(access.body.mode, expected);
+      const granted = expected === 'download';
+      assert.equal(access.body.entitlement, granted ? 'member' : undefined);
+      assert.equal((await invoke(f.dependencies, { slug, download: true })).code, granted ? 200 : 403);
+    }
   }
 });
 

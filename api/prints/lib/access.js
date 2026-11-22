@@ -3,11 +3,15 @@ import { commerceFetch } from '../../commerce/lib/client.js';
 import { computeAccessState } from '../../lib/subscriptionAccess.js';
 import { getSupabaseServiceClient } from '../../lib/supabaseAdmin.js';
 import { isR2Configured, presignGetObject } from '../../lib/r2.js';
+import { collectionDefinitions } from '../../../lib/collection-definitions.js';
 import { getPrintDelivery } from './catalog.js';
 
 // These printable downloads are separate products from the similarly named
 // Blender tools. Only these exact catalog handles can be served by this route.
-const FULL_LIBRARY = 'no3dtools.membership.full-library';
+const printMembershipScopes = new Set([
+  collectionDefinitions['full-library'].scope,
+  collectionDefinitions['no3d-chrome-tools'].scope,
+]);
 
 const services = {
   authenticate: authenticatedSession,
@@ -49,10 +53,9 @@ export async function resolvePrintAccess(req, res, handle, dependencies = {}) {
   const subscription = authenticated ? await service.subscription(auth.user.email.trim().toLowerCase()) : null;
   let entitlement = computeAccessState(subscription, service.now()).allowed ? 'member' : null;
   if (!entitlement) {
-    // Scoped memberships such as Chrome do not grant the entire Prints catalog.
     const account = await service.account(req, res);
-    if (account.entitlements.some(item => item.key === FULL_LIBRARY
-      && item.scopeType === 'solvet_collection' && item.scopeId === FULL_LIBRARY
+    if (account.entitlements.some(item => item.scopeType === 'solvet_collection'
+      && printMembershipScopes.has(item.key) && item.scopeId === item.key
       && activeAt(item, service.now()))) entitlement = 'member';
     else if (account.products.some(item => item.handle === handle && item.owned === true
       && item.permanent === true && item.entitlementStatus === 'active'
